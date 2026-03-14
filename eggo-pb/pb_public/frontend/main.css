@@ -1,0 +1,77 @@
+/* styles/auth-flow.module.css */
+body {
+  background: #f5f5f5;
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+}
+
+.auth-container_Wh3oUQ {
+  background: #fff;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 2px 10px #0000001a;
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.btn_Wh3oUQ {
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  border-radius: 4px;
+  margin: 5px;
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+.btn-line_Wh3oUQ {
+  color: #fff;
+  background: #00c300;
+}
+
+.btn-line_Wh3oUQ:hover {
+  background: #0a0;
+}
+
+.btn-logout_Wh3oUQ {
+  color: #fff;
+  background: #dc3545;
+}
+
+.user-info_Wh3oUQ {
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.user-info_Wh3oUQ pre {
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 4px;
+  padding: 15px;
+  font-size: 13px;
+}
+
+.error_Wh3oUQ {
+  color: #dc3545;
+  background: #f8d7da;
+  border-radius: 4px;
+  margin: 10px 0;
+  padding: 10px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin: 10px 0;
+}

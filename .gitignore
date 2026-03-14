@@ -1,0 +1,44 @@
+# Monorepo folders to exclude
+resources/
+
+# Workspace/tooling
+.opencode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+**/.idea/
+**/*.swp
+**/*.swo
+**/*~
+
+# Dependencies
+**/node_modules/
+
+# Build output
+**/dist/
+**/build/
+**/out/
+**/coverage/
+**/.next/
+**/.turbo/
+**/.cache/
+**/.eslintcache
+**/*.tsbuildinfo
+**/*.lcov
+
+# Logs
+**/*.log
+**/logs/
+
+# Environment files
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.sample
+
+# Temporary files
+**/*.tmp
+**/*.temp

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OIDC Callback</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; text-align: center; }
+        pre { text-align: left; background: #f5f5f5; padding: 20px; border-radius: 8px; max-width: 600px; margin: 20px auto; }
+        .error { color: #dc3545; }
+        .success { color: #155724; }
+    </style>
+</head>
+<body>
+    <h1 id="title">Processing login...</h1>
+    <pre id="content"></pre>
+
+    <script type="module">
+        import PocketBase from 'https://unpkg.com/pocketbase@0.25.0/dist/pocketbase.es.mjs';
+
+        const POCKETBASE_URL = 'http://127.0.0.1:8090';
+        const pb = new PocketBase(POCKETBASE_URL);
+        const contentEl = document.getElementById('content');
+        const titleEl = document.getElementById('title');
+
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+        const state = params.get('state');
+        const error = params.get('error');
+
+        console.log('Callback received:', { code, state, error });
+
+        if (error) {
+            titleEl.textContent = 'Login Failed';
+            contentEl.textContent = `Error: ${error}\n${params.get('error_description') || ''}`;
+            contentEl.className = 'error';
+        } else if (!code || !state) {
+            titleEl.textContent = 'Missing Parameters';
+            contentEl.textContent = 'Missing code or state parameter';
+            contentEl.className = 'error';
+        } else {
+            const storedState = localStorage.getItem('oauth_state');
+            const codeVerifier = localStorage.getItem('oauth_code_verifier');
+            const providerName = localStorage.getItem('oauth_provider') || 'oidc';
+
+            console.log('Stored data:', { storedState, providerName, hasCodeVerifier: !!codeVerifier });
+
+            if (state !== storedState) {
+                titleEl.textContent = 'State Mismatch';
+                contentEl.textContent = 'Security check failed. Please try again.';
+                contentEl.className = 'error';
+            } else {
+                console.log('Exchanging code for token...');
+                pb.collection('users').authWithOAuth2Code(
+                    providerName,
+                    code,
+                    codeVerifier || '',
+                    'http://localhost:3000/frontend/callback.html',
+                    {}
+                ).then((authData) => {
+                    console.log('Auth successful:', authData);
+                    titleEl.textContent = 'Success!';
+                    contentEl.textContent = 'Logged in successfully. Redirecting...';
+                    contentEl.className = 'success';
+                    
+                    localStorage.removeItem('oauth_state');
+                    localStorage.removeItem('oauth_code_verifier');
+                    localStorage.removeItem('oauth_provider');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'http://localhost:3000/frontend/';
+                    }, 1500);
+                }).catch((err) => {
+                    console.error('Auth failed:', err);
+                    titleEl.textContent = 'Exchange Failed';
+                    contentEl.textContent = 'Auth failed:\n' + JSON.stringify(err, null, 2);
+                    contentEl.className = 'error';
+                });
+            }
+        }
+    </script>
+</body>
+</html>

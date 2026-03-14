@@ -1,0 +1,50 @@
+# Eggo-PB - PocketBase Backend
+
+# Dependencies
+pocketbase
+pocketbase.zip
+
+# Environment variables (contains secrets!)
+.env
+.env.local
+.env.production
+
+# PocketBase data (database and files)
+pb_data/
+pb_data/*
+
+# Logs
+*.log
+logs/
+log/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Backup files
+*.backup
+backups/
+*.tar.gz
+*.zip
+
+# Test files (keep structure, ignore content)
+testing/
+
+# Node modules (if any scripts added)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

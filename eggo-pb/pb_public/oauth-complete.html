@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth Complete</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 40px; }
+        .loading { margin: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Login Successful</h1>
+    <p class="loading">Redirecting to app...</p>
+    
+    <script>
+        // PocketBase redirects here with token in URL
+        // Extract token and redirect to frontend
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+        
+        if (token) {
+            // Redirect to frontend with token
+            window.location.href = 'http://localhost:3000/frontend/?token=' + encodeURIComponent(token);
+        } else {
+            document.querySelector('.loading').textContent = 'No token found. Please try again.';
+        }
+    </script>
+</body>
+</html>
