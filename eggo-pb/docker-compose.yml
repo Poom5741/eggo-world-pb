@@ -1,24 +1,59 @@
 services:
-  pocketbase:
-    image: ghcr.io/muchobien/pocketbase:latest
-    container_name: eggo-pb
-    restart: unless-stopped
-    command: ["serve", "--http=0.0.0.0:8090", "--encryptionEnv=ENCRYPTION", "--hooksDir=/pb/pb_hooks"]
-    environment:
-      ENCRYPTION: 4nWpfKByg2u3tkbbHAZ34div
-      OIDC_CLIENT_ID: "2009441873"
-      OIDC_CLIENT_SECRET: "4ede94afa7d59b71ffda15a136ffddea"
-      OIDC_ISSUER_URL: "https://access.line.me"
-      OIDC_REDIRECT_URI: "http://localhost:3000/frontend/callback.html"
-    ports:
-      - "8090:8090"
-    volumes:
-      - ./pb_data:/pb/pb_data
-      - ./pb_migrations:/pb/pb_migrations
-      - ./pb_hooks:/pb/pb_hooks
-      - ./pb_public:/pb/pb_public
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    pocketbase:
+        image: ghcr.io/muchobien/pocketbase:latest
+        container_name: pocketbase
+        restart: unless-stopped
+        command:
+            - serve
+            - --http=0.0.0.0:8090
+            - --dir=/pb_data
+            - --publicDir=/pb_public
+            - --hooksDir=/pb_hooks
+            - --migrationsDir=/pb_migrations
+        environment:
+            ENCRYPTION: 4nWpfKByg2u3tkbbHAZ34div
+            LINE_CHANNEL_ID: 2009441873
+            LINE_CHANNEL_SECRET: 4ede94afa7d59b71ffda15a136ffddea
+            LINE_CALLBACK_URL: https://pb.eggoworld.io/api/oauth2-redirect
+            APP_URL: https://pb.eggoworld.io
+            NODE_ENV: production
+            WALLET_MASTER_KEY: production_key_change_this_32_characters
+            PB_PUBLIC_URL: https://pb.eggoworld.io
+            WALLET_API_URL: http://wallet-api:3001
+        expose:
+            - "8090"
+        volumes:
+            - ./pb_data:/pb_data
+            - ./pb_public:/pb_public
+            - ./pb_migrations:/pb_migrations
+            - ./pb_hooks:/pb_hooks
+        healthcheck:
+            test: wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
+            interval: 5s
+            timeout: 5s
+            retries: 5
+        networks:
+            - pocketbase_network
+        depends_on:
+            - wallet-api
+
+    wallet-api:
+        build: ../wallet-api
+        container_name: wallet-api
+        restart: unless-stopped
+        environment:
+            PORT: 3001
+            WALLET_MASTER_KEY: production_key_change_this_32_characters
+        expose:
+            - "3001"
+        networks:
+            - pocketbase_network
+        healthcheck:
+            test: wget --no-verbose --tries=1 --spider http://localhost:3001/health || exit 1
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
+networks:
+    pocketbase_network:
+        external: true
