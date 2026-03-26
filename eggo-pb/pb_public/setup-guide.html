@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚠️ LINE OAuth Setup Required</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #c62828; margin-bottom: 10px; }
+        .warning {
+            background: #ffebee;
+            border-left: 4px solid #c62828;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .step {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .step h3 { color: #667eea; margin-bottom: 10px; }
+        .credentials {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .credentials strong { color: #1565c0; }
+        .field-mapping {
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .field-mapping table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .field-mapping th, .field-mapping td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #c8e6c9;
+        }
+        .field-mapping th { background: #c8e6c9; }
+        .arrow { color: #2e7d32; font-weight: bold; }
+        .btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 18px;
+            margin: 20px 10px 20px 0;
+        }
+        .btn:hover { background: #5568d3; }
+        .btn.secondary { background: #00C300; }
+        .btn.secondary:hover { background: #00a300; }
+        code {
+            background: #e0e0e0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .note {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚠️ OAuth Setup Required</h1>
+        <p style="font-size: 18px; color: #666;">Fix "Failed to create record" error by configuring OAuth in Admin UI</p>
+        
+        <div class="warning">
+            <strong>🚨 Problem:</strong> OAuth field mapping is not configured.<br>
+            <strong>Solution:</strong> Takes 2 minutes in Admin Panel.
+        </div>
+        
+        <div class="step">
+            <h3>Step 1: Open Admin Panel</h3>
+            <a href="/_/" class="btn" target="_blank">Open Admin Panel →</a>
+            <div class="credentials">
+                <strong>Email:</strong> admin@eggo.local<br>
+                <strong>Password:</strong> admin123
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Go to OAuth Settings</h3>
+            <p><strong>Settings</strong> → <strong>Collections</strong> → <strong>users</strong> → Click <strong>OAuth2</strong> tab</p>
+        </div>
+        
+        <div class="step">
+            <h3>Step 3: Add/Edit OAuth Provider</h3>
+            <div class="note">
+                <strong>📌 Note:</strong> If you see "oidc" already listed, click Edit (✏️). Otherwise click "Add Provider".
+            </div>
+            <p><strong>Configure these settings:</strong></p>
+            <div class="credentials">
+                <strong>Name:</strong> oidc<br>
+                <strong>Display Name:</strong> Line<br>
+                <strong>Auth URL:</strong> https://access.line.me/oauth2/v2.1/authorize<br>
+                <strong>Token URL:</strong> https://api.line.me/oauth2/v2.1/token<br>
+                <strong>Fetch user info from:</strong> User info URL<br>
+                <strong>User info URL:</strong> https://api.line.me/oauth2/v2.1/userinfo<br>
+                <strong>Support PKCE:</strong> ✓ (checked)
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 4: Field Mapping ⭐ MOST IMPORTANT</h3>
+            <p>Click <strong>"Optional users create fields map"</strong> to expand</p>
+            
+            <div class="field-mapping">
+                <p><strong>Map these fields (select from dropdown):</strong></p>
+                <table>
+                    <tr>
+                        <th>OAuth2 Field</th>
+                        <th></th>
+                        <th>PocketBase Field</th>
+                    </tr>
+                    <tr>
+                        <td><code>OAuth2 id</code></td>
+                        <td class="arrow">→</td>
+                        <td>
+                            <select disabled>
+                                <option>externalId</option>
+                            </select>
+                            <code>externalId</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>OAuth2 full name</code></td>
+                        <td class="arrow">→</td>
+                        <td>
+                            <select disabled>
+                                <option>name</option>
+                            </select>
+                            <code>name</code>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>OAuth2 avatar</code></td>
+                        <td class="arrow">→</td>
+                        <td>
+                            <select disabled>
+                                <option>avatar</option>
+                            </select>
+                            <code>avatar</code>
+                        </td>
+                    </tr>
+                </table>
+                <p class="note" style="margin-top:15px;">
+                    <strong>✓ Select from dropdown menus</strong> - these are the exact field names in the PocketBase UI.
+                </p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 5: Save</h3>
+            <p>Scroll down and click <strong>Save</strong> button</p>
+        </div>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+        
+        <h3>✅ Test LINE Login</h3>
+        <p>After saving, test your LINE OAuth:</p>
+        <a href="/line-login.html" class="btn secondary">Test LINE Login →</a>
+        <p style="margin-top: 15px; color: #2e7d32;">
+            <strong>Expected:</strong> Should login successfully and auto-create wallet!
+        </p>
+        
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+        
+        <p style="color: #999; font-size: 14px;">
+            <strong>Reference:</strong> Based on 
+            <a href="https://github.com/dtinth/dt.in.th/blob/gh-pages/PocketBaseLINELogin.md" target="_blank">
+                dtinth's PocketBase LINE Login Guide
+            </a>
+        </p>
+    </div>
+</body>
+</html>

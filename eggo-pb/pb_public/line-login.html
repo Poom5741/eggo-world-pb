@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>LINE Login - eggo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        h1 { color: #333; margin-bottom: 10px; }
+        .subtitle { color: #666; margin-bottom: 30px; }
+        .line-btn {
+            background: #00C300;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px auto;
+        }
+        .line-btn:hover { background: #00a300; }
+        .status { margin-top: 20px; padding: 15px; border-radius: 10px; display: none; }
+        .status.error { background: #ffebee; color: #c62828; display: block; }
+        .status.success { background: #e8f5e9; color: #2e7d32; display: block; }
+        .wallet-info { margin-top: 30px; padding: 20px; background: #f5f5f5; border-radius: 10px; display: none; }
+        .wallet-info.show { display: block; }
+        .wallet-address { font-family: monospace; background: #e0e0e0; padding: 10px; border-radius: 5px; margin: 10px 0; word-break: break-all; }
+        .logout-btn { background: #ff4444; color: white; border: none; padding: 10px 30px; border-radius: 25px; cursor: pointer; margin-top: 20px; display: none; }
+        .logout-btn.show { display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🥚 eggo</h1>
+        <p class="subtitle">Login with LINE to get your wallet</p>
+        
+        <button id="loginBtn" class="line-btn" onclick="loginWithLine()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6zm4 4h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            </svg>
+            Login with LINE
+        </button>
+        
+        <div id="status" class="status"></div>
+        
+        <div id="userInfo" class="wallet-info">
+            <h3>Welcome! 👋</h3>
+            <p><strong>Name:</strong> <span id="userName">-</span></p>
+            <p><strong>Email:</strong> <span id="userEmail">-</span></p>
+            <div class="wallet-address">
+                <strong>Wallet Address:</strong><br>
+                <span id="walletAddress">-</span>
+            </div>
+        </div>
+        
+        <button id="logoutBtn" class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <script type="module">
+        import PocketBase from "https://cdn.jsdelivr.net/gh/pocketbase/js-sdk@master/dist/pocketbase.es.mjs"
+
+        const pb = new PocketBase(window.location.origin);
+        const redirectURL = window.location.origin + "/line-callback.html";
+
+        // Check if already logged in
+        async function checkAuth() {
+            const stored = localStorage.getItem('pb_auth');
+            if (stored) {
+                try {
+                    const { token, user } = JSON.parse(stored);
+                    if (token && user) {
+                        pb.authStore.save(token, user);
+                        showUserInfo(user);
+                    }
+                } catch (e) {
+                    localStorage.removeItem('pb_auth');
+                }
+            }
+        }
+
+        // Login with LINE - exactly like working project
+        async function loginWithLine() {
+            const btn = document.getElementById('loginBtn');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            status.className = 'status';
+            status.textContent = 'Connecting to LINE...';
+            
+            try {
+                // Get auth methods
+                const authMethods = await pb.collection('users').listAuthMethods();
+                const providers = authMethods.oauth2?.providers || [];
+                
+                // Find provider (oidc or line)
+                const provider = providers.find(p => 
+                    p.name === 'oidc' || p.name === 'line'
+                );
+                
+                if (!provider) {
+                    throw new Error('OAuth provider not found');
+                }
+                
+                console.log('Provider:', provider.name);
+                console.log('Auth URL:', provider.authURL);
+                
+                // Build auth URL with redirect_uri
+                // Same approach as working project: append redirectURL to authURL
+                const authURL = provider.authURL + encodeURIComponent(redirectURL);
+                
+                console.log('Redirecting to:', authURL);
+                
+                // Redirect to LINE
+                window.location.href = authURL;
+                
+            } catch (error) {
+                btn.disabled = false;
+                status.className = 'status error';
+                status.textContent = 'Error: ' + error.message;
+                console.error('Login error:', error);
+            }
+        }
+
+        function showUserInfo(user) {
+            document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('userInfo').classList.add('show');
+            document.getElementById('logoutBtn').classList.add('show');
+            document.getElementById('status').style.display = 'none';
+            
+            document.getElementById('userName').textContent = user.name || 'N/A';
+            document.getElementById('userEmail').textContent = user.email || 'N/A';
+            document.getElementById('walletAddress').textContent = user.wallet_address || 'Not created';
+        }
+
+        function logout() {
+            localStorage.removeItem('pb_auth');
+            localStorage.removeItem('pb_token');
+            pb.authStore.clear();
+            
+            document.getElementById('loginBtn').style.display = 'inline-flex';
+            document.getElementById('userInfo').classList.remove('show');
+            document.getElementById('logoutBtn').classList.remove('show');
+        }
+
+        window.loginWithLine = loginWithLine;
+        window.logout = logout;
+        
+        checkAuth();
+    </script>
+</body>
+</html>
