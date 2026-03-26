@@ -1,73 +1,51 @@
 // ===== CREATE WALLET HOOK =====
-// Generate wallet locally when user is created
+// Generate wallet locally when user is created via OAuth
 
 console.log("Setting up create wallet hook...");
 
-onRecordCreate((e) => {
-    console.log("=== CREATE HOOK FIRED ===");
-    console.log("Record ID:", e.record ? e.record.id : "no record");
+// Use onRecordAfterCreateSuccess to ensure record is saved first
+onRecordAfterCreateSuccess((e) => {
+    console.log("=== WALLET HOOK FIRED ===");
+    console.log("Record ID:", e.record.id);
+    console.log("Record externalId:", e.record.getString("externalId") || "none");
     
-    // Try different ways to check if this is a users record
-    let isUser = false;
-    
-    // Method 1: Check if wallet_address field exists (unique to users)
-    try {
-        const test = e.record.getString("wallet_address");
-        isUser = true;
-        console.log("Has wallet_address field, treating as user");
-    } catch (err) {}
-    
-    // Method 2: Check collection name
-    try {
-        if (e.collection && e.collection.name === "users") {
-            isUser = true;
-            console.log("Collection is users");
-        }
-    } catch (err) {}
-    
-    // Method 3: Check if externalId field exists
-    try {
-        const extId = e.record.getString("externalId");
-        if (extId !== undefined) {
-            isUser = true;
-            console.log("Has externalId field, treating as user");
-        }
-    } catch (err) {}
-    
-    if (!isUser) {
-        console.log("Not a user record, skipping");
-        e.next();
+    // Check if this user already has a wallet_address
+    const existingWallet = e.record.getString("wallet_address");
+    if (existingWallet && existingWallet.startsWith("0x")) {
+        console.log("User already has wallet, skipping:", existingWallet);
         return;
     }
     
-    console.log("Creating wallet for user:", e.record.id);
-    
-    try {
-        // Generate Ethereum address
-        const hexChars = "0123456789abcdef";
-        let address = "0x";
-        let publicKey = "0x";
-        
-        for (let i = 0; i < 40; i++) {
-            address += hexChars[Math.floor(Math.random() * 16)];
-            publicKey += hexChars[Math.floor(Math.random() * 16)];
-        }
-        
-        console.log("Generated wallet:", address);
-        
-        // Set fields
-        e.record.set("wallet_address", address);
-        e.record.set("publicKey", publicKey);
-        e.record.set("wallet_version", 1);
-        e.record.set("encrypted_private_key", "{}");
-        
-        console.log("Wallet fields set successfully");
-        
-    } catch (err) {
-        console.error("Error creating wallet:", err);
+    // Only create wallet for OAuth users (have externalId)
+    const externalId = e.record.getString("externalId");
+    if (!externalId) {
+        console.log("Not an OAuth user (no externalId), skipping");
+        return;
     }
     
-    e.next();
+    console.log("Creating wallet for OAuth user:", e.record.id, "externalId:", externalId);
+    
+    // Generate Ethereum address locally
+    const hexChars = "0123456789abcdef";
+    let address = "0x";
+    let publicKey = "0x";
+    
+    for (let i = 0; i < 40; i++) {
+        address += hexChars[Math.floor(Math.random() * 16)];
+        publicKey += hexChars[Math.floor(Math.random() * 16)];
+    }
+    
+    console.log("Generated wallet address:", address);
+    
+    // Set wallet fields on the record
+    e.record.set("wallet_address", address);
+    e.record.set("publicKey", publicKey);
+    e.record.set("wallet_version", 1);
+    e.record.set("encrypted_private_key", "{}");
+    
+    // Save the updated record
+    $app.save(e.record);
+    console.log("Wallet saved for user:", e.record.id);
     
 }, "users");
 
