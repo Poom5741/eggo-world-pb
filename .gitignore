@@ -42,3 +42,6 @@ Thumbs.db
 # Temporary files
 **/*.tmp
 **/*.temp
+# SSL certificates
+*.pem
+ssl/
