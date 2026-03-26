@@ -45,3 +45,4 @@ Thumbs.db
 # SSL certificates
 *.pem
 ssl/
+*.bak
