@@ -1,0 +1,20 @@
+{
+  "name": "eggo-world",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EggoWorld - NFT Membership System with LINE OAuth",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev:frontend": "bun run --cwd apps/frontend dev",
+    "dev:backend": "cd apps/backend && docker compose up -d",
+    "dev": "bun run dev:backend && bun run dev:frontend",
+    "build:frontend": "bun run --cwd apps/frontend build",
+    "test": "bun run --cwd apps/frontend test",
+    "lint": "bun run --cwd apps/frontend lint"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  }
+}

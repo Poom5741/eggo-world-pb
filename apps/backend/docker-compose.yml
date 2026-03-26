@@ -38,7 +38,7 @@ services:
             - wallet-api
 
     wallet-api:
-        build: ../wallet-api
+        build: ../../wallet-api
         container_name: wallet-api
         restart: unless-stopped
         environment:
