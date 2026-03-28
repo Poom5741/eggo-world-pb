@@ -127,7 +127,23 @@
             status.textContent = 'Connecting to LINE...';
             
             try {
-                const state = generateRandomString(32);
+                // Check if there's a returnUrl in the URL (from local dev)
+                const urlParams = new URLSearchParams(window.location.search);
+                const returnUrl = urlParams.get('returnUrl');
+                
+                // Build state - either just random string or include returnUrl
+                let state;
+                if (returnUrl) {
+                    const stateData = {
+                        random: generateRandomString(16),
+                        returnUrl: returnUrl
+                    };
+                    state = btoa(JSON.stringify(stateData));
+                    console.log('Including returnUrl in state:', returnUrl);
+                } else {
+                    state = generateRandomString(32);
+                }
+                
                 sessionStorage.setItem('oauth_state', state);
                 
                 const authURL = 'https://access.line.me/oauth2/v2.1/authorize' +
@@ -135,7 +151,7 @@
                     '&client_id=' + LINE_CLIENT_ID +
                     '&redirect_uri=' + encodeURIComponent(redirectURL) +
                     '&scope=openid%20profile%20email' +
-                    '&state=' + state;
+                    '&state=' + encodeURIComponent(state);
                 
                 console.log('Redirecting to LINE...');
                 window.location.href = authURL;

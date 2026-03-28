@@ -56,9 +56,23 @@
         const code = params.get("code");
         const error = params.get("error");
         const errorDescription = params.get("error_description");
+        const state = params.get("state");
+        
+        // Parse state to get return URL (for local development)
+        let returnUrl = null;
+        if (state) {
+            try {
+                const stateData = JSON.parse(atob(state));
+                returnUrl = stateData.returnUrl;
+                console.log("Found return URL in state:", returnUrl);
+            } catch (e) {
+                console.log("Could not parse state:", e);
+            }
+        }
 
         console.log("=== OAuth Callback ===");
         console.log("Code:", code);
+        console.log("Return URL:", returnUrl);
 
         function generatePassword() {
             return Array.from(crypto.getRandomValues(new Uint8Array(16)))
@@ -184,6 +198,14 @@
                 }
 
                 localStorage.setItem('pb_auth', JSON.stringify({ token: pb.authStore.token, model: user }));
+
+                // If we have a return URL (from local development), redirect back with auth data
+                if (returnUrl && returnUrl.includes('localhost')) {
+                    console.log("Redirecting back to local development:", returnUrl);
+                    const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(pb.authStore.token)}&user=${encodeURIComponent(JSON.stringify(user))}`;
+                    window.location.href = redirectWithAuth;
+                    return;
+                }
 
                 loaderEl.style.display = "none";
                 messageEl.className = "message success";
