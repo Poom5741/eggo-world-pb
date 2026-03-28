@@ -156,6 +156,17 @@
                             console.log("User already exists, proceeding with existing user");
                             isNewUser = false;
                             
+                            // Get the existing user
+                            user = await pb.collection('users').getFirstListItem(`email='${email}'`);
+                            
+                            // If we have a return URL (from local development), redirect back with auth data
+                            if (returnUrl && returnUrl.includes('localhost')) {
+                                console.log("Redirecting back to local development:", returnUrl);
+                                const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(pb.authStore.token)}&user=${encodeURIComponent(JSON.stringify(user))}`;
+                                window.location.href = redirectWithAuth;
+                                return;
+                            }
+                            
                             loaderEl.style.display = "none";
                             messageEl.className = "message success";
                             messageEl.innerHTML = `
