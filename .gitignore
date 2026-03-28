@@ -3,6 +3,10 @@ resources/
 
 # Workspace/tooling
 .opencode/
+.claude/
+
+# MCP configuration
+.mcp.json
 
 # OS files
 .DS_Store
@@ -50,3 +54,6 @@ ssl/
 
 # PocketBase data
 **/pb_data/
+
+# Next.js auto-generated files
+**/next-env.d.ts
