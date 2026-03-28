@@ -23,14 +23,7 @@
             width: 90%;
         }
         h1 { color: #333; margin-bottom: 20px; }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #00C300;
-            border-radius: 50%;
-            width: 50px; height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid #00C300; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .message { margin: 20px 0; padding: 15px; border-radius: 10px; text-align: left; }
         .message.success { background: #e8f5e9; color: #2e7d32; }
@@ -48,8 +41,12 @@
     </div>
 
     <script type="module">
-        const BASE_URL = window.location.origin;
-        const redirectURL = BASE_URL + "/line-callback.html";
+        import PocketBase from "https://cdn.jsdelivr.net/gh/pocketbase/js-sdk@master/dist/pocketbase.es.mjs"
+
+        const pb = new PocketBase(window.location.origin);
+        const redirectURL = window.location.origin + "/line-callback.html";
+        const LINE_CLIENT_ID = "2009441873";
+        const LINE_CLIENT_SECRET = "4ede94afa7d59b71ffda15a136ffddea";
 
         const loaderEl = document.getElementById("loader");
         const messageEl = document.getElementById("message");
@@ -58,66 +55,158 @@
         const params = new URLSearchParams(window.location.search);
         const code = params.get("code");
         const error = params.get("error");
+        const errorDescription = params.get("error_description");
 
         console.log("=== OAuth Callback ===");
+        console.log("Code:", code);
+
+        function generatePassword() {
+            return Array.from(crypto.getRandomValues(new Uint8Array(16)))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
 
         async function handleCallback() {
-            if (error) { showError("LINE Error: " + error); return; }
-            if (!code) { showError("No authorization code received."); return; }
+            if (error) {
+                showError("LINE Error: " + error + (errorDescription ? " - " + errorDescription : ""));
+                return;
+            }
+            
+            if (!code) {
+                showError("No authorization code received.");
+                return;
+            }
 
             try {
-                // Step 1: OAuth login
-                const authResponse = await fetch(BASE_URL + '/api/collections/users/auth-with-oauth2', {
+                const tokenResponse = await fetch('https://api.line.me/oauth2/v2.1/token', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        provider: 'oidc',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        grant_type: 'authorization_code',
                         code: code,
-                        codeVerifier: '',
-                        redirectURL: redirectURL,
-                        createData: { emailVisibility: false }
+                        redirect_uri: redirectURL,
+                        client_id: LINE_CLIENT_ID,
+                        client_secret: LINE_CLIENT_SECRET
                     })
                 });
 
-                const authData = await authResponse.json();
-                console.log("Auth response:", authData);
-
-                if (!authResponse.ok) {
-                    showError(`Auth Error: ${authData.message}`);
-                    return;
+                if (!tokenResponse.ok) {
+                    const errText = await tokenResponse.text();
+                    throw new Error("Token exchange failed: " + errText);
                 }
 
-                // Store auth
-                localStorage.setItem('pb_auth', JSON.stringify({ token: authData.token, user: authData.record }));
+                const tokens = await tokenResponse.json();
+                console.log("Got tokens:", tokens.access_token ? "yes" : "no");
 
-                // Wallet should be created by hook
-                let walletAddress = authData.record?.wallet_address;
+                const userInfoResponse = await fetch('https://api.line.me/oauth2/v2.1/userinfo', {
+                    headers: { 'Authorization': 'Bearer ' + tokens.access_token }
+                });
                 
-                console.log("User created with wallet:", walletAddress || "will be created by hook");
+                if (!userInfoResponse.ok) {
+                    throw new Error("Failed to get user info");
+                }
+                
+                const userInfo = await userInfoResponse.json();
+                console.log("User info:", userInfo);
 
-                // Show success
+                const sub = userInfo.sub;
+                const name = userInfo.name || 'LINE User';
+                const email = userInfo.email || `${sub.slice(0, 8)}@line.eggo`;
+
+                console.log("Looking for user:", { sub, name, email });
+
+                let user;
+                let isNewUser = false;
+                
+                try {
+                    user = await pb.collection('users').getFirstListItem(`email='${email}'`);
+                    console.log("Found existing user:", user.id, "wallet:", user.wallet_address);
+                } catch (e) {
+                    console.log("User not found, creating new...");
+                    isNewUser = true;
+                    const password = generatePassword();
+                    try {
+                        user = await pb.collection('users').create({
+                            name: name,
+                            email: email,
+                            emailVisibility: false,
+                            password: password,
+                            passwordConfirm: password
+                        });
+                        console.log("Created user:", user.id);
+                    } catch (createErr) {
+                        const errData = createErr.data?.data || {};
+                        console.log("Create error details:", JSON.stringify(errData, null, 2));
+                        
+                        if (errData.email?.code === 'validation_not_unique') {
+                            console.log("User already exists, proceeding with existing user");
+                            isNewUser = false;
+                            
+                            loaderEl.style.display = "none";
+                            messageEl.className = "message success";
+                            messageEl.innerHTML = `
+                                <strong>✓ Already Registered!</strong><br><br>
+                                <strong>Name:</strong> ${name}<br>
+                                <strong>Email:</strong> ${email}<br>
+                                <strong>LINE ID:</strong> ${sub}<br>
+                                <br><p>Your account already exists. Wallet was created on first login.</p>
+                            `;
+                            
+                            setTimeout(() => window.location.href = "/line-login.html", 3000);
+                            return;
+                        } else {
+                            showError("Create failed: " + JSON.stringify(errData));
+                            return;
+                        }
+                    }
+                }
+
+                if (!user.wallet_address) {
+                    console.log("Creating wallet via API...");
+                    try {
+                        const walletRes = await fetch(window.location.origin + '/api/wallet/create', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userId: user.id })
+                        });
+                        
+                        if (walletRes.ok) {
+                            const walletData = await walletRes.json();
+                            console.log("Wallet created:", walletData);
+                            user = await pb.collection('users').getOne(user.id);
+                            console.log("Refreshed user with wallet:", user.wallet_address);
+                        } else {
+                            console.log("Wallet API response:", walletRes.status, await walletRes.text());
+                        }
+                    } catch (walletErr) {
+                        console.log("Wallet creation error:", walletErr.message);
+                    }
+                }
+
+                localStorage.setItem('pb_auth', JSON.stringify({ token: pb.authStore.token, model: user }));
+
                 loaderEl.style.display = "none";
                 messageEl.className = "message success";
                 messageEl.innerHTML = `
                     <strong>✓ Login Successful!</strong><br><br>
-                    <strong>Name:</strong> ${authData.record?.name || 'N/A'}<br>
-                    <strong>Email:</strong> ${authData.record?.email || 'N/A'}<br>
-                    <strong>Wallet:</strong> <code>${walletAddress || 'N/A'}</code><br>
-                    <br><details><summary>Details</summary><pre>${JSON.stringify(authData, null, 2)}</pre></details>
+                    <strong>Name:</strong> ${user.name || 'N/A'}<br>
+                    <strong>Email:</strong> ${user.email || 'N/A'}<br>
+                    <strong>Wallet:</strong> <code>${user.wallet_address || 'N/A'}</code><br>
+                    <br><details><summary>Details</summary><pre>${JSON.stringify(user, null, 2)}</pre></details>
                 `;
                 
                 setTimeout(() => window.location.href = "/line-login.html", 3000);
 
             } catch (err) {
                 console.error("Error:", err);
-                showError(err.message);
+                showError(err.message + (err.data?.data ? " - " + JSON.stringify(err.data.data) : ""));
             }
         }
 
         function showError(msg) {
             loaderEl.style.display = "none";
             messageEl.className = "message error";
-            messageEl.innerHTML = msg;
+            messageEl.innerHTML = `<strong>Error:</strong> ${msg}`;
             retryBtn.style.display = "inline-block";
         }
 

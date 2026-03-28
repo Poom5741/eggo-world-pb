@@ -80,8 +80,29 @@
 
         const pb = new PocketBase(window.location.origin);
         const redirectURL = window.location.origin + "/line-callback.html";
+        const LINE_CLIENT_ID = "2009441873";
 
-        // Check if already logged in
+        function generateRandomString(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+            let result = '';
+            const randomValues = new Uint8Array(length);
+            crypto.getRandomValues(randomValues);
+            for (let i = 0; i < length; i++) {
+                result += chars[randomValues[i] % chars.length];
+            }
+            return result;
+        }
+
+        async function generateCodeChallenge(codeVerifier) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(codeVerifier);
+            const digest = await crypto.subtle.digest('SHA-256', data);
+            return btoa(String.fromCharCode(...new Uint8Array(digest)))
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+        }
+
         async function checkAuth() {
             const stored = localStorage.getItem('pb_auth');
             if (stored) {
@@ -97,7 +118,6 @@
             }
         }
 
-        // Login with LINE - exactly like working project
         async function loginWithLine() {
             const btn = document.getElementById('loginBtn');
             const status = document.getElementById('status');
@@ -107,29 +127,17 @@
             status.textContent = 'Connecting to LINE...';
             
             try {
-                // Get auth methods
-                const authMethods = await pb.collection('users').listAuthMethods();
-                const providers = authMethods.oauth2?.providers || [];
+                const state = generateRandomString(32);
+                sessionStorage.setItem('oauth_state', state);
                 
-                // Find provider (oidc or line)
-                const provider = providers.find(p => 
-                    p.name === 'oidc' || p.name === 'line'
-                );
+                const authURL = 'https://access.line.me/oauth2/v2.1/authorize' +
+                    '?response_type=code' +
+                    '&client_id=' + LINE_CLIENT_ID +
+                    '&redirect_uri=' + encodeURIComponent(redirectURL) +
+                    '&scope=openid%20profile%20email' +
+                    '&state=' + state;
                 
-                if (!provider) {
-                    throw new Error('OAuth provider not found');
-                }
-                
-                console.log('Provider:', provider.name);
-                console.log('Auth URL:', provider.authURL);
-                
-                // Build auth URL with redirect_uri
-                // Same approach as working project: append redirectURL to authURL
-                const authURL = provider.authURL + encodeURIComponent(redirectURL);
-                
-                console.log('Redirecting to:', authURL);
-                
-                // Redirect to LINE
+                console.log('Redirecting to LINE...');
                 window.location.href = authURL;
                 
             } catch (error) {
