@@ -46,3 +46,7 @@ Thumbs.db
 *.pem
 ssl/
 *.bak
+.opencode
+
+# PocketBase data
+**/pb_data/
