@@ -1,43 +1,80 @@
 'use client'
 
-import { createClient, isAuthenticated } from '@/lib/pocketbase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
+
+// Production PocketBase URL
+const PRODUCTION_PB_URL = 'https://pb.eggoworld.io'
+const LINE_CLIENT_ID = '2009441873'
+
+// Generate random string for state parameter
+function generateRandomString(length: number) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'
+  let result = ''
+  const randomValues = new Uint8Array(length)
+  crypto.getRandomValues(randomValues)
+  for (let i = 0; i < length; i++) {
+    result += chars[randomValues[i] % chars.length]
+  }
+  return result
+}
 
 export default function LineLoginPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      router.push('/')
+    // Check if we have auth data from redirect
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('token')
+    const userData = params.get('user')
+
+    if (token && userData) {
+      try {
+        // Save auth to localStorage
+        const user = JSON.parse(decodeURIComponent(userData))
+        localStorage.setItem('pocketbase_auth', JSON.stringify({
+          token,
+          model: user
+        }))
+
+        // Redirect to home
+        router.push('/')
+      } catch (err) {
+        setError('Failed to restore session')
+      }
     }
   }, [router])
 
   const handleLineLogin = async () => {
     setError(null)
     try {
-      const pb = createClient()
-      const authMethods = await pb.collection('users').listAuthMethods()
-      const providers = authMethods.oauth2?.providers || []
-      
-      const provider = providers.find(p => p.name === 'oidc' || p.name === 'line')
-      
-      if (!provider) {
-        throw new Error('LINE OAuth provider not configured. Please contact support.')
+      // Generate state parameter with return URL encoded
+      const returnUrl = `${window.location.origin}/auth/line`
+      const stateData = {
+        random: generateRandomString(16),
+        returnUrl: returnUrl
       }
+      const state = btoa(JSON.stringify(stateData))
+      
+      // Store state in sessionStorage for verification
+      sessionStorage.setItem('oauth_state', state)
 
-      const redirectUrl = `${window.location.origin}/auth/callback`
-      const authUrl = provider.authURL + encodeURIComponent(redirectUrl)
-      
-      localStorage.setItem('oauth_provider', provider.name)
-      localStorage.setItem('oauth_state', provider.state)
-      localStorage.setItem('oauth_code_verifier', provider.codeVerifier)
-      
+      // Build LINE OAuth URL directly
+      const redirectUri = `${PRODUCTION_PB_URL}/line-callback.html`
+      const authUrl = 'https://access.line.me/oauth2/v2.1/authorize' +
+        '?response_type=code' +
+        '&client_id=' + LINE_CLIENT_ID +
+        '&redirect_uri=' + encodeURIComponent(redirectUri) +
+        '&scope=openid%20profile%20email' +
+        '&state=' + encodeURIComponent(state)
+
+      console.log('Redirecting to LINE OAuth:', authUrl)
       window.location.href = authUrl
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to initiate LINE login')
+      console.error('LINE login error:', err)
     }
   }
 
@@ -59,6 +96,9 @@ export default function LineLoginPage() {
           <div className="space-y-2 text-center mb-6">
             <h1 className="font-[var(--font-pixel)] text-sm text-primary">LINE LOGIN</h1>
             <p className="label">CONTINUE WITH LINE</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Using production: {PRODUCTION_PB_URL}
+            </p>
           </div>
 
           {error && (
