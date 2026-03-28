@@ -5,23 +5,8 @@
     <title>OAuth2 redirect page - eggo</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            text-align: center;
-            max-width: 800px;
-            width: 90%;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; max-width: 800px; width: 90%; }
         h1 { color: #333; margin-bottom: 20px; }
         .loader { border: 4px solid #f3f3f3; border-top: 4px solid #00C300; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -58,21 +43,17 @@
         const errorDescription = params.get("error_description");
         const state = params.get("state");
         
-        // Parse state to get return URL (for local development)
         let returnUrl = null;
         if (state) {
             try {
                 const stateData = JSON.parse(atob(state));
                 returnUrl = stateData.returnUrl;
-                console.log("Found return URL in state:", returnUrl);
-            } catch (e) {
-                console.log("Could not parse state:", e);
-            }
+                console.log("Return URL:", returnUrl);
+            } catch (e) {}
         }
 
         console.log("=== OAuth Callback ===");
-        console.log("Code:", code);
-        console.log("Return URL:", returnUrl);
+        console.log("Code:", code ? "yes" : "no");
 
         function generatePassword() {
             return Array.from(crypto.getRandomValues(new Uint8Array(16)))
@@ -80,9 +61,19 @@
                 .join('');
         }
 
+        function redirectToLocalhost(lineId, email, name, wallet, userId) {
+            if (returnUrl && returnUrl.includes('localhost')) {
+                console.log("Redirecting to localhost with user info");
+                const url = `${returnUrl}?lineId=${encodeURIComponent(lineId)}&email=${encodeURIComponent(email)}&name=${encodeURIComponent(name)}&wallet=${encodeURIComponent(wallet || '')}&userId=${encodeURIComponent(userId || '')}`;
+                window.location.href = url;
+                return true;
+            }
+            return false;
+        }
+
         async function handleCallback() {
             if (error) {
-                showError("LINE Error: " + error + (errorDescription ? " - " + errorDescription : ""));
+                showError("LINE Error: " + error);
                 return;
             }
             
@@ -92,6 +83,7 @@
             }
 
             try {
+                // Get LINE token
                 const tokenResponse = await fetch('https://api.line.me/oauth2/v2.1/token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -105,13 +97,13 @@
                 });
 
                 if (!tokenResponse.ok) {
-                    const errText = await tokenResponse.text();
-                    throw new Error("Token exchange failed: " + errText);
+                    throw new Error("Token exchange failed");
                 }
 
                 const tokens = await tokenResponse.json();
-                console.log("Got tokens:", tokens.access_token ? "yes" : "no");
+                console.log("Got LINE tokens");
 
+                // Get user info from LINE
                 const userInfoResponse = await fetch('https://api.line.me/oauth2/v2.1/userinfo', {
                     headers: { 'Authorization': 'Bearer ' + tokens.access_token }
                 });
@@ -121,107 +113,105 @@
                 }
                 
                 const userInfo = await userInfoResponse.json();
-                console.log("User info:", userInfo);
+                console.log("LINE User:", userInfo.sub, userInfo.name);
 
-                const sub = userInfo.sub;
+                const lineId = userInfo.sub;
                 const name = userInfo.name || 'LINE User';
-                const email = userInfo.email || `${sub.slice(0, 8)}@line.eggo`;
+                const email = userInfo.email || `${lineId.slice(0, 8)}@line.eggo`;
 
-                console.log("Looking for user:", { sub, name, email });
-
-                let user;
-                let isNewUser = false;
+                // Try to find existing user
+                let user = null;
+                let userId = null;
+                let wallet = null;
                 
+                // Get user info from our API
                 try {
-                    user = await pb.collection('users').getFirstListItem(`email='${email}'`);
-                    console.log("Found existing user:", user.id, "wallet:", user.wallet_address);
+                    const userRes = await fetch(window.location.origin + '/api/auth/line-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    
+                    if (userRes.ok) {
+                        const userData = await userRes.json();
+                        if (userData.success && userData.user) {
+                            userId = userData.user.id;
+                            wallet = userData.user.wallet_address;
+                            console.log("Found existing user:", userId, "wallet:", wallet);
+                        }
+                    }
                 } catch (e) {
-                    console.log("User not found, creating new...");
-                    isNewUser = true;
+                    console.log("User lookup failed:", e);
+                }
+
+                // If user doesn't exist, create one
+                if (!userId) {
+                    console.log("Creating new user...");
                     const password = generatePassword();
                     try {
-                        user = await pb.collection('users').create({
+                        const createRes = await pb.collection('users').create({
                             name: name,
                             email: email,
                             emailVisibility: false,
                             password: password,
                             passwordConfirm: password
                         });
-                        console.log("Created user:", user.id);
+                        userId = createRes.id;
+                        console.log("Created user:", userId);
+                        
+                        // Create wallet
+                        try {
+                            const walletRes = await fetch(window.location.origin + '/api/wallet/create', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ userId: userId })
+                            });
+                            if (walletRes.ok) {
+                                const walletData = await walletRes.json();
+                                wallet = walletData.data?.address;
+                                console.log("Created wallet:", wallet);
+                            }
+                        } catch (e) {
+                            console.log("Wallet creation failed:", e);
+                        }
                     } catch (createErr) {
-                        const errData = createErr.data?.data || {};
-                        console.log("Create error details:", JSON.stringify(errData, null, 2));
-                        
-                        if (errData.email?.code === 'validation_not_unique') {
-                            console.log("User already exists, proceeding with existing user");
-                            isNewUser = false;
-                            
-                            loaderEl.style.display = "none";
-                            messageEl.className = "message success";
-                            messageEl.innerHTML = `
-                                <strong>✓ Already Registered!</strong><br><br>
-                                <strong>Name:</strong> ${name}<br>
-                                <strong>Email:</strong> ${email}<br>
-                                <strong>LINE ID:</strong> ${sub}<br>
-                                <br><p>Your account already exists. Wallet was created on first login.</p>
-                            `;
-                            
-                            setTimeout(() => window.location.href = "/line-login.html", 3000);
-                            return;
-                        } else {
-                            showError("Create failed: " + JSON.stringify(errData));
-                            return;
+                        console.log("Create error:", createErr);
+                        // User might already exist, try to get info again
+                        if (createErr.data?.data?.email?.code === 'validation_not_unique') {
+                            const userRes = await fetch(window.location.origin + '/api/auth/line-user', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email: email })
+                            });
+                            if (userRes.ok) {
+                                const userData = await userRes.json();
+                                userId = userData.user?.id;
+                                wallet = userData.user?.wallet_address;
+                            }
                         }
                     }
                 }
 
-                if (!user.wallet_address) {
-                    console.log("Creating wallet via API...");
-                    try {
-                        const walletRes = await fetch(window.location.origin + '/api/wallet/create', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ userId: user.id })
-                        });
-                        
-                        if (walletRes.ok) {
-                            const walletData = await walletRes.json();
-                            console.log("Wallet created:", walletData);
-                            user = await pb.collection('users').getOne(user.id);
-                            console.log("Refreshed user with wallet:", user.wallet_address);
-                        } else {
-                            console.log("Wallet API response:", walletRes.status, await walletRes.text());
-                        }
-                    } catch (walletErr) {
-                        console.log("Wallet creation error:", walletErr.message);
-                    }
-                }
-
-                localStorage.setItem('pb_auth', JSON.stringify({ token: pb.authStore.token, model: user }));
-
-                // If we have a return URL (from local development), redirect back with auth data
-                if (returnUrl && returnUrl.includes('localhost')) {
-                    console.log("Redirecting back to local development:", returnUrl);
-                    const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(pb.authStore.token)}&user=${encodeURIComponent(JSON.stringify(user))}`;
-                    window.location.href = redirectWithAuth;
+                // Redirect to localhost with user info
+                if (redirectToLocalhost(lineId, email, name, wallet, userId)) {
                     return;
                 }
 
+                // Show success on production
                 loaderEl.style.display = "none";
                 messageEl.className = "message success";
                 messageEl.innerHTML = `
                     <strong>✓ Login Successful!</strong><br><br>
-                    <strong>Name:</strong> ${user.name || 'N/A'}<br>
-                    <strong>Email:</strong> ${user.email || 'N/A'}<br>
-                    <strong>Wallet:</strong> <code>${user.wallet_address || 'N/A'}</code><br>
-                    <br><details><summary>Details</summary><pre>${JSON.stringify(user, null, 2)}</pre></details>
+                    <strong>Name:</strong> ${name}<br>
+                    <strong>Email:</strong> ${email}<br>
+                    <strong>Wallet:</strong> <code>${wallet || 'N/A'}</code>
                 `;
                 
                 setTimeout(() => window.location.href = "/line-login.html", 3000);
 
             } catch (err) {
                 console.error("Error:", err);
-                showError(err.message + (err.data?.data ? " - " + JSON.stringify(err.data.data) : ""));
+                showError(err.message);
             }
         }
 
