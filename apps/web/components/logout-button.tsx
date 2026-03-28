@@ -1,14 +1,14 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
+import { createClient, logout } from '@/lib/pocketbase/client'
 import { useRouter } from 'next/navigation'
 
 export default function LogoutButton() {
   const router = useRouter()
 
   const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
+    const pb = createClient()
+    pb.authStore.clear()
     router.push('/auth/login')
   }
 

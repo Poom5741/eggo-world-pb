@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, getUser } from '@/lib/pocketbase/client'
 
 interface WalletModalProps {
   profile: any
@@ -40,17 +40,13 @@ export default function WalletModal({ profile, onClose, onTransactionSubmitted }
       return
     }
 
-    // Accept full bscscan URL or raw tx hash
-    // Supports: bscscan.com, testnet.bscscan.com, and raw 0x hashes
     let rawHash = txHash.trim()
     
-    // Extract hash from BscScan URL patterns
     const bscScanMatch = rawHash.match(/(?:bscscan\.com|testnet\.bscscan\.com)\/tx\/(0x[a-fA-F0-9]{64})/)
     if (bscScanMatch) {
       rawHash = bscScanMatch[1]
     } else if (rawHash.startsWith('0x')) {
-      // Already a raw hash, keep as is
-      rawHash = rawHash.split(/[?#]/)[0] // Remove any query params
+      rawHash = rawHash.split(/[?#]/)[0]
     }
 
     if (!rawHash.match(/^0x[a-fA-F0-9]{64}$/)) {
@@ -66,33 +62,22 @@ export default function WalletModal({ profile, onClose, onTransactionSubmitted }
     setIsSubmitting(true)
 
     try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const pb = createClient()
+      const user = getUser()
 
       if (!user) throw new Error('USER NOT FOUND')
 
-      const { error: dbError } = await supabase
-        .from('transactions')
-        .insert([{
-          user_id: user.id,
-          tx_hash: rawHash,
-          amount: REQUIRED_AMOUNT,
-          status: 'pending',
-          network: 'bsc',
-        }])
+      await pb.collection('transactions').create({
+        user_id: user.id,
+        tx_hash: rawHash,
+        amount: REQUIRED_AMOUNT,
+        status: 'pending',
+        network: 'bsc',
+      })
 
-      if (dbError) {
-        if (dbError.code === '23505') {
-          throw new Error('THIS TRANSACTION HASH HAS ALREADY BEEN SUBMITTED')
-        }
-        throw new Error(dbError.message)
-      }
-
-      // Save receiver wallet to profile
-      await supabase
-        .from('profiles')
-        .update({ wallet_address: receiverWallet })
-        .eq('id', user.id)
+      await pb.collection('users').update(user.id, {
+        wallet_address: receiverWallet,
+      })
 
       setSuccess(true)
       setTimeout(() => {
@@ -107,14 +92,10 @@ export default function WalletModal({ profile, onClose, onTransactionSubmitted }
   }
 
   return (
-    /* Full-opacity backdrop + modal — no transparency on the card itself */
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-black/80" onClick={onClose} />
 
-      {/* Modal card — fully opaque bg-card */}
       <div className="relative w-full max-w-lg bg-card border-4 border-primary overflow-y-auto max-h-[90vh]">
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b-4 border-primary/40">
           <h2 className="font-[var(--font-pixel)] text-sm text-primary">PURCHASE EGG NFT</h2>
           <button
@@ -126,7 +107,6 @@ export default function WalletModal({ profile, onClose, onTransactionSubmitted }
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Step 1 — Send USDT */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <span className="step-indicator">1</span>
@@ -166,14 +146,12 @@ export default function WalletModal({ profile, onClose, onTransactionSubmitted }
             </div>
           </div>
 
-          {/* Step 2 — Submit details */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center gap-3">
               <span className="step-indicator">2</span>
               <p className="font-[var(--font-pixel)] text-xs text-foreground">SUBMIT YOUR TRANSACTION</p>
             </div>
 
-            {/* TX Hash / BscScan URL */}
             <div className="space-y-2">
               <label className="label">
                 TRANSACTION HASH OR BSCSCAN URL
@@ -188,7 +166,6 @@ export default function WalletModal({ profile, onClose, onTransactionSubmitted }
               />
             </div>
 
-            {/* Receiver Wallet */}
             <div className="space-y-2">
               <label className="label">
                 YOUR WALLET ADDRESS (TO RECEIVE NFT)
@@ -206,14 +183,12 @@ export default function WalletModal({ profile, onClose, onTransactionSubmitted }
               </p>
             </div>
 
-            {/* Error */}
             {error && (
               <div className="info-error">
                 <p className="font-[var(--font-pixel)] text-[9px] text-accent">{error}</p>
               </div>
             )}
 
-            {/* Success */}
             {success && (
               <div className="info-success">
                 <p className="font-[var(--font-pixel)] text-[9px] text-green-400">
@@ -222,7 +197,6 @@ export default function WalletModal({ profile, onClose, onTransactionSubmitted }
               </div>
             )}
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={isSubmitting || success}

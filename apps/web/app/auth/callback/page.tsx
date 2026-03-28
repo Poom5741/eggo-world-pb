@@ -14,7 +14,6 @@ function CallbackContent() {
   useEffect(() => {
     const handleCallback = async () => {
       const code = searchParams.get('code')
-      const state = searchParams.get('state')
       const errorParam = searchParams.get('error')
 
       if (errorParam) {
@@ -23,43 +22,45 @@ function CallbackContent() {
         return
       }
 
-      if (!code || !state) {
+      if (!code) {
         setStatus('error')
-        setError('Missing authorization code or state')
+        setError('No authorization code received')
         return
       }
 
-      const storedState = localStorage.getItem('oauth_state')
-      const codeVerifier = localStorage.getItem('oauth_code_verifier')
-      const providerName = localStorage.getItem('oauth_provider') || 'oidc'
-
-      if (state !== storedState) {
-        setStatus('error')
-        setError('State mismatch - possible CSRF attack')
-        return
-      }
+      const redirectUrl = `${window.location.origin}/auth/callback`
 
       try {
+        // Use direct API call (same as working HTML)
         const pb = createClient()
-        const redirectUrl = `${window.location.origin}/auth/callback`
-        
-        await pb.collection('users').authWithOAuth2Code(
-          providerName,
-          code,
-          codeVerifier || '',
-          redirectUrl,
-          {}
-        )
+        const response = await fetch(`${pb.baseUrl}/api/collections/users/auth-with-oauth2`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            provider: 'oidc',
+            code: code,
+            codeVerifier: '',
+            redirectURL: redirectUrl,
+            createData: { emailVisibility: false }
+          })
+        })
 
-        localStorage.removeItem('oauth_state')
-        localStorage.removeItem('oauth_code_verifier')
-        localStorage.removeItem('oauth_provider')
+        const authData = await response.json()
+        console.log('Auth response:', authData)
+
+        if (!response.ok) {
+          throw new Error(authData.message || 'Authentication failed')
+        }
+
+        // Save auth to PocketBase client
+        pb.authStore.save(authData.token, authData.record)
 
         setStatus('success')
         setTimeout(() => router.push('/'), 1500)
       } catch (err) {
         setStatus('error')
         setError(err instanceof Error ? err.message : 'Authentication failed')
+        console.error('Auth error:', err)
       }
     }
 
