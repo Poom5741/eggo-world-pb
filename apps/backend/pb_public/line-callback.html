@@ -136,8 +136,26 @@
                     user = await pb.collection('users').getFirstListItem(`email='${email}'`);
                     console.log("Found existing user:", user.id, "wallet:", user.wallet_address);
                 } catch (e) {
-                    console.log("User not found, creating new...");
-                    isNewUser = true;
+                    // Try the backend endpoint that doesn't require auth
+                    console.log("Trying backend endpoint to find user...");
+                    try {
+                        const userRes = await fetch(window.location.origin + '/api/auth/line-user', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: email })
+                        });
+                        
+                        if (userRes.ok) {
+                            const userData = await userRes.json();
+                            user = userData.user;
+                            console.log("Found user via backend:", user.id);
+                        } else {
+                            console.log("User not found via backend either");
+                            throw new Error("User not found");
+                        }
+                    } catch (backendErr) {
+                        console.log("User not found, creating new...");
+                        isNewUser = true;
                     const password = generatePassword();
                     try {
                         user = await pb.collection('users').create({
@@ -156,10 +174,21 @@
                             console.log("User already exists, proceeding with existing user");
                             isNewUser = false;
                             
-                            // Get the existing user
+                            // Get the existing user using backend endpoint
                             try {
-                                user = await pb.collection('users').getFirstListItem(`email='${email}'`);
-                                console.log("Found existing user:", user.id);
+                                const userRes = await fetch(window.location.origin + '/api/auth/line-user', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ email: email })
+                                });
+                                
+                                if (userRes.ok) {
+                                    const userData = await userRes.json();
+                                    user = userData.user;
+                                    console.log("Found existing user via backend:", user.id);
+                                } else {
+                                    throw new Error("Could not fetch user");
+                                }
                             } catch (fetchErr) {
                                 console.log("Could not fetch existing user:", fetchErr.message);
                                 showError("User exists but could not be fetched. Please try again.");
