@@ -135,33 +135,32 @@
                 console.log("=== GENERATING PASSWORD ===");
                 const password = generatePassword();
                 console.log("Generated password length:", password.length);
-                console.log("Generated password length:", password.length);
+                
+                // Try to find user via backend endpoint first (doesn't require auth)
+                console.log("Checking if user exists via backend...");
                 try {
-                    user = await pb.collection('users').getFirstListItem(`email='${email}'`);
-                    console.log("Found existing user:", user.id, "wallet:", user.wallet_address);
-                } catch (e) {
-                    // Try the backend endpoint that doesn't require auth
-                    console.log("Trying backend endpoint to find user...");
-                    try {
-                        const userRes = await fetch(window.location.origin + '/api/auth/line-user', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: email })
-                        });
-                        
-                        if (userRes.ok) {
-                            const userData = await userRes.json();
-                            user = userData.user;
-                            console.log("Found user via backend:", user.id);
-                        } else {
-                            console.log("User not found via backend either");
-                            throw new Error("User not found");
-                        }
-                    } catch (backendErr) {
-                        console.log("User not found, creating new...");
+                    const userRes = await fetch(window.location.origin + '/api/auth/line-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    });
+                    
+                    if (userRes.ok) {
+                        const userData = await userRes.json();
+                        user = userData.user;
+                        console.log("Found existing user via backend:", user.id, "wallet:", user.wallet_address);
+                    } else {
+                        console.log("User not found, will create new user");
                         isNewUser = true;
                     }
-                    
+                } catch (backendErr) {
+                    console.log("Backend lookup failed, will try to create user");
+                    isNewUser = true;
+                }
+                
+                // Only create user if they don't exist
+                if (isNewUser) {
+                    console.log("Creating new user...");
                     try {
                         user = await pb.collection('users').create({
                             name: name,
@@ -176,10 +175,8 @@
                         console.log("Create error details:", JSON.stringify(errData, null, 2));
                         
                         if (errData.email?.code === 'validation_not_unique') {
-                            console.log("User already exists, proceeding with existing user");
-                            isNewUser = false;
-                            
-                            // Get the existing user using backend endpoint
+                            console.log("User already exists during creation, fetching existing user...");
+                            // User was created between our check and creation attempt, fetch them
                             try {
                                 const userRes = await fetch(window.location.origin + '/api/auth/line-user', {
                                     method: 'POST',
@@ -190,7 +187,7 @@
                                 if (userRes.ok) {
                                     const userData = await userRes.json();
                                     user = userData.user;
-                                    console.log("Found existing user via backend:", user.id);
+                                    console.log("Fetched existing user:", user.id);
                                 } else {
                                     throw new Error("Could not fetch user");
                                 }
@@ -199,14 +196,20 @@
                                 showError("User exists but could not be fetched. Please try again.");
                                 return;
                             }
-                            
-                            // If we have a return URL (from local development), redirect back with auth data
-                            if (returnUrl && returnUrl.includes('localhost')) {
-                                console.log("Redirecting back to local development:", returnUrl);
-                                
-                                // Authenticate via backend to get token
-                                console.log("About to call line-auth with email:", email, "password length:", password ? password.length : 'undefined');
-                                try {
+                        } else {
+                            showError("Create failed: " + JSON.stringify(errData));
+                            return;
+                        }
+                    }
+                }
+                
+                // If we have a return URL (from local development), redirect back with auth data
+                if (returnUrl && returnUrl.includes('localhost')) {
+                    console.log("Redirecting back to local development:", returnUrl);
+                    
+                    // Authenticate via backend to get token
+                    console.log("About to call line-auth with email:", email, "password length:", password ? password.length : 'undefined');
+                    try {
                                     const tokenRes = await fetch(window.location.origin + '/api/auth/line-auth', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
