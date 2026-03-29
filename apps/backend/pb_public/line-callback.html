@@ -200,8 +200,28 @@
                             // If we have a return URL (from local development), redirect back with auth data
                             if (returnUrl && returnUrl.includes('localhost')) {
                                 console.log("Redirecting back to local development:", returnUrl);
-                                const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(pb.authStore.token)}&user=${encodeURIComponent(JSON.stringify(user))}`;
-                                window.location.href = redirectWithAuth;
+                                
+                                // Generate auth token via backend
+                                try {
+                                    const tokenRes = await fetch(window.location.origin + '/api/auth/generate-token', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email: email })
+                                    });
+                                    
+                                    if (tokenRes.ok) {
+                                        const tokenData = await tokenRes.json();
+                                        console.log("Generated token successfully");
+                                        const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData.token)}&user=${encodeURIComponent(JSON.stringify(tokenData.user))}`;
+                                        window.location.href = redirectWithAuth;
+                                    } else {
+                                        throw new Error("Failed to generate token");
+                                    }
+                                } catch (tokenErr) {
+                                    console.log("Token generation failed, redirecting without token:", tokenErr.message);
+                                    const redirectWithAuth = `${returnUrl}?token=&user=${encodeURIComponent(JSON.stringify(user))}`;
+                                    window.location.href = redirectWithAuth;
+                                }
                                 return;
                             }
                             
@@ -251,8 +271,28 @@
                 // If we have a return URL (from local development), redirect back with auth data
                 if (returnUrl && returnUrl.includes('localhost')) {
                     console.log("Redirecting back to local development:", returnUrl);
-                    const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(pb.authStore.token)}&user=${encodeURIComponent(JSON.stringify(user))}`;
-                    window.location.href = redirectWithAuth;
+                    
+                    // Generate auth token via backend
+                    try {
+                        const tokenRes = await fetch(window.location.origin + '/api/auth/generate-token', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: email })
+                        });
+                        
+                        if (tokenRes.ok) {
+                            const tokenData = await tokenRes.json();
+                            console.log("Generated token successfully");
+                            const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData.token)}&user=${encodeURIComponent(JSON.stringify(tokenData.user))}`;
+                            window.location.href = redirectWithAuth;
+                        } else {
+                            throw new Error("Failed to generate token");
+                        }
+                    } catch (tokenErr) {
+                        console.log("Token generation failed, redirecting without token:", tokenErr.message);
+                        const redirectWithAuth = `${returnUrl}?token=&user=${encodeURIComponent(JSON.stringify(user))}`;
+                        window.location.href = redirectWithAuth;
+                    }
                     return;
                 }
 
