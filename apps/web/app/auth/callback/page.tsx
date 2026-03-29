@@ -31,7 +31,6 @@ function CallbackContent() {
       const redirectUrl = `${window.location.origin}/auth/callback`
 
       try {
-        // Use direct API call (same as working HTML)
         const pb = createClient()
         const response = await fetch(`${pb.baseUrl}/api/collections/users/auth-with-oauth2`, {
           method: 'POST',
@@ -54,6 +53,40 @@ function CallbackContent() {
 
         // Save auth to PocketBase client
         pb.authStore.save(authData.token, authData.record)
+
+        // Check if this is a new user and we have a referrer
+        const isFreshSignUp = authData.record?.created === authData.record?.updated
+        const referrer = sessionStorage.getItem('referrer')
+        
+        if (isFreshSignUp && referrer) {
+          console.log('New user with referrer, registering...')
+          
+          // Call registration endpoint to set up referral chain
+          const registrationResponse = await fetch(`${pb.baseUrl}/api/users/register`, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authData.token}`
+            },
+            body: JSON.stringify({
+              user_address: authData.record.wallet_address,
+              referrer_address: referrer,
+              email: authData.record.email,
+              name: authData.record.name
+            })
+          })
+          
+          const registrationResult = await registrationResponse.json()
+          console.log('Registration result:', registrationResult)
+          
+          if (!registrationResult.success) {
+            console.error('Registration failed:', registrationResult.error)
+            // Continue anyway - referral chain might already exist
+          }
+        }
+
+        // Clear referrer from sessionStorage
+        sessionStorage.removeItem('referrer')
 
         setStatus('success')
         setTimeout(() => router.push('/'), 1500)

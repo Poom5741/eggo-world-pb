@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 
@@ -22,6 +22,7 @@ function generateRandomString(length: number) {
 
 export default function LineLoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -54,16 +55,23 @@ export default function LineLoginPage() {
   const handleLineLogin = async () => {
     setError(null)
     try {
-      // Generate state parameter with return URL encoded
+      // Get referrer from URL or sessionStorage
+      const referrer = searchParams.get('referrer') || sessionStorage.getItem('referrer')
+      
+      // Generate state parameter with return URL and referrer encoded
       const returnUrl = `${window.location.origin}/auth/line`
       const stateData = {
         random: generateRandomString(16),
-        returnUrl: returnUrl
+        returnUrl: returnUrl,
+        referrer: referrer || ''
       }
       const state = btoa(JSON.stringify(stateData))
       
-      // Store state in sessionStorage for verification
+      // Store state and referrer in sessionStorage for verification
       sessionStorage.setItem('oauth_state', state)
+      if (referrer) {
+        sessionStorage.setItem('referrer', referrer)
+      }
 
       // Build LINE OAuth URL directly
       const redirectUri = `${PRODUCTION_PB_URL}/line-callback.html`
@@ -75,6 +83,7 @@ export default function LineLoginPage() {
         '&state=' + encodeURIComponent(state)
 
       console.log('Redirecting to LINE OAuth:', authUrl)
+      console.log('Referrer:', referrer)
       window.location.href = authUrl
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to initiate LINE login')
