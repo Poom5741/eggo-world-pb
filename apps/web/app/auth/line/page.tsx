@@ -27,15 +27,27 @@ export default function LineLoginPage() {
   useEffect(() => {
     // Check if we have auth data from redirect
     const params = new URLSearchParams(window.location.search)
-    const token = params.get('token')
-    const userData = params.get('user')
+    
+    // Production sends: lineId, email, name, wallet, userId
+    const lineId = params.get('lineId')
+    const email = params.get('email')
+    const name = params.get('name')
+    const wallet = params.get('wallet')
+    const userId = params.get('userId')
 
-    if (token && userData) {
+    if (userId && email) {
       try {
-        // Save auth to localStorage
-        const user = JSON.parse(decodeURIComponent(userData))
+        // Create user object from params
+        const user = {
+          id: userId,
+          email: decodeURIComponent(email),
+          name: name ? decodeURIComponent(name) : '',
+          wallet_address: wallet ? decodeURIComponent(wallet) : ''
+        }
+        
+        // Store in localStorage
         localStorage.setItem('pocketbase_auth', JSON.stringify({
-          token,
+          token: 'line-auth', // Placeholder - user is authenticated via LINE
           model: user
         }))
 
