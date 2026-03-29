@@ -2,7 +2,7 @@
   {
     "id": "7000000002",
     "listRule": "user_id = @request.auth.id",
-    "viewRule": "user_id = @request.auth.id || @request.auth.id != \"\" && user_id.referrer_id = @request.auth.id",
+    "viewRule": "user_id = @request.auth.id",
     "createRule": "",
     "updateRule": "user_id = @request.auth.id",
     "deleteRule": "@request.auth.id != \"\" && @request.auth.id = user_id.id",
