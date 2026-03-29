@@ -83,28 +83,24 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
         user.set('password', password);
         try {
             $app.save(user);
-            console.log("Password updated");
+            console.log("Password updated successfully");
         } catch (saveErr) {
             console.log("Save error:", String(saveErr));
-            // Continue anyway - password might already be set
+            // Continue anyway
         }
 
-        console.log("Authenticating...");
+        console.log("Returning user data for frontend authentication");
 
-        // Create a token for the user
-        const token = $app.createAuthToken(user);
-
-        console.log("Token created successfully");
-
+        // Return the user data with password so frontend can authenticate
         return c.json(200, {
             success: true,
-            token: token,
             user: {
                 id: user.id + '',
                 email: user.get('email') + '',
                 name: user.get('name') + '',
                 wallet_address: user.get('wallet_address') + ''
-            }
+            },
+            password: password  // Return password so frontend can authenticate
         });
 
     } catch (err) {
