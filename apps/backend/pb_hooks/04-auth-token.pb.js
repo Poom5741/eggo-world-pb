@@ -6,14 +6,14 @@ console.log("Setting up auth user endpoint...");
 routerAdd('POST', '/api/auth/line-user', (c) => {
     const body = c.requestInfo().body;
     const email = body?.email;
-    
+
     if (!email) {
         return c.json(400, { success: false, error: 'email is required' });
     }
-    
+
     try {
-        const users = $app.dao().findCollectionByNameOrId('users');
-        const user = $app.dao().findAuthRecordByEmail(users, email);
+        const users = $app.findCollectionByNameOrId('users');
+        const user = $app.findAuthRecordByFilter(users, `email = "${email}"`);
 
         if (!user) {
             return c.json(404, { success: false, error: 'User not found' });
@@ -24,8 +24,8 @@ routerAdd('POST', '/api/auth/line-user', (c) => {
             user: {
                 id: user.id + '',
                 email: user.email() + '',
-                name: user.string('name') + '',
-                wallet_address: user.string('wallet_address') + ''
+                name: user.get('name') + '',
+                wallet_address: user.get('wallet_address') + ''
             }
         });
 
@@ -57,8 +57,8 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
 
     try {
         console.log("Finding user by email...");
-        const users = $app.dao().findCollectionByNameOrId('users');
-        const user = $app.dao().findAuthRecordByEmail(users, email);
+        const users = $app.findCollectionByNameOrId('users');
+        const user = $app.findAuthRecordByFilter(users, `email = "${email}"`);
 
         if (!user) {
             console.log("User not found");
@@ -68,9 +68,9 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
         console.log("User found:", user.id);
         console.log("Updating password...");
 
-        // Update password using the proper PocketBase API
-        user.setPassword(password);
-        $app.dao().saveRecord(user);
+        // Update password
+        user.set('password', password);
+        $app.save(user);
 
         console.log("Authenticating...");
 
@@ -85,8 +85,8 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
             user: {
                 id: authData.record.id + '',
                 email: authData.record.email() + '',
-                name: authData.record.string('name') + '',
-                wallet_address: authData.record.string('wallet_address') + ''
+                name: authData.record.get('name') + '',
+                wallet_address: authData.record.get('wallet_address') + ''
             }
         });
 
