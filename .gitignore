@@ -55,5 +55,16 @@ ssl/
 # PocketBase data
 **/pb_data/
 
+# Foundry
+contracts/cache/
+contracts/out/
+contracts/artifacts/
+contracts/broadcast/
+contracts/.env
+contracts/.env.*
+contracts/foundry.toml.local
+contracts/foundry.cache
+contracts/lib/
+
 # Next.js auto-generated files
 **/next-env.d.ts

@@ -1,0 +1,20 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc = "0.8.20"
+optimizer = true
+optimizer_runs = 200
+
+[rpc_endpoints]
+bsc_testnet = "https://data-seed-prebsc-1-s1.binance.org:8545"
+bsc = "https://bsc-dataseed.binance.org"
+
+[etherscan]
+bsc_testnet = { key = "${BSCSCAN_API_KEY}", url = "https://api-testnet.bscscan.com/api" }
+bsc = { key = "${BSCSCAN_API_KEY}", url = "https://api.bscscan.com/api" }
+
+[fuzz]
+runs = 256
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

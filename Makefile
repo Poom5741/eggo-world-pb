@@ -38,6 +38,31 @@ backend:
 backend-stop:
 	cd apps/backend && docker compose down
 
+# Contracts
+contracts-test:
+	cd contracts && forge test
+
+contracts-test-verbose:
+	cd contracts && forge test -vvv
+
+contracts-coverage:
+	cd contracts && forge coverage --report lcov
+
+contracts-snapshot:
+	cd contracts && forge snapshot
+
+contracts-build:
+	cd contracts && forge build
+
+contracts-build-size:
+	cd contracts && forge build --sizes
+
+contracts-deploy-testnet:
+	cd contracts && forge script script/Deploy.s.sol --rpc-url bsc_testnet --broadcast
+
+contracts-deploy-mainnet:
+	cd contracts && forge script script/Deploy.s.sol --rpc-url bsc --broadcast
+
 # Help
 help:
 	@echo "EggoWorld - NFT Membership System"
@@ -51,3 +76,13 @@ help:
 	@echo "  make backend    Start local PocketBase (docker)"
 	@echo "  make backend-stop Stop local PocketBase"
 	@echo "  make clean      Clean build artifacts"
+	@echo ""
+	@echo "Contracts:"
+	@echo "  make contracts-test       Run contract tests"
+	@echo "  make contracts-test-verbose Run tests with verbose output"
+	@echo "  make contracts-coverage   Generate test coverage report"
+	@echo "  make contracts-snapshot   Update gas snapshots"
+	@echo "  make contracts-build      Build contracts"
+	@echo "  make contracts-build-size Show contract sizes"
+	@echo "  make contracts-deploy-testnet Deploy to BSC testnet"
+	@echo "  make contracts-deploy-mainnet Deploy to BSC mainnet"

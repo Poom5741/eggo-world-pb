@@ -15,6 +15,7 @@ eggo-pocketbase/
 ├── apps/web/              # Next.js 16 frontend (Bun, shadcn/ui, Tailwind 4)
 ├── apps/backend/          # PocketBase (LINE OAuth, wallet hooks)
 ├── wallet-api/            # Express.js wallet generation service
+├── contracts/             # Foundry smart contracts (Solidity 0.8.20)
 ├── nginx/                 # Nginx reverse proxy config
 ├── resources/mvp-foodcourt/  # Reference implementation
 └── docs/                  # Documentation
@@ -31,6 +32,9 @@ eggo-pocketbase/
 | Add collection | `apps/backend/collections/` | Update migrations after |
 | Wallet API changes | `wallet-api/server.js` | Express.js, ethers v6 |
 | LINE OAuth config | `apps/backend/.env` | LINE_CHANNEL_ID, LINE_CHANNEL_SECRET |
+| Add smart contract | `contracts/src/` | Foundry, Solidity 0.8.20, OpenZeppelin |
+| Add contract test | `contracts/test/` | Forge test |
+| Deploy contracts | `contracts/script/` | Forge script, BSC testnet/mainnet |
 | Reference example | `resources/mvp-foodcourt/` | 20+ hook examples, Thai language |
 
 ## CODE MAP
