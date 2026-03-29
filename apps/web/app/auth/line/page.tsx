@@ -106,7 +106,7 @@ export default function LineLoginPage() {
           </div>
 
           <div className="space-y-2 text-center mb-6">
-            <h1 className="font-[var(--font-pixel)] text-sm text-primary">LINE LOGIN</h1>
+            <h1 className="font-[var(--font-pixel)] text-sm text-primary">LOGIN</h1>
             <p className="label">CONTINUE WITH LINE</p>
             <p className="text-xs text-muted-foreground mt-2">
               Using production: {PRODUCTION_PB_URL}
@@ -128,15 +128,6 @@ export default function LineLoginPage() {
             </svg>
             LOGIN WITH LINE
           </button>
-
-          <div className="divider">
-            <p className="label text-center">
-              OR USE{' '}
-              <a href="/auth/login" className="text-primary hover:underline">
-                EMAIL
-              </a>
-            </p>
-          </div>
         </div>
       </div>
     </div>
