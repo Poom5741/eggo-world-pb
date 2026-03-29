@@ -502,6 +502,191 @@ describe('Wallet Management System', () => {
             await pb.collection('wallet_configs').update(config.id, { value: 0.05 })
         })
     })
+    
+    describe('registerUser endpoint', () => {
+        const PLATFORM_ADDRESS = '0x0000000000000000000000000000000000000000'
+        
+        it('should register user with valid referrer', async () => {
+            const referrer = await createTestUser('referrer@test.com')
+            
+            const response = await fetch(`${PB_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                },
+                body: JSON.stringify({
+                    user_address: '0x1234567890123456789012345678901234567890',
+                    referrer_address: referrer.wallet_address,
+                    email: 'newuser@test.com',
+                    password: 'testpassword123',
+                    name: 'New User'
+                })
+            })
+            
+            const result = await response.json()
+            
+            expect(result.success).toBe(true)
+            expect(result.data.user_id).toBeDefined()
+            expect(result.data.wallet_address).toBe('0x1234567890123456789012345678901234567890')
+            expect(result.data.referral_chain).toBeDefined()
+            expect(result.data.referral_chain[0]).toBe(referrer.id)
+        })
+        
+        it('should reject registration without referrer', async () => {
+            const response = await fetch(`${PB_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                },
+                body: JSON.stringify({
+                    user_address: '0x1234567890123456789012345678901234567890',
+                    referrer_address: null,
+                    email: 'noreffer@test.com',
+                    password: 'testpassword123'
+                })
+            })
+            
+            const result = await response.json()
+            
+            expect(result.success).toBe(false)
+            expect(result.error.code).toBe('REFERRER_REQUIRED')
+        })
+        
+        it('should reject registration with non-existent referrer', async () => {
+            const response = await fetch(`${PB_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                },
+                body: JSON.stringify({
+                    user_address: '0x1234567890123456789012345678901234567890',
+                    referrer_address: '0xNONEXISTENT12345678901234567890123456',
+                    email: 'badref@test.com',
+                    password: 'testpassword123'
+                })
+            })
+            
+            const result = await response.json()
+            
+            expect(result.success).toBe(false)
+            expect(result.error.code).toBe('REFERRER_NOT_FOUND')
+        })
+        
+        it('should build 4-level chain correctly', async () => {
+            const G4 = await createTestUser('g4@test.com')
+            const G3 = await createTestUser('g3@test.com', G4.id)
+            const G2 = await createTestUser('g2@test.com', G3.id)
+            const G1 = await createTestUser('g1@test.com', G2.id)
+            
+            const response = await fetch(`${PB_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                },
+                body: JSON.stringify({
+                    user_address: '0xUSER1234567890123456789012345678901234',
+                    referrer_address: G1.wallet_address,
+                    email: 'chainuser@test.com',
+                    password: 'testpassword123'
+                })
+            })
+            
+            const result = await response.json()
+            
+            expect(result.success).toBe(true)
+            expect(result.data.referral_chain).toEqual([G1.id, G2.id, G3.id, G4.id])
+        })
+        
+        it('should handle missing upline levels with platform redirect', async () => {
+            const G1 = await createTestUser('g1only@test.com')
+            
+            const response = await fetch(`${PB_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                },
+                body: JSON.stringify({
+                    user_address: '0xSINGLE123456789012345678901234567890',
+                    referrer_address: G1.wallet_address,
+                    email: 'singleuser@test.com',
+                    password: 'testpassword123'
+                })
+            })
+            
+            const result = await response.json()
+            
+            expect(result.success).toBe(true)
+            expect(result.data.referral_chain[0]).toBe(G1.id)
+            expect(result.data.referral_chain[1]).toBe(PLATFORM_ADDRESS)
+            expect(result.data.referral_chain[2]).toBe(PLATFORM_ADDRESS)
+            expect(result.data.referral_chain[3]).toBe(PLATFORM_ADDRESS)
+        })
+        
+        it('should emit UserRegistered event', async () => {
+            const referrer = await createTestUser('event@test.com')
+            
+            const response = await fetch(`${PB_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                },
+                body: JSON.stringify({
+                    user_address: '0xEVENT12345678901234567890123456789012',
+                    referrer_address: referrer.wallet_address,
+                    email: 'eventuser@test.com',
+                    password: 'testpassword123'
+                })
+            })
+            
+            const result = await response.json()
+            expect(result.success).toBe(true)
+        })
+        
+        it('should reject duplicate user registration', async () => {
+            const referrer = await createTestUser('dupref@test.com')
+            
+            const firstResponse = await fetch(`${PB_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                },
+                body: JSON.stringify({
+                    user_address: '0xDUPUSER1234567890123456789012345678',
+                    referrer_address: referrer.wallet_address,
+                    email: 'dupuser@test.com',
+                    password: 'testpassword123'
+                })
+            })
+            
+            const firstResult = await firstResponse.json()
+            expect(firstResult.success).toBe(true)
+            
+            const secondResponse = await fetch(`${PB_URL}/api/users/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${pb.authStore.token}`
+                },
+                body: JSON.stringify({
+                    user_address: '0xDUPUSER1234567890123456789012345678',
+                    referrer_address: referrer.wallet_address,
+                    email: 'dupuser2@test.com',
+                    password: 'testpassword123'
+                })
+            })
+            
+            const secondResult = await secondResponse.json()
+            expect(secondResult.success).toBe(false)
+            expect(secondResult.error.code).toBe('USER_EXISTS')
+        })
+    })
 })
 
 // Helper functions
