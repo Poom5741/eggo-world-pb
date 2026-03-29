@@ -1,10 +1,10 @@
 # NFT Marketplace — Functional Design Specification
-### ALLICOIN Ecosystem | Egg × Food × Animal NFT Platform
+### Egg × Food × Animal NFT Platform
 
-> **Version:** 1.0 — Draft
+> **Version:** 1.1 — Updated
 > **Based on:** Client conceptual notes
-> **Token:** ALLICOIN
-> **Primary Currency:** USDT
+> **Network:** BNB SmartChain (BSC)
+> **Token:** USDT (BEP-20)
 
 ---
 
@@ -12,7 +12,7 @@
 
 1. [System Overview](#1-system-overview)
 2. [NFT Types & Properties](#2-nft-types--properties)
-3. [ALLICOIN Token Mechanics](#3-allicoin-token-mechanics)
+3. [USDT (BEP-20) Token](#3-usdt-bep-20-token)
 4. [Marketplace Functions](#4-marketplace-functions)
 5. [Referral & MLM Commission System](#5-referral--mlm-commission-system)
 6. [Commission Distribution Engine](#6-commission-distribution-engine)
@@ -29,7 +29,7 @@
 
 ## 1. System Overview
 
-The platform is a **gamified NFT Marketplace** built on blockchain where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and a native token (ALLICOIN). Revenue from NFT sales is distributed through a 4-level MLM referral commission structure. The game loop is: **Buy Egg NFT → Feed with Food NFTs → Hatch into Animal NFT → Trade on Marketplace**.
+The platform is a **gamified NFT Marketplace** built on BNB SmartChain where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency. Revenue from NFT sales is distributed through a 4-level MLM referral commission structure. The game loop is: **Buy Egg NFT → Feed with Food NFTs → Hatch into Animal NFT → Trade on Marketplace**.
 
 ```
 GAME LOOP
@@ -49,14 +49,14 @@ GAME LOOP
   RECEIVE ANIMAL NFT (random rarity)
        │
        ▼
-  SELL / HOLD / BREED on Marketplace (priced in ALLICOIN)
+  SELL / HOLD / BREED on Marketplace (priced in USDT)
 ─────────────────────────────────────────────────────────
 ```
 
 **Platform currency flow:**
-- Users pay in **USDT**
-- Commissions distributed in **ALLICOIN (FIX type)**
-- ALLICOIN accumulates in wallet → converts to **A% (liquid ALLICOIN)** once threshold met
+- Users pay in **USDT (BEP-20)**
+- Commissions distributed directly in **USDT**
+- USDT accumulates in wallet → immediately spendable
 - Platform retains **4%** of all transactions → **CoinStor** reserve pool
 
 ---
@@ -130,7 +130,7 @@ GAME LOOP
 | Property | Value |
 |---|---|
 | Minted By | Hatching only (not purchasable directly) |
-| Marketplace Price | Set by owner in ALLICOIN |
+| Marketplace Price | Set by owner in USDT |
 | Rarity Tiers | Common / Rare / Epic / Legendary |
 
 **Properties:**
@@ -153,44 +153,39 @@ GAME LOOP
 
 ---
 
-## 3. ALLICOIN Token Mechanics
+## 3. USDT (BEP-20) Token
 
-ALLICOIN is the native platform token. It has two states:
+The platform uses USDT (Tether USD) on BNB SmartChain as the native currency. USDT is a stablecoin pegged 1:1 to USD, providing price stability for all transactions.
 
-### 3.1 FIX ALLICOIN
-- Commissions are distributed as **FIX ALLICOIN** — locked tokens held in the recipient's wallet
-- FIX ALLICOIN cannot be transferred or traded immediately
-- They accumulate until the wallet reaches the **A% Conversion Threshold**
+### 3.1 Token Standard
+- **Network**: BNB SmartChain (BSC)
+- **Token Standard**: BEP-20
+- **Contract Address**: [To be deployed]
+- **Decimals**: 18
 
-### 3.2 A% (Liquid ALLICOIN)
-- Once a wallet's FIX balance reaches the conversion threshold, FIX tokens **automatically convert to A% (liquid)** ALLICOIN
-- A% ALLICOIN can be used to buy NFTs on the marketplace, transferred, or withdrawn
-
-**`convertFIXtoLiquid(wallet_address)`**
-1. Read `wallet.fix_allicoin_balance`
-2. If balance >= `CONVERSION_THRESHOLD` (platform-configurable):
-   - Move entire FIX balance to `wallet.liquid_allicoin_balance`
-   - Set `wallet.fix_allicoin_balance = 0`
-   - Emit `ALLICOINConverted(wallet, amount)`
+### 3.2 Usage
+- All NFT purchases denominated in USDT
+- Commissions distributed directly in USDT
+- No conversion or locking mechanisms required
+- Instant transfer and withdrawal
 
 ### 3.3 CoinStor Reserve
-- 4% of every transaction (USDT or ALLICOIN) is deposited into the **CoinStor** platform reserve
-- CoinStor funds are used for: platform liquidity, buybacks, ecosystem rewards, emergency payouts
+- 4% of every transaction is deposited into the **CoinStor** platform reserve in USDT
+- CoinStor funds are used for: platform liquidity, ecosystem rewards, emergency payouts
 - **`depositToCoinStor(amount)`** — called automatically by all sale functions
 
 ---
 
 ## 4. Marketplace Functions
 
-### 4.1 `listNFTForSale(nft_id, nft_type, price_usdt, price_allicoin)`
+### 4.1 `listNFTForSale(nft_id, nft_type, price_usdt)`
 - Owner lists an NFT (Egg, Food, or Animal) on the marketplace
-- Sets a floor price (listed price) and/or ALLICOIN price
+- Sets a price in USDT
 - Transfers NFT to marketplace escrow contract
 - Emits `NFTListed(nft_id, seller, price)`
 
-### 4.2 `buyNFT(nft_id, payment_method)`
-- `payment_method` = USDT or ALLICOIN
-- Verifies buyer has sufficient balance
+### 4.2 `buyNFT(nft_id)`
+- Verifies buyer has sufficient USDT balance
 - Routes payment through commission engine
 - Transfers NFT from escrow to buyer
 - Emits `NFTSold(nft_id, buyer, seller, price)`
@@ -245,7 +240,7 @@ YOU (buyer)
 
 ### 5.3 Downline Recruitment Bonus Table
 
-When YOU recruit new users who go on to purchase Egg NFTs, you earn Food NFT bonuses and ALLICOIN rewards based on your total downline size:
+When YOU recruit new users who go on to purchase Egg NFTs, you earn Food NFT bonuses and USDT rewards based on your total downline size:
 
 | Your Total Recruits (G1 Direct) | Food Items Rewarded | Multiplier | Bonus (10 items tier) | Bonus (100 items tier) | Bonus (1000 items tier) |
 |---|---|---|---|---|---|
@@ -260,9 +255,8 @@ When YOU recruit new users who go on to purchase Egg NFTs, you earn Food NFT bon
 1. Count `user.total_direct_recruits`
 2. Look up bonus tier from table above
 3. Mint bonus Food NFTs to user wallet
-4. Calculate ALLICOIN reward based on active items in tier
-5. Credit ALLICOIN (FIX) to user wallet
-6. Trigger `convertFIXtoLiquid()` check
+4. Calculate USDT reward based on active items in tier
+5. Credit USDT to user wallet
 
 ---
 
@@ -272,10 +266,10 @@ When YOU recruit new users who go on to purchase Egg NFTs, you earn Food NFT bon
 
 ```
 $25.00  TOTAL SALE
-├── $5.00   (20%) → G1 Wallet as ALLICOIN FIX
-├── $2.50   (10%) → G2 Wallet as ALLICOIN FIX
-├── $2.50   (10%) → G3 Wallet as ALLICOIN FIX
-├── $2.50   (10%) → G4 Wallet as ALLICOIN FIX
+├── $5.00   (20%) → G1 Wallet as USDT
+├── $2.50   (10%) → G2 Wallet as USDT
+├── $2.50   (10%) → G3 Wallet as USDT
+├── $2.50   (10%) → G4 Wallet as USDT
 ├── $1.00   (4%)  → CoinStor Reserve
 └── $11.50  (46%) → Platform / Liquidity Pool
 ```
@@ -288,11 +282,9 @@ $25.00  TOTAL SALE
    - `G4_amount = sale_amount × 0.10`
    - `platform_fee = sale_amount × 0.04`
 2. If `referral_chain[i]` is null (no upline at that level), redirect to platform pool
-3. Convert USDT amounts to ALLICOIN at current FIX rate
-4. Credit ALLICOIN FIX to each upline wallet
-5. Deposit `platform_fee` to CoinStor
-6. Trigger `convertFIXtoLiquid()` check for each credited wallet
-7. Emit `CommissionDistributed(sale_id, amounts[], recipients[])`
+3. Credit USDT to each upline wallet
+4. Deposit `platform_fee` to CoinStor
+5. Emit `CommissionDistributed(sale_id, amounts[], recipients[])`
 
 ---
 
@@ -302,10 +294,10 @@ When Food NFTs are purchased, a secondary commission is paid from the transactio
 
 ```
 $4.00  FOOD NFT BATCH PURCHASE (example: 8 items × $0.50)
-├── $0.80   (20%) → G1 Wallet as ALLICOIN FIX
-├── $0.40   (10%) → G2 Wallet as ALLICOIN FIX
-├── $0.40   (10%) → G3 Wallet as ALLICOIN FIX
-├── $0.40   (10%) → G4 Wallet as ALLICOIN FIX
+├── $0.80   (20%) → G1 Wallet as USDT
+├── $0.40   (10%) → G2 Wallet as USDT
+├── $0.40   (10%) → G3 Wallet as USDT
+├── $0.40   (10%) → G4 Wallet as USDT
 └── Remainder    → Platform
 ```
 
@@ -365,7 +357,7 @@ When a user resells an Animal/Egg NFT on secondary market:
 1. Verify caller owns both animals
 2. Verify neither animal is currently breeding
 3. Lock both animals for `BREED_COOLDOWN` period (e.g., 48 hours)
-4. Pay breeding fee (in ALLICOIN)
+4. Pay breeding fee (in USDT)
 5. Generate offspring rarity = `max(parent1.rarity, parent2.rarity)` with variance
 6. Mint 1 new Animal NFT with `generation = max(gen1, gen2) + 1`
 7. Emit `AnimalsBreed(animal_id_1, animal_id_2, offspring_id)`
@@ -378,20 +370,19 @@ Users earn tiered rewards based on total Food NFT items accumulated (bought or e
 
 ### 8.1 Tier Thresholds
 
-| Tier | Food Items Required | ALLICOIN Reward | Description |
+| Tier | Food Items Required | USDT Reward | Description |
 |---|---|---|---|
-| Tier 1 — Seedling | 10 | $5 equivalent | Basic hatcher |
-| Tier 2 — Grower | 100 | $50 equivalent | Active participant |
-| Tier 3 — Farmer | 1,000 | $500 equivalent | Power user |
+| Tier 1 — Seedling | 10 | $5 USDT | Basic hatcher |
+| Tier 2 — Grower | 100 | $50 USDT | Active participant |
+| Tier 3 — Farmer | 1,000 | $500 USDT | Power user |
 
 ### 8.2 `checkAndGrantTierReward(user_address)`
 1. Read `user.lifetime_food_items`
 2. Check against tier thresholds
 3. If new tier reached and not yet claimed:
-   - Credit ALLICOIN equivalent to user wallet (FIX type)
+   - Credit USDT to user wallet
    - Record `user.highest_tier_reached`
    - Emit `TierRewardGranted(user, tier, reward_amount)`
-4. Trigger `convertFIXtoLiquid()` check
 
 ### 8.3 Tier Badge NFTs
 
@@ -412,45 +403,37 @@ Upon reaching each tier, users are minted a **non-transferable Badge NFT** (soul
 
 ```
 UserWallet {
-  address:                  wallet_address
-  usdt_balance:             float
-  fix_allicoin_balance:     float      ← locked commissions
-  liquid_allicoin_balance:  float      ← spendable ALLICOIN (A%)
-  total_earned_allicoin:    float      ← lifetime stats
-  conversion_threshold:     float      ← set by platform (configurable)
-  referral_chain:           address[4] ← [G1, G2, G3, G4]
-  total_direct_recruits:    int
-  lifetime_food_items:      int
-  highest_tier_reached:     int (0–3)
+  address:               wallet_address
+  usdt_balance:          float      ← spendable USDT balance
+  total_earned_usdt:     float      ← lifetime earnings
+  referral_chain:        address[4] ← [G1, G2, G3, G4]
+  total_direct_recruits: int
+  lifetime_food_items:   int
+  highest_tier_reached:  int (0–3)
 }
 ```
 
 ### 9.2 Wallet Functions
 
 **`getWalletBalance(user_address)`**
-- Returns USDT, FIX ALLICOIN, liquid ALLICOIN balances
+- Returns USDT balance and total earnings
 
 **`withdrawUSDT(user_address, amount)`**
 - Withdraw USDT to external wallet
 - Requires KYC verification (if applicable)
 - Deducts `WITHDRAWAL_FEE` (platform configurable)
 
-**`spendLiquidALLICOIN(user_address, amount, purpose)`**
+**`spendUSDT(user_address, amount, purpose)`**
 - Used for NFT purchases, breeding fees, upgrades
-- Decrements `liquid_allicoin_balance`
+- Decrements `usdt_balance`
 
-**`transferALLICOIN(from, to, amount)`**
-- Peer-to-peer ALLICOIN transfer (liquid only)
-- FIX ALLICOIN cannot be transferred
+**`transferUSDT(from, to, amount)`**
+- Peer-to-peer USDT transfer
 
 ### 9.3 CoinStor Reserve Functions
 
 **`getCoinStorBalance()`**
-- Returns total CoinStor reserve in USDT and ALLICOIN
-
-**`coinStorBuyback(amount_usdt)`** *(Admin only)*
-- Uses CoinStor USDT to buy ALLICOIN from market
-- Supports token price stability
+- Returns total CoinStor reserve in USDT
 
 **`coinStorLiquidityInject(amount)`** *(Admin only)*
 - Injects liquidity into marketplace pool from reserve
@@ -496,11 +479,10 @@ UserWallet {
 | Function | Description |
 |---|---|
 | `registerUser(user, referrer)` | Register + set upline chain |
-| `convertFIXtoLiquid(wallet)` | FIX → A% conversion |
-| `getWalletBalance(user)` | Read balances |
+| `getWalletBalance(user)` | Read USDT balance |
 | `withdrawUSDT(user, amount)` | External withdrawal |
-| `spendLiquidALLICOIN(user, amount, purpose)` | Spend liquid tokens |
-| `transferALLICOIN(from, to, amount)` | P2P transfer |
+| `spendUSDT(user, amount, purpose)` | Spend USDT |
+| `transferUSDT(from, to, amount)` | P2P transfer |
 | `depositToCoinStor(amount)` | 4% fee → reserve |
 | `getCoinStorBalance()` | Read reserve |
 | `checkAndGrantTierReward(user)` | Check tier upgrade |
@@ -508,12 +490,9 @@ UserWallet {
 ### Admin Contract
 | Function | Description |
 |---|---|
-| `setConversionThreshold(amount)` | Configure FIX → A% threshold |
 | `setPlatformFee(percent)` | Set CoinStor fee % |
-| `setPriceOracle(oracle_address)` | Update USDT/ALLICOIN rate feed |
 | `pauseMarketplace()` | Emergency pause |
 | `unpauseMarketplace()` | Resume |
-| `coinStorBuyback(amount)` | Token buyback |
 | `coinStorLiquidityInject(amount)` | Add liquidity |
 | `coinStorEcosystemReward(recipients[], amounts[])` | Batch reward |
 | `updateRarityWeights(weights[])` | Adjust drop rates |
@@ -559,10 +538,7 @@ These are the primary actions available to end users through the dApp interface:
 
 | Category | Function | Description |
 |---|---|---|
-| Token | `setConversionThreshold` | Adjust FIX → liquid threshold |
-| Token | `setPriceOracle` | Update ALLICOIN/USDT rate feed |
 | Fees | `setPlatformFee` | Change CoinStor % |
-| Reserve | `coinStorBuyback` | Token price support |
 | Reserve | `coinStorLiquidityInject` | Add marketplace liquidity |
 | Reserve | `coinStorEcosystemReward` | Distribute ecosystem grants |
 | Game | `updateRarityWeights` | Balance drop rates |
@@ -634,10 +610,8 @@ These are the primary actions available to end users through the dApp interface:
   "total_direct_recruits": 0,
   "lifetime_food_items": 0,
   "highest_tier_reached": 0,
-  "fix_allicoin_balance": 0.0,
-  "liquid_allicoin_balance": 0.0,
   "usdt_balance": 0.0,
-  "total_earned_allicoin": 0.0,
+  "total_earned_usdt": 0.0,
   "kyc_verified": false
 }
 ```
@@ -651,18 +625,16 @@ These are the primary actions available to end users through the dApp interface:
 ```
 $25.00 received
 │
-├─ $5.00  → G1 wallet (ALLICOIN FIX, 20%)
-├─ $2.50  → G2 wallet (ALLICOIN FIX, 10%)
-├─ $2.50  → G3 wallet (ALLICOIN FIX, 10%)
-├─ $2.50  → G4 wallet (ALLICOIN FIX, 10%)
+├─ $5.00  → G1 wallet (USDT, 20%)
+├─ $2.50  → G2 wallet (USDT, 10%)
+├─ $2.50  → G3 wallet (USDT, 10%)
+├─ $2.50  → G4 wallet (USDT, 10%)
 ├─ $1.00  → CoinStor reserve (4%)
 └─ $11.50 → Platform operations (46%)
 
-ALLICOIN FIX in wallet
+USDT in wallet
   │
-  └─ When balance ≥ THRESHOLD
-       └─ Auto-converts → Liquid ALLICOIN (A%)
-            └─ Can spend in marketplace or withdraw
+  └─ Immediately spendable in marketplace or can be withdrawn
 ```
 
 ### Per $0.50 Food NFT Sale
@@ -670,10 +642,10 @@ ALLICOIN FIX in wallet
 ```
 $0.50 received
 │
-├─ $0.10  → G1 wallet (ALLICOIN FIX, 20%)
-├─ $0.05  → G2 wallet (ALLICOIN FIX, 10%)
-├─ $0.05  → G3 wallet (ALLICOIN FIX, 10%)
-├─ $0.05  → G4 wallet (ALLICOIN FIX, 10%)
+├─ $0.10  → G1 wallet (USDT, 20%)
+├─ $0.05  → G2 wallet (USDT, 10%)
+├─ $0.05  → G3 wallet (USDT, 10%)
+├─ $0.05  → G4 wallet (USDT, 10%)
 ├─ $0.02  → CoinStor reserve (4%)
 └─ $0.23  → Platform (46%)
 ```
