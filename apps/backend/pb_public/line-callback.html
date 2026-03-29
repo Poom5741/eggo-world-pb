@@ -156,6 +156,8 @@
                     } catch (backendErr) {
                         console.log("User not found, creating new...");
                         isNewUser = true;
+                    }
+                    
                     const password = generatePassword();
                     try {
                         user = await pb.collection('users').create({
