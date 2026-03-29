@@ -35,35 +35,41 @@ routerAdd('POST', '/api/auth/line-user', (c) => {
 
 console.log("Auth user endpoint registered");
 
-// ===== GENERATE AUTH TOKEN =====
-// Generate auth token for verified LINE users
+// ===== AUTHENTICATE LINE USER =====
+// Authenticate LINE user and return token
 
-routerAdd('POST', '/api/auth/generate-token', (c) => {
+routerAdd('POST', '/api/auth/line-auth', (c) => {
     const body = c.requestInfo().body;
     const email = body?.email;
+    const password = body?.password;
     
-    if (!email) {
-        return c.json(400, { success: false, error: 'email is required' });
+    if (!email || !password) {
+        return c.json(400, { success: false, error: 'email and password are required' });
     }
     
     try {
+        // Find the user
         const user = $app.findAuthRecordByEmail('users', email);
         
         if (!user) {
             return c.json(404, { success: false, error: 'User not found' });
         }
         
-        // Generate auth token
-        const token = $app.createAuthToken(user);
+        // Update password
+        user.set('password', password);
+        $app.save(user);
+        
+        // Authenticate
+        const authData = $apis.authWithPassword($app, c.request(), 'users', email, password);
         
         return c.json(200, {
             success: true,
-            token: token,
+            token: authData.token,
             user: {
-                id: user.id + '',
-                email: user.getString('email') + '',
-                name: user.getString('name') + '',
-                wallet_address: user.getString('wallet_address') + ''
+                id: authData.record.id + '',
+                email: authData.record.getString('email') + '',
+                name: authData.record.getString('name') + '',
+                wallet_address: authData.record.getString('wallet_address') + ''
             }
         });
         
@@ -72,4 +78,4 @@ routerAdd('POST', '/api/auth/generate-token', (c) => {
     }
 });
 
-console.log("Generate token endpoint registered");
+console.log("Line auth endpoint registered");

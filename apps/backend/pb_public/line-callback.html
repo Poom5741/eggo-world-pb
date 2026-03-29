@@ -201,24 +201,24 @@
                             if (returnUrl && returnUrl.includes('localhost')) {
                                 console.log("Redirecting back to local development:", returnUrl);
                                 
-                                // Generate auth token via backend
+                                // Authenticate via backend to get token
                                 try {
-                                    const tokenRes = await fetch(window.location.origin + '/api/auth/generate-token', {
+                                    const tokenRes = await fetch(window.location.origin + '/api/auth/line-auth', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ email: email })
+                                        body: JSON.stringify({ email: email, password: password })
                                     });
                                     
                                     if (tokenRes.ok) {
                                         const tokenData = await tokenRes.json();
-                                        console.log("Generated token successfully");
+                                        console.log("Authenticated successfully");
                                         const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData.token)}&user=${encodeURIComponent(JSON.stringify(tokenData.user))}`;
                                         window.location.href = redirectWithAuth;
                                     } else {
-                                        throw new Error("Failed to generate token");
+                                        throw new Error("Failed to authenticate");
                                     }
                                 } catch (tokenErr) {
-                                    console.log("Token generation failed, redirecting without token:", tokenErr.message);
+                                    console.log("Auth failed, redirecting without token:", tokenErr.message);
                                     const redirectWithAuth = `${returnUrl}?token=&user=${encodeURIComponent(JSON.stringify(user))}`;
                                     window.location.href = redirectWithAuth;
                                 }
@@ -272,24 +272,24 @@
                 if (returnUrl && returnUrl.includes('localhost')) {
                     console.log("Redirecting back to local development:", returnUrl);
                     
-                    // Generate auth token via backend
+                    // Authenticate via backend to get token
                     try {
-                        const tokenRes = await fetch(window.location.origin + '/api/auth/generate-token', {
+                        const tokenRes = await fetch(window.location.origin + '/api/auth/line-auth', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: email })
+                            body: JSON.stringify({ email: email, password: password })
                         });
                         
                         if (tokenRes.ok) {
                             const tokenData = await tokenRes.json();
-                            console.log("Generated token successfully");
+                            console.log("Authenticated successfully");
                             const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData.token)}&user=${encodeURIComponent(JSON.stringify(tokenData.user))}`;
                             window.location.href = redirectWithAuth;
                         } else {
-                            throw new Error("Failed to generate token");
+                            throw new Error("Failed to authenticate");
                         }
                     } catch (tokenErr) {
-                        console.log("Token generation failed, redirecting without token:", tokenErr.message);
+                        console.log("Auth failed, redirecting without token:", tokenErr.message);
                         const redirectWithAuth = `${returnUrl}?token=&user=${encodeURIComponent(JSON.stringify(user))}`;
                         window.location.href = redirectWithAuth;
                     }
