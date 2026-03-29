@@ -12,7 +12,7 @@
       {
         "autogeneratePattern": "[a-z0-9]{15}",
         "hidden": false,
-        "id": "text_config_id",
+        "id": "text3208210256",
         "max": 15,
         "min": 15,
         "name": "id",
