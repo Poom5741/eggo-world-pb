@@ -88,6 +88,6 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             error: { message: error.message, code: "WITHDRAWAL_FAILED" }
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 console.log("Withdraw USDT endpoint registered");

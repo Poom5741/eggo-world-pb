@@ -54,6 +54,6 @@ routerAdd("POST", "/api/v2/wallet/balance", (e) => {
             error: { message: error.message, code: "BALANCE_FETCH_FAILED" }
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 console.log("Wallet balance endpoint registered");

@@ -80,6 +80,6 @@ routerAdd("POST", "/api/v2/wallet/spend", (e) => {
             error: { message: error.message, code: "SPEND_FAILED" }
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 console.log("Spend USDT endpoint registered");

@@ -86,6 +86,6 @@ routerAdd("POST", "/api/v2/wallet/transfer", (e) => {
             error: { message: error.message, code: "TRANSFER_FAILED" }
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 console.log("Transfer USDT endpoint registered");

@@ -66,6 +66,6 @@ routerAdd("POST", "/api/v2/user/update-tier", (e) => {
             error: { message: error.message, code: "TIER_UPDATE_FAILED" }
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 console.log("Update tier endpoint registered");
