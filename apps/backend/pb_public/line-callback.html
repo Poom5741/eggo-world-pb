@@ -217,33 +217,26 @@
                                     if (tokenRes.ok) {
                                         const tokenData = await tokenRes.json();
                                         console.log("line-auth response:", JSON.stringify(tokenData));
-                                        console.log("Got user data from backend, authenticating with PocketBase...");
+                                        console.log("Got user data from backend, creating simple auth token...");
                                         
-                                        // Authenticate with PocketBase using the returned password
-                                        try {
-                                            const authData = await pb.collection('users').authWithPassword(
-                                                tokenData.user.email,
-                                                tokenData.password
-                                            );
-                                            console.log("PocketBase authentication successful");
-                                            console.log("AuthData keys:", Object.keys(authData));
-                                            console.log("AuthData:", JSON.stringify(authData, null, 2));
-                                            
-                                            // Try to get token from different possible locations
-                                            const token = authData.token || pb.authStore.token;
-                                            console.log("Token:", token ? `${token.substring(0, 20)}...` : 'undefined');
-                                            
-                                            const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(token || '')}&user=${encodeURIComponent(JSON.stringify({
-                                                id: authData.record.id,
-                                                email: authData.record.email,
-                                                name: authData.record.name,
-                                                wallet_address: authData.record.wallet_address
-                                            }))}`;
-                                            window.location.href = redirectWithAuth;
-                                        } catch (pbAuthErr) {
-                                            console.log("PocketBase auth failed:", pbAuthErr);
-                                            throw new Error("PocketBase authentication failed");
-                                        }
+                                        // Create a simple auth token (base64 encoded user data + timestamp)
+                                        const timestamp = Date.now();
+                                        const tokenData_b64 = btoa(JSON.stringify({
+                                            userId: tokenData.user.id,
+                                            email: tokenData.user.email,
+                                            timestamp: timestamp,
+                                            exp: timestamp + (7 * 24 * 60 * 60 * 1000) // 7 days
+                                        }));
+                                        
+                                        console.log("Created simple token");
+                                        
+                                        const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData_b64)}&user=${encodeURIComponent(JSON.stringify({
+                                            id: tokenData.user.id,
+                                            email: tokenData.user.email,
+                                            name: tokenData.user.name,
+                                            wallet_address: tokenData.user.wallet_address
+                                        }))}`;
+                                        window.location.href = redirectWithAuth;
                                     } else {
                                         throw new Error("Failed to authenticate");
                                     }
@@ -312,28 +305,26 @@
                         
                         if (tokenRes.ok) {
                             const tokenData = await tokenRes.json();
-                            console.log("Got user data from backend (new user), authenticating with PocketBase...");
+                            console.log("Got user data from backend (new user), creating simple auth token...");
                             
-                            // Authenticate with PocketBase using the returned password
-                            try {
-                                const authData = await pb.collection('users').authWithPassword(
-                                    tokenData.user.email,
-                                    tokenData.password
-                                );
-                                console.log("PocketBase authentication successful (new user)");
-                                
-                                const token = authData.token || pb.authStore.token;
-                                const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(token || '')}&user=${encodeURIComponent(JSON.stringify({
-                                    id: authData.record.id,
-                                    email: authData.record.email,
-                                    name: authData.record.name,
-                                    wallet_address: authData.record.wallet_address
-                                }))}`;
-                                window.location.href = redirectWithAuth;
-                            } catch (pbAuthErr) {
-                                console.log("PocketBase auth failed:", pbAuthErr);
-                                throw new Error("PocketBase authentication failed");
-                            }
+                            // Create a simple auth token (base64 encoded user data + timestamp)
+                            const timestamp = Date.now();
+                            const tokenData_b64 = btoa(JSON.stringify({
+                                userId: tokenData.user.id,
+                                email: tokenData.user.email,
+                                timestamp: timestamp,
+                                exp: timestamp + (7 * 24 * 60 * 60 * 1000) // 7 days
+                            }));
+                            
+                            console.log("Created simple token (new user)");
+                            
+                            const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData_b64)}&user=${encodeURIComponent(JSON.stringify({
+                                id: tokenData.user.id,
+                                email: tokenData.user.email,
+                                name: tokenData.user.name,
+                                wallet_address: tokenData.user.wallet_address
+                            }))}`;
+                            window.location.href = redirectWithAuth;
                         } else {
                             throw new Error("Failed to authenticate");
                         }
