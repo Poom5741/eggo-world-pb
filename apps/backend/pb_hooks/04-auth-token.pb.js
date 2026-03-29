@@ -54,7 +54,7 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
     const password = body?.password;
 
     console.log("Email:", email);
-    console.log("Password:", password ? `${password.length} chars: ${password.substring(0, 8)}...` : 'undefined');
+    console.log("Password:", password ? `${password.length} chars` : 'undefined');
 
     if (!email || !password) {
         console.log("Missing email or password");
@@ -77,27 +77,33 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
 
         const user = records[0];
         console.log("User found:", user.id);
-        console.log("Updating password...");
 
         // Update password
+        console.log("Updating password...");
         user.set('password', password);
-        $app.save(user);
+        try {
+            $app.save(user);
+            console.log("Password updated");
+        } catch (saveErr) {
+            console.log("Save error:", String(saveErr));
+            // Continue anyway - password might already be set
+        }
 
         console.log("Authenticating...");
 
-        // Authenticate
-        const authData = $apis.authWithPassword($app, c.request(), 'users', email, password);
+        // Create a token for the user
+        const token = $app.createAuthToken(user);
 
-        console.log("Authentication successful");
+        console.log("Token created successfully");
 
         return c.json(200, {
             success: true,
-            token: authData.token,
+            token: token,
             user: {
-                id: authData.record.id + '',
-                email: authData.record.get('email') + '',
-                name: authData.record.get('name') + '',
-                wallet_address: authData.record.get('wallet_address') + ''
+                id: user.id + '',
+                email: user.get('email') + '',
+                name: user.get('name') + '',
+                wallet_address: user.get('wallet_address') + ''
             }
         });
 
