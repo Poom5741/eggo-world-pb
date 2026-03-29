@@ -1,6 +1,6 @@
 [
   {
-    "id": "user_wallets",
+    "id": "7000000002",
     "listRule": "user_id = @request.auth.id",
     "viewRule": "user_id = @request.auth.id || @request.auth.id != \"\" && user_id.referrer_id = @request.auth.id",
     "createRule": "",

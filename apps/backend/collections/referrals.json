@@ -1,6 +1,6 @@
 [
   {
-    "id": "referrals",
+    "id": "7000000001",
     "listRule": "@request.auth.id != \"\" && (referrer_id = @request.auth.id || referee_id = @request.auth.id)",
     "viewRule": "@request.auth.id != \"\" && (referrer_id = @request.auth.id || referee_id = @request.auth.id)",
     "createRule": "",
