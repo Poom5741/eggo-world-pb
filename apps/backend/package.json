@@ -1,0 +1,17 @@
+{
+  "name": "eggo-pocketbase-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PocketBase backend for EggoWorld",
+  "type": "module",
+  "scripts": {
+    "test": "bun test wallet.test.js",
+    "test:watch": "bun test --watch wallet.test.js",
+    "dev": "docker-compose up -d",
+    "stop": "docker-compose down",
+    "logs": "docker-compose logs -f"
+  },
+  "devDependencies": {
+    "pocketbase": "^0.21.0"
+  }
+}

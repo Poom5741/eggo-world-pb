@@ -107,6 +107,66 @@ async function encryptPrivateKey(privateKey, key) {
     };
 }
 
+// Transfer USDT (P2P)
+app.post('/api/v1/wallet/transfer', async (req, res) => {
+    try {
+        const { from_address, to_address, amount } = req.body;
+        
+        if (!from_address || !to_address || !amount || amount <= 0) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Invalid parameters' 
+            });
+        }
+        
+        console.log(`Transfer: ${from_address} -> ${to_address}, amount: ${amount}`);
+        
+        res.json({
+            success: true,
+            data: {
+                amount: amount,
+                status: 'pending_blockchain_confirmation'
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
+// Get USDT balance
+app.post('/api/v1/wallet/balance', async (req, res) => {
+    try {
+        const { user_address } = req.body;
+        
+        if (!user_address) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'user_address is required' 
+            });
+        }
+        
+        console.log(`Getting balance for: ${user_address}`);
+        
+        res.json({
+            success: true,
+            data: {
+                usdt_balance: 0,
+                total_earned: 0,
+                total_spent: 0,
+                total_withdrawn: 0
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Wallet API running on port ${PORT}`);
     console.log(`Health: http://localhost:${PORT}/health`);

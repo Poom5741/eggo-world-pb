@@ -81,8 +81,32 @@ onRecordAfterCreateSuccess((e) => {
     e.record.set("wallet_version", version);
     e.record.set("encrypted_private_key", encryptedKey);
     
+    // Initialize wallet balance fields
+    e.record.set("usdt_balance", 0);
+    e.record.set("usdt_total_earned", 0);
+    e.record.set("total_direct_recruits", 0);
+    e.record.set("lifetime_food_items", 0);
+    e.record.set("highest_tier_reached", "bronze");
+    
     $app.save(e.record);
     console.log("Wallet saved:", address);
+    
+    // Create UserWallets record
+    try {
+        const walletCollection = $app.findCollectionByNameOrId("user_wallets");
+        const walletRecord = new Record(walletCollection);
+        walletRecord.set("user_id", e.record.id);
+        walletRecord.set("usdt_balance", 0);
+        walletRecord.set("total_earned", 0);
+        walletRecord.set("total_spent", 0);
+        walletRecord.set("total_withdrawn", 0);
+        walletRecord.set("wallet_address", address);
+        walletRecord.set("last_transaction_at", new Date().toISOString());
+        $app.save(walletRecord);
+        console.log("UserWallet record created for:", e.record.id);
+    } catch (walletErr) {
+        console.log("Error creating UserWallet:", walletErr);
+    }
 
 }, "users");
 
