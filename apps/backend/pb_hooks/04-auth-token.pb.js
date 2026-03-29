@@ -12,18 +12,24 @@ routerAdd('POST', '/api/auth/line-user', (c) => {
     }
 
     try {
-        const users = $app.findCollectionByNameOrId('users');
-        const user = $app.findAuthRecordByFilter(users, `email = "${email}"`);
+        const records = $app.findRecordsByFilter(
+            'users',
+            `email = "${email}"`,
+            '',
+            1
+        );
 
-        if (!user) {
+        if (!records || records.length === 0) {
             return c.json(404, { success: false, error: 'User not found' });
         }
+
+        const user = records[0];
 
         return c.json(200, {
             success: true,
             user: {
                 id: user.id + '',
-                email: user.email() + '',
+                email: user.get('email') + '',
                 name: user.get('name') + '',
                 wallet_address: user.get('wallet_address') + ''
             }
@@ -57,14 +63,19 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
 
     try {
         console.log("Finding user by email...");
-        const users = $app.findCollectionByNameOrId('users');
-        const user = $app.findAuthRecordByFilter(users, `email = "${email}"`);
+        const records = $app.findRecordsByFilter(
+            'users',
+            `email = "${email}"`,
+            '',
+            1
+        );
 
-        if (!user) {
+        if (!records || records.length === 0) {
             console.log("User not found");
             return c.json(404, { success: false, error: 'User not found' });
         }
 
+        const user = records[0];
         console.log("User found:", user.id);
         console.log("Updating password...");
 
@@ -75,7 +86,7 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
         console.log("Authenticating...");
 
         // Authenticate
-        const authData = $apis.authWithPassword($app, c.request(), users, email, password);
+        const authData = $apis.authWithPassword($app, c.request(), 'users', email, password);
 
         console.log("Authentication successful");
 
@@ -84,7 +95,7 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
             token: authData.token,
             user: {
                 id: authData.record.id + '',
-                email: authData.record.email() + '',
+                email: authData.record.get('email') + '',
                 name: authData.record.get('name') + '',
                 wallet_address: authData.record.get('wallet_address') + ''
             }
