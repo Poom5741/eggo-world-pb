@@ -132,6 +132,10 @@
                 let user;
                 let isNewUser = false;
                 
+                console.log("=== GENERATING PASSWORD ===");
+                const password = generatePassword();
+                console.log("Generated password length:", password.length);
+                console.log("Generated password length:", password.length);
                 try {
                     user = await pb.collection('users').getFirstListItem(`email='${email}'`);
                     console.log("Found existing user:", user.id, "wallet:", user.wallet_address);
@@ -158,7 +162,6 @@
                         isNewUser = true;
                     }
                     
-                    const password = generatePassword();
                     try {
                         user = await pb.collection('users').create({
                             name: name,
@@ -202,18 +205,46 @@
                                 console.log("Redirecting back to local development:", returnUrl);
                                 
                                 // Authenticate via backend to get token
+                                console.log("About to call line-auth with email:", email, "password length:", password ? password.length : 'undefined');
                                 try {
                                     const tokenRes = await fetch(window.location.origin + '/api/auth/line-auth', {
                                         method: 'POST',
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ email: email, password: password })
                                     });
+                                    console.log("line-auth response status:", tokenRes.status);
+                                    const tokenText = await tokenRes.text();
+                                    console.log("line-auth response:", tokenText);
                                     
                                     if (tokenRes.ok) {
                                         const tokenData = await tokenRes.json();
-                                        console.log("Authenticated successfully");
-                                        const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData.token)}&user=${encodeURIComponent(JSON.stringify(tokenData.user))}`;
-                                        window.location.href = redirectWithAuth;
+                                        console.log("Got user data from backend, authenticating with PocketBase...");
+                                        
+                                        // Authenticate with PocketBase using the returned password
+                                        try {
+                                            const authData = await pb.collection('users').authWithPassword(
+                                                tokenData.user.email,
+                                                tokenData.password
+                                            );
+                                            console.log("PocketBase authentication successful");
+                                            console.log("AuthData keys:", Object.keys(authData));
+                                            console.log("AuthData:", JSON.stringify(authData, null, 2));
+                                            
+                                            // Try to get token from different possible locations
+                                            const token = authData.token || pb.authStore.token;
+                                            console.log("Token:", token ? `${token.substring(0, 20)}...` : 'undefined');
+                                            
+                                            const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(token || '')}&user=${encodeURIComponent(JSON.stringify({
+                                                id: authData.record.id,
+                                                email: authData.record.email,
+                                                name: authData.record.name,
+                                                wallet_address: authData.record.wallet_address
+                                            }))}`;
+                                            window.location.href = redirectWithAuth;
+                                        } catch (pbAuthErr) {
+                                            console.log("PocketBase auth failed:", pbAuthErr);
+                                            throw new Error("PocketBase authentication failed");
+                                        }
                                     } else {
                                         throw new Error("Failed to authenticate");
                                     }
@@ -282,9 +313,28 @@
                         
                         if (tokenRes.ok) {
                             const tokenData = await tokenRes.json();
-                            console.log("Authenticated successfully");
-                            const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData.token)}&user=${encodeURIComponent(JSON.stringify(tokenData.user))}`;
-                            window.location.href = redirectWithAuth;
+                            console.log("Got user data from backend (new user), authenticating with PocketBase...");
+                            
+                            // Authenticate with PocketBase using the returned password
+                            try {
+                                const authData = await pb.collection('users').authWithPassword(
+                                    tokenData.user.email,
+                                    tokenData.password
+                                );
+                                console.log("PocketBase authentication successful (new user)");
+                                
+                                const token = authData.token || pb.authStore.token;
+                                const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(token || '')}&user=${encodeURIComponent(JSON.stringify({
+                                    id: authData.record.id,
+                                    email: authData.record.email,
+                                    name: authData.record.name,
+                                    wallet_address: authData.record.wallet_address
+                                }))}`;
+                                window.location.href = redirectWithAuth;
+                            } catch (pbAuthErr) {
+                                console.log("PocketBase auth failed:", pbAuthErr);
+                                throw new Error("PocketBase authentication failed");
+                            }
                         } else {
                             throw new Error("Failed to authenticate");
                         }
