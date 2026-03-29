@@ -157,7 +157,14 @@
                             isNewUser = false;
                             
                             // Get the existing user
-                            user = await pb.collection('users').getFirstListItem(`email='${email}'`);
+                            try {
+                                user = await pb.collection('users').getFirstListItem(`email='${email}'`);
+                                console.log("Found existing user:", user.id);
+                            } catch (fetchErr) {
+                                console.log("Could not fetch existing user:", fetchErr.message);
+                                showError("User exists but could not be fetched. Please try again.");
+                                return;
+                            }
                             
                             // If we have a return URL (from local development), redirect back with auth data
                             if (returnUrl && returnUrl.includes('localhost')) {
