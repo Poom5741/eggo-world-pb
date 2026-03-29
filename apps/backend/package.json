@@ -12,6 +12,6 @@
     "logs": "docker-compose logs -f"
   },
   "devDependencies": {
-    "pocketbase": "^0.21.0"
+    "pocketbase": "^0.26.8"
   }
 }

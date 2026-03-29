@@ -1,0 +1,15 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "eggo-pocketbase-backend",
+      "devDependencies": {
+        "pocketbase": "^0.26.8",
+      },
+    },
+  },
+  "packages": {
+    "pocketbase": ["pocketbase@0.26.8", "", {}, "sha512-aQ/ewvS7ncvAE8wxoW10iAZu6ElgbeFpBhKPnCfvRovNzm2gW8u/sQNPGN6vNgVEagz44kK//C61oKjfa+7Low=="],
+  }
+}
