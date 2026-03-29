@@ -251,19 +251,6 @@
                                 return;
                             }
                             
-                            loaderEl.style.display = "none";
-                            messageEl.className = "message success";
-                            messageEl.innerHTML = `
-                                <strong>✓ Already Registered!</strong><br><br>
-                                <strong>Name:</strong> ${name}<br>
-                                <strong>Email:</strong> ${email}<br>
-                                <strong>LINE ID:</strong> ${sub}<br>
-                                <br><p>Your account already exists. Wallet was created on first login.</p>
-                            `;
-                            
-                            setTimeout(() => window.location.href = "/line-login.html", 3000);
-                            return;
-                    }
                 }
 
                 if (!user.wallet_address) {
