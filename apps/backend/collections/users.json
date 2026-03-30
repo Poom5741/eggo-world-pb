@@ -230,6 +230,30 @@
         "type": "number"
       },
       {
+        "hidden": false,
+        "id": "number_food_nft_count",
+        "max": 999999,
+        "min": 0,
+        "name": "food_nft_count",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "number_total_food_consumed",
+        "max": 999999,
+        "min": 0,
+        "name": "total_food_consumed",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
+      },
+      {
         "autogeneratePattern": "",
         "hidden": false,
         "id": "text_highest_tier",
