@@ -8,12 +8,14 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {CommissionDistribution} from "./CommissionDistribution.sol";
 import {FoodType} from "./FoodNFT.sol";
+import {AnimalNFT, Rarity, Species} from "./AnimalNFT.sol";
 
 contract EggNFT is ERC721, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
     
     address public immutable commissionDistribution;
     IERC20 public immutable usdtToken;
+    address public animalNFTContract;
     
     uint256 public constant MINT_PRICE = 25 * 10^18;
     uint256 public constant MAX_FOOD_COUNT = 10;
@@ -29,6 +31,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         bool is_hatched;
         uint256 rarity_seed;
         address[4] referral_chain;
+        uint256 animal_token_id;
     }
     
     mapping(uint256 => EggProperties) private _eggProperties;
@@ -36,8 +39,9 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
     mapping(address => bool) public authorizedFoodNFTContracts;
     
     event EggMinted(uint256 indexed egg_id, address indexed buyer, address indexed referrer);
-    event EggHatched(uint256 indexed egg_id);
+    event EggHatched(uint256 indexed egg_id, uint256 indexed animal_id, Rarity rarity, Species species);
     event MintPriceUpdated(uint256 newPrice);
+    event AnimalNFTContractSet(address indexed animalNFTContract);
     
     constructor(
         address _commissionDistribution,
@@ -89,7 +93,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
             food_count: INITIAL_FOOD_COUNT,
             is_hatched: false,
             rarity_seed: raritySeed,
-            referral_chain: referralChain
+            referral_chain: referralChain,
+            animal_token_id: 0
         });
         
         address primaryReferrer = referralChain[0];
@@ -104,7 +109,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         uint256 food_count,
         bool is_hatched,
         uint256 rarity_seed,
-        address[4] memory referral_chain
+        address[4] memory referral_chain,
+        uint256 animal_token_id
     ) {
         require(ownerOf(tokenId) != address(0), "Token does not exist");
         
@@ -115,20 +121,58 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
             props.food_count,
             props.is_hatched,
             props.rarity_seed,
-            props.referral_chain
+            props.referral_chain,
+            props.animal_token_id
         );
     }
     
-    function hatchEgg(uint256 tokenId) external {
+    function hatchEgg(uint256 tokenId) external nonReentrant returns (uint256) {
         require(ownerOf(tokenId) == msg.sender, "Not token owner");
         
         EggProperties storage props = _eggProperties[tokenId];
         require(!props.is_hatched, "Egg already hatched");
         require(props.food_count >= MAX_FOOD_COUNT, "Not enough food consumed");
+        require(animalNFTContract != address(0), "AnimalNFT contract not set");
+        
+        uint256 finalSeed = uint256(keccak256(abi.encodePacked(
+            props.rarity_seed,
+            block.prevrandao,
+            block.timestamp
+        )));
+        
+        Rarity rarity = _calculateRarity(finalSeed);
+        
+        FoodType[] memory foodHistory = new FoodType[](props.food_count);
+        for (uint256 i = 0; i < props.food_count; i++) {
+            foodHistory[i] = _foodTypeHistory[tokenId][i];
+        }
+        
+        Species species = _determineSpecies(finalSeed, foodHistory, rarity);
+        
+        uint256[4] memory foodDistribution;
+        for (uint256 i = 0; i < props.food_count; i++) {
+            FoodType ft = foodHistory[i];
+            if (ft == FoodType.Grain) foodDistribution[0]++;
+            else if (ft == FoodType.Fish) foodDistribution[1]++;
+            else if (ft == FoodType.Insects) foodDistribution[2]++;
+            else if (ft == FoodType.Herb) foodDistribution[3]++;
+        }
+        
+        uint256 animalTokenId = AnimalNFT(animalNFTContract).mintAnimal(
+            msg.sender,
+            props.egg_id,
+            rarity,
+            species,
+            0,
+            foodDistribution
+        );
         
         props.is_hatched = true;
+        props.animal_token_id = animalTokenId;
         
-        emit EggHatched(tokenId);
+        emit EggHatched(tokenId, animalTokenId, rarity, species);
+        
+        return animalTokenId;
     }
     
     function recordFoodConsumption(
@@ -208,6 +252,78 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
     
     function setMintPrice(uint256 newPrice) external onlyOwner {
         emit MintPriceUpdated(newPrice);
+    }
+    
+    function _calculateRarity(uint256 raritySeed) internal pure returns (Rarity) {
+        uint256 roll = raritySeed % 100;
+        if (roll < 60) return Rarity.Common;
+        else if (roll < 85) return Rarity.Rare;
+        else if (roll < 97) return Rarity.Epic;
+        else return Rarity.Legendary;
+    }
+    
+    function _determineSpecies(
+        uint256 raritySeed,
+        FoodType[] memory foodHistory,
+        Rarity rarity
+    ) internal pure returns (Species) {
+        uint256 grainCount = 0;
+        uint256 fishCount = 0;
+        uint256 insectsCount = 0;
+        uint256 herbCount = 0;
+        
+        for (uint256 i = 0; i < foodHistory.length; i++) {
+            if (foodHistory[i] == FoodType.Grain) grainCount++;
+            else if (foodHistory[i] == FoodType.Fish) fishCount++;
+            else if (foodHistory[i] == FoodType.Insects) insectsCount++;
+            else if (foodHistory[i] == FoodType.Herb) herbCount++;
+        }
+        
+        uint256 speciesSeed = uint256(keccak256(abi.encodePacked(
+            raritySeed,
+            grainCount,
+            fishCount,
+            insectsCount,
+            herbCount
+        )));
+        
+        if (rarity == Rarity.Common) {
+            if (grainCount >= fishCount && grainCount >= insectsCount && grainCount >= herbCount) {
+                return speciesSeed % 2 == 0 ? Species.Chicken : Species.Quail;
+            } else if (fishCount >= grainCount && fishCount >= insectsCount && fishCount >= herbCount) {
+                return Species.Duck;
+            } else if (insectsCount >= grainCount && insectsCount >= fishCount && insectsCount >= herbCount) {
+                return Species.Quail;
+            } else {
+                return speciesSeed % 2 == 0 ? Species.Chicken : Species.Quail;
+            }
+        } else if (rarity == Rarity.Rare) {
+            uint256 rarePool = speciesSeed % 3;
+            if (rarePool == 0) return Species.Peacock;
+            else if (rarePool == 1) return Species.Swan;
+            else return Species.Turkey;
+        } else if (rarity == Rarity.Epic) {
+            uint256 epicPool = speciesSeed % 3;
+            if (epicPool == 0) return Species.Phoenix;
+            else if (epicPool == 1) return Species.GoldenChicken;
+            else return Species.SilverDuck;
+        } else {
+            uint256 legendaryPool = speciesSeed % 3;
+            if (legendaryPool == 0) return Species.Dragon;
+            else if (legendaryPool == 1) return Species.Unicorn;
+            else return Species.Gryphon;
+        }
+    }
+    
+    function getAnimalId(uint256 eggTokenId) external view returns (uint256) {
+        require(ownerOf(eggTokenId) != address(0), "Token does not exist");
+        return _eggProperties[eggTokenId].animal_token_id;
+    }
+    
+    function setAnimalNFTContract(address _animalNFT) external onlyOwner {
+        require(_animalNFT != address(0), "AnimalNFT address cannot be zero");
+        animalNFTContract = _animalNFT;
+        emit AnimalNFTContractSet(_animalNFT);
     }
     
     function setFoodNFTContract(address _foodNFT) external onlyOwner {
