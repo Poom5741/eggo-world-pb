@@ -18,9 +18,10 @@ interface EggCardProps {
     minted_at: string
   }
   onHatch?: () => void
+  showFeedButton?: boolean
 }
 
-export function EggCard({ egg, onHatch }: EggCardProps) {
+export function EggCard({ egg, onHatch, showFeedButton }: EggCardProps) {
   const [showReferralChain, setShowReferralChain] = useState(false)
 
   const getRarityLabel = (seed: number) => {
@@ -124,15 +125,28 @@ export function EggCard({ egg, onHatch }: EggCardProps) {
         )}
       </CardContent>
 
-      <CardFooter>
-        {!egg.is_hatched && onHatch && (
-          <Button
-            onClick={onHatch}
-            className="w-full font-[var(--font-pixel)] text-sm border-4 border-accent/50 hover:border-accent transition-colors"
-          >
-            <Flame className="w-4 h-4 mr-2" />
-            HATCH EGG
-          </Button>
+      <CardFooter className="flex gap-2">
+        {!egg.is_hatched && (
+          <>
+            {showFeedButton && (
+              <Button
+                variant="outline"
+                onClick={() => window.location.href = `/dashboard/eggs/${egg.token_id}/feed`}
+                className="flex-1 font-[var(--font-pixel)] text-sm border-primary/50 hover:border-primary"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                FEED
+              </Button>
+            )}
+            <Button
+              onClick={onHatch}
+              disabled={egg.food_count < 10}
+              className="flex-1 font-[var(--font-pixel)] text-sm border-4 border-accent/50 hover:border-accent transition-colors disabled:opacity-50"
+            >
+              <Flame className="w-4 h-4 mr-2" />
+              HATCH
+            </Button>
+          </>
         )}
         {egg.is_hatched && (
           <Button
