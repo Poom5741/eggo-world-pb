@@ -7,6 +7,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {CommissionDistribution} from "./CommissionDistribution.sol";
+import {FoodType} from "./FoodNFT.sol";
 
 contract EggNFT is ERC721, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
@@ -31,6 +32,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
     }
     
     mapping(uint256 => EggProperties) private _eggProperties;
+    mapping(uint256 => mapping(uint256 => FoodType)) private _foodTypeHistory;
+    mapping(address => bool) public authorizedFoodNFTContracts;
     
     event EggMinted(uint256 indexed egg_id, address indexed buyer, address indexed referrer);
     event EggHatched(uint256 indexed egg_id);
@@ -121,10 +124,49 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         
         EggProperties storage props = _eggProperties[tokenId];
         require(!props.is_hatched, "Egg already hatched");
+        require(props.food_count >= MAX_FOOD_COUNT, "Not enough food consumed");
         
         props.is_hatched = true;
         
         emit EggHatched(tokenId);
+    }
+    
+    function recordFoodConsumption(
+        uint256 egg_token_id,
+        uint256[] calldata food_ids,
+        FoodType[] calldata food_types
+    ) external onlyAuthorizedFoodNFTContract {
+        require(food_ids.length == food_types.length, "Arrays length mismatch");
+        
+        EggProperties storage props = _eggProperties[egg_token_id];
+        require(!props.is_hatched, "Egg already hatched");
+        
+        for (uint256 i = 0; i < food_ids.length; i++) {
+            _foodTypeHistory[egg_token_id][props.food_count] = food_types[i];
+            props.food_count++;
+        }
+    }
+    
+    function getFoodTypeHistory(uint256 egg_token_id)
+        external
+        view
+        returns (FoodType[] memory)
+    {
+        require(ownerOf(egg_token_id) != address(0), "Token does not exist");
+        
+        EggProperties memory props = _eggProperties[egg_token_id];
+        FoodType[] memory history = new FoodType[](props.food_count);
+        
+        for (uint256 i = 0; i < props.food_count; i++) {
+            history[i] = _foodTypeHistory[egg_token_id][i];
+        }
+        
+        return history;
+    }
+    
+    modifier onlyAuthorizedFoodNFTContract() {
+        require(authorizedFoodNFTContracts[msg.sender], "Not authorized");
+        _;
     }
     
     function getFoodCount(uint256 tokenId) external view returns (uint256) {
@@ -166,5 +208,10 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
     
     function setMintPrice(uint256 newPrice) external onlyOwner {
         emit MintPriceUpdated(newPrice);
+    }
+    
+    function setFoodNFTContract(address _foodNFT) external onlyOwner {
+        require(_foodNFT != address(0), "FoodNFT address cannot be zero");
+        authorizedFoodNFTContracts[_foodNFT] = true;
     }
 }
