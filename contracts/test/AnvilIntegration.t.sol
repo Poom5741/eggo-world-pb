@@ -72,7 +72,8 @@ contract AnvilIntegrationTest is Test {
             uint256 foodCount,
             bool isHatched,
             uint256 raritySeed,
-            address[4] memory chain
+            address[4] memory chain,
+            uint256 animalTokenId
         ) = eggNFT.getEggProperties(tokenId);
         
         console.log("Egg ID:", eggId);

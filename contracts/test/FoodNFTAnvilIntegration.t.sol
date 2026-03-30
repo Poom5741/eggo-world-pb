@@ -83,7 +83,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         
         console.log("Egg NFT minted with token ID:", egg_token_id);
         
-        (,address own,uint256 initial_food_count,bool isHatched,uint256 raritySeed,address[4] memory refChain) = eggNFT.getEggProperties(egg_token_id);
+        (,address own,uint256 initial_food_count,bool isHatched,uint256 raritySeed,address[4] memory refChain,) = eggNFT.getEggProperties(egg_token_id);
         console.log("Initial food count:", initial_food_count);
         assertEq(initial_food_count, 2, "Egg should start with 2 food");
         
@@ -107,7 +107,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         
         console.log("Egg fed with", food_ids.length, "food items");
         
-        (,address own2,uint256 new_food_count,bool isHatched2,uint256 raritySeed2,address[4] memory refChain2) = eggNFT.getEggProperties(egg_token_id);
+        (,address own2,uint256 new_food_count,bool isHatched2,uint256 raritySeed2,address[4] memory refChain2,) = eggNFT.getEggProperties(egg_token_id);
         console.log("New food count:", new_food_count);
         assertEq(new_food_count, 12, "Egg should have 12 food (2 initial + 10 fed)");
         

@@ -113,7 +113,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         
         require(eggNFT.ownerOf(egg_token_id) == msg.sender, "Not egg owner");
         
-        (,,,bool is_hatched,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,bool is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
         require(!is_hatched, "Egg already hatched");
         
         FoodType[] memory foodTypes = new FoodType[](food_ids.length);
