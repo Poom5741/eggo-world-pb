@@ -167,6 +167,75 @@ app.post('/api/v1/wallet/balance', async (req, res) => {
     }
 });
 
+// Mint Egg NFT
+app.post('/api/wallet/mint-egg', async (req, res) => {
+    try {
+        const { wallet: walletAddress, daccPublicKey, pin, referralChain, eggNftAddress } = req.body;
+        
+        if (!walletAddress || !daccPublicKey || !pin || !eggNftAddress) {
+            return res.status(400).json({ 
+                success: false, 
+                error: { message: 'Missing required parameters' } 
+            });
+        }
+        
+        console.log(`Minting Egg NFT: ${walletAddress}`);
+        console.log(`Referral chain: ${JSON.stringify(referralChain)}`);
+        
+        // TODO: Implement actual contract interaction with ethers
+        // For now, return mock tx hash
+        const mockTxHash = '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+        
+        res.json({
+            success: true,
+            data: {
+                txHash: mockTxHash,
+                status: 'pending_blockchain_confirmation'
+            }
+        });
+    } catch (error) {
+        console.error('Mint egg error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: { message: error.message } 
+        });
+    }
+});
+
+// Claim Commission
+app.post('/api/wallet/claim-commission', async (req, res) => {
+    try {
+        const { wallet: walletAddress, daccPublicKey, pin, commissionDistributionAddress } = req.body;
+        
+        if (!walletAddress || !daccPublicKey || !pin || !commissionDistributionAddress) {
+            return res.status(400).json({ 
+                success: false, 
+                error: { message: 'Missing required parameters' } 
+            });
+        }
+        
+        console.log(`Claiming commission: ${walletAddress}`);
+        
+        // TODO: Implement actual contract interaction with ethers
+        // For now, return mock tx hash
+        const mockTxHash = '0x' + Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('');
+        
+        res.json({
+            success: true,
+            data: {
+                txHash: mockTxHash,
+                status: 'pending_blockchain_confirmation'
+            }
+        });
+    } catch (error) {
+        console.error('Claim commission error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: { message: error.message } 
+        });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Wallet API running on port ${PORT}`);
     console.log(`Health: http://localhost:${PORT}/health`);

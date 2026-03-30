@@ -9,6 +9,7 @@ NFT Membership System with LINE OAuth and EVM Wallet Integration
 | Web | `apps/web/` | Next.js 16 + React 19 + Bun | ✅ Configured |
 | Backend | `apps/backend/` | PocketBase (Go) + pb_hooks | ✅ Hooks Testable |
 | Wallet API | `wallet-api/` | Express.js + ethers | ✅ Configured |
+| Contracts | `contracts/` | Foundry + Solidity 0.8.20 | ✅ Configured |
 
 ---
 
@@ -239,6 +240,123 @@ cd apps/backend && bun test pb_hooks/*.test.js
 
 ---
 
+# Module: Contracts (`contracts/`)
+
+## Project Information
+- Language: Solidity 0.8.20
+- Framework: Foundry
+- Test Framework: Forge (built-in)
+- Dependencies: OpenZeppelin Contracts
+
+## Build Command
+```bash
+cd contracts && forge build
+```
+
+## Test Commands
+
+**Run All Tests:**
+```bash
+cd contracts && forge test
+```
+
+**Run Single Test File:**
+```bash
+cd contracts && forge test --match-path test/Counter.t.sol
+```
+
+**Run Specific Test Function:**
+```bash
+cd contracts && forge test --match-test testFunctionName
+```
+
+**Run Tests with Gas Reports:**
+```bash
+cd contracts && forge test --gas-report
+```
+
+**Run Tests Verbosely:**
+```bash
+cd contracts && forge test -vvv
+```
+
+**Run Tests with Coverage:**
+```bash
+cd contracts && forge coverage
+```
+
+## Test File Patterns
+- Test files: `*.t.sol`
+- Test directory: `contracts/test/`
+- Script files: `contracts/script/*.sol`
+
+## Module-Specific Conventions
+
+### Contract Structure
+- `src/` - Smart contract source files
+- `test/` - Forge test files
+- `script/` - Deployment scripts
+- `lib/` - Dependencies (OpenZeppelin, etc.)
+
+### Testing Patterns
+- Inherit `Test` contract from Foundry
+- Use `setUp()` for test fixtures
+- Use `vm.*` cheatcodes for mocking and manipulation
+- Test success, failure, and edge cases
+- Gas optimization testing with `--gas-report`
+
+### Test File Structure
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import {Test} from "forge-std/Test.sol";
+import {Counter} from "../src/Counter.sol";
+
+contract CounterTest is Test {
+    Counter public counter;
+
+    function setUp() public {
+        counter = new Counter();
+    }
+
+    function test_Increment() public {
+        counter.increment();
+        assertEq(counter.number(), 1);
+    }
+}
+```
+
+### Deployment Scripts
+- Use `forge script` for deployments
+- Support multiple networks (BSC, Ethereum, Polygon)
+- Store deployment artifacts in `broadcast/`
+
+### Common Commands
+```bash
+# Format contracts
+forge fmt
+
+# Lint contracts
+forge fmt --check
+
+# Take gas snapshot
+forge snapshot
+
+# Deploy to network
+forge script script/Deploy.s.sol --rpc-url <url> --private-key <key>
+
+# Verify on Etherscan
+forge verify-contract <address> <contract> --chain-id <id>
+```
+
+## References
+- `contracts/README.md` - Foundry documentation
+- `contracts/foundry.toml` - Foundry configuration
+- https://book.getfoundry.sh/ - Foundry book
+
+---
+
 ## TDG Workflow
 
 TDG follows Red-Green-Refactor cycle:
@@ -278,3 +396,164 @@ cd apps/backend
 # Start PocketBase first, then test hooks via API
 docker compose up -d
 ```
+
+**For Contracts module:**
+```bash
+cd contracts
+forge build
+forge test
+forge test --gas-report  # With gas analysis
+```
+
+**For Web module (Egg NFT features):**
+```bash
+cd apps/web
+bun run dev              # Start dev server
+bun test                 # Run tests
+bun test EggCard.test.tsx # Run specific test
+```
+
+---
+
+# Phase 3: Frontend Integration - COMPLETE ✅
+
+## Files Created
+
+### Pages:
+- `apps/web/app/mint/page.tsx` - Egg NFT minting page
+- `apps/web/app/dashboard/eggs/page.tsx` - User's egg collection dashboard
+- `apps/web/app/dashboard/commissions/page.tsx` - Commission earnings dashboard
+
+### Components:
+- `apps/web/components/egg-nft/EggCard.tsx` - Egg NFT display card
+- `apps/web/components/egg-nft/ReferralChainDisplay.tsx` - Referral chain visualization
+- `apps/web/components/egg-nft/CommissionBreakdown.tsx` - Commission distribution display
+- `apps/web/components/egg-nft/MintButton.tsx` - Mint action button with validation
+
+### Hooks:
+- `apps/web/hooks/use-egg-nft.ts` - Egg NFT contract interaction hook
+
+### Tests:
+- `apps/web/components/egg-nft/EggCard.test.tsx` - EggCard component tests
+
+## Features Implemented
+
+### Mint Page (`/mint`):
+- ✅ Display mint price (25 USDT)
+- ✅ Show user's USDT balance with progress bar
+- ✅ Referrer ID input (optional)
+- ✅ Mint button with loading/success states
+- ✅ Balance validation
+- ✅ Success modal with redirect to eggs dashboard
+- ✅ Error handling and display
+
+### Eggs Dashboard (`/dashboard/eggs`):
+- ✅ Grid view of user's Egg NFTs
+- ✅ Stats: total eggs, hatched count, food NFTs, total value
+- ✅ EggCard component with:
+  - Token ID and rarity badge (Common/Uncommon/Rare/Epic/Legendary)
+  - Food count display (0-10)
+  - Hatch status indicator
+  - Mint date
+  - Referral chain viewer
+  - Hatch button (if not hatched)
+- ✅ Empty state with mint CTA
+- ✅ Refresh after hatching
+
+### Commissions Dashboard (`/dashboard/commissions`):
+- ✅ Pending commission balance
+- ✅ Total earned display
+- ✅ Earnings breakdown by level (G1-G4)
+- ✅ Claim button with transaction status
+- ✅ Commission history list
+- ✅ Real-time balance updates
+
+### useEggNft Hook:
+- ✅ `mintEgg(referrerId)` - Mint new Egg NFT
+- ✅ `getEggProperties(tokenId)` - Fetch egg data
+- ✅ `getCommissionBalance(address)` - Get pending commissions
+- ✅ `claimCommission()` - Claim earned commissions
+- ✅ `getUserEggs(userId)` - List user's eggs
+- ✅ `getUserCommissions(userId)` - List commission records
+
+## Design System Alignment
+
+### Visual Style:
+- Pixel art aesthetic with retro gaming vibes
+- Font: Press Start 2P (Google Fonts)
+- Colors: Space blue (#1a1a2e), Yellow (#facc15), Navy (#0f3460), Red (#e94560)
+- Border style: 4px solid borders with primary color
+- Icons: Lucide Icons (Egg, Coins, Wallet, Flame)
+
+### UI Components Used:
+- shadcn/ui primitives (Card, Button, Badge, Input, Progress, Alert)
+- Tailwind CSS 4 for styling
+- Custom pixel font for headings
+- Animate.css for subtle animations
+
+### Responsive Design:
+- Mobile-first approach
+- Grid layouts adapt to screen size (1/2/3/4 columns)
+- Touch-friendly button sizes
+- Readable on all devices
+
+## API Integration
+
+### PocketBase Endpoints:
+- `POST /api/v2/mint-egg` - Mint Egg NFT
+- `POST /api/v2/claim-commission` - Claim commissions
+- `GET /api/collections/egg_nfts` - Fetch egg records
+- `GET /api/collections/commission_records` - Fetch commission records
+
+### Wallet API Endpoints:
+- `POST /api/wallet/mint-egg` - Contract mint interaction
+- `POST /api/wallet/claim-commission` - Contract claim interaction
+
+## Testing
+
+### Component Tests:
+```bash
+cd apps/web
+bun test EggCard.test.tsx
+```
+
+### Test Coverage:
+- EggCard renders correctly
+- Rarity labels display properly
+- Hatch status shows correctly
+- Referral chain toggle works
+- Button states (loading, disabled, success)
+
+## User Flow
+
+1. **Mint Flow:**
+   ```
+   User visits /mint → Checks balance → Enters referrer (optional) → 
+   Clicks "Mint Egg" → API call → Success → Redirects to /dashboard/eggs
+   ```
+
+2. **View Eggs Flow:**
+   ```
+   User visits /dashboard/eggs → Sees egg grid → Views egg details → 
+   Clicks "View Referral Chain" → Sees G1-G4 referrers
+   ```
+
+3. **Hatch Flow:**
+   ```
+   User clicks "Hatch Egg" → API call → Egg status updates → 
+   Visual change (egg icon → flame icon)
+   ```
+
+4. **Commission Flow:**
+   ```
+   User visits /dashboard/commissions → Sees pending balance → 
+   Clicks "Claim" → API call → Balance updates → Success message
+   ```
+
+## Next Steps (Phase 4: Testing & Deployment):
+
+1. Deploy contracts to BSC testnet
+2. Update environment variables with contract addresses
+3. Test full mint flow with real USDT on testnet
+4. Verify commission distribution on-chain
+5. Security audit before mainnet deployment
