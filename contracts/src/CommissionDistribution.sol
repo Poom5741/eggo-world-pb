@@ -5,6 +5,7 @@ contract CommissionDistribution {
     address public immutable owner;
     address public immutable coinStorReserve;
     address public eggNFTContract;
+    address public foodNFTContract;
     
     uint256 public constant G1_PERCENT = 20;
     uint256 public constant G2_PERCENT = 10;
@@ -20,6 +21,7 @@ contract CommissionDistribution {
     event CommissionClaimed(address indexed referrer, uint256 amount);
     event CoinStorDeposit(address indexed buyer, uint256 amount);
     event EggNFTContractSet(address indexed eggNFT);
+    event FoodNFTContractSet(address indexed foodNFT);
     
     constructor(address _coinStorReserve) {
         require(_coinStorReserve != address(0), "CoinStor address cannot be zero");
@@ -34,8 +36,15 @@ contract CommissionDistribution {
         emit EggNFTContractSet(_eggNFT);
     }
     
+    function setFoodNFTContract(address _foodNFT) external {
+        require(msg.sender == owner, "Only owner can set");
+        require(_foodNFT != address(0), "FoodNFT address cannot be zero");
+        foodNFTContract = _foodNFT;
+        emit FoodNFTContractSet(_foodNFT);
+    }
+    
     function distributeCommission(address[4] calldata referralChain, uint256 amount) external {
-        require(msg.sender == owner || msg.sender == eggNFTContract, "Not authorized");
+        require(msg.sender == owner || msg.sender == eggNFTContract || msg.sender == foodNFTContract, "Not authorized");
         require(amount > 0, "Amount must be greater than 0");
         
         uint256 totalDistributed = 0;
