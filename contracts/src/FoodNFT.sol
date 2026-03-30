@@ -110,6 +110,9 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         require(food_ids.length > 0, "No food items provided");
         
         EggNFT eggNFT = EggNFT(eggNftContract);
+        
+        require(eggNFT.ownerOf(egg_token_id) == msg.sender, "Not egg owner");
+        
         (,,,bool is_hatched,,) = eggNFT.getEggProperties(egg_token_id);
         require(!is_hatched, "Egg already hatched");
         
@@ -119,8 +122,8 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
             uint256 foodId = food_ids[i];
             FoodProperties storage props = _foodProperties[foodId];
             
-            require(props.owner == msg.sender, "Not food owner");
             require(!props.is_consumed, "Food already consumed");
+            require(balanceOf(msg.sender, foodId) > 0, "Not food owner");
             
             props.is_consumed = true;
             props.consumed_by_egg_id = egg_token_id;
