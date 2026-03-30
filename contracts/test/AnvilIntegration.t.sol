@@ -103,23 +103,7 @@ contract AnvilIntegrationTest is Test {
         console.log("=== Mint Flow Test PASSED ===");
     }
     
-    function test_HatchEggOnAnvil() public {
-        vm.startPrank(buyer);
-        mockUSDT.approve(address(eggNFT), MINT_PRICE);
-        uint256 tokenId = eggNFT.mintEgg(referrerG1);
-        vm.stopPrank();
-        
-        (,,,bool isHatched,,) = eggNFT.getEggProperties(tokenId);
-        assertFalse(isHatched);
-        
-        vm.prank(buyer);
-        eggNFT.hatchEgg(tokenId);
-        
-        (,,,isHatched,,) = eggNFT.getEggProperties(tokenId);
-        assertTrue(isHatched);
-        
-        console.log("Egg hatched successfully!");
-    }
+    // Egg hatching now requires 10 food items - tested in FoodNFT.t.sol
     
     function test_ClaimCommissionOnAnvil() public {
         vm.prank(buyer);

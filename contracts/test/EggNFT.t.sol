@@ -159,20 +159,7 @@ contract EggNFTTest is Test {
         vm.stopPrank();
     }
     
-    function test_HatchEgg() public {
-        vm.startPrank(buyer);
-        mockUSDT.approve(address(eggNFT), MINT_PRICE);
-        uint256 tokenId = eggNFT.mintEgg(referrerG1);
-        
-        (,,,bool isHatched,,) = eggNFT.getEggProperties(tokenId);
-        assertFalse(isHatched);
-        
-        eggNFT.hatchEgg(tokenId);
-        
-        (,,,isHatched,,) = eggNFT.getEggProperties(tokenId);
-        assertTrue(isHatched);
-        vm.stopPrank();
-    }
+    // Egg hatching now requires 10 food items - tested in FoodNFT.t.sol
     
     function test_MintWithNoReferrer() public {
         vm.prank(buyer);
