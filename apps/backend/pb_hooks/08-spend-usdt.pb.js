@@ -18,7 +18,7 @@ routerAdd("POST", "/api/v2/wallet/spend", (e) => {
     
     try {
         // Find user by wallet address
-        const userRecord = $app.findFirstRecordByData("users", "wallet_address", user_address);
+        const userRecord = $app.findFirstRecordByData("users", "wallet", user_address);
         
         if (!userRecord) {
             return e.json(404, { 

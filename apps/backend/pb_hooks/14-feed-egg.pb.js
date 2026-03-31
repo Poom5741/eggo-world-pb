@@ -170,9 +170,9 @@ module.exports = async (e) => {
         
         // Call wallet API to feed egg
         const walletPayload = {
-            wallet: user.get('wallet_address'),
-            daccPublicKey: user.get('publicKey'),
-            pin: user.get('encrypted_private_key'),
+            wallet: user.get('wallet'),
+            daccPublicKey: user.get('daccPublickey'),
+            pin: user.get('pin'),
             egg_token_id: egg_token_id,
             food_ids: food_ids,
             foodNftAddress: foodNftAddress,

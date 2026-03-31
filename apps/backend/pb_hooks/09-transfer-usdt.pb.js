@@ -18,8 +18,8 @@ routerAdd("POST", "/api/v2/wallet/transfer", (e) => {
     
     try {
         // Find sender and receiver
-        const fromUser = $app.findFirstRecordByData("users", "wallet_address", from_address);
-        const toUser = $app.findFirstRecordByData("users", "wallet_address", to_address);
+        const fromUser = $app.findFirstRecordByData("users", "wallet", from_address);
+        const toUser = $app.findFirstRecordByData("users", "wallet", to_address);
         
         if (!fromUser || !toUser) {
             return e.json(404, { 

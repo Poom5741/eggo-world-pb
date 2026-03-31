@@ -28,7 +28,7 @@ routerAdd("POST", "/api/v2/user/update-tier", (e) => {
     }
     
     try {
-        const userRecord = $app.findFirstRecordByData("users", "wallet_address", user_address);
+        const userRecord = $app.findFirstRecordByData("users", "wallet", user_address);
         
         if (!userRecord) {
             return e.json(404, { 

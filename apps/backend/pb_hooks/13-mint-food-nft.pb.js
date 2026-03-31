@@ -88,7 +88,7 @@ module.exports = async (e) => {
         if (referrer_id) {
             const referrer = $app.dao().findRecordById("users", referrer_id);
             if (referrer) {
-                referralChain.push(referrer.get('wallet_address'));
+                referralChain.push(referrer.get('wallet'));
                 
                 // Get up to 3 more levels from referrer's chain
                 const referrerChain = referrer.get('referral_chain') || '';
@@ -124,9 +124,9 @@ module.exports = async (e) => {
         
         // Call wallet API to mint food
         const walletPayload = {
-            wallet: user.get('wallet_address'),
-            daccPublicKey: user.get('publicKey'),
-            pin: user.get('encrypted_private_key'),
+            wallet: user.get('wallet'),
+            daccPublicKey: user.get('daccPublickey'),
+            pin: user.get('pin'),
             quantity: quantity,
             referrer: referralChain[0],
             foodNftAddress: foodNftAddress

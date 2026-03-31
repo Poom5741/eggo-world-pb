@@ -31,7 +31,7 @@ routerAdd('POST', '/api/auth/line-user', (c) => {
                 id: user.id + '',
                 email: user.get('email') + '',
                 name: user.get('name') + '',
-                wallet_address: user.get('wallet_address') + ''
+                wallet: user.get('wallet') + ''
             }
         });
 
@@ -98,9 +98,9 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
                 id: user.id + '',
                 email: user.get('email') + '',
                 name: user.get('name') + '',
-                wallet_address: user.get('wallet_address') + ''
+                wallet: user.get('wallet') + ''
             },
-            password: password  // Return password so frontend can authenticate
+            password: password
         });
 
     } catch (err) {

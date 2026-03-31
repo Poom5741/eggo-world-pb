@@ -17,7 +17,7 @@ routerAdd("POST", "/api/v2/wallet/balance", (e) => {
     
     try {
         // Find user by wallet address
-        const userRecord = $app.findFirstRecordByData("users", "wallet_address", user_address);
+        const userRecord = $app.findFirstRecordByData("users", "wallet", user_address);
         
         if (!userRecord) {
             return e.json(404, { 
@@ -44,7 +44,7 @@ routerAdd("POST", "/api/v2/wallet/balance", (e) => {
                 total_spent: walletRecord.getNumber("total_spent") || 0,
                 total_withdrawn: walletRecord.getNumber("total_withdrawn") || 0,
                 user_id: userRecord.id,
-                wallet_address: userRecord.getString("wallet_address")
+                wallet: userRecord.getString("wallet")
             }
         });
     } catch (error) {

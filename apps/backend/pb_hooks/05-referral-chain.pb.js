@@ -103,7 +103,7 @@ function createReferralRecord(referrerId, refereeId, level) {
 
 function emitUserRegisteredEvent(user, referralChain) {
     console.log('EVENT:UserRegistered', JSON.stringify({
-        user_address: user.getString('wallet_address'),
+        user_address: user.getString('wallet'),
         user_id: user.id,
         referral_chain: referralChain,
         timestamp: new Date().toISOString()

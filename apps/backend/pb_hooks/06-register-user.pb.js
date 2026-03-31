@@ -35,10 +35,10 @@ routerAdd('POST', '/api/users/register', (e) => {
         });
     }
     
-    // Verify referrer exists by wallet_address
+    // Verify referrer exists by wallet
     const referrerRecords = $app.findRecordsByFilter(
         'users',
-        `wallet_address = "${referrer_address}"`,
+        `wallet = "${referrer_address}"`,
         '',
         1
     );
@@ -57,7 +57,7 @@ routerAdd('POST', '/api/users/register', (e) => {
     // Check if user already exists
     const existingUsers = $app.findRecordsByFilter(
         'users',
-        `wallet_address = "${user_address}"`,
+        `wallet = "${user_address}"`,
         '',
         1
     );
@@ -73,7 +73,7 @@ routerAdd('POST', '/api/users/register', (e) => {
     // Create user record
     const userCollection = $app.findCollectionByNameOrId('users');
     const user = new Record(userCollection);
-    user.set('wallet_address', user_address);
+    user.set('wallet', user_address);
     user.set('email', email || `${user_address}@user.local`);
     user.set('password', password || generateRandomPassword());
     user.set('name', name || `User_${user_address.substring(2, 8)}`);
@@ -103,7 +103,7 @@ routerAdd('POST', '/api/users/register', (e) => {
         success: true,
         data: {
             user_id: user.id,
-            wallet_address: user_address,
+            wallet: user_address,
             referral_chain: referralChain
         }
     });
@@ -156,7 +156,7 @@ function createReferralRecords(referrerId, userId, chain) {
 function emitUserRegisteredEvent(user, referralChain) {
     // Log event for external monitoring
     console.log('EVENT:UserRegistered', JSON.stringify({
-        user_address: user.getString('wallet_address'),
+        user_address: user.getString('wallet'),
         user_id: user.id,
         referral_chain: referralChain,
         timestamp: new Date().toISOString()

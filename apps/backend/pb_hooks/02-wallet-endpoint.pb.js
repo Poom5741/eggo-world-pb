@@ -45,15 +45,15 @@ routerAdd('POST', '/api/wallet/create', (c) => {
                 
                 try {
                     const record = $app.findRecordById('users', userId);
-                    let publicKey = walletData.publicKey || '';
-                    if (publicKey.length > 42) {
-                        publicKey = publicKey.substring(0, 42);
+                    let daccPublickey = walletData.daccPublickey || '';
+                    if (daccPublickey.length > 42) {
+                        daccPublickey = daccPublickey.substring(0, 42);
                     }
                     
-                    record.set('wallet_address', walletData.address);
-                    record.set('publicKey', publicKey);
+                    record.set('wallet', walletData.address);
+                    record.set('daccPublickey', daccPublickey);
                     record.set('wallet_version', walletData.version || 3);
-                    record.set('encrypted_private_key', JSON.stringify(walletData.encryptedPrivateKey || {}));
+                    record.set('pin', walletData.pin || '');
                     $app.save(record);
                     
                     console.log('Wallet saved:', walletData.address);
