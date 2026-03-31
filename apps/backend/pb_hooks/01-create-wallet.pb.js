@@ -1,114 +1,94 @@
 // ===== CREATE WALLET HOOK =====
-// Call wallet-api service when user is created via OAuth
+// Uses dacc-js wallet service for wallet creation
 
 console.log("Setting up create wallet hook...");
 
-const WALLET_API_URL = process.env.WALLET_API_URL || "http://wallet-api:3001";
+const WALLET_SRV_URL = process.env.WALLET_SRV_URL || "http://wallet-srv:3000";
 
-onRecordAfterCreateSuccess((e) => {
-    console.log("=== WALLET HOOK FIRED ===");
-    console.log("Record ID:", e.record.id);
-    
-    const existingWallet = e.record.getString("wallet_address");
-    if (existingWallet && existingWallet.startsWith("0x")) {
-        console.log("User already has wallet:", existingWallet);
-        return;
+onRecordCreate((e) => {
+  console.log("Create wallet hook triggered for user:", e.record.id);
+
+  try {
+    // Generate secure password secret key (20 chars with special chars)
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let passwordSecretkey = "";
+    for (let i = 0; i < 20; i++) {
+      passwordSecretkey += charset.charAt(Math.floor(Math.random() * charset.length));
     }
-    
-    const userId = e.record.id;
-    console.log("Creating wallet for:", userId);
-    
-    let address = "";
-    let publicKey = "";
-    let encryptedKey = "{}";
-    let version = 1;
-    
+
+    console.log("Generated password secret key for user:", e.record.id);
+
+    // Call wallet-srv to create wallet
+    const apiUrl = `${WALLET_SRV_URL}/api/v1/wallet/create`;
+    const requestBody = {
+      passwordSecretkey: passwordSecretkey,
+      publicEncryption: false
+    };
+
+    console.log("Calling wallet-srv to create wallet...");
+    console.log("Request URL:", apiUrl);
+
+    const response = $http.send({
+      url: apiUrl,
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody)
+    });
+
+    console.log("Wallet-srv response status:", response.statusCode);
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw new Error(`Wallet-srv returned status ${response.statusCode}: ${response.body}`);
+    }
+
+    // Convert byte array to string if needed
+    let responseBody = response.body;
+    if (typeof response.body === 'object' && response.body.length !== undefined) {
+      responseBody = String.fromCharCode.apply(null, response.body);
+    }
+
+    if (!responseBody || responseBody.trim() === "") {
+      throw new Error("Wallet-srv returned empty response body");
+    }
+
+    let responseData;
     try {
-        const response = $http.send({
-            url: WALLET_API_URL + "/api/wallet/create",
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId: userId }),
-            timeout: 10
-        });
-        
-        console.log("API status:", response.statusCode);
-        
-        if (response.statusCode === 200) {
-            let bodyBytes = response.body;
-            
-            let bodyStr = '';
-            if (Array.isArray(bodyBytes)) {
-                for (let i = 0; i < bodyBytes.length; i++) {
-                    bodyStr += String.fromCharCode(bodyBytes[i]);
-                }
-            } else {
-                bodyStr = String(bodyBytes);
-            }
-            
-            let data = JSON.parse(bodyStr);
-            
-            if (data && data.success && data.data) {
-                address = data.data.address || "";
-                let pk = data.data.publicKey || "";
-                if (pk.length > 42) {
-                    pk = pk.substring(0, 42);
-                }
-                publicKey = pk;
-                encryptedKey = JSON.stringify(data.data.encryptedPrivateKey || {});
-                version = data.data.version || 3;
-                console.log("Got wallet:", address);
-            }
-        }
-    } catch (err) {
-        console.log("API error:", err);
+      responseData = JSON.parse(responseBody);
+    } catch (parseError) {
+      throw new Error(`Failed to parse wallet-srv response: ${responseBody}`);
     }
-    
-    if (!address) {
-        console.log("Generating placeholder wallet");
-        const hexChars = "0123456789abcdef";
-        address = "0x";
-        publicKey = "0x";
-        for (let i = 0; i < 40; i++) {
-            address += hexChars[Math.floor(Math.random() * 16)];
-            publicKey += hexChars[Math.floor(Math.random() * 16)];
-        }
-        version = 1;
+
+    console.log("Wallet-srv parsed response:", responseData);
+
+    if (!responseData.success) {
+      throw new Error(`Wallet creation failed: ${responseData.error?.message || 'Unknown error'}`);
     }
-    
-    e.record.set("wallet_address", address);
-    e.record.set("publicKey", publicKey);
-    e.record.set("wallet_version", version);
-    e.record.set("encrypted_private_key", encryptedKey);
-    
-    // Initialize wallet balance fields
+
+    // Set NEW field names (matching reference implementation)
+    e.record.set("wallet", responseData.data.address);
+    e.record.set("pin", passwordSecretkey);  // NEW: pin field
+    e.record.set("daccPublickey", responseData.data.daccPublickey);  // NEW: daccPublickey
+
+    // Initialize EIP-7702 fields (NEW)
+    e.record.set("eip7702_enabled", false);
+    e.record.set("eip7702_hash", "");
+
+    // Initialize game-related fields
     e.record.set("usdt_balance", 0);
     e.record.set("usdt_total_earned", 0);
     e.record.set("total_direct_recruits", 0);
     e.record.set("lifetime_food_items", 0);
     e.record.set("highest_tier_reached", "bronze");
-    
-    $app.save(e.record);
-    console.log("Wallet saved:", address);
-    
-    // Create UserWallets record
-    try {
-        const walletCollection = $app.findCollectionByNameOrId("user_wallets");
-        const walletRecord = new Record(walletCollection);
-        walletRecord.set("user_id", e.record.id);
-        walletRecord.set("usdt_balance", 0);
-        walletRecord.set("total_earned", 0);
-        walletRecord.set("total_spent", 0);
-        walletRecord.set("total_withdrawn", 0);
-        walletRecord.set("wallet_address", address);
-        walletRecord.set("last_transaction_at", new Date().toISOString());
-        $app.save(walletRecord);
-        console.log("UserWallet record created for:", e.record.id);
-    } catch (walletErr) {
-        console.log("Error creating UserWallet:", walletErr);
-    }
 
+    console.log("Wallet data saved to user record");
+
+  } catch (error) {
+    console.error("Failed to create wallet:", error);
+    throw new Error(`Wallet creation failed: ${error.message}`);
+  }
+
+  e.next();
 }, "users");
 
 console.log("Create wallet hook registered");
-console.log("Wallet API URL:", WALLET_API_URL);
+console.log("Wallet-srv URL:", WALLET_SRV_URL);
