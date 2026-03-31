@@ -62,6 +62,12 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         uint256 indexed parent2_animal_id,
         uint256 generation
     );
+    event AnimalsBred(
+        uint256 indexed animal_id_1,
+        uint256 indexed animal_id_2,
+        uint256 indexed offspring_id,
+        uint256 offspring_generation
+    );
     event MintPriceUpdated(uint256 newPrice);
     event AnimalNFTContractSet(address indexed animalNFTContract);
     
@@ -177,7 +183,12 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
             block.timestamp
         )));
         
-        Rarity rarity = _calculateRarity(finalSeed, props.rarity_upgrade_count);
+        Rarity rarity;
+        if (props.is_breeding_egg) {
+            rarity = Rarity(props.rarity_seed);
+        } else {
+            rarity = _calculateRarity(finalSeed, props.rarity_upgrade_count);
+        }
         
         FoodType[] memory foodHistory = new FoodType[](props.food_count);
         for (uint256 i = 0; i < props.food_count; i++) {
@@ -211,6 +222,10 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         
         props.is_hatched = true;
         props.animal_token_id = animalTokenId;
+        
+        if (props.is_breeding_egg) {
+            emit AnimalsBred(props.parent1_animal_id, props.parent2_animal_id, animalTokenId, generation);
+        }
         
         emit EggHatched(tokenId, animalTokenId, rarity, species);
         
@@ -260,6 +275,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         require(parent1TokenId != parent2TokenId, "Cannot breed same animal");
         require(AnimalNFT(animalNFTContract).ownerOf(parent1TokenId) == msg.sender, "Not owner of parent1");
         require(AnimalNFT(animalNFTContract).ownerOf(parent2TokenId) == msg.sender, "Not owner of parent2");
+        require(AnimalNFT(animalNFTContract).canBreed(parent1TokenId), "Parent 1 on cooldown");
+        require(AnimalNFT(animalNFTContract).canBreed(parent2TokenId), "Parent 2 on cooldown");
         
         (,,,Rarity rarity1, uint256 gen1,,,,,) = AnimalNFT(animalNFTContract).getAnimalProperties(parent1TokenId);
         (,,,Rarity rarity2, uint256 gen2,,,,,) = AnimalNFT(animalNFTContract).getAnimalProperties(parent2TokenId);
@@ -288,12 +305,14 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
             parent2TokenId
         )));
         
+        Rarity offspringRarity = _calculateOffspringRarity(rarity1, rarity2, raritySeed);
+        
         _eggProperties[tokenId] = EggProperties({
             egg_id: eggId,
             owner: msg.sender,
             food_count: INITIAL_FOOD_COUNT,
             is_hatched: false,
-            rarity_seed: raritySeed,
+            rarity_seed: uint256(offspringRarity),
             referral_chain: referralChain,
             animal_token_id: 0,
             is_breeding_egg: true,
@@ -302,6 +321,9 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
             rarity_upgrade_count: 0,
             generation: childGeneration
         });
+        
+        AnimalNFT(animalNFTContract).recordBreeding(parent1TokenId);
+        AnimalNFT(animalNFTContract).recordBreeding(parent2TokenId);
         
         emit BreedingEggCreated(eggId, parent1TokenId, parent2TokenId, childGeneration);
         
@@ -391,6 +413,24 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         (,,,,uint256 gen1,,,,,) = AnimalNFT(animalNFTContract).getAnimalProperties(parent1Id);
         (,,,,uint256 gen2,,,,,) = AnimalNFT(animalNFTContract).getAnimalProperties(parent2Id);
         return (gen1 > gen2 ? gen1 : gen2) + 1;
+    }
+    
+    function _calculateOffspringRarity(
+        Rarity parent1Rarity,
+        Rarity parent2Rarity,
+        uint256 seed
+    ) internal pure returns (Rarity) {
+        Rarity maxRarity = parent1Rarity > parent2Rarity ? parent1Rarity : parent2Rarity;
+        
+        uint256 varianceRoll = seed % 100;
+        
+        if (varianceRoll < 70) {
+            return maxRarity;
+        } else if (varianceRoll < 90) {
+            return maxRarity == Rarity.Legendary ? Rarity.Legendary : Rarity(uint256(maxRarity) + 1);
+        } else {
+            return maxRarity == Rarity.Common ? Rarity.Common : Rarity(uint256(maxRarity) - 1);
+        }
     }
     
     function _calculateRarity(uint256 raritySeed, uint256 upgradeCount) internal pure returns (Rarity) {

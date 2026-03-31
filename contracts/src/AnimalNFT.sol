@@ -28,10 +28,23 @@ enum Species {
 
 contract AnimalNFT is ERC721, Ownable {
     address public eggNFTContract;
+    uint256 public constant BREED_COOLDOWN = 48 hours;
     
     uint256 private _nextTokenId;
     uint256 private _nextAnimalId;
     
+    mapping(uint256 => AnimalProperties) private _animalProperties;
+    mapping(uint256 => uint256) private _eggIdToAnimalTokenId;
+    mapping(uint256 => uint256) private _lastBredTimestamp;
+    
+    event AnimalMinted(
+        uint256 indexed animal_id,
+        address indexed recipient,
+        Rarity rarity,
+        Species species,
+        uint256 generation
+    );
+    event EggNFTContractSet(address indexed eggNFTContract);
     struct AnimalProperties {
         uint256 animal_id;
         address owner;
@@ -45,17 +58,12 @@ contract AnimalNFT is ERC721, Ownable {
         uint256 rarity_upgrade_count;
     }
     
-    mapping(uint256 => AnimalProperties) private _animalProperties;
-    mapping(uint256 => uint256) private _eggIdToAnimalTokenId;
-    
-    event AnimalMinted(
-        uint256 indexed animal_id,
-        address indexed recipient,
-        Rarity rarity,
-        Species species,
-        uint256 generation
+    event AnimalsBred(
+        uint256 indexed animal_id_1,
+        uint256 indexed animal_id_2,
+        uint256 indexed offspring_id,
+        uint256 offspring_generation
     );
-    event EggNFTContractSet(address indexed eggNFTContract);
     
     constructor() ERC721("Animal NFT", "ANIMAL") Ownable(msg.sender) {
         _nextTokenId = 1;
@@ -161,6 +169,21 @@ contract AnimalNFT is ERC721, Ownable {
     
     function getAnimalId(uint256 eggId) external view returns (uint256) {
         return _eggIdToAnimalTokenId[eggId];
+    }
+    
+    function getLastBredTime(uint256 tokenId) external view returns (uint256) {
+        return _lastBredTimestamp[tokenId];
+    }
+    
+    function canBreed(uint256 tokenId) external view returns (bool) {
+        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        uint256 lastBred = _lastBredTimestamp[tokenId];
+        return lastBred == 0 || block.timestamp >= lastBred + BREED_COOLDOWN;
+    }
+    
+    function recordBreeding(uint256 tokenId) external {
+        require(msg.sender == eggNFTContract, "Only EggNFT contract can record");
+        _lastBredTimestamp[tokenId] = block.timestamp;
     }
     
     function totalSupply() external view returns (uint256) {
