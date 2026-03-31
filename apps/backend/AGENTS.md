@@ -38,12 +38,12 @@ apps/backend/
 ```
 NN-feature.pb.js
 # Examples:
-00-config.pb.js         # Configuration
-01-create-wallet.pb.js  # Auto-wallet creation
-02-wallet-endpoint.pb.js
-03-debug-request.pb.js
-04-auth-token.pb.js     # LINE OAuth
-99-debug.pb.js          # Debug utilities
+00-config.pb.js            # Configuration
+01-create-wallet.pb.js     # Auto-wallet creation
+02-legacy-api-compat.pb.js # Legacy compatibility
+03-wallet-api-endpoint.pb.js # Wallet API
+05-auth-token.pb.js        # LINE OAuth
+99-debug.pb.js             # Debug utilities
 ```
 
 **Hook Response Format:**

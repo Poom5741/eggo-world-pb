@@ -5,18 +5,33 @@
 
 ## OVERVIEW
 
-6 JavaScript event handlers for PocketBase. Numbered sequentially for execution order. Handles LINE OAuth, wallet creation, and debug utilities.
+20 JavaScript event handlers for PocketBase. Numbered sequentially for execution order. Handles LINE OAuth, wallet creation, NFT minting, and more.
 
 ## STRUCTURE
 
 ```
 pb_hooks/
-├── 00-config.pb.js          # Configuration and constants
-├── 01-create-wallet.pb.js   # Auto-wallet on user signup
-├── 02-wallet-endpoint.pb.js # Wallet operations endpoint
-├── 03-debug-request.pb.js   # Request debugging
-├── 04-auth-token.pb.js      # LINE OAuth token exchange
-└── 99-debug.pb.js           # General debug utilities
+├── 00-config.pb.js            # Configuration and constants
+├── 01-create-wallet.pb.js     # Auto-wallet on user signup
+├── 02-legacy-api-compat.pb.js # Legacy API compatibility layer
+├── 03-wallet-api-endpoint.pb.js # Wallet API endpoint
+├── 04-debug-request.pb.js     # Request debugging
+├── 05-auth-token.pb.js        # LINE OAuth token exchange
+├── 06-referral-chain.pb.js    # Referral chain tracking
+├── 07-register-user.pb.js     # User registration
+├── 08-wallet-balance.pb.js    # Wallet balance queries
+├── 09-withdraw-usdt.pb.js     # USDT withdrawal
+├── 10-spend-usdt.pb.js        # USDT spending
+├── 11-transfer-usdt.pb.js     # USDT transfer
+├── 12-update-tier.pb.js       # Tier updates
+├── 13-mint-egg-nft.pb.js      # Egg NFT minting
+├── 14-claim-commission.pb.js  # Commission claims
+├── 15-mint-food-nft.pb.js     # Food NFT minting
+├── 16-feed-egg.pb.js          # Feed egg mechanic
+├── 17-upgrade-egg-rarity.pb.js # Egg rarity upgrades
+├── 18-breed-animals.pb.js     # Animal breeding
+├── 19-hatch-egg.pb.js         # Egg hatching
+└── 99-debug.pb.js             # General debug utilities
 ```
 
 ## WHERE TO LOOK
@@ -25,9 +40,11 @@ pb_hooks/
 |------|----------|-------|
 | Add new hook | `pb_hooks/NN-{feature}.pb.js` | Choose NN for sequence |
 | Modify wallet creation | `01-create-wallet.pb.js` | onRecordCreate for users |
-| Modify OAuth | `04-auth-token.pb.js` | LINE token exchange |
+| Modify OAuth | `05-auth-token.pb.js` | LINE token exchange |
 | Add debug logging | `99-debug.pb.js` | Debug utilities |
 | Configure globals | `00-config.pb.js` | Constants, API URLs |
+| NFT operations | `13-mint-egg-nft.pb.js`, `15-mint-food-nft.pb.js` | NFT minting hooks |
+| USDT operations | `09-withdraw-usdt.pb.js`, `10-spend-usdt.pb.js`, `11-transfer-usdt.pb.js` | USDT transfers |
 
 ## CONVENTIONS
 
