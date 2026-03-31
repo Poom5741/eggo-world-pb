@@ -1,0 +1,92 @@
+{
+  "7117": {
+    "rpcUrl": "https://rpc.0xl3.com",
+    "chainId": 7117,
+    "name": "0xl3",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    }
+  },
+  "11155420": {
+    "rpcUrl": "https://sepolia.optimism.io",
+    "chainId": 11155420,
+    "name": "OP Sepolia Testnet",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    }
+  },
+  "11155111": {
+    "rpcUrl": "https://sepolia.optimism.io",
+    "chainId": 11155111,
+    "name": "OP Sepolia",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    }
+  },
+  "1": {
+    "rpcUrl": "https://mainnet.infura.io/v3/YOUR_INFURA_KEY",
+    "chainId": 1,
+    "name": "Ethereum Mainnet",
+    "nativeCurrency": {
+      "name": "Ether",
+      "symbol": "ETH",
+      "decimals": 18
+    }
+  },
+  "56": {
+    "rpcUrl": "https://bsc-dataseed1.binance.org",
+    "chainId": 56,
+    "name": "Binance Smart Chain",
+    "nativeCurrency": {
+      "name": "BNB",
+      "symbol": "BNB",
+      "decimals": 18
+    }
+  },
+  "137": {
+    "rpcUrl": "https://polygon-rpc.com",
+    "chainId": 137,
+    "name": "Polygon Mainnet",
+    "nativeCurrency": {
+      "name": "MATIC",
+      "symbol": "MATIC",
+      "decimals": 18
+    }
+  },
+  "171": {
+    "rpcUrl": "https://rpc.co2e.cc",
+    "chainId": 171,
+    "name": "CO2E",
+    "nativeCurrency": {
+      "name": "CO2E",
+      "symbol": "CO2E",
+      "decimals": 18
+    }
+  },
+  "480001": {
+    "rpcUrl": "https://rpc.mvpcha.in",
+    "chainId": 480001,
+    "name": "MVPChain",
+    "nativeCurrency": {
+      "name": "MVP",
+      "symbol": "MVP",
+      "decimals": 18
+    }
+  },
+  "7442": {
+    "rpcUrl": "https://chain.th.vote/rpc",
+    "chainId": 7442,
+    "name": "Thai Vote",
+    "nativeCurrency": {
+      "name": "THV",
+      "symbol": "THV",
+      "decimals": 18
+    }
+  }
+}
