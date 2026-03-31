@@ -166,6 +166,11 @@ module.exports = async (e) => {
         record.set('contract_address', eggNftAddress.toLowerCase());
         record.set('food_count', INITIAL_FOOD_COUNT);
         record.set('is_hatched', false);
+        record.set('generation', 0);
+        record.set('is_breeding_egg', false);
+        record.set('parent1_animal_id', 0);
+        record.set('parent2_animal_id', 0);
+        record.set('rarity_upgrade_count', 0);
         record.set('rarity_seed', raritySeed);
         record.set('referral_chain', referralChain.filter(addr => addr !== null));
         record.set('tx_hash', txHash.toLowerCase());
@@ -194,6 +199,7 @@ module.exports = async (e) => {
                 tx_hash: txHash,
                 food_count: INITIAL_FOOD_COUNT,
                 is_hatched: false,
+                generation: 0,
                 rarity_seed: raritySeed,
                 referral_chain: referralChain.filter(addr => addr !== null)
             } 

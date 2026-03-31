@@ -4,12 +4,14 @@ pragma solidity ^0.8.24;
 import {Test, console} from "forge-std/Test.sol";
 import {FoodNFT, FoodType} from "../src/FoodNFT.sol";
 import {EggNFT} from "../src/EggNFT.sol";
+import {AnimalNFT} from "../src/AnimalNFT.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
 
 contract EggFeedingAnvilIntegrationTest is Test {
     FoodNFT public foodNFT;
     EggNFT public eggNFT;
+    AnimalNFT public animalNFT;
     CommissionDistribution public commissionDistribution;
     MockUSDT public mockUSDT;
     
@@ -35,6 +37,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         mockUSDT = new MockUSDT();
         commissionDistribution = new CommissionDistribution(coinStorReserve);
         eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT));
+        animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
             address(commissionDistribution),
             address(mockUSDT),
@@ -44,6 +47,8 @@ contract EggFeedingAnvilIntegrationTest is Test {
         commissionDistribution.setEggNFTContract(address(eggNFT));
         commissionDistribution.setFoodNFTContract(address(foodNFT));
         eggNFT.setFoodNFTContract(address(foodNFT));
+        eggNFT.setAnimalNFTContract(address(animalNFT));
+        animalNFT.setEggNFTContract(address(eggNFT));
         
         mockUSDT.mint(alice, INITIAL_BALANCE);
         mockUSDT.mint(bob, INITIAL_BALANCE);
@@ -155,13 +160,13 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[3] Alice feeds the egg...");
         vm.prank(alice);
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("    Food count after feeding:", food_count);
         
         console.log("\n[4] Alice hatches the egg...");
         vm.prank(alice);
         eggNFT.hatchEgg(egg_token_id);
-        (,,,bool is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,bool is_hatched,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("    Egg hatched:", is_hatched ? "YES" : "NO");
         
         console.log("\n[5] Alice mints 5 more Food NFTs...");
@@ -198,7 +203,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[3] Alice feeds batch 1...");
         vm.prank(alice);
         foodNFT.feedEgg(egg_token_id, batch1, address(eggNFT));
-        (,,uint256 count1,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 count1,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("    Food count after batch 1:", count1);
         
         console.log("\n[4] Alice mints 3 Food NFTs (Batch 2)...");
@@ -210,7 +215,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[5] Alice feeds batch 2...");
         vm.prank(alice);
         foodNFT.feedEgg(egg_token_id, batch2, address(eggNFT));
-        (,,uint256 count2,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 count2,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("    Food count after batch 2:", count2);
         
         console.log("\n[6] Alice mints 4 Food NFTs (Batch 3)...");
@@ -222,7 +227,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[7] Alice feeds batch 3...");
         vm.prank(alice);
         foodNFT.feedEgg(egg_token_id, batch3, address(eggNFT));
-        (,,uint256 count3,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 count3,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("    Food count after batch 3:", count3);
         
         assertEq(count3, 12, "Should have 12 food items (2 initial + 10)");
@@ -231,7 +236,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[8] Alice hatches the egg...");
         vm.prank(alice);
         eggNFT.hatchEgg(egg_token_id);
-        (,,,bool is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,bool is_hatched,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("    Egg hatched:", is_hatched ? "YES" : "NO");
         assertEq(is_hatched, true);
         console.log("    [OK] Egg hatched successfully after batch feeding");
@@ -369,23 +374,23 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("=======================================================");
         vm.prank(alice);
         foodNFT.feedEgg(egg_token_id, batch1, address(eggNFT));
-        (,,uint256 c1,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 c1,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("[OK] Batch 1 fed (Food count: %s)", c1);
         
         vm.prank(alice);
         foodNFT.feedEgg(egg_token_id, batch2, address(eggNFT));
-        (,,uint256 c2,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 c2,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("[OK] Batch 2 fed (Food count: %s)", c2);
         
         vm.prank(alice);
         foodNFT.feedEgg(egg_token_id, batch3, address(eggNFT));
-        (,,uint256 c3,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 c3,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("[OK] Batch 3 fed (Food count: %s)", c3);
         
         console.log("\n=======================================================");
         console.log("PHASE 4: Verify Food Count");
         console.log("=======================================================");
-        (,,uint256 final_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 final_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("Final food count: %s (Expected: 12)", final_count);
         assertEq(final_count, 12, "Should have 12 food items");
         console.log("[OK] Food count verified");
@@ -395,7 +400,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("=======================================================");
         vm.prank(alice);
         eggNFT.hatchEgg(egg_token_id);
-        (,,,bool is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,bool is_hatched,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         console.log("Egg hatched: %s", is_hatched ? "YES" : "NO");
         assertEq(is_hatched, true, "Egg should be hatched");
         console.log("[OK] Egg hatched successfully");

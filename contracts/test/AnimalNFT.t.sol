@@ -77,7 +77,10 @@ contract AnimalNFTTest is Test {
             rarity,
             species,
             generation,
-            foodDistribution
+            foodDistribution,
+            0,  // parent1_animal_id
+            0,  // parent2_animal_id
+            0   // rarity_upgrade_count
         );
         vm.stopPrank();
         
@@ -104,7 +107,10 @@ contract AnimalNFTTest is Test {
             Rarity.Rare,
             Species.Duck,
             0,
-            foodDistribution
+            foodDistribution,
+            0,  // parent1_animal_id
+            0,  // parent2_animal_id
+            0   // rarity_upgrade_count
         );
         vm.stopPrank();
         
@@ -114,7 +120,11 @@ contract AnimalNFTTest is Test {
             Species animalSpecies,
             Rarity animalRarity,
             uint256 animalGeneration,
-            uint256[] memory animalFoodDistribution
+            uint256[] memory animalFoodDistribution,
+            uint256 parentEggId,
+            uint256 parent1Id,
+            uint256 parent2Id,
+            uint256 upgradeCount
         ) = animalNFT.getAnimalProperties(tokenId);
         
         assertEq(animalId, 1);
@@ -140,7 +150,10 @@ contract AnimalNFTTest is Test {
             Rarity.Common,
             Species.Chicken,
             0,
-            foodDistribution
+            foodDistribution,
+            0,  // parent1_animal_id
+            0,  // parent2_animal_id
+            0   // rarity_upgrade_count
         );
         
         vm.stopPrank();
@@ -161,7 +174,10 @@ contract AnimalNFTTest is Test {
             Rarity.Common,
             Species.Chicken,
             0,
-            foodDistribution
+            foodDistribution,
+            0,  // parent1_animal_id
+            0,  // parent2_animal_id
+            0   // rarity_upgrade_count
         );
         vm.stopPrank();
     }
@@ -174,9 +190,9 @@ contract AnimalNFTTest is Test {
         uint256[4] memory foodDistribution;
         
         vm.startPrank(address(eggNFT));
-        uint256 tokenId1 = animalNFT.mintAnimal(user, 1, Rarity.Common, Species.Chicken, 0, foodDistribution);
-        uint256 tokenId2 = animalNFT.mintAnimal(user, 2, Rarity.Rare, Species.Duck, 0, foodDistribution);
-        uint256 tokenId3 = animalNFT.mintAnimal(user, 3, Rarity.Epic, Species.Phoenix, 0, foodDistribution);
+        uint256 tokenId1 = animalNFT.mintAnimal(user, 1, Rarity.Common, Species.Chicken, 0, foodDistribution, 0, 0, 0);
+        uint256 tokenId2 = animalNFT.mintAnimal(user, 2, Rarity.Rare, Species.Duck, 0, foodDistribution, 0, 0, 0);
+        uint256 tokenId3 = animalNFT.mintAnimal(user, 3, Rarity.Epic, Species.Phoenix, 0, foodDistribution, 0, 0, 0);
         vm.stopPrank();
         
         assertEq(tokenId1, 1);
@@ -205,7 +221,10 @@ contract AnimalNFTTest is Test {
             Rarity.Epic,
             Species.GoldenChicken,
             1,
-            foodDistribution
+            foodDistribution,
+            0,  // parent1_animal_id
+            0,  // parent2_animal_id
+            0   // rarity_upgrade_count
         );
         vm.stopPrank();
         
@@ -215,7 +234,11 @@ contract AnimalNFTTest is Test {
             Species animalSpecies,
             Rarity animalRarity,
             uint256 animalGeneration,
-            uint256[] memory animalFoodDistribution
+            uint256[] memory animalFoodDistribution,
+            uint256 parentEggId,
+            uint256 parent1Id,
+            uint256 parent2Id,
+            uint256 upgradeCount
         ) = animalNFT.getAnimalProperties(tokenId);
         
         assertEq(animalId, 1);
@@ -243,7 +266,10 @@ contract AnimalNFTTest is Test {
             Rarity.Legendary,
             Species.Dragon,
             0,
-            foodDistribution
+            foodDistribution,
+            0,  // parent1_animal_id
+            0,  // parent2_animal_id
+            0   // rarity_upgrade_count
         );
         vm.stopPrank();
         
@@ -264,7 +290,10 @@ contract AnimalNFTTest is Test {
             Rarity.Common,
             Species.Quail,
             0,
-            foodDistribution
+            foodDistribution,
+            0,  // parent1_animal_id
+            0,  // parent2_animal_id
+            0   // rarity_upgrade_count
         );
         vm.stopPrank();
         
@@ -285,7 +314,10 @@ contract AnimalNFTTest is Test {
             Rarity.Common,
             Species.Chicken,
             2,
-            foodDistribution
+            foodDistribution,
+            0,  // parent1_animal_id
+            0,  // parent2_animal_id
+            0   // rarity_upgrade_count
         );
         vm.stopPrank();
         
@@ -306,7 +338,10 @@ contract AnimalNFTTest is Test {
             Rarity.Common,
             Species.Chicken,
             0,
-            foodDistribution
+            foodDistribution,
+            0,  // parent1_animal_id
+            0,  // parent2_animal_id
+            0   // rarity_upgrade_count
         );
         vm.stopPrank();
         

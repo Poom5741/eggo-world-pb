@@ -1,13 +1,23 @@
 {
-  "name": "egg_nfts",
+  "name": "animal_nfts",
   "type": "base",
   "system": false,
   "schema": [
     {
-      "name": "egg_id",
+      "name": "animal_id",
       "type": "number",
       "required": false,
       "unique": false,
+      "options": {
+        "min": 0,
+        "max": null
+      }
+    },
+    {
+      "name": "token_id",
+      "type": "number",
+      "required": true,
+      "unique": true,
       "options": {
         "min": 0,
         "max": null
@@ -27,48 +37,57 @@
       }
     },
     {
-      "name": "token_id",
+      "name": "species",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "Chicken",
+          "Duck",
+          "Pig",
+          "Cow",
+          "Sheep",
+          "Dog",
+          "Cat",
+          "Rabbit"
+        ]
+      }
+    },
+    {
+      "name": "rarity",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "Common",
+          "Rare",
+          "Epic",
+          "Legendary"
+        ]
+      }
+    },
+    {
+      "name": "generation",
       "type": "number",
       "required": true,
-      "unique": true,
+      "unique": false,
       "options": {
         "min": 0,
         "max": null
       }
     },
     {
-      "name": "contract_address",
-      "type": "text",
-      "required": true,
-      "unique": false,
-      "options": {
-        "pattern": "^0x[a-fA-F0-9]{40}$"
-      }
-    },
-    {
-      "name": "food_count",
+      "name": "parent_egg_id",
       "type": "number",
-      "required": true,
+      "required": false,
       "unique": false,
       "options": {
         "min": 0,
-        "max": 20
-      }
-    },
-    {
-      "name": "is_hatched",
-      "type": "bool",
-      "required": true,
-      "unique": false,
-      "options": {}
-    },
-    {
-      "name": "is_breeding_egg",
-      "type": "bool",
-      "required": true,
-      "unique": false,
-      "options": {
-        "default": false
+        "max": null
       }
     },
     {
@@ -92,6 +111,13 @@
       }
     },
     {
+      "name": "food_type_distribution",
+      "type": "json",
+      "required": false,
+      "unique": false,
+      "options": {}
+    },
+    {
       "name": "rarity_upgrade_count",
       "type": "number",
       "required": false,
@@ -102,32 +128,13 @@
       }
     },
     {
-      "name": "generation",
-      "type": "number",
+      "name": "contract_address",
+      "type": "text",
       "required": true,
       "unique": false,
       "options": {
-        "min": 0,
-        "max": null,
-        "default": 0
+        "pattern": "^0x[a-fA-F0-9]{40}$"
       }
-    },
-    {
-      "name": "rarity_seed",
-      "type": "number",
-      "required": false,
-      "unique": false,
-      "options": {
-        "min": null,
-        "max": null
-      }
-    },
-    {
-      "name": "referral_chain",
-      "type": "json",
-      "required": false,
-      "unique": false,
-      "options": {}
     },
     {
       "name": "tx_hash",
@@ -147,9 +154,10 @@
     }
   ],
   "indexes": [
-    "CREATE INDEX `idx_egg_nfts_owner` ON `egg_nfts` (`owner`)",
-    "CREATE INDEX `idx_egg_nfts_token_id` ON `egg_nfts` (`token_id`)",
-    "CREATE INDEX `idx_egg_nfts_is_hatched` ON `egg_nfts` (`is_hatched`)"
+    "CREATE INDEX `idx_animal_nfts_owner` ON `animal_nfts` (`owner`)",
+    "CREATE INDEX `idx_animal_nfts_token_id` ON `animal_nfts` (`token_id`)",
+    "CREATE INDEX `idx_animal_nfts_generation` ON `animal_nfts` (`generation`)",
+    "CREATE INDEX `idx_animal_nfts_rarity` ON `animal_nfts` (`rarity`)"
   ],
   "listRule": "@request.auth.id != \"\" && owner = @request.auth.id",
   "viewRule": "@request.auth.id != \"\" && owner = @request.auth.id",

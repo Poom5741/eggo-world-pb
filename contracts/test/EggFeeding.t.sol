@@ -4,12 +4,14 @@ pragma solidity ^0.8.24;
 import {Test, console} from "forge-std/Test.sol";
 import {FoodNFT, FoodType} from "../src/FoodNFT.sol";
 import {EggNFT} from "../src/EggNFT.sol";
+import {AnimalNFT} from "../src/AnimalNFT.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
 
 contract EggFeedingTest is Test {
     FoodNFT public foodNFT;
     EggNFT public eggNFT;
+    AnimalNFT public animalNFT;
     CommissionDistribution public commissionDistribution;
     MockUSDT public mockUSDT;
     
@@ -33,6 +35,7 @@ contract EggFeedingTest is Test {
         mockUSDT = new MockUSDT();
         commissionDistribution = new CommissionDistribution(address(0x4));
         eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT));
+        animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
             address(commissionDistribution),
             address(mockUSDT),
@@ -42,6 +45,8 @@ contract EggFeedingTest is Test {
         commissionDistribution.setEggNFTContract(address(eggNFT));
         commissionDistribution.setFoodNFTContract(address(foodNFT));
         eggNFT.setFoodNFTContract(address(foodNFT));
+        eggNFT.setAnimalNFTContract(address(animalNFT));
+        animalNFT.setEggNFTContract(address(eggNFT));
         
         mockUSDT.mint(buyer, INITIAL_BALANCE);
         mockUSDT.mint(otherBuyer, INITIAL_BALANCE);
@@ -61,7 +66,7 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(food_count, 3, "Food count should be 3 (2 initial + 1)");
     }
     
@@ -76,7 +81,7 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(food_count, 3, "Food count should increment by 1");
     }
     
@@ -91,7 +96,7 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(food_count, 3);
     }
     
@@ -141,7 +146,7 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(food_count, 7, "Food count should be 7 (2 initial + 5)");
     }
     
@@ -156,16 +161,16 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(food_count, 12, "Food count should be 12 (2 initial + 10)");
         
-        (,,,bool is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,bool is_hatched,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertFalse(is_hatched, "Egg should not be auto-hatched");
         
         vm.prank(buyer);
         eggNFT.hatchEgg(egg_token_id);
         
-        (,,,is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,is_hatched,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertTrue(is_hatched, "Egg should be hatched after calling hatchEgg");
     }
     
@@ -180,7 +185,7 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(food_count, 52, "Food count should be 52 (2 initial + 50)");
     }
     
@@ -213,14 +218,14 @@ contract EggFeedingTest is Test {
         uint256[] memory batch1 = foodNFT.mintFood(buyer, 3, referrerG1);
         
         foodNFT.feedEgg(egg_token_id, batch1, address(eggNFT));
-        (,,uint256 count1,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 count1,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(count1, 5);
         
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 3);
         uint256[] memory batch2 = foodNFT.mintFood(buyer, 3, referrerG1);
         
         foodNFT.feedEgg(egg_token_id, batch2, address(eggNFT));
-        (,,uint256 count2,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 count2,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(count2, 8);
     }
     
@@ -333,7 +338,7 @@ contract EggFeedingTest is Test {
         vm.prank(buyer);
         eggNFT.hatchEgg(egg_token_id);
         
-        (,,,bool is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,bool is_hatched,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertTrue(is_hatched, "Egg should be hatched");
     }
     
@@ -383,7 +388,7 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(food_count, 12, "Should have 12 food items (2 initial + 10)");
     }
     
@@ -398,7 +403,7 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(food_count, 22, "Should have 22 food items (2 initial + 20)");
     }
     
@@ -481,7 +486,7 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(food_count, 3, "New owner should be able to feed");
     }
     

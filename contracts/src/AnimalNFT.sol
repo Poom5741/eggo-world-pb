@@ -40,6 +40,9 @@ contract AnimalNFT is ERC721, Ownable {
         uint256 generation;
         uint256 parent_egg_id;
         uint256[4] food_type_distribution;
+        uint256 parent1_animal_id;
+        uint256 parent2_animal_id;
+        uint256 rarity_upgrade_count;
     }
     
     mapping(uint256 => AnimalProperties) private _animalProperties;
@@ -65,7 +68,10 @@ contract AnimalNFT is ERC721, Ownable {
         Rarity rarity,
         Species species,
         uint256 generation,
-        uint256[4] calldata food_type_distribution
+        uint256[4] calldata food_type_distribution,
+        uint256 parent1_animal_id,
+        uint256 parent2_animal_id,
+        uint256 rarity_upgrade_count
     ) external returns (uint256) {
         require(msg.sender == eggNFTContract, "Only EggNFT contract can mint");
         require(recipient != address(0), "Recipient cannot be zero address");
@@ -85,7 +91,10 @@ contract AnimalNFT is ERC721, Ownable {
             rarity: rarity,
             generation: generation,
             parent_egg_id: parent_egg_id,
-            food_type_distribution: food_type_distribution
+            food_type_distribution: food_type_distribution,
+            parent1_animal_id: parent1_animal_id,
+            parent2_animal_id: parent2_animal_id,
+            rarity_upgrade_count: rarity_upgrade_count
         });
         
         _eggIdToAnimalTokenId[parent_egg_id] = tokenId;
@@ -104,7 +113,11 @@ contract AnimalNFT is ERC721, Ownable {
             Species species,
             Rarity rarity,
             uint256 generation,
-            uint256[] memory food_type_distribution
+            uint256[] memory food_type_distribution,
+            uint256 parent_egg_id,
+            uint256 parent1_animal_id,
+            uint256 parent2_animal_id,
+            uint256 rarity_upgrade_count
         )
     {
         require(ownerOf(tokenId) != address(0), "Token does not exist");
@@ -123,7 +136,11 @@ contract AnimalNFT is ERC721, Ownable {
             props.species,
             props.rarity,
             props.generation,
-            foodDist
+            foodDist,
+            props.parent_egg_id,
+            props.parent1_animal_id,
+            props.parent2_animal_id,
+            props.rarity_upgrade_count
         );
     }
     

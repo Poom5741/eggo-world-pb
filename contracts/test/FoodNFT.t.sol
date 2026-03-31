@@ -5,12 +5,14 @@ import {Test, console} from "forge-std/Test.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {FoodNFT, FoodType} from "../src/FoodNFT.sol";
 import {EggNFT} from "../src/EggNFT.sol";
+import {AnimalNFT} from "../src/AnimalNFT.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
 
 contract FoodNFTTest is Test {
     FoodNFT public foodNFT;
     EggNFT public eggNFT;
+    AnimalNFT public animalNFT;
     CommissionDistribution public commissionDistribution;
     MockUSDT public mockUSDT;
     
@@ -38,6 +40,7 @@ contract FoodNFTTest is Test {
         mockUSDT = new MockUSDT();
         commissionDistribution = new CommissionDistribution(coinStorReserve);
         eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT));
+        animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
             address(commissionDistribution),
             address(mockUSDT),
@@ -47,6 +50,8 @@ contract FoodNFTTest is Test {
         commissionDistribution.setEggNFTContract(address(eggNFT));
         commissionDistribution.setFoodNFTContract(address(foodNFT));
         eggNFT.setFoodNFTContract(address(foodNFT));
+        eggNFT.setAnimalNFTContract(address(animalNFT));
+        animalNFT.setEggNFTContract(address(eggNFT));
         
         mockUSDT.mint(buyer, INITIAL_BALANCE);
         mockUSDT.mint(referrerG1, INITIAL_BALANCE);
@@ -153,7 +158,7 @@ contract FoodNFTTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,address own,uint256 foodCount,bool isHatched,uint256 raritySeed,address[4] memory refChain,) = eggNFT.getEggProperties(egg_token_id);
+        (,address own,uint256 foodCount,bool isHatched,uint256 raritySeed,address[4] memory refChain,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(foodCount, 12, "Egg should have 12 food items (2 initial + 10)");
         
         for (uint256 i = 0; i < food_ids.length; i++) {
@@ -179,7 +184,7 @@ contract FoodNFTTest is Test {
         uint256 egg_token_id = eggNFT.mintEgg(referrerG1);
         vm.stopPrank();
         
-        (,,uint256 initial_food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 initial_food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(initial_food_count, 2, "Egg should start with 2 food");
         
         vm.startPrank(buyer);
@@ -188,7 +193,7 @@ contract FoodNFTTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,uint256 new_food_count,,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,uint256 new_food_count,,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(new_food_count, 7, "Egg should have 7 food after feeding 5");
     }
     
@@ -253,7 +258,7 @@ contract FoodNFTTest is Test {
         
         eggNFT.hatchEgg(egg_token_id);
         
-        (,,,bool is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,bool is_hatched,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertTrue(is_hatched, "Egg should be hatched");
         vm.stopPrank();
     }
@@ -293,12 +298,12 @@ contract FoodNFTTest is Test {
         
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         
-        (,address own2,uint256 foodCount2,bool isHatched2,uint256 raritySeed2,address[4] memory refChain2,) = eggNFT.getEggProperties(egg_token_id);
+        (,address own2,uint256 foodCount2,bool isHatched2,uint256 raritySeed2,address[4] memory refChain2,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertEq(foodCount2, 12, "Egg should have 12 food items");
         
         eggNFT.hatchEgg(egg_token_id);
         
-        (,,,bool is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,bool is_hatched,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         assertTrue(is_hatched, "Egg should be hatched");
         
         vm.stopPrank();

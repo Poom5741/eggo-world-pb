@@ -73,7 +73,12 @@ contract EggNFTTest is Test {
             bool isHatched,
             uint256 raritySeed,
             address[4] memory referralChain,
-            uint256 animalTokenId
+            uint256 animalTokenId,
+            uint256 parent1Id,
+            uint256 parent2Id,
+            bool isBreedingEgg,
+            uint256 rarityUpgradeCount,
+            uint256 generation
         ) = eggNFT.getEggProperties(tokenId);
         
         assertEq(eggId, 1);
@@ -92,7 +97,7 @@ contract EggNFTTest is Test {
         uint256 tokenId = eggNFT.mintEgg(referrerG1);
         vm.stopPrank();
         
-        (,,uint256 foodCount,,,,) = eggNFT.getEggProperties(tokenId);
+        (,,uint256 foodCount,,,,,,,,,) = eggNFT.getEggProperties(tokenId);
         assertEq(foodCount, 2, "Food count should be 2 after mint");
     }
     
@@ -109,7 +114,7 @@ contract EggNFTTest is Test {
         vm.prank(buyer);
         uint256 tokenId = eggNFT.mintEggWithChain(referralChain);
         
-        (,,,,,address[4] memory storedChain,) = eggNFT.getEggProperties(tokenId);
+        (,,,,,address[4] memory storedChain,,,,,,) = eggNFT.getEggProperties(tokenId);
         
         assertEq(storedChain[0], referrerG1, "G1 should be recorded");
         assertEq(storedChain[1], referrerG2, "G2 should be recorded");
@@ -172,7 +177,7 @@ contract EggNFTTest is Test {
         assertEq(tokenId, 1);
         assertEq(eggNFT.ownerOf(tokenId), buyer);
         
-        (,,,,,address[4] memory referralChain,) = eggNFT.getEggProperties(tokenId);
+        (,,,,,address[4] memory referralChain,,,,,,) = eggNFT.getEggProperties(tokenId);
         assertEq(referralChain[0], address(0));
     }
     
@@ -186,7 +191,7 @@ contract EggNFTTest is Test {
         vm.prank(buyer);
         uint256 tokenId = eggNFT.mintEggWithChain(referralChain);
         
-        (,,,,,address[4] memory storedChain,) = eggNFT.getEggProperties(tokenId);
+        (,,,,,address[4] memory storedChain,,,,,,) = eggNFT.getEggProperties(tokenId);
         assertEq(storedChain[0], referrerG1);
         assertEq(storedChain[1], address(0));
         assertEq(storedChain[2], address(0));
@@ -211,7 +216,7 @@ contract EggNFTTest is Test {
         vm.prank(buyer);
         eggNFT.mintEgg(referrerG1);
         
-        (,,,,,address[4] memory referralChain,) = eggNFT.getEggProperties(1);
+        (,,,,,address[4] memory referralChain,,,,,,) = eggNFT.getEggProperties(1);
         assertEq(referralChain[0], referrerG1);
     }
     
@@ -276,7 +281,12 @@ contract EggNFTTest is Test {
             bool isHatched,
             uint256 raritySeed,
             address[4] memory storedChain,
-            uint256 animalTokenId
+            uint256 animalTokenId,
+            ,
+            ,
+            ,
+            ,
+
         ) = eggNFT.getEggProperties(tokenId);
         
         assertEq(eggId, 1);
