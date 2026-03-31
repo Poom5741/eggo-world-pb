@@ -1,14 +1,44 @@
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { daccSignAuthorizeEIP7702 } from "dacc-js";
-import { defineChain, createPublicClient, http, keccak256, toBytes } from "viem";
+import { defineChain, keccak256, toBytes } from "viem";
 import fs from "fs";
 import path from "path";
 
 const router = Router();
 
-// Load network configurations
+interface NetworkConfig {
+  rpcUrl: string;
+  chainId: number;
+  name: string;
+  nativeCurrency: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+}
+
+interface EIP7702AuthorizeRequest {
+  daccPublickey: string;
+  passwordSecretkey: string;
+  address: string;
+  smartAccount: string;
+  chainId?: number;
+}
+
+interface EIP7702ExecuteRequest {
+  daccPublickey: string;
+  passwordSecretkey: string;
+  address: string;
+  smartAccount: string;
+  to: string;
+  data?: string;
+  value?: string;
+  chainId?: number;
+}
+
+let networks: Record<string, NetworkConfig> = {};
+
 const networksPath = path.join(process.cwd(), "config", "networks.json");
-let networks: Record<string, any> = {};
 
 try {
   const networksData = fs.readFileSync(networksPath, "utf8");
@@ -17,21 +47,15 @@ try {
   console.error("Failed to load networks configuration:", error);
 }
 
-function getNetworkByChainId(chainId: number) {
+function getNetworkByChainId(chainId: number): NetworkConfig | null {
   const networkConfig = networks[String(chainId)];
   if (!networkConfig) {
     return null;
   }
-
-  return {
-    rpc: networkConfig.rpcUrl,
-    chainId: networkConfig.chainId,
-    name: networkConfig.name,
-    nativeCurrency: networkConfig.nativeCurrency
-  };
+  return networkConfig;
 }
 
-function createViemChain(networkConfig: any) {
+function createViemChain(networkConfig: NetworkConfig) {
   return defineChain({
     id: Number(networkConfig.chainId),
     name: networkConfig.name,
@@ -44,11 +68,66 @@ function createViemChain(networkConfig: any) {
   });
 }
 
-router.post("/authorize", async (req, res) => {
-  try {
-    const { daccPublickey, passwordSecretkey, address, smartAccount, chainId = 56 } = req.body;
+function convertBigInt(obj: any): any {
+  if (typeof obj === "bigint") return obj.toString();
+  if (Array.isArray(obj)) return obj.map(convertBigInt);
+  if (obj && typeof obj === "object") {
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [k, convertBigInt(v)])
+    );
+  }
+  return obj;
+}
 
-    if (!daccPublickey || !passwordSecretkey || !address || !smartAccount) {
+function validateAuthorizeRequest(body: any): EIP7702AuthorizeRequest | null {
+  const { daccPublickey, passwordSecretkey, address, smartAccount, chainId = 56 } = body;
+  
+  if (!daccPublickey || !passwordSecretkey || !address || !smartAccount) {
+    return null;
+  }
+  
+  return {
+    daccPublickey,
+    passwordSecretkey,
+    address,
+    smartAccount,
+    chainId: Number(chainId)
+  };
+}
+
+function validateExecuteRequest(body: any): EIP7702ExecuteRequest | null {
+  const { 
+    daccPublickey, 
+    passwordSecretkey, 
+    address, 
+    to, 
+    data, 
+    value = "0",
+    smartAccount,
+    chainId = 56 
+  } = body;
+  
+  if (!daccPublickey || !passwordSecretkey || !address || !to || !smartAccount) {
+    return null;
+  }
+  
+  return {
+    daccPublickey,
+    passwordSecretkey,
+    address,
+    smartAccount,
+    to,
+    data: data || "0x",
+    value: value || "0",
+    chainId: Number(chainId)
+  };
+}
+
+router.post("/authorize", async (req: Request, res: Response) => {
+  try {
+    const requestData = validateAuthorizeRequest(req.body);
+    
+    if (!requestData) {
       return res.status(400).json({
         success: false,
         error: {
@@ -57,6 +136,8 @@ router.post("/authorize", async (req, res) => {
         }
       });
     }
+
+    const { daccPublickey, passwordSecretkey, address, smartAccount, chainId } = requestData;
 
     const network = getNetworkByChainId(chainId);
     if (!network) {
@@ -79,17 +160,6 @@ router.post("/authorize", async (req, res) => {
     };
 
     const result = await daccSignAuthorizeEIP7702(authParams);
-
-    const convertBigInt = (obj: any): any => {
-      if (typeof obj === "bigint") return obj.toString();
-      if (Array.isArray(obj)) return obj.map(convertBigInt);
-      if (obj && typeof obj === "object") {
-        return Object.fromEntries(
-          Object.entries(obj).map(([k, v]) => [k, convertBigInt(v)])
-        );
-      }
-      return obj;
-    };
 
     const authorizationHash = keccak256(toBytes(result.authorization || "0x"));
 
@@ -116,20 +186,11 @@ router.post("/authorize", async (req, res) => {
   }
 });
 
-router.post("/execute", async (req, res) => {
+router.post("/execute", async (req: Request, res: Response) => {
   try {
-    const { 
-      daccPublickey, 
-      passwordSecretkey, 
-      address, 
-      to, 
-      data, 
-      value = "0",
-      smartAccount,
-      chainId = 56 
-    } = req.body;
-
-    if (!daccPublickey || !passwordSecretkey || !address || !to || !smartAccount) {
+    const requestData = validateExecuteRequest(req.body);
+    
+    if (!requestData) {
       return res.status(400).json({
         success: false,
         error: {
@@ -138,6 +199,17 @@ router.post("/execute", async (req, res) => {
         }
       });
     }
+
+    const { 
+      daccPublickey, 
+      passwordSecretkey, 
+      address, 
+      smartAccount,
+      to,
+      data,
+      value,
+      chainId 
+    } = requestData;
 
     const network = getNetworkByChainId(chainId);
     if (!network) {
@@ -158,8 +230,8 @@ router.post("/execute", async (req, res) => {
       daccPublickey,
       passwordSecretkey,
       to,
-      data: data || "0x",
-      value: value || "0"
+      data,
+      value
     };
 
     const result = await daccSignAuthorizeEIP7702(authParams);
@@ -192,7 +264,7 @@ router.post("/execute", async (req, res) => {
   }
 });
 
-router.get("/status", async (req, res) => {
+router.get("/status", async (req: Request, res: Response) => {
   try {
     const { address, chainId = "56" } = req.query;
 
