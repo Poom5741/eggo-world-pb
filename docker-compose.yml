@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  pocketbase:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: eggo-pb
+    ports:
+      - "8090:8090"
+    environment:
+      - WALLET_SRV_URL=http://wallet-srv:3000
+    volumes:
+      - ./apps/backend/pb_data:/pb/pb_data
+      - ./apps/backend/pb_hooks:/pb/pb_hooks
+      - ./apps/backend/pb_migrations:/pb/pb_migrations
+      - ./apps/backend/pb_public:/pb/pb_public
+    networks:
+      - eggo-network
+    depends_on:
+      - wallet-srv
+    restart: unless-stopped
+
+  wallet-srv:
+    build:
+      context: ./wallet-srv
+      dockerfile: Dockerfile
+    container_name: eggo-wallet-srv
+    ports:
+      - "3001:3000"  # Map container 3000 to host 3001
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MIN_PASSWORD_LENGTH=12
+      - MAX_PASSWORD_LENGTH=120
+      - PUBLIC_ENCRYPTION=false
+      - CORS_ORIGIN=*
+    networks:
+      - eggo-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: eggo-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./apps/web/.next:/app/.next:ro
+    depends_on:
+      - pocketbase
+    networks:
+      - eggo-network
+    restart: unless-stopped
+
+networks:
+  eggo-network:
+    driver: bridge
