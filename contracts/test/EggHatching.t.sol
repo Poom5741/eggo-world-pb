@@ -61,9 +61,9 @@ contract EggHatchingTest is Test {
         vm.stopPrank();
     }
     
-    function _mintEgg(address user, address referrer) internal returns (uint256) {
+    function _mintEgg(address user, address ref) internal returns (uint256) {
         vm.startPrank(user);
-        uint256 tokenId = eggNFT.mintEgg(referrer);
+        uint256 tokenId = eggNFT.mintEgg(ref);
         vm.stopPrank();
         return tokenId;
     }
@@ -86,7 +86,7 @@ contract EggHatchingTest is Test {
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
         
-        (,,,bool isHatched,,,) = eggNFT.getEggProperties(eggTokenId);
+        (,,,bool isHatched,,,,,,,,) = eggNFT.getEggProperties(eggTokenId);
         assertFalse(isHatched);
         
         vm.startPrank(user1);
@@ -115,7 +115,11 @@ contract EggHatchingTest is Test {
             Species animalSpecies,
             Rarity animalRarity,
             uint256 animalGeneration,
-            
+            uint256[] memory animalFoodDistribution,
+            uint256 parentEggId,
+            uint256 parent1Id,
+            uint256 parent2Id,
+            uint256 upgradeCount
         ) = animalNFT.getAnimalProperties(animalTokenId);
         
         assertEq(animalId, 1);
@@ -136,7 +140,7 @@ contract EggHatchingTest is Test {
         eggNFT.hatchEgg(eggTokenId);
         vm.stopPrank();
         
-        (,,,bool isHatched,,,) = eggNFT.getEggProperties(eggTokenId);
+        (,,,bool isHatched,,,,,,,,) = eggNFT.getEggProperties(eggTokenId);
         assertTrue(isHatched);
         
         assertTrue(eggNFT.isEggHatched(eggTokenId));
@@ -162,7 +166,7 @@ contract EggHatchingTest is Test {
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 5);
         
-        (,,uint256 foodCount,,,,) = eggNFT.getEggProperties(eggTokenId);
+        (,,uint256 foodCount,,,,,,,,,) = eggNFT.getEggProperties(eggTokenId);
         assertEq(foodCount, 7);
         
         vm.startPrank(user1);
@@ -228,7 +232,7 @@ contract EggHatchingTest is Test {
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
         
-        (,,uint256 foodCount,,,,) = eggNFT.getEggProperties(eggTokenId);
+        (,,uint256 foodCount,,,,,,,,,) = eggNFT.getEggProperties(eggTokenId);
         assertEq(foodCount, MAX_FOOD_COUNT);
         
         vm.startPrank(user1);
@@ -244,7 +248,7 @@ contract EggHatchingTest is Test {
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 12);
         
-        (,,uint256 foodCount,,,,) = eggNFT.getEggProperties(eggTokenId);
+        (,,uint256 foodCount,,,,,,,,,) = eggNFT.getEggProperties(eggTokenId);
         assertEq(foodCount, 14);
         
         vm.startPrank(user1);
@@ -278,12 +282,12 @@ contract EggHatchingTest is Test {
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         
-        (,,uint256 initialFoodCount,,,,) = eggNFT.getEggProperties(eggTokenId);
+        (,,uint256 initialFoodCount,,,,,,,,,) = eggNFT.getEggProperties(eggTokenId);
         assertEq(initialFoodCount, INITIAL_FOOD_COUNT);
         
         _feedEgg(eggTokenId, 8);
         
-        (,,uint256 finalFoodCount,,,,) = eggNFT.getEggProperties(eggTokenId);
+        (,,uint256 finalFoodCount,,,,,,,,,) = eggNFT.getEggProperties(eggTokenId);
         assertEq(finalFoodCount, MAX_FOOD_COUNT);
         
         vm.startPrank(user1);
@@ -293,7 +297,7 @@ contract EggHatchingTest is Test {
         assertEq(animalNFT.ownerOf(animalTokenId), user1);
         assertTrue(eggNFT.isEggHatched(eggTokenId));
         
-        (,,,,uint256 generation,) = animalNFT.getAnimalProperties(animalTokenId);
+        (,,,,uint256 generation,,,,,) = animalNFT.getAnimalProperties(animalTokenId);
         assertEq(generation, 0);
     }
     

@@ -113,7 +113,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         
         require(eggNFT.ownerOf(egg_token_id) == msg.sender, "Not egg owner");
         
-        (,,,bool is_hatched,,,) = eggNFT.getEggProperties(egg_token_id);
+        (,,,bool is_hatched,,,,,,,,) = eggNFT.getEggProperties(egg_token_id);
         require(!is_hatched, "Egg already hatched");
         
         FoodType[] memory foodTypes = new FoodType[](food_ids.length);
@@ -138,18 +138,18 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         emit EggFed(egg_token_id, food_ids, msg.sender);
     }
     
-    function getFoodProperties(uint256 food_id) 
+    function getFoodProperties(uint256 foodId) 
         external 
         view 
         returns (
-            uint256 food_id_out,
-            address owner,
-            FoodType food_type,
-            bool is_consumed,
-            uint256 consumed_by_egg_id
+            uint256,
+            address,
+            FoodType,
+            bool,
+            uint256
         )
     {
-        FoodProperties memory props = _foodProperties[food_id];
+        FoodProperties memory props = _foodProperties[foodId];
         return (
             props.food_id,
             props.owner,
@@ -187,6 +187,25 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         else if (random < 70) return FoodType.Fish;
         else if (random < 90) return FoodType.Insects;
         else return FoodType.Herb;
+    }
+    
+    function burnFood(uint256 food_id) external {
+        require(balanceOf(msg.sender, food_id) > 0, "Not food owner");
+        FoodProperties storage props = _foodProperties[food_id];
+        require(!props.is_consumed, "Food already consumed");
+        
+        props.is_consumed = true;
+        _burn(msg.sender, food_id, 1);
+    }
+    
+    function burnFoodFor(address owner, uint256 food_id) external {
+        require(authorizedContracts[msg.sender], "Not authorized");
+        require(balanceOf(owner, food_id) > 0, "Not food owner");
+        FoodProperties storage props = _foodProperties[food_id];
+        require(!props.is_consumed, "Food already consumed");
+        
+        props.is_consumed = true;
+        _burn(owner, food_id, 1);
     }
     
     function setEggNFTContract(address _eggNFT) external onlyOwner {
