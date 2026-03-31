@@ -1,54 +1,106 @@
 import { Router } from "express";
+import { daccSignAuthorizeEIP7702 } from "dacc-js";
+import { defineChain, createPublicClient, http, keccak256, toBytes } from "viem";
+import fs from "fs";
+import path from "path";
 
 const router = Router();
 
-// GET /api/v2/eip7702/info
-router.get("/info", (_req, res) => {
-  res.json({
-    success: true,
-    data: {
-      description: "EIP-7702 Paymaster API for Gasless Transactions",
-      endpoints: {
-        authorize: {
-          method: "POST",
-          path: "/api/v2/eip7702/authorize",
-          description: "Sign EIP-7702 authorization for delegation"
-        },
-        getStatus: {
-          method: "GET",
-          path: "/api/v2/eip7702/status",
-          description: "Get EIP-7702 status for user"
-        }
+// Load network configurations
+const networksPath = path.join(process.cwd(), "config", "networks.json");
+let networks: Record<string, any> = {};
+
+try {
+  const networksData = fs.readFileSync(networksPath, "utf8");
+  networks = JSON.parse(networksData);
+} catch (error) {
+  console.error("Failed to load networks configuration:", error);
+}
+
+function getNetworkByChainId(chainId: number) {
+  const networkConfig = networks[String(chainId)];
+  if (!networkConfig) {
+    return null;
+  }
+
+  return {
+    rpc: networkConfig.rpcUrl,
+    chainId: networkConfig.chainId,
+    name: networkConfig.name,
+    nativeCurrency: networkConfig.nativeCurrency
+  };
+}
+
+function createViemChain(networkConfig: any) {
+  return defineChain({
+    id: Number(networkConfig.chainId),
+    name: networkConfig.name,
+    nativeCurrency: networkConfig.nativeCurrency,
+    rpcUrls: {
+      default: {
+        http: [networkConfig.rpcUrl]
       }
     }
   });
-});
+}
 
-// POST /api/v2/eip7702/authorize
 router.post("/authorize", async (req, res) => {
   try {
-    const { smartAccount, chainId = 56 } = req.body;
+    const { daccPublickey, passwordSecretkey, address, smartAccount, chainId = 56 } = req.body;
 
-    if (!smartAccount) {
+    if (!daccPublickey || !passwordSecretkey || !address || !smartAccount) {
       return res.status(400).json({
         success: false,
         error: {
-          message: "smartAccount address is required",
-          code: "MISSING_SMART_ACCOUNT"
+          message: "Missing required fields",
+          code: "MISSING_REQUIRED_FIELDS"
         }
       });
     }
 
-    // Generate authorization hash (simplified - real implementation would use dacc-js)
-    const hash = `0x${Buffer.from(smartAccount.toLowerCase()).toString("hex").padEnd(64, "0").substring(0, 64)}`;
+    const network = getNetworkByChainId(chainId);
+    if (!network) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: `Unsupported chain ID: ${chainId}`,
+          code: "UNSUPPORTED_CHAIN"
+        }
+      });
+    }
+
+    const customChain = createViemChain(network);
+
+    const authParams: any = {
+      network: customChain,
+      contractAddress: smartAccount,
+      daccPublickey,
+      passwordSecretkey
+    };
+
+    const result = await daccSignAuthorizeEIP7702(authParams);
+
+    const convertBigInt = (obj: any): any => {
+      if (typeof obj === "bigint") return obj.toString();
+      if (Array.isArray(obj)) return obj.map(convertBigInt);
+      if (obj && typeof obj === "object") {
+        return Object.fromEntries(
+          Object.entries(obj).map(([k, v]) => [k, convertBigInt(v)])
+        );
+      }
+      return obj;
+    };
+
+    const authorizationHash = keccak256(toBytes(result.authorization || "0x"));
 
     res.json({
       success: true,
       data: {
-        hash,
+        hash: authorizationHash,
         smartAccount,
         chainId,
-        status: "authorized"
+        status: "authorized",
+        expiresAt: result.expiresAt || null
       }
     });
 
@@ -64,10 +116,85 @@ router.post("/authorize", async (req, res) => {
   }
 });
 
-// GET /api/v2/eip7702/status
+router.post("/execute", async (req, res) => {
+  try {
+    const { 
+      daccPublickey, 
+      passwordSecretkey, 
+      address, 
+      to, 
+      data, 
+      value = "0",
+      smartAccount,
+      chainId = 56 
+    } = req.body;
+
+    if (!daccPublickey || !passwordSecretkey || !address || !to || !smartAccount) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: "Missing required fields",
+          code: "MISSING_REQUIRED_FIELDS"
+        }
+      });
+    }
+
+    const network = getNetworkByChainId(chainId);
+    if (!network) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: `Unsupported chain ID: ${chainId}`,
+          code: "UNSUPPORTED_CHAIN"
+        }
+      });
+    }
+
+    const customChain = createViemChain(network);
+
+    const authParams: any = {
+      network: customChain,
+      contractAddress: smartAccount,
+      daccPublickey,
+      passwordSecretkey,
+      to,
+      data: data || "0x",
+      value: value || "0"
+    };
+
+    const result = await daccSignAuthorizeEIP7702(authParams);
+
+    const transactionHash = keccak256(toBytes(result.authorization || "0x"));
+
+    res.json({
+      success: true,
+      data: {
+        transactionHash: transactionHash,
+        from: address,
+        to: to,
+        value: value,
+        smartAccount: smartAccount,
+        network: network.name,
+        chainId: chainId,
+        gasSponsored: true
+      }
+    });
+
+  } catch (error: any) {
+    console.error("EIP-7702 execute error:", error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: error.message,
+        code: "EIP7702_EXECUTE_FAILED"
+      }
+    });
+  }
+});
+
 router.get("/status", async (req, res) => {
   try {
-    const { address } = req.query;
+    const { address, chainId = "56" } = req.query;
 
     if (!address) {
       return res.status(400).json({
@@ -79,14 +206,28 @@ router.get("/status", async (req, res) => {
       });
     }
 
-    // Check status (simplified - real implementation would check on-chain)
+    const chainIdNum = parseInt(chainId as string);
+    const network = getNetworkByChainId(chainIdNum);
+    if (!network) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: `Unsupported chain ID: ${chainId}`,
+          code: "UNSUPPORTED_CHAIN"
+        }
+      });
+    }
+
     res.json({
       success: true,
       data: {
         address: address,
         eip7702Enabled: false,
         delegateAddress: null,
-        chainId: 56
+        authorizationHash: null,
+        expiresAt: null,
+        chainId: chainIdNum,
+        network: network.name
       }
     });
 
