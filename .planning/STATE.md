@@ -1,20 +1,20 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
+milestone: v0.0.5
 milestone_name: milestone
 current_phase: 03
 status: executing
-last_updated: "2026-04-02T17:25:51.706Z"
+last_updated: "2026-04-03T00:42:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 0
-  total_plans: 6
-  completed_plans: 4
+  total_plans: 9
+  completed_plans: 6
 ---
 
 # Project State
 
-**Current Phase:** 03
+**Current Phase:** 04-line-wallet-integration
 **Last Updated:** 2026-04-02T12:48:17Z  
 **Session:** Project initialization
 
@@ -22,13 +22,12 @@ progress:
 
 ### Phase 1: Smart Contracts Foundation (Days 1-5)
 
-**Status:** Executing Phase 03
+**Status:** Executing Phase 04-line-wallet-integration
 
-- [ ] USDT Integration
-- [ ] NFT Contracts (Egg, Food, Animal)
-- [ ] Commission Engine
-- [ ] Marketplace Contract
-- [ ] Deploy to BSC testnet
+- [x] TypeScript + dacc-js Migration (04-01)
+- [ ] Update User Collection Schema
+- [ ] Update 01-create-wallet.pb.js Hook
+- [ ] LINE OAuth Integration Testing
 
 ### Phase 2: Backend Integration (Days 6-8)
 
@@ -71,8 +70,9 @@ progress:
 - ✅ Completed Phase 03 Plan 02: My Wallet Page (2026-04-02)
 - ✅ Completed Phase 03 Plan 03: Product Detail + Referral Dashboard (2026-04-02)
 - ✅ Completed Phase 03 Plan 04: Auto-Polling Integration (2026-04-02)
+- ✅ Completed Phase 04 Plan 01: TypeScript + dacc-js Migration (2026-04-03)
 
-**Last Session:** 2026-04-02T17:25:51.703Z
+**Last Session:** 2026-04-02T17:42:51.792Z
 
 ## Codebase Map Status
 
@@ -141,6 +141,7 @@ progress:
 | 2026-04-02 | Completed Phase 03 Plan 02             | Wallet page with auto-polling (4 files, 582 lines)                               |
 | 2026-04-02 | Completed Phase 03 Plan 03             | Product detail + referral dashboard (4 files, 836 lines)                         |
 | 2026-04-02 | Completed Phase 03 Plan 04             | Auto-polling + list-for-sale + buy food (3 files created, 3 modified, 944 lines) |
+| 2026-04-03 | Completed Phase 04 Plan 01             | TypeScript + dacc-js migration (6 files, 342 lines)                              |
 
 ## Quick Commands
 
