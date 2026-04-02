@@ -102,7 +102,7 @@
 - [ ] **Home/Landing**: Featured NFTs, stats, CTA
 - [ ] **Marketplace**: Browse listings with filters (type, rarity, price)
 - [ ] **Product Detail**: NFT details, buy now, make offer
-- [ ] **My Wallet**: USDT balance, earnings, withdraw
+- [x] **My Wallet**: USDT balance, earnings, withdraw ✅ Completed 03-02
 - [ ] **My NFTs**: Inventory with actions (feed, hatch, list for sale)
 
 #### 3.3 Game Actions UI
