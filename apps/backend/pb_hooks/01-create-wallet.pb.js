@@ -3,7 +3,7 @@
 
 console.log("Setting up create wallet hook...");
 
-const WALLET_SRV_URL = process.env.WALLET_SRV_URL || "http://wallet-srv:3000";
+const WALLET_SRV_URL = process.env.WALLET_SRV_URL || "http://wallet-api:3001";
 
 onRecordCreate((e) => {
   console.log("Create wallet hook triggered for user:", e.record.id);
@@ -19,7 +19,7 @@ onRecordCreate((e) => {
     console.log("Generated password secret key for user:", e.record.id);
 
     // Call wallet-srv to create wallet
-    const apiUrl = `${WALLET_SRV_URL}/api/v1/wallet/create`;
+    const apiUrl = `${WALLET_SRV_URL}/api/wallet/create`;
     const requestBody = {
       passwordSecretkey: passwordSecretkey,
       publicEncryption: false
