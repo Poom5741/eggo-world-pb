@@ -3,10 +3,12 @@
 ## Timeline: 2 Weeks (Urgent)
 
 ### Phase 1: Smart Contracts Foundation
+
 **Duration:** Days 1-5  
 **Goal:** Deploy working smart contracts on BSC testnet
 
 #### Tasks
+
 1. **USDT Integration** (Day 1)
    - Deploy or integrate USDT (BEP-20) on BSC testnet
    - Create approval wrapper contract for marketplace
@@ -31,12 +33,14 @@
    - Verify on BscScan
 
 #### Deliverables
+
 - ✅ 5 smart contracts deployed to BSC testnet
 - ✅ Forge tests passing (90%+ coverage)
 - ✅ Contract addresses documented
 - ✅ Verified on BscScan
 
 #### Success Criteria
+
 - Can mint Egg NFT with USDT
 - Can mint Food NFT with USDT
 - Commission distributes correctly (20/10/10/10/4%)
@@ -45,10 +49,12 @@
 ---
 
 ### Phase 2: Backend Integration
+
 **Duration:** Days 6-8  
 **Goal:** PocketBase collections, hooks, wallet API
 
 #### Tasks
+
 1. **PocketBase Collections** (Day 6)
    - Create `users` collection with referral fields
    - Create `nfts` collection for metadata
@@ -68,12 +74,14 @@
    - Deploy wallet API to production
 
 #### Deliverables
+
 - ✅ 3 PocketBase collections created
 - ✅ 3 new hooks implemented and tested
 - ✅ Wallet API endpoints working
 - ✅ Event sync from blockchain to DB
 
 #### Success Criteria
+
 - User registration builds referral_chain[4]
 - NFT minting syncs to PocketBase
 - USDT balance queries work
@@ -82,41 +90,54 @@
 ---
 
 ### Phase 3: Frontend Marketplace
+
 **Duration:** Days 9-12  
 **Goal:** User-facing UI for all core actions
+**Plans:** 4 plans
+**Status:** Planned
 
-#### Tasks
+#### Plans
+
+- [x] 03-01-PLAN.md — Hatch Egg flow with simple reveal UI
+- [x] 03-02-PLAN.md — My Wallet page with auto-polling balance
+- [x] 03-03-PLAN.md — Product Detail + Referral Dashboard
+- [x] 03-04-PLAN.md — Auto-polling integration + polish pages
+
+#### Original Tasks
+
 1. **Auth & Onboarding** (Day 9)
-   - LINE OAuth integration (already exists, verify)
-   - Wallet connection UI
-   - Referral code input on signup
-   - User dashboard skeleton
+   - ✅ LINE OAuth integration (already exists)
+   - ✅ Wallet connection UI
+   - ✅ Referral code input on signup
+   - ✅ User dashboard skeleton
 
 2. **Marketplace UI** (Day 10)
-   - Browse listings page with filters
-   - Product detail page
-   - Buy now flow with USDT
-   - My NFTs inventory page
+   - ✅ Browse listings page with filters
+   - [x] Product detail page (Plan 03)
+   - ✅ Buy now flow with USDT
+   - ✅ My NFTs inventory page
 
 3. **Game Actions** (Day 11)
-   - Buy Egg page (25 USDT, shows 2 bonus food)
-   - Buy Food page (0.50 USDT each)
-   - Feed Egg interface (select egg + 10 food)
-   - Hatch Egg animation + reveal
+   - ✅ Buy Egg page (25 USDT, shows 2 bonus food)
+   - [x] Buy Food page (0.50 USDT each) (Plan 04)
+   - ✅ Feed Egg interface (select egg + 10 food)
+   - [x] Hatch Egg simple reveal (Plan 01)
 
 4. **Wallet & Referral** (Day 12)
-   - My Wallet page (USDT balance, earnings)
-   - Referral dashboard (link, downline, earnings)
-   - Withdraw USDT flow
-   - List NFT for sale interface
+   - [x] My Wallet page (USDT balance, earnings) (Plan 02)
+   - [x] Referral dashboard (link, downline, earnings) (Plan 03)
+   - [x] Withdraw USDT flow (Plan 02)
+   - [x] List NFT for sale interface (Plan 04)
 
 #### Deliverables
+
 - ✅ 8+ pages/components implemented
 - ✅ All core user actions working
 - ✅ Responsive design (mobile-first)
 - ✅ Error handling and loading states
 
 #### Success Criteria
+
 - User can complete full loop: Buy Egg → Buy Food → Feed → Hatch → List → Sell
 - USDT transactions work end-to-end
 - Referral earnings display correctly
@@ -125,10 +146,12 @@
 ---
 
 ### Phase 4: Testing & Launch
+
 **Duration:** Days 13-14  
 **Goal:** Production deployment, bug fixes
 
 #### Tasks
+
 1. **Integration Testing** (Day 13)
    - End-to-end user flow tests
    - Commission distribution verification
@@ -148,12 +171,14 @@
    - Documentation for users
 
 #### Deliverables
+
 - ✅ Production deployment complete
 - ✅ All critical bugs fixed
 - ✅ User documentation
 - ✅ Monitoring and alerting setup
 
 #### Success Criteria
+
 - No critical or high-severity bugs
 - Page load < 3s
 - All transactions confirm < 30s
@@ -164,18 +189,21 @@
 ## Post-MVP Roadmap (Week 3+)
 
 ### Phase 5: Breeding & Tiers
+
 - Animal breeding mechanics
 - Tier reward badges (soulbound NFTs)
 - Rarity upgrade paths (extra food)
 - Enhanced rarity system
 
 ### Phase 6: Admin & Analytics
+
 - Admin dashboard
 - Platform statistics
 - User management
 - Content moderation
 
 ### Phase 7: Advanced Features
+
 - Secondary market royalties (10% to referral chain)
 - KYC verification
 - Multi-chain support (Polygon, Ethereum)
@@ -194,7 +222,8 @@ Day 13-14: Testing & Launch
 
 **Risk:** Smart contract delays cascade to all subsequent phases
 
-**Mitigation:** 
+**Mitigation:**
+
 - Daily progress checks
 - Use AI for code generation
 - Defer non-critical features
@@ -205,12 +234,14 @@ Day 13-14: Testing & Launch
 ## Resource Allocation
 
 **Solo Developer Time:**
+
 - Smart Contracts: 40% (5 days)
 - Backend: 20% (3 days)
 - Frontend: 30% (4 days)
 - Testing: 10% (2 days)
 
 **AI Assistance:**
+
 - Contract generation and testing
 - Boilerplate code
 - Documentation
@@ -220,12 +251,12 @@ Day 13-14: Testing & Launch
 
 ## Milestones
 
-| Milestone | Target Date | Status |
-|-----------|-------------|--------|
-| Contracts Deployed | Day 5 | ⏳ Pending |
-| Backend Complete | Day 8 | ⏳ Pending |
-| UI Complete | Day 12 | ⏳ Pending |
-| Production Launch | Day 14 | ⏳ Pending |
+| Milestone          | Target Date | Status     |
+| ------------------ | ----------- | ---------- |
+| Contracts Deployed | Day 5       | ⏳ Pending |
+| Backend Complete   | Day 8       | ⏳ Pending |
+| UI Complete        | Day 12      | ⏳ Pending |
+| Production Launch  | Day 14      | ⏳ Pending |
 
 ---
 
