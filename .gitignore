@@ -68,3 +68,9 @@ contracts/lib/
 
 # Next.js auto-generated files
 **/next-env.d.ts
+
+# Husky
+.husky/
+
+# Prettier
+.prettier-cache

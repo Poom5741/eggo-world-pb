@@ -8,6 +8,32 @@
     "build": "bun run --cwd apps/web build",
     "start": "bun run --cwd apps/web start",
     "install": "bun install apps/web",
-    "dev-local": "NEXT_PUBLIC_POCKETBASE_URL=http://localhost:8090 bun run --cwd apps/web dev"
+    "dev-local": "NEXT_PUBLIC_POCKETBASE_URL=http://localhost:8090 bun run --cwd apps/web dev",
+    "prepare": "husky",
+    "lint": "bun run --cwd apps/web lint",
+    "test": "bun run --cwd apps/web test",
+    "test:coverage": "bun run --cwd apps/web test:coverage",
+    "format": "bunx prettier --write \"**/*.{json,md}\""
+  },
+  "lint-staged": {
+    "apps/web/**/*.{ts,tsx}": [
+      "bunx eslint --fix",
+      "bun test --bail"
+    ],
+    "apps/web/**/*.{js,jsx}": [
+      "bunx eslint --fix"
+    ],
+    "**/*.{json,md}": [
+      "bunx prettier --write"
+    ],
+    "contracts/**/*.sol": [
+      "echo '✓ Solidity files - run forge fmt manually if needed'"
+    ],
+    "wallet-api/**/*.js": [
+      "echo '✓ Wallet API - ensure manual review'"
+    ],
+    "apps/backend/pb_hooks/**/*.js": [
+      "echo '✓ PocketBase hooks - ensure manual review'"
+    ]
   }
 }
