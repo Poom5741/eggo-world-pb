@@ -11,6 +11,7 @@ import { ListForSaleModal } from '@/components/ListForSaleModal'
 import Image from 'next/image'
 import { Loader2, ShoppingBag, User, Package, Layers, Tag, RefreshCw } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { toast } from 'sonner'
 
 interface NftData {
   id: string
@@ -40,6 +41,7 @@ export default function NftDetailPage() {
   const [user, setUser] = useState<any>(null)
   const [isOwner, setIsOwner] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [purchasing, setPurchasing] = useState(false)
 
   const handleRefresh = () => {
     setRefreshKey(prev => prev + 1)
@@ -124,10 +126,71 @@ export default function NftDetailPage() {
   }
 
   const handleBuyNow = async () => {
-    if (!nft || !nft.listed_price) return
+    if (!nft || !nft.listed_price || !user) return
     
-    // TODO: Implement buy functionality
-    alert('Buy functionality coming soon')
+    setPurchasing(true)
+    setError(null)
+
+    try {
+      // Step 1: Get signer and contracts
+      const signer = await getSigner()
+      const usdtContract = getUSDTContract(signer)
+      const marketplace = getMarketplaceContract(signer)
+
+      // Step 2: Approve USDT spending
+      const priceInWei = parseUnits(nft.listed_price.toString(), 18)
+      const approveTx = await usdtContract.approve(MARKETPLACE_ADDRESS, priceInWei)
+      await approveTx.wait()
+
+      // Step 3: Buy NFT
+      const buyTx = await marketplace.buyNFT(nft.token_id)
+      await buyTx.wait()
+
+      // Step 4: Success - update PocketBase
+      try {
+        const pb = createClient()
+        const token = pb.authStore.token
+        await fetch('https://pb.eggoworld.io/api/v2/sync-nft-sale', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify({
+            nft_id: nft.id,
+            token_id: nft.token_id,
+            seller: nft.owner,
+            buyer: user.id,
+            price: nft.listed_price,
+            tx_hash: buyTx.hash
+          })
+        })
+      } catch (err) {
+        console.error('Failed to sync NFT sale:', err)
+        // Continue anyway - the purchase was successful
+      }
+
+      // Step 5: Show success and redirect
+      alert('NFT purchased successfully!')
+      router.push('/dashboard/nfts')
+    } catch (error: any) {
+      console.error('Buy error:', error)
+      let errorMessage = 'Purchase failed. Please try again.'
+      
+      if (error.message?.includes('user rejected')) {
+        errorMessage = 'Transaction rejected. Please try again.'
+      } else if (error.message?.includes('insufficient funds')) {
+        errorMessage = 'Insufficient USDT balance for this purchase.'
+      } else if (error.message?.includes('allowance')) {
+        errorMessage = 'Approval failed. Please try again.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      setError(errorMessage)
+    } finally {
+      setPurchasing(false)
+    }
   }
 
   const handleListForSale = () => {
@@ -222,12 +285,31 @@ export default function NftDetailPage() {
                       {nft.listed_price.toFixed(2)} USDT
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="space-y-3">
                     {!isOwner ? (
-                      <Button onClick={handleBuyNow} className="w-full" size="lg">
-                        <ShoppingBag className="mr-2 h-4 w-4" />
-                        Buy Now
-                      </Button>
+                      <>
+                        <Button 
+                          onClick={handleBuyNow} 
+                          disabled={purchasing}
+                          className="w-full" 
+                          size="lg"
+                        >
+                          {purchasing ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Purchasing...
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingBag className="mr-2 h-4 w-4" />
+                              Buy Now
+                            </>
+                          )}
+                        </Button>
+                        {error && (
+                          <p className="text-sm text-destructive text-center">{error}</p>
+                        )}
+                      </>
                     ) : (
                       <div className="text-sm text-muted-foreground">
                         Your NFT is listed for sale
