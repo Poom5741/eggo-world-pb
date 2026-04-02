@@ -146,7 +146,49 @@
 
 ---
 
-### Phase 4: Testing & Launch
+### Phase 4: LINE Wallet Integration
+
+**Duration:** Days 9-10  
+**Goal:** Migrate wallet API from ethers v6 to dacc-js v0.0.5, integrate with LINE OAuth flow  
+**Plans:** 2 plans  
+**Status:** Planned
+
+#### Plans
+
+- [ ] 04-01-PLAN.md — Migrate wallet-api to TypeScript + dacc-js v0.0.5
+- [ ] 04-02-PLAN.md — Update PocketBase hook + verify integration
+
+#### Tasks
+
+1. **Wallet API Migration** (Day 9)
+   - Migrate from JavaScript + ethers v6 to TypeScript + dacc-js v0.0.5
+   - Use Bun runtime with Express
+   - Endpoint: POST /api/wallet/create with passwordSecretkey
+   - Response: { address, daccPublickey }
+
+2. **PocketBase Hook Update** (Day 10)
+   - Update 01-create-wallet.pb.js to call new wallet API
+   - Generate 20-char random passwordSecretkey
+   - Save wallet, pin, daccPublickey to user record
+   - Verify integration with LINE OAuth signup
+
+#### Deliverables
+
+- ✅ Wallet API running on TypeScript + Bun + dacc-js
+- ✅ PocketBase hook creates DACC wallets on signup
+- ✅ User records populated with wallet, pin, daccPublickey
+- ✅ LINE OAuth flow unchanged and working
+
+#### Success Criteria
+
+- New user signup via LINE OAuth → auto-creates DACC wallet
+- User record has wallet (address), pin (20-char password), daccPublickey
+- Wallet API health check returns OK
+- No errors in PocketBase or wallet-api logs
+
+---
+
+### Phase 5: Testing & Launch
 
 **Duration:** Days 13-14  
 **Goal:** Production deployment, bug fixes
