@@ -58,10 +58,9 @@ Configuration files:
 
 - `.husky/pre-commit` - Pre-commit hook script
 - `.husky/pre-push` - Pre-push hook script
-- `lint-staged.config.json` - Lint-staged rules
+- `package.json` - Contains `lint-staged` config and `"prepare": "husky"` script
 - `.prettierrc.json` - Prettier formatting rules
-- `apps/web/.eslintrc.js` - ESLint configuration
-- `package.json` - Contains `"prepare": "husky"` script
+- `apps/web/eslint.config.js` - ESLint v9+ flat configuration
 
 ## 🚀 Usage
 
@@ -140,7 +139,7 @@ Key rules enforced:
 - No explicit any (warn)
 - Prettier formatting (no conflicts with ESLint)
 
-See `apps/web/.eslintrc.js` for full configuration.
+See `apps/web/eslint.config.js` for full configuration.
 
 ## 🎨 Prettier Config
 
@@ -185,10 +184,10 @@ Check staged files:
 git status
 ```
 
-Preview lint-staged:
+Check what lint-staged will process (manually):
 
 ```bash
-bunx lint-staged --dry-run
+bunx lint-staged --diff="HEAD~1"
 ```
 
 ### Hook Script Errors
