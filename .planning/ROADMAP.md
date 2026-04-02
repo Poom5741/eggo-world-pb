@@ -98,10 +98,10 @@
 
 #### Plans
 
-- [x] 03-01-PLAN.md — Hatch Egg flow with simple reveal UI
-- [x] 03-02-PLAN.md — My Wallet page with auto-polling balance
-- [x] 03-03-PLAN.md — Product Detail + Referral Dashboard
-- [x] 03-04-PLAN.md — Auto-polling integration + polish pages
+- [x] 03-01-PLAN.md — Hatch Egg flow with simple reveal UI ✅ COMPLETE
+- [ ] 03-02-PLAN.md — My Wallet page with auto-polling balance
+- [ ] 03-03-PLAN.md — Product Detail + Referral Dashboard
+- [ ] 03-04-PLAN.md — Auto-polling integration + polish pages
 
 #### Original Tasks
 
