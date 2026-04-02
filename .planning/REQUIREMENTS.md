@@ -1,0 +1,250 @@
+# NFT Marketplace Requirements
+
+## MVP Scope (2 Weeks)
+
+### Phase 1: Core Smart Contracts (Days 1-5)
+
+#### 1.1 USDT Integration
+- [ ] Deploy or integrate USDT (BEP-20) token on BSC testnet
+- [ ] Smart contract approval mechanisms for marketplace
+- [ ] USDT balance tracking for users
+- [ ] No native token - ALL transactions in USDT
+
+#### 1.2 NFT Contracts (ERC-1155)
+- [ ] **EggNFT.sol**: Mint for 25 USDT, includes 2 Food NFTs bonus
+  - Properties: egg_id, owner, food_count (0-10), is_hatched, rarity_seed, referral_chain[4]
+  - Functions: mintEggNFT(buyer, referrer), feedEgg(egg_id, food_ids[])
+  
+- [ ] **FoodNFT.sol**: Mint for 0.50 USDT each, 4 types
+  - Properties: food_id, food_type (Grain/Fish/Insects/Herbs), owner, is_consumed
+  - Functions: mintFoodNFT(buyer, qty, referrer)
+  
+- [ ] **AnimalNFT.sol**: Minted only from hatching, 4 rarities
+  - Properties: animal_id, species, rarity, owner, generation, parent_egg_id
+  - Rarity distribution: Common 60%, Rare 25%, Epic 12%, Legendary 3%
+  - Functions: hatchEgg(egg_id) → mints Animal NFT
+
+#### 1.3 Commission Engine
+- [ ] **Commission.sol**: 4-level MLM distribution
+  - G1 (direct): 20% of sale
+  - G2: 10% of sale
+  - G3: 10% of sale
+  - G4: 10% of sale
+  - Platform/CoinStor: 4% of sale
+  - Remainder: Platform operations
+  
+- [ ] Functions:
+  - distributeEggCommission(sale_amount=25 USDT, referral_chain[4])
+  - distributeFoodCommission(sale_amount, referral_chain[4])
+  - registerUser(user, referrer) → builds referral_chain[4]
+
+#### 1.4 Marketplace Contract
+- [ ] **Marketplace.sol**: NFT escrow and trading
+  - listNFTForSale(nft_id, nft_type, price_usdt)
+  - buyNFT(nft_id) → verifies USDT balance, triggers commission
+  - cancelListing(nft_id)
+  - getMarketplaceListings(filter)
+  - getMarketStats()
+
+#### 1.5 CoinStor Reserve
+- [ ] 4% auto-deduction from every transaction
+- [ ] Functions: depositToCoinStor(amount), getCoinStorBalance()
+- [ ] Admin: coinStorLiquidityInject(amount)
+
+### Phase 2: Backend Integration (Days 6-8)
+
+#### 2.1 PocketBase Collections
+- [ ] **users** collection
+  - wallet_address (unique)
+  - referral_chain (json: [G1, G2, G3, G4])
+  - total_direct_recruits (number)
+  - lifetime_food_items (number)
+  - usdt_balance (number, decimal)
+  - total_earned_usdt (number, decimal)
+  
+- [ ] **nfts** collection
+  - nft_id (text, unique)
+  - nft_type (select: egg/food/animal)
+  - owner (relation → users)
+  - metadata (json: rarity, species, food_count, etc.)
+  - is_listed (bool)
+  - listed_price (number)
+
+- [ ] **transactions** collection
+  - tx_hash (text, unique)
+  - type (select: mint_egg/mint_food/buy_nft/sell_nft/hatch/feed)
+  - amount_usdt (number)
+  - buyer (relation → users)
+  - seller (relation → users)
+  - commission_paid (number)
+  - timestamp
+
+#### 2.2 PocketBase Hooks
+- [ ] **01-create-wallet.pb.js**: Auto-create EVM wallet on LINE signup (already exists)
+- [ ] **02-register-referral.pb.js**: Build referral chain on first purchase
+- [ ] **03-sync-nft-metadata.pb.js**: Sync on-chain NFT events to DB
+- [ ] **04-track-commissions.pb.js**: Log commission distributions
+
+#### 2.3 Wallet API Endpoints
+- [ ] POST /api/wallet/generate → Generate EVM wallet (already exists)
+- [ ] GET /api/wallet/:address/balance → Get USDT balance
+- [ ] POST /api/wallet/:address/approve → Approve USDT for marketplace
+- [ ] POST /api/transaction/sign → Sign and broadcast tx
+
+### Phase 3: Frontend UI (Days 9-12)
+
+#### 3.1 Authentication
+- [ ] LINE OAuth login/signup (already exists)
+- [ ] Wallet connection (MetaMask-compatible)
+- [ ] User onboarding flow with referral code input
+
+#### 3.2 Marketplace Pages
+- [ ] **Home/Landing**: Featured NFTs, stats, CTA
+- [ ] **Marketplace**: Browse listings with filters (type, rarity, price)
+- [ ] **Product Detail**: NFT details, buy now, make offer
+- [ ] **My Wallet**: USDT balance, earnings, withdraw
+- [ ] **My NFTs**: Inventory with actions (feed, hatch, list for sale)
+
+#### 3.3 Game Actions UI
+- [ ] **Buy Egg**: 25 USDT, shows 2 bonus Food NFTs
+- [ ] **Buy Food**: 0.50 USDT each, bulk purchase options
+- [ ] **Feed Egg**: Select egg, select 10 food items, confirm
+- [ ] **Hatch Egg**: Animation, reveal animal rarity
+- [ ] **List for Sale**: Set price in USDT
+
+#### 3.4 Referral Dashboard
+- [ ] Referral link generator
+- [ ] Downline tree visualization
+- [ ] Commission earnings breakdown (G1/G2/G3/G4)
+- [ ] Claim rewards button
+
+### Phase 4: Testing & Deployment (Days 13-14)
+
+#### 4.1 Smart Contract Testing
+- [ ] Forge tests for all contracts
+- [ ] Test commission distribution math
+- [ ] Test hatching rarity distribution
+- [ ] Test marketplace escrow flow
+- [ ] Deploy to BSC testnet
+
+#### 4.2 Integration Testing
+- [ ] LINE OAuth → Wallet creation
+- [ ] USDT approval → Purchase flow
+- [ ] Commission distribution verification
+- [ ] NFT metadata sync
+
+#### 4.3 Deployment
+- [ ] Smart contracts to BSC testnet
+- [ ] Frontend to Cloudflare Pages
+- [ ] PocketBase to production
+- [ ] Wallet API to production
+
+## Out of Scope (Post-MVP)
+
+- [ ] Animal breeding mechanics
+- [ ] Tier reward badges (soulbound NFTs)
+- [ ] Rarity upgrade paths (extra food beyond 10)
+- [ ] Secondary market royalties (10% to original referral chain)
+- [ ] Admin dashboard
+- [ ] KYC verification
+- [ ] Multi-chain support
+- [ ] Advanced analytics
+
+## Acceptance Criteria
+
+### User Stories
+
+**As a new user:**
+- ✅ I can sign up with LINE OAuth and connect my wallet
+- ✅ I can enter a referral code during signup
+- ✅ I can see my USDT balance after depositing
+
+**As an Egg buyer:**
+- ✅ I can purchase an Egg NFT for 25 USDT
+- ✅ I automatically receive 2 Food NFTs as bonus
+- ✅ My referrer (G1) receives 5 USDT (20%)
+- ✅ G2, G3, G4 each receive 2.5 USDT (10%)
+- ✅ CoinStor receives 1 USDT (4%)
+
+**As a Food buyer:**
+- ✅ I can buy Food NFTs for 0.50 USDT each
+- ✅ My referral chain receives commissions (20%/10%/10%/10%)
+- ✅ I can see my food inventory
+
+**As an Egg feeder:**
+- ✅ I can select an egg and feed it up to 10 food items
+- ✅ I can see the progress (X/10 food items)
+- ✅ When I reach 10, I can hatch the egg
+
+**As an Egg hatcher:**
+- ✅ I can hatch my egg after feeding 10 food items
+- ✅ I receive an Animal NFT with random rarity
+- ✅ I can see the rarity distribution (60/25/12/3%)
+
+**As an NFT seller:**
+- ✅ I can list my NFT for sale in USDT
+- ✅ I can set any price I want
+- ✅ I can cancel my listing
+- ✅ When sold, I receive USDT minus 4% CoinStor fee
+
+**As an NFT buyer (secondary):**
+- ✅ I can browse marketplace listings
+- ✅ I can filter by type, rarity, price
+- ✅ I can buy listed NFTs with USDT
+- ✅ I receive the NFT immediately after purchase
+
+## Technical Requirements
+
+### Performance
+- Page load < 3s on Cloudflare Pages
+- Smart contract gas optimization
+- USDT transfers < 30 seconds confirmation
+
+### Security
+- No native token (USDT only)
+- All smart contracts audited (self-audit for MVP)
+- Reentrancy guards on all withdrawal functions
+- Access control on admin functions
+- No hardcoded private keys
+
+### Compliance
+- LINE OAuth for Thai market
+- Terms of service acceptance
+- Privacy policy
+
+## Dependencies
+
+**External:**
+- LINE OAuth credentials (LINE_CHANNEL_ID, LINE_CHANNEL_SECRET)
+- BSC RPC endpoint (Alchemy/Infura/QuickNode)
+- USDT contract address on BSC
+- Cloudflare Pages for hosting
+
+**Internal:**
+- Existing PocketBase setup
+- Existing LINE OAuth integration
+- Existing wallet generation API
+- Reference implementation patterns
+
+## Risks & Mitigations
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| 2-week timeline too tight | High | Focus on core loop only, defer breeding/tiers |
+| USDT integration complexity | Medium | Use OpenZeppelin contracts, test extensively |
+| Gas costs on BSC | Medium | Optimize contract interactions, batch where possible |
+| MLM commission math errors | High | Extensive testing, use fixed-point arithmetic |
+| Solo developer bottleneck | High | Prioritize ruthlessly, use AI assistance |
+
+## Definition of Done
+
+- [ ] All smart contracts deployed to BSC testnet
+- [ ] All Forge tests passing
+- [ ] Frontend deployed to Cloudflare Pages
+- [ ] LINE OAuth working end-to-end
+- [ ] USDT purchases working
+- [ ] Commission distribution verified on-chain
+- [ ] Hatching mechanism tested with rarity distribution
+- [ ] Marketplace listings and purchases working
+- [ ] No critical bugs
+- [ ] User can complete full game loop: Buy Egg → Buy Food → Feed → Hatch → List → Sell
