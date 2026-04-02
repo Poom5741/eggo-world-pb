@@ -7,8 +7,9 @@ import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { ListForSaleModal } from '@/components/ListForSaleModal'
 import Image from 'next/image'
-import { Loader2, ShoppingBag, User, Package, Layers, Tag } from 'lucide-react'
+import { Loader2, ShoppingBag, User, Package, Layers, Tag, RefreshCw } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 interface NftData {
@@ -38,6 +39,11 @@ export default function NftDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
   const [isOwner, setIsOwner] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  const handleRefresh = () => {
+    setRefreshKey(prev => prev + 1)
+  }
 
   useEffect(() => {
     setIsHydrated(true)
@@ -87,7 +93,7 @@ export default function NftDetailPage() {
     }
 
     fetchNft()
-  }, [isHydrated, nftId, user])
+  }, [isHydrated, nftId, user, refreshKey])
 
   const getRarityColor = (rarity: string) => {
     switch (rarity.toLowerCase()) {
@@ -124,9 +130,8 @@ export default function NftDetailPage() {
     alert('Buy functionality coming soon')
   }
 
-  const handleListForSale = async () => {
-    // TODO: Implement list for sale functionality
-    alert('List for sale functionality coming soon')
+  const handleListForSale = () => {
+    // Handled by ListForSaleModal component
   }
 
   if (!isHydrated) {
@@ -240,11 +245,9 @@ export default function NftDetailPage() {
                       <p className="text-muted-foreground">
                         {isOwner ? 'This NFT is not listed for sale' : 'This NFT is not for sale'}
                       </p>
-                      {isOwner && (
-                        <Button onClick={handleListForSale} variant="outline" className="w-full">
-                          List for Sale
-                        </Button>
-                      )}
+                      {!nft.is_listed && (
+                      <ListForSaleModal nftId={nftId} onSuccess={handleRefresh} />
+                    )}
                     </div>
                   </CardContent>
                 </Card>
