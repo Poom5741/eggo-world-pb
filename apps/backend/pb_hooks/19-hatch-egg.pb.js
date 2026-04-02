@@ -33,7 +33,7 @@
  */
 
 const MIN_FOOD_TO_HATCH = 10;
-const WALLET_API_URL = $app.settings().meta("origin")?.replace("pb.", "wallet-api.") || "http://localhost:3001";
+
 
 const SPECIES_OPTIONS = ['Chicken', 'Duck', 'Pig', 'Cow', 'Sheep', 'Dog', 'Cat', 'Rabbit'];
 const RARITY_OPTIONS = ['Common', 'Rare', 'Epic', 'Legendary'];

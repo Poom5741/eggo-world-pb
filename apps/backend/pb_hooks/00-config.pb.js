@@ -36,7 +36,10 @@ const CONFIG = {
     
     // Wallet API (optional - for external wallet service)
     apiUrl: process.env.WALLET_API_URL || "",
-    apiKey: process.env.WALLET_API_KEY || ""
+    apiKey: process.env.WALLET_API_KEY || "",
+    
+    // Wallet service URL for hooks (DACC migration)
+    srvUrl: process.env.WALLET_SRV_URL || "http://wallet-api:3001"
   },
   
   // App Configuration
@@ -44,6 +47,20 @@ const CONFIG = {
     name: process.env.APP_NAME || "eggo-pb",
     url: process.env.APP_URL || "http://localhost:8090",
     environment: process.env.NODE_ENV || "development"
+  },
+  
+  // Blockchain Configuration
+  blockchain: {
+    platformAddress: '0x0000000000000000000000000000000000000000', // Platform fee recipient
+    platformFeePercent: 4 // 4% CoinStor fee
+  },
+  
+  // Game Configuration
+  game: {
+    initialFoodCount: 2, // Bonus food when minting egg
+    eggPrice: 25, // 25 USDT
+    foodPrice: 0.50, // 0.50 USDT
+    maxEggFood: 10 // Max food items to hatch
   }
 };
 

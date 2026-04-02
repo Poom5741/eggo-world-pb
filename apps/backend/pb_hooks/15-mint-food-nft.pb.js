@@ -37,7 +37,7 @@
  */
 
 const FOOD_MINT_PRICE = "500000000000000000"; // 0.50 USDT in wei (18 decimals)
-const WALLET_API_URL = $app.settings().meta("origin")?.replace("pb.", "wallet-api.") || "http://localhost:3001";
+
 
 module.exports = async (e) => {
     try {

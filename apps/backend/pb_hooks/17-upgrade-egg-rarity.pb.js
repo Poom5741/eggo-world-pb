@@ -36,7 +36,7 @@
 const UPGRADE_FEE_PER_FOOD = 5; // 5 USDT per food item
 const MAX_FOOD_COUNT = 20;
 const MIN_FOOD_FOR_UPGRADE = 10;
-const WALLET_API_URL = $app.settings().meta("origin")?.replace("pb.", "wallet-api.") || "http://localhost:3001";
+
 
 module.exports = async (e) => {
     try {

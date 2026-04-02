@@ -36,8 +36,7 @@
  */
 
 const BREEDING_FEE = 5; // 5 USDT
-const INITIAL_FOOD_COUNT = 2;
-const WALLET_API_URL = $app.settings().meta("origin")?.replace("pb.", "wallet-api.") || "http://localhost:3001";
+
 
 module.exports = async (e) => {
     try {

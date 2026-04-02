@@ -32,9 +32,8 @@
  * }
  */
 
+// Use EGGO_CONFIG.game constants instead of declaring locally
 const MINT_PRICE = "25000000000000000000"; // 25 USDT in wei (18 decimals)
-const INITIAL_FOOD_COUNT = 2;
-const MAX_FOOD_COUNT = 10;
 
 module.exports = async (e) => {
     try {

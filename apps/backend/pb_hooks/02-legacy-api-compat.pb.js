@@ -3,7 +3,7 @@
 
 console.log("Setting up legacy API compatibility layer...");
 
-const WALLET_SRV_URL = process.env.WALLET_SRV_URL || "http://wallet-srv:3000";
+// Use EGGO_CONFIG.wallet.srvUrl instead of declaring WALLET_SRV_URL locally
 
 // Legacy: /api/wallet/create
 routerAdd("POST", "/api/wallet/create", (e) => {
@@ -32,7 +32,7 @@ routerAdd("POST", "/api/wallet/create", (e) => {
 
     // Forward to wallet-srv
     const response = $http.send({
-      url: `${WALLET_SRV_URL}/api/v1/wallet/create`,
+      url: `${EGGO_CONFIG.wallet.srvUrl}/api/v1/wallet/create`,
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

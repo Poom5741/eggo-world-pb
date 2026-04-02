@@ -3,7 +3,7 @@
 
 console.log("Setting up referral chain hook...");
 
-const PLATFORM_ADDRESS = '0x0000000000000000000000000000000000000000';
+// Use EGGO_CONFIG.blockchain.platformAddress instead of declaring PLATFORM_ADDRESS locally
 
 onRecordAfterCreateSuccess((e) => {
     const user = e.record;

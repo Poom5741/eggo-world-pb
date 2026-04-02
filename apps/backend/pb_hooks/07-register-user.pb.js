@@ -3,7 +3,7 @@
 
 console.log("Setting up register user endpoint...");
 
-const PLATFORM_ADDRESS = '0x0000000000000000000000000000000000000000';
+// Use EGGO_CONFIG.blockchain.platformAddress instead of declaring PLATFORM_ADDRESS locally
 
 routerAdd('POST', '/api/users/register', (e) => {
     console.log("=== REGISTER USER ENDPOINT CALLED ===");

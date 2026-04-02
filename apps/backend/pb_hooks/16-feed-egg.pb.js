@@ -38,7 +38,7 @@
  * }
  */
 
-const WALLET_API_URL = $app.settings().meta("origin")?.replace("pb.", "wallet-api.") || "http://localhost:3001";
+
 
 module.exports = async (e) => {
     try {
