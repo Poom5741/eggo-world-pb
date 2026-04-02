@@ -93,7 +93,7 @@
 
 **Duration:** Days 9-12  
 **Goal:** User-facing UI for all core actions
-**Plans:** 4 plans
+**Plans:** 5 plans
 **Status:** Planned
 
 #### Plans
@@ -102,6 +102,7 @@
 - [x] 03-02-PLAN.md — My Wallet page with auto-polling balance ✅ COMPLETE
 - [x] 03-03-PLAN.md — Product Detail + Referral Dashboard ✅ COMPLETE
 - [x] 03-04-PLAN.md — Auto-polling integration + polish pages
+- [ ] 03-05-PLAN.md — Gap closure: Buy Now + verify polling indicators
 
 #### Original Tasks
 
