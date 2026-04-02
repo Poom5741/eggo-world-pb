@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Coins, TrendingUp, Wallet, Loader2, CheckCircle2, AlertCircle, DollarSign } from 'lucide-react'
+import { Coins, TrendingUp, Wallet, Loader2, CheckCircle2, AlertCircle, DollarSign, RefreshCw } from 'lucide-react'
 import { Header } from '@/components/header'
 
 export default function CommissionsDashboard() {
@@ -28,6 +28,19 @@ export default function CommissionsDashboard() {
     g3Earnings: 0,
     g4Earnings: 0
   })
+  const [updating, setUpdating] = useState(false)
+
+  // Auto-polling every 30 seconds (per D-11)
+  useEffect(() => {
+    if (!user) return
+
+    const pollInterval = setInterval(() => {
+      setUpdating(true)
+      fetchData(user.id).finally(() => setUpdating(false))
+    }, 30000)
+
+    return () => clearInterval(pollInterval)
+  }, [user])
 
   useEffect(() => {
     setIsHydrated(true)
@@ -142,6 +155,14 @@ export default function CommissionsDashboard() {
     }
   }
 
+  const handleRefresh = async () => {
+    if (user) {
+      setUpdating(true)
+      await fetchData(user.id)
+      setUpdating(false)
+    }
+  }
+
   if (!isHydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -164,14 +185,33 @@ export default function CommissionsDashboard() {
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="space-y-8">
             {/* Header */}
-            <div className="space-y-2">
-              <h1 className="font-[var(--font-pixel)] text-2xl md:text-3xl text-foreground flex items-center gap-3">
-                <Coins className="w-8 h-8 text-primary" />
-                COMMISSIONS
-              </h1>
-              <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                EARN FROM YOUR REFERRAL CHAIN
-              </p>
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <h1 className="font-[var(--font-pixel)] text-2xl md:text-3xl text-foreground flex items-center gap-3">
+                  <Coins className="w-8 h-8 text-primary" />
+                  COMMISSIONS
+                </h1>
+                <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                  EARN FROM YOUR REFERRAL CHAIN
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {updating && (
+                  <Badge variant="secondary" className="animate-pulse">
+                    Updating...
+                  </Badge>
+                )}
+                <Button
+                  onClick={handleRefresh}
+                  disabled={updating}
+                  variant="outline"
+                  size="sm"
+                  className="font-[var(--font-pixel)] text-xs"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
             </div>
 
             {/* Stats */}

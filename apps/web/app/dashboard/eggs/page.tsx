@@ -6,7 +6,7 @@ import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Egg, Flame, Sparkles, TrendingUp, Wallet } from 'lucide-react'
+import { Egg, Flame, Sparkles, TrendingUp, Wallet, RefreshCw } from 'lucide-react'
 import { Header } from '@/components/header'
 import { EggCard } from '@/components/egg-nft/EggCard'
 
@@ -22,6 +22,19 @@ export default function EggsDashboard() {
     totalFood: 0,
     totalValue: 0
   })
+  const [updating, setUpdating] = useState(false)
+
+  // Auto-polling every 30 seconds (per D-11)
+  useEffect(() => {
+    if (!user) return
+
+    const pollInterval = setInterval(() => {
+      setUpdating(true)
+      fetchEggs(user.id).finally(() => setUpdating(false))
+    }, 30000)
+
+    return () => clearInterval(pollInterval)
+  }, [user])
 
   useEffect(() => {
     setIsHydrated(true)
@@ -95,6 +108,14 @@ export default function EggsDashboard() {
     }
   }
 
+  const handleRefresh = async () => {
+    if (user) {
+      setUpdating(true)
+      await fetchEggs(user.id)
+      setUpdating(false)
+    }
+  }
+
   if (!isHydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -125,13 +146,30 @@ export default function EggsDashboard() {
                   MANAGE YOUR EGGOVERSE COLLECTION
                 </p>
               </div>
-              <Button
-                onClick={() => router.push('/mint')}
-                className="font-[var(--font-pixel)] text-sm border-4 border-primary/50 hover:border-primary"
-              >
-                <Egg className="w-4 h-4 mr-2" />
-                MINT NEW EGG
-              </Button>
+              <div className="flex items-center gap-2">
+                {updating && (
+                  <Badge variant="secondary" className="animate-pulse">
+                    Updating...
+                  </Badge>
+                )}
+                <Button
+                  onClick={handleRefresh}
+                  disabled={updating}
+                  variant="outline"
+                  size="sm"
+                  className="font-[var(--font-pixel)] text-xs"
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+                <Button
+                  onClick={() => router.push('/mint')}
+                  className="font-[var(--font-pixel)] text-sm border-4 border-primary/50 hover:border-primary"
+                >
+                  <Egg className="w-4 h-4 mr-2" />
+                  MINT NEW EGG
+                </Button>
+              </div>
             </div>
 
             {/* Stats */}
