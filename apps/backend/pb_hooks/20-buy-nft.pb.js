@@ -217,4 +217,4 @@ routerAdd("POST", "/api/v2/buy-nft", (e) => {
             }
         });
     }
-}, { "requestTimeout": 30000 });
+});
