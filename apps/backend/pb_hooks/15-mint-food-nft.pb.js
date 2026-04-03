@@ -1,6 +1,6 @@
 /**
- * Hook: 13-mint-food-nft.pb.js
- * Event: OnRequest (POST /api/v2/mint-food)
+ * Hook: 15-mint-food-nft.pb.js
+ * Event: Router (POST /api/v2/mint-food)
  * 
  * Flow:
  * 1. Authenticate user
@@ -38,20 +38,9 @@
 
 const FOOD_MINT_PRICE = "500000000000000000"; // 0.50 USDT in wei (18 decimals)
 
-
-module.exports = async (e) => {
+routerAdd("POST", "/api/v2/mint-food", (e) => {
     try {
         const user = $apis.requireAuth(e);
-        
-        if (e.method !== 'POST') {
-            return e.json(400, { 
-                success: false, 
-                error: { 
-                    message: 'Method not allowed',
-                    code: 'METHOD_NOT_ALLOWED'
-                } 
-            });
-        }
         
         const body = e.parseBody();
         const { quantity, referrer_id } = body;
@@ -132,14 +121,14 @@ module.exports = async (e) => {
             foodNftAddress: foodNftAddress
         };
         
-        const walletResponse = await fetch(WALLET_API_URL + '/api/wallet/mint-food', {
+        const walletResponse = fetch(EGGO_CONFIG.wallet.srvUrl + '/api/wallet/mint-food', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(walletPayload)
         });
         
         if (!walletResponse.ok) {
-            const errorData = await walletResponse.json();
+            const errorData = walletResponse.json();
             return e.json(500, { 
                 success: false, 
                 error: { 
@@ -149,7 +138,7 @@ module.exports = async (e) => {
             });
         }
         
-        const walletResult = await walletResponse.json();
+        const walletResult = walletResponse.json();
         
         if (!walletResult.success) {
             return e.json(500, { 
@@ -188,9 +177,7 @@ module.exports = async (e) => {
                 foodTypeDistribution.herb++;
             }
             
-            const record = $app.dao().findRecordById("users", user.id);
-            const foodRecord = $app.dao().makeRecord();
-            foodRecord.collectionId = $app.dao().getCollectionByNameOrId("food_nfts").id;
+            const foodRecord = $app.dao().createRecord($app.dao().getCollectionByNameOrId("food_nfts"));
             foodRecord.set('food_id', foodId);
             foodRecord.set('token_id', foodId);
             foodRecord.set('owner', user.id);
@@ -216,8 +203,7 @@ module.exports = async (e) => {
         
         // Create commission records
         if (referrer_id && referralChain[0] !== "0x0000000000000000000000000000000000000000") {
-            const commissionRecord = $app.dao().makeRecord();
-            commissionRecord.collectionId = $app.dao().getCollectionByNameOrId("commission_records").id;
+            const commissionRecord = $app.dao().createRecord($app.dao().getCollectionByNameOrId("commission_records"));
             commissionRecord.set('payer', user.id);
             commissionRecord.set('amount', Number(totalCost) / 1e18);
             commissionRecord.set('type', 'food_mint');
@@ -248,4 +234,4 @@ module.exports = async (e) => {
             } 
         });
     }
-};
+}, { "requestTimeout": 30000 });

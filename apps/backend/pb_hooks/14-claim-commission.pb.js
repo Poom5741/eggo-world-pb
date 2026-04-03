@@ -1,6 +1,6 @@
 /**
- * Hook: 12-claim-commission.pb.js
- * Event: OnRequest (POST /api/v2/claim-commission)
+ * Hook: 14-claim-commission.pb.js
+ * Event: Router (POST /api/v2/claim-commission)
  * 
  * Flow:
  * 1. Authenticate user
@@ -22,21 +22,11 @@
  * }
  */
 
-module.exports = async (e) => {
+routerAdd("POST", "/api/v2/claim-commission", (e) => {
     try {
         const user = $apis.requireAuth(e);
-        
-        if (e.method !== 'POST') {
-            return e.json(400, { 
-                success: false, 
-                error: { 
-                    message: 'Method not allowed',
-                    code: 'METHOD_NOT_ALLOWED'
-                } 
-            });
-        }
 
-        const wallet = await $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', {
+        const wallet = $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', {
             '@owner': user.id
         });
 
@@ -50,7 +40,7 @@ module.exports = async (e) => {
             });
         }
 
-        const unclaimedRecords = await $app.dao().findRecordsByFilter('commission_records', 'user = {:user} && claimed = false', '', -1, -1, {
+        const unclaimedRecords = $app.dao().findRecordsByFilter('commission_records', 'user = {:user} && claimed = false', '', -1, -1, {
             '@user': user.id
         });
 
@@ -71,7 +61,7 @@ module.exports = async (e) => {
             totalClaimed += parseFloat(record.get('amount') || '0');
         }
 
-        const txHash = await callClaimCommissionContract(
+        const txHash = callClaimCommissionContract(
             wallet.get('wallet'),
             wallet.get('daccPublickey'),
             wallet.get('pin')
@@ -81,12 +71,12 @@ module.exports = async (e) => {
         for (const record of unclaimedRecords) {
             record.set('claimed', true);
             record.set('claimed_at', now);
-            await $app.dao().saveRecord(record);
+            $app.dao().saveRecord(record);
         }
 
         const totalEarned = parseFloat(user.get('usdt_total_earned') || '0');
         user.set('usdt_total_earned', (totalEarned + totalClaimed).toString());
-        await $app.dao().saveRecord(user);
+        $app.dao().saveRecord(user);
 
         $app.logger().info('Commission claimed', {
             userId: user.id,
@@ -114,13 +104,13 @@ module.exports = async (e) => {
             } 
         });
     }
-};
+}, { "requestTimeout": 30000 });
 
-async function callClaimCommissionContract(walletAddress, daccPublicKey, pin) {
+function callClaimCommissionContract(walletAddress, daccPublicKey, pin) {
     const eggNftAddress = $app.settings().meta('eggNftContractAddress') || '';
     const commissionDistributionAddress = $app.settings().meta('commissionDistributionAddress') || '';
     
-    const response = await fetch('http://localhost:3001/api/wallet/claim-commission', {
+    const response = fetch('http://wallet-api:3001/api/wallet/claim-commission', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -132,10 +122,10 @@ async function callClaimCommissionContract(walletAddress, daccPublicKey, pin) {
     });
 
     if (!response.ok) {
-        const error = await response.json();
+        const error = response.json();
         throw new Error(error.error?.message || 'Contract call failed');
     }
 
-    const result = await response.json();
+    const result = response.json();
     return result.data.txHash;
 }

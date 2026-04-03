@@ -1,6 +1,6 @@
 /**
- * Hook: 17-hatch-egg.pb.js
- * Event: OnRequest (POST /api/v2/hatch-egg)
+ * Hook: 19-hatch-egg.pb.js
+ * Event: Router (POST /api/v2/hatch-egg)
  * 
  * Flow:
  * 1. Authenticate user
@@ -34,23 +34,12 @@
 
 const MIN_FOOD_TO_HATCH = 10;
 
-
 const SPECIES_OPTIONS = ['Chicken', 'Duck', 'Pig', 'Cow', 'Sheep', 'Dog', 'Cat', 'Rabbit'];
 const RARITY_OPTIONS = ['Common', 'Rare', 'Epic', 'Legendary'];
 
-module.exports = async (e) => {
+routerAdd("POST", "/api/v2/hatch-egg", (e) => {
     try {
         const user = $apis.requireAuth(e);
-        
-        if (e.method !== 'POST') {
-            return e.json(400, { 
-                success: false, 
-                error: { 
-                    message: 'Method not allowed',
-                    code: 'METHOD_NOT_ALLOWED'
-                } 
-            });
-        }
         
         const body = e.parseBody();
         const { egg_token_id } = body;
@@ -67,7 +56,7 @@ module.exports = async (e) => {
         }
         
         // Find egg record
-        const egg = await $app.dao().findFirstRecordByFilter('egg_nfts', 'token_id = {:token_id} AND owner = {:owner}', {
+        const egg = $app.dao().findFirstRecordByFilter('egg_nfts', 'token_id = {:token_id} AND owner = {:owner}', {
             '@token_id': egg_token_id,
             '@owner': user.id
         });
@@ -107,7 +96,7 @@ module.exports = async (e) => {
         }
         
         // Get food type distribution from egg_consumption_logs
-        const foodDistribution = await getFoodTypeDistribution(egg.id);
+        const foodDistribution = getFoodTypeDistribution(egg.id);
         
         // Calculate rarity from rarity_seed and upgrade count
         const raritySeed = egg.get('rarity_seed') || 0;
@@ -126,10 +115,10 @@ module.exports = async (e) => {
         let generation = 0;
         if (isBreedingEgg) {
             // Get max parent generation + 1
-            const parent1 = await $app.dao().findFirstRecordByFilter('animal_nfts', 'animal_id = {:animal_id}', {
+            const parent1 = $app.dao().findFirstRecordByFilter('animal_nfts', 'animal_id = {:animal_id}', {
                 '@animal_id': parent1AnimalId
             });
-            const parent2 = await $app.dao().findFirstRecordByFilter('animal_nfts', 'animal_id = {:animal_id}', {
+            const parent2 = $app.dao().findFirstRecordByFilter('animal_nfts', 'animal_id = {:animal_id}', {
                 '@animal_id': parent2AnimalId
             });
             
@@ -145,14 +134,14 @@ module.exports = async (e) => {
         const txHash = `0x${Date.now().toString(16).padStart(64, '0')}`;
         
         // Get next animal_id and token_id
-        const animalRecords = await $app.dao().findRecordsByFilter('animal_nfts', 'token_id', 'DESC', 1, 1);
+        const animalRecords = $app.dao().findRecordsByFilter('animal_nfts', 'token_id', 'DESC', 1, 1);
         const nextTokenId = animalRecords.length > 0 ? (animalRecords[0].get('token_id') || 0) + 1 : 1;
         
-        const animalIdRecords = await $app.dao().findRecordsByFilter('animal_nfts', 'animal_id', 'DESC', 1, 1);
+        const animalIdRecords = $app.dao().findRecordsByFilter('animal_nfts', 'animal_id', 'DESC', 1, 1);
         const nextAnimalId = animalIdRecords.length > 0 ? (animalIdRecords[0].get('animal_id') || 0) + 1 : 1;
         
         // Create animal record
-        const animal = new $app.dao().recordFromCollection('animal_nfts');
+        const animal = $app.dao().createRecord($app.dao().getCollectionByNameOrId('animal_nfts'));
         animal.set('animal_id', nextAnimalId);
         animal.set('token_id', nextTokenId);
         animal.set('owner', user.id);
@@ -168,16 +157,16 @@ module.exports = async (e) => {
         animal.set('tx_hash', txHash);
         animal.set('minted_at', new Date().toISOString());
         
-        await $app.dao().saveRecord(animal);
+        $app.dao().saveRecord(animal);
         
         // Mark egg as hatched
         egg.set('is_hatched', true);
         egg.set('animal_token_id', nextTokenId);
-        await $app.dao().saveRecord(egg);
+        $app.dao().saveRecord(egg);
         
         // Call wallet-api to hatch egg on blockchain (optional)
         try {
-            await fetchWithRetry(`${WALLET_API_URL}/api/v1/hatch-egg`, {
+            fetchWithRetry(EGGO_CONFIG.wallet.srvUrl + '/api/v1/hatch-egg', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -189,7 +178,7 @@ module.exports = async (e) => {
             console.error("Wallet API hatching failed (non-critical):", apiError.message);
         }
         
-        e.json(200, { 
+        return e.json(200, { 
             success: true, 
             data: {
                 animal_token_id: nextTokenId,
@@ -204,7 +193,7 @@ module.exports = async (e) => {
         
     } catch (error) {
         console.error("Hatch egg failed:", error);
-        e.json(500, { 
+        return e.json(500, { 
             success: false, 
             error: { 
                 message: error.message,
@@ -212,9 +201,9 @@ module.exports = async (e) => {
             } 
         });
     }
-};
+}, { "requestTimeout": 30000 });
 
-async function getFoodTypeDistribution(eggId) {
+function getFoodTypeDistribution(eggId) {
     const distribution = {
         grain: 0,
         fish: 0,
@@ -223,7 +212,7 @@ async function getFoodTypeDistribution(eggId) {
     };
     
     try {
-        const logs = await $app.dao().findRecordsByFilter('egg_consumption_logs', 'egg_id', 'ASC', 100, 0, {
+        const logs = $app.dao().findRecordsByFilter('egg_consumption_logs', 'egg_id', 'ASC', 100, 0, {
             filter: `egg_id = "${eggId}"`
         });
         
@@ -286,14 +275,13 @@ function calculateSpecies(foodDistribution, rarity) {
     return possibleSpecies[speciesIndex];
 }
 
-async function fetchWithRetry(url, options, maxRetries = 3) {
+function fetchWithRetry(url, options, maxRetries = 3) {
     for (let i = 0; i < maxRetries; i++) {
         try {
-            const response = await fetch(url, options);
-            return await response.json();
+            const response = fetch(url, options);
+            return response.json();
         } catch (error) {
             if (i === maxRetries - 1) throw error;
-            await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)));
         }
     }
 }

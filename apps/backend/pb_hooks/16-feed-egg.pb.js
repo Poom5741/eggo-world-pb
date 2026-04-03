@@ -1,6 +1,6 @@
 /**
- * Hook: 14-feed-egg.pb.js
- * Event: OnRequest (POST /api/v2/feed-egg)
+ * Hook: 16-feed-egg.pb.js
+ * Event: Router (POST /api/v2/feed-egg)
  * 
  * Flow:
  * 1. Authenticate user
@@ -38,21 +38,9 @@
  * }
  */
 
-
-
-module.exports = async (e) => {
+routerAdd("POST", "/api/v2/feed-egg", (e) => {
     try {
         const user = $apis.requireAuth(e);
-        
-        if (e.method !== 'POST') {
-            return e.json(400, { 
-                success: false, 
-                error: { 
-                    message: 'Method not allowed',
-                    code: 'METHOD_NOT_ALLOWED'
-                } 
-            });
-        }
         
         const body = e.parseBody();
         const { egg_token_id, food_ids } = body;
@@ -179,14 +167,14 @@ module.exports = async (e) => {
             eggNftAddress: eggNftAddress
         };
         
-        const walletResponse = await fetch(WALLET_API_URL + '/api/wallet/feed-egg', {
+        const walletResponse = fetch(EGGO_CONFIG.wallet.srvUrl + '/api/wallet/feed-egg', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(walletPayload)
         });
         
         if (!walletResponse.ok) {
-            const errorData = await walletResponse.json();
+            const errorData = walletResponse.json();
             return e.json(500, { 
                 success: false, 
                 error: { 
@@ -196,7 +184,7 @@ module.exports = async (e) => {
             });
         }
         
-        const walletResult = await walletResponse.json();
+        const walletResult = walletResponse.json();
         
         if (!walletResult.success) {
             return e.json(500, { 
@@ -224,8 +212,7 @@ module.exports = async (e) => {
         }
         
         // Create consumption log
-        const consumptionLog = $app.dao().makeRecord();
-        consumptionLog.collectionId = $app.dao().getCollectionByNameOrId("egg_consumption_logs").id;
+        const consumptionLog = $app.dao().createRecord($app.dao().getCollectionByNameOrId("egg_consumption_logs"));
         consumptionLog.set('egg', egg.id);
         consumptionLog.set('food_items', food_ids);
         consumptionLog.set('food_type_distribution', foodTypeDistribution);
@@ -264,4 +251,4 @@ module.exports = async (e) => {
             } 
         });
     }
-};
+}, { "requestTimeout": 30000 });

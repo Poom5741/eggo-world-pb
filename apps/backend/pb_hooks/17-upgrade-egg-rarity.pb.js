@@ -1,6 +1,6 @@
 /**
- * Hook: 15-upgrade-egg-rarity.pb.js
- * Event: OnRequest (POST /api/v2/upgrade-egg-rarity)
+ * Hook: 17-upgrade-egg-rarity.pb.js
+ * Event: Router (POST /api/v2/upgrade-egg-rarity)
  * 
  * Flow:
  * 1. Authenticate user
@@ -37,20 +37,9 @@ const UPGRADE_FEE_PER_FOOD = 5; // 5 USDT per food item
 const MAX_FOOD_COUNT = 20;
 const MIN_FOOD_FOR_UPGRADE = 10;
 
-
-module.exports = async (e) => {
+routerAdd("POST", "/api/v2/upgrade-egg-rarity", (e) => {
     try {
         const user = $apis.requireAuth(e);
-        
-        if (e.method !== 'POST') {
-            return e.json(400, { 
-                success: false, 
-                error: { 
-                    message: 'Method not allowed',
-                    code: 'METHOD_NOT_ALLOWED'
-                } 
-            });
-        }
         
         const body = e.parseBody();
         const { egg_token_id, food_ids } = body;
@@ -77,7 +66,7 @@ module.exports = async (e) => {
         }
         
         // Find egg record
-        const egg = await $app.dao().findFirstRecordByFilter('egg_nfts', 'token_id = {:token_id} AND owner = {:owner}', {
+        const egg = $app.dao().findFirstRecordByFilter('egg_nfts', 'token_id = {:token_id} AND owner = {:owner}', {
             '@token_id': egg_token_id,
             '@owner': user.id
         });
@@ -129,7 +118,7 @@ module.exports = async (e) => {
         }
         
         // Get user wallet
-        const wallet = await $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', {
+        const wallet = $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', {
             '@owner': user.id
         });
         
@@ -159,18 +148,18 @@ module.exports = async (e) => {
         
         // Deduct fee from wallet
         wallet.set('usdt_balance', (currentBalance - upgradeFee).toString());
-        await $app.dao().saveRecord(wallet);
+        $app.dao().saveRecord(wallet);
         
         // Update user's usdt_balance as well
         user.set('usdt_balance', (parseFloat(user.get('usdt_balance') || '0') - upgradeFee).toString());
-        await $app.dao().saveRecord(user);
+        $app.dao().saveRecord(user);
         
         // Get referral chain from egg
         const referralChain = egg.get('referral_chain') || [];
         
         // Create commission records
         if (referralChain.length > 0 && referralChain[0]) {
-            await createCommissionRecords(referralChain, upgradeFee, egg.id, 'upgrade');
+            createCommissionRecords(referralChain, upgradeFee, egg.id, 'upgrade');
         }
         
         // Calculate rarity bonus
@@ -180,11 +169,11 @@ module.exports = async (e) => {
         // Update egg record
         egg.set('food_count', newFoodCount);
         egg.set('rarity_upgrade_count', upgradeCount);
-        await $app.dao().saveRecord(egg);
+        $app.dao().saveRecord(egg);
         
         // Call wallet-api to burn food and update blockchain (optional, for sync)
         try {
-            await fetchWithRetry(`${WALLET_API_URL}/api/v1/upgrade-egg-rarity`, {
+            fetchWithRetry(EGGO_CONFIG.wallet.srvUrl + '/api/v1/upgrade-egg-rarity', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -197,7 +186,7 @@ module.exports = async (e) => {
             console.error("Wallet API upgrade failed (non-critical):", apiError.message);
         }
         
-        e.json(200, { 
+        return e.json(200, { 
             success: true, 
             data: {
                 egg_token_id,
@@ -210,7 +199,7 @@ module.exports = async (e) => {
         
     } catch (error) {
         console.error("Upgrade egg rarity failed:", error);
-        e.json(500, { 
+        return e.json(500, { 
             success: false, 
             error: { 
                 message: error.message,
@@ -218,9 +207,9 @@ module.exports = async (e) => {
             } 
         });
     }
-};
+}, { "requestTimeout": 30000 });
 
-async function createCommissionRecords(referralChain, totalAmount, eggId, type) {
+function createCommissionRecords(referralChain, totalAmount, eggId, type) {
     const commissionSplits = [0.25, 0.15, 0.10, 0.05]; // G1, G2, G3, G4
     
     for (let i = 0; i < Math.min(referralChain.length, 4); i++) {
@@ -231,7 +220,7 @@ async function createCommissionRecords(referralChain, totalAmount, eggId, type) 
         if (commissionAmount <= 0) continue;
         
         // Find referrer by wallet
-        const referrerWalletRecord = await $app.dao().findFirstRecordByFilter('user_wallets', 'wallet = {:wallet}', {
+        const referrerWalletRecord = $app.dao().findFirstRecordByFilter('user_wallets', 'wallet = {:wallet}', {
             '@wallet': referrerWallet
         });
         
@@ -240,7 +229,7 @@ async function createCommissionRecords(referralChain, totalAmount, eggId, type) 
         const referrerId = referrerWalletRecord.get('owner');
         
         // Create commission record
-        const commission = new $app.dao().recordFromCollection('commission_records');
+        const commission = $app.dao().createRecord($app.dao().getCollectionByNameOrId('commission_records'));
         commission.set('egg_id', eggId);
         commission.set('referrer_id', referrerId);
         commission.set('referrer_wallet', referrerWallet);
@@ -249,24 +238,23 @@ async function createCommissionRecords(referralChain, totalAmount, eggId, type) 
         commission.set('type', type);
         commission.set('distributed_at', new Date().toISOString());
         
-        await $app.dao().saveRecord(commission);
+        $app.dao().saveRecord(commission);
         
         // Update referrer wallet balance
         const currentBalance = parseFloat(referrerWalletRecord.get('usdt_balance') || '0');
         referrerWalletRecord.set('usdt_balance', (currentBalance + commissionAmount).toString());
         referrerWalletRecord.set('total_earned', (parseFloat(referrerWalletRecord.get('total_earned') || '0') + commissionAmount).toString());
-        await $app.dao().saveRecord(referrerWalletRecord);
+        $app.dao().saveRecord(referrerWalletRecord);
     }
 }
 
-async function fetchWithRetry(url, options, maxRetries = 3) {
+function fetchWithRetry(url, options, maxRetries = 3) {
     for (let i = 0; i < maxRetries; i++) {
         try {
-            const response = await fetch(url, options);
-            return await response.json();
+            const response = fetch(url, options);
+            return response.json();
         } catch (error) {
             if (i === maxRetries - 1) throw error;
-            await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)));
         }
     }
 }
