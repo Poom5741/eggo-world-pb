@@ -72,6 +72,7 @@ progress:
 - ✅ Completed Phase 03 Plan 04: Auto-Polling Integration (2026-04-02)
 - ✅ Completed Phase 04 Plan 01: TypeScript + dacc-js Migration (2026-04-03)
 - ✅ Completed Phase 04 Plan 04: LINE Wallet Integration Verification (2026-04-03)
+- ✅ Completed Phase 01 Plan 01: Deploy contracts to BSC testnet (2026-04-03)
 
 **Last Session:** 2026-04-03T06:23:00Z
 
