@@ -12,6 +12,10 @@ import Image from 'next/image'
 import { Loader2, ShoppingBag, User, Package, Layers, Tag, RefreshCw } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
+import { parseUnits } from 'ethers'
+import { getSigner } from '@/lib/contracts/eggNft'
+import { getUSDTContract, USDT_ADDRESS } from '@/lib/contracts/usdt'
+import { getMarketplaceContract, MARKETPLACE_ADDRESS } from '@/lib/contracts/marketplace'
 
 interface NftData {
   id: string
@@ -171,7 +175,7 @@ export default function NftDetailPage() {
       }
 
       // Step 5: Show success and redirect
-      alert('NFT purchased successfully!')
+      toast.success('NFT purchased successfully!')
       router.push('/dashboard/nfts')
     } catch (error: any) {
       console.error('Buy error:', error)
