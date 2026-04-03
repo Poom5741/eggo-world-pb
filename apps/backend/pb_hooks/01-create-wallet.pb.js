@@ -89,4 +89,4 @@ onRecordCreate((e) => {
 }, "users");
 
 console.log("Create wallet hook registered");
-console.log("Wallet-srv URL:", WALLET_SRV_URL);
+console.log("Wallet API URL:", EGGO_CONFIG.wallet.srvUrl);
