@@ -1,50 +1,68 @@
 # Phase 2: Backend Integration - Context
 
-**Gathered:** 2026-04-02  
-**Status:** Implementation complete — event sync and deployment pending
+**Gathered:** 2026-04-03 (Updated)  
+**Status:** Event sync implementation ready
 
 <domain>
 ## Phase Boundary
 
-PocketBase collections, hooks, and wallet API for NFT marketplace backend. Sync blockchain events to database for fast frontend queries.
+PocketBase collections, hooks, wallet API, and blockchain event synchronization for NFT marketplace backend.
 
-**Scope anchor:** Backend infrastructure for user management, wallet creation, NFT metadata storage, commission tracking, and blockchain event synchronization.
+**Scope anchor:** Backend infrastructure for user management, wallet creation, NFT metadata storage, commission tracking, and blockchain event synchronization to PocketBase for fast frontend queries.
 
 </domain>
 
 <decisions>
 ## Implementation Decisions
 
-### Backend Status
+### Backend Status (Existing)
 
-- **D-01:** Phase 2 marked as "implementation complete" — all core backend components written
+- **D-01:** Phase 2 core implementation complete — 21 PocketBase hooks written
 - **D-02:** 9 PocketBase collections exist: users, nfts, transactions, referrals, user_wallets, egg_nfts, food_nfts, animal_nfts, commission_records
-- **D-03:** 21 PocketBase hooks implemented including wallet creation, referral chain, NFT minting, commission tracking
-- **D-04:** Wallet API running on Express.js with ethers v6 — endpoints for create, balance, transfer
+- **D-03:** Wallet API running on TypeScript + Bun + dacc-js v0.0.5
+- **D-04:** Wallet addresses stored in PocketBase, private keys encrypted with master key + userId
 
-### Event Sync Decisions
+### Event Sync Architecture (NEW)
 
-- **D-05:** Sync blockchain events to PocketBase for fast frontend queries (not direct blockchain queries)
-- **D-06:** Hybrid sync approach — WebSocket for real-time events, block polling as fallback
-- **D-07:** Store processed data only in main collections (balances, ownership, earnings) — lean and fast
-- **D-08:** Support both BSC testnet and mainnet — switch via configuration
-- **D-09:** Priority events to sync: EggMinted, FoodMinted, AnimalMinted, EggHatched, CommissionDistributed
+- **D-05:** **PocketBase Hook-Based approach** — Event sync implemented within PocketBase hooks, not separate indexer service (MVP-first decision)
+- **D-06:** **5 events to sync for MVP** (priority order):
+  1. `EggMinted` — Update egg_nfts collection, set owner
+  2. `FoodMinted` — Update food_nfts collection, set owner
+  3. `AnimalMinted` — Update animal_nfts collection with rarity, species, generation
+  4. `EggHatched` — Mark egg as hatched, link to animal_nfts
+  5. `CommissionDistributed` — Update commission_records, increment user balances
+- **D-07:** **Hybrid sync timing** — Block polling every 30 seconds (10 blocks on BSC) as MVP, WebSocket ready architecture for Phase 4 enhancement
+- **D-08:** **Block number tracking for rollback** — Store `lastProcessedBlock` in `sync_state` collection after each successful event batch
+- **D-09:** **Retry with exponential backoff** — 3 retries (1s, 2s, 4s delays) before stopping sync for manual intervention
+- **D-10:** **Support both BSC testnet and mainnet** — Switch via configuration in 00-config.pb.js
 
-### Architecture Decisions (Already Made)
+### Sync State Management (NEW)
 
-- **D-10:** PocketBase hooks for user-facing operations (create wallet, register user, mint NFT)
-- **D-11:** Wallet API separate from PocketBase — dedicated service for blockchain operations
-- **D-12:** XOR encryption in wallet API (demo) — upgrade to AES-256-GCM before production
-- **D-13:** Wallet addresses stored in PocketBase, private keys encrypted with master key + userId
-- **D-14:** Referral chain stored as JSON array [G1, G2, G3, G4] on user record
-- **D-15:** Commission balances tracked in PocketBase, claimed via blockchain transaction
+- **D-11:** **`sync_state` collection** — Single record tracking sync progress
+  - Fields: `lastProcessedBlock` (number), `lastSyncTimestamp` (datetime), `status` (select: 'syncing' | 'error' | 'idle'), `last_error` (text), `failed_block` (number)
+  - Updated atomically after each successful block processing
+- **D-12:** **On startup behavior** — Read `lastProcessedBlock` from `sync_state`, resume sync from that block (auto-recovery from crashes)
+- **D-13:** **On critical error** — Set `status = 'error'`, log full context, stop sync loop, await manual intervention
+
+### Event Processing Flow (NEW)
+
+- **D-14:** **Block polling interval** — Every 30 seconds (~10 blocks on BSC with 3s block time)
+- **D-15:** **Event filtering** — Only process events from deployed contract addresses (EggNFT, FoodNFT, AnimalNFT, Commission, Marketplace)
+- **D-16:** **Atomic block processing** — All events in a block processed successfully OR none (block number not saved on partial failure)
+- **D-17:** **PocketBase Admin API** — Sync hook uses PocketBase ORM directly (`pb.collection()`) within hook context
+
+### Error Categories (NEW)
+
+- **D-18:** **Retryable errors** — Network timeout, RPC rate limit, temporary DB lock (trigger retry)
+- **D-19:** **Non-retryable errors** — Invalid event data, contract mismatch, schema error (log and skip event)
+- **D-20:** **Critical errors** — PocketBase connection lost, encryption failure (stop sync, set error status)
 
 ### OpenCode's Discretion
 
-- Event listener architecture choice (PocketBase hooks vs separate indexer service)
-- Exact polling interval for block polling (recommended: every 10 blocks ~30s on BSC)
-- Error handling and retry logic for failed sync attempts
-- Wallet API deployment configuration (Docker vs direct deployment)
+- Exact implementation of block polling loop structure
+- WebSocket provider setup for Phase 4 enhancement
+- Specific error messages and logging format
+- Whether to add Discord/Slack webhook alerts for critical errors (Phase 4/6)
 
 </decisions>
 
@@ -56,13 +74,14 @@ PocketBase collections, hooks, and wallet API for NFT marketplace backend. Sync 
 
 ### Backend Architecture
 
-- `docs/00-architecture.md` — System architecture, component relationships, data flows (§3-5: Backend, Wallet API, Smart Contracts)
+- `docs/NFT_Marketplace_Functional_Spec.md` — Event definitions (§2, §6, §7), commission distribution engine (§6), wallet functions (§9), data models (§13)
+- `docs/00-architecture.md` — System architecture, component relationships (§3-5: Backend, Wallet API, Smart Contracts)
 - `docs/02-decisions.md` — ADR-001 (PocketBase), ADR-002 (4-level MLM), ADR-004 (BSC network)
-- `docs/NFT_Marketplace_Functional_Spec.md` — Commission distribution engine (§6), Wallet functions (§9), Data models (§13)
 
 ### PocketBase Implementation
 
-- `apps/backend/pb_hooks/` — All 21 hook implementations
+- `apps/backend/pb_hooks/` — All 21 existing hook implementations
+- `apps/backend/pb_hooks/00-config.pb.js` — Centralized configuration (blockchain, wallet, game settings)
 - `apps/backend/pb_hooks/01-create-wallet.pb.js` — Wallet creation on user signup
 - `apps/backend/pb_hooks/06-referral-chain.pb.js` — Build 4-level referral chain
 - `apps/backend/pb_hooks/07-register-user.pb.js` — User registration with referrer
@@ -86,12 +105,14 @@ PocketBase collections, hooks, and wallet API for NFT marketplace backend. Sync 
 ### Wallet API
 
 - `wallet-api/server.js` — Express.js server with wallet endpoints
-- `wallet-api/package.json` — Dependencies (ethers v6, express, cors)
+- `wallet-api/src/` — TypeScript source code (dacc-js integration)
 - `wallet-api/AGENTS.md` — Wallet API conventions and patterns
 
 ### Integration Patterns
 
 - `.planning/phases/01-smart-contracts-foundation/01-CONTEXT.md` — Phase 1 context, contract addresses, event definitions
+- `.planning/codebase/ARCHITECTURE.md` — System architecture patterns
+- `.planning/codebase/CONVENTIONS.md` — Coding standards (Thai comments, error handling)
 
 </canonical_refs>
 
@@ -104,122 +125,141 @@ PocketBase collections, hooks, and wallet API for NFT marketplace backend. Sync 
 - **21 PocketBase hooks**: Complete implementation for user management, wallet operations, NFT minting, commission tracking
 - **Wallet API server.js**: Production-ready Express.js service with wallet creation, balance queries, transfers
 - **9 PocketBase collections**: Pre-configured schemas for all data entities
-- **Encryption utilities**: XOR encryption (to be upgraded to AES) for private key storage
+- **00-config.pb.js**: Centralized configuration (blockchain RPC URLs, contract addresses, encryption settings)
+- **Ethers v6 in wallet-api**: Can reuse provider setup for event sync
 
 ### Established Patterns
 
-- **Hook naming convention**: `NN-feature.pb.js` where NN = execution order (01-16)
+- **Hook naming convention**: `NN-feature.pb.js` where NN = execution order (01-21)
 - **Hook response pattern**: `e.json(200, { success: true, data: {...} })` for success, `e.json(400, { success: false, error: {...} })` for errors
-- **Wallet encryption**: `MASTER_KEY + userId` as encryption key, XOR ciphertext storage
+- **Wallet encryption**: `MASTER_KEY + userId` as encryption key, XOR ciphertext storage (to upgrade to AES-256-GCM)
 - **Referral chain building**: Recursive lookup through G1→G2→G3→G4 on user registration
 - **Commission tracking**: Track in PocketBase DB, claim via on-chain transaction
-- **Error handling**: Try-catch with structured error responses
+- **Error handling**: Try-catch with structured error responses, Thai comments
 
 ### Integration Points
 
 - **PocketBase ↔ Smart Contracts**: Hooks call wallet API which signs blockchain transactions
-- **Wallet API ↔ Blockchain**: Ethers v6 for wallet generation, balance queries, transaction signing
+- **Wallet API ↔ Blockchain**: Ethers v6 (dacc-js) for wallet generation, balance queries, transaction signing
+- **Event Sync → PocketBase**: New hook-based sync will update collections on blockchain events
 - **Frontend ↔ PocketBase**: REST API for all user operations, real-time subscriptions
-- **Frontend ↔ Wallet API**: Direct calls for wallet creation, balance checks
-- **Event Sync → PocketBase**: Future event listeners will update collections on blockchain events
 
-### Backend Capabilities Summary
+### Sync Architecture Summary
 
-**User Management:**
+**Implementation location:** `apps/backend/pb_hooks/21-sync-events.pb.js`
 
-- ✅ LINE OAuth authentication (hooks 04-05)
-- ✅ Auto-wallet creation on signup (hook 01)
-- ✅ Referral chain building (hooks 06-07)
-- ✅ User registration with upline tracking
+**Sync flow:**
 
-**Wallet Operations:**
+```
+PocketBase starts
+     │
+     ▼
+Read sync_state.lastProcessedBlock
+     │
+     ▼
+setInterval every 30s
+     │
+     ▼
+Get current block from BSC RPC
+     │
+     ▼
+For each block from lastProcessedBlock+1 to current:
+  ├─ Fetch block with events
+  ├─ Filter events (EggMinted, FoodMinted, AnimalMinted, EggHatched, CommissionDistributed)
+  ├─ For each event: syncWithRetry(handler, event, maxRetries=3)
+  │   ├─ Attempt 1: process event
+  │   ├─ On error: wait 1s, retry
+  │   ├─ Attempt 2: process event
+  │   ├─ On error: wait 2s, retry
+  │   ├─ Attempt 3: process event
+  │   └─ On error: throw, stop sync, set error status
+  ├─ On success: update sync_state.lastProcessedBlock = blockNumber
+  └─ Continue to next block
+```
 
-- ✅ Wallet generation (ethers v6, encrypted storage)
-- ✅ Balance queries (USDT, native token)
-- ✅ P2P transfers
-- ✅ Withdrawal requests (hook 09)
+**State management:**
 
-**NFT Operations:**
-
-- ✅ Mint Egg NFT (hook 13) — 25 USDT, includes 2 Food NFTs
-- ✅ Mint Food NFT (hook 15) — 0.50 USDT each
-- ✅ Feed Egg (hook 16) — burn Food NFTs, increment egg food_count
-- ⏳ Hatch Egg — event sync needed to detect hatching
-- ⏳ Marketplace listing — requires event sync
-
-**Commission Tracking:**
-
-- ✅ Commission calculation (hook 14)
-- ✅ Commission claiming
-- ⏳ Commission distribution logging — event sync needed
-
-**What's Missing:**
-
-- ⏳ Blockchain event listeners (EggMinted, AnimalMinted, CommissionDistributed, etc.)
-- ⏳ Event-to-database sync logic
-- ⏳ Wallet API deployment configuration
-- ⏳ AES encryption upgrade for production
+- Collection: `sync_state` (create if not exists)
+- Single record with id='config'
+- Atomic updates: block number only saved after successful event processing
+- On restart: resume from lastProcessedBlock (auto-recovery)
 
 </code_context>
 
 <specifics>
 ## Specific Ideas
 
-### Event Sync Purpose (for downstream agents)
+### Block Number Rollback Strategy
 
-Blockchain event sync is needed because:
+User explicitly requested: "collect block number so we can rollback every time if system down"
 
-1. **Frontend performance**: Querying PocketBase is faster than direct blockchain queries
-2. **Data aggregation**: Combine on-chain events with user profiles, referrals, off-chain metadata
-3. **Real-time updates**: PocketBase subscriptions push updates to frontend instantly
-4. **Historical queries**: Easy to query "all my eggs", "total commissions earned", etc.
-
-### Events to Sync (priority order)
-
-1. **EggMinted** — Update egg_nfts collection, set owner
-2. **FoodMinted** — Update food_nfts collection, set owner
-3. **AnimalMinted** — Update animal_nfts collection with rarity, species, generation
-4. **EggHatched** — Mark egg as hatched, link to animal_nfts
-5. **CommissionDistributed** — Update commission_records, increment user balances
-6. **NFTListed** (marketplace) — Update nfts.is_listed, listed_price
-7. **NFTSold** (marketplace) — Transfer ownership, update balances
-
-### Sync Architecture Options
-
-**Option A: PocketBase Hooks (simpler)**
+**Implementation:**
 
 ```javascript
-// Example hook pattern
-pb_hooks/17-sync-events.pb.js
-- Listen to contract events via ethers WebSocket
-- On event: update PocketBase collections
-- Run as background task within PocketBase process
+// After processing ALL events in a block successfully:
+await pb.collection("sync_state").update("config", {
+  lastProcessedBlock: blockNumber,
+  lastSyncTimestamp: new Date().toISOString(),
+  status: "syncing",
+})
+
+// On startup or after crash:
+const state = await pb.collection("sync_state").getFirstListItem('id="config"')
+const startBlock = state.lastProcessedBlock + 1
+console.log(`Resuming sync from block ${startBlock}`)
 ```
 
-**Option B: Separate Indexer Service (scalable)**
+**Rollback scenario:**
+
+1. System crashes at block 12345678 (mid-processing)
+2. `lastProcessedBlock` still at 12345677 (not yet updated)
+3. On restart: reads 12345677, resumes from 12345678
+4. Events from 12345678 re-processed (idempotent handlers prevent duplicates)
+
+### Event Handler Idempotency
+
+Handlers MUST be idempotent (safe to call multiple times with same event):
 
 ```javascript
-// Dedicated Node.js service
-indexer/
-- Connect to BSC RPC (WebSocket)
-- Subscribe to contract events
-- Call PocketBase Admin API to update records
-- Can scale independently, backfill historical data
+async function syncEggMinted(eggId, buyer, blockNumber) {
+  const egg = await pb.collection("egg_nfts").getOne(eggId)
+  if (egg && egg.owner === buyer) {
+    // Already processed — skip (idempotent)
+    return
+  }
+  // Process event...
+}
 ```
 
-**Recommended**: Start with Option A for MVP, migrate to Option B for production
+### WebSocket Readiness (Phase 4 Enhancement)
 
-### Deployment Command (reference)
+Architecture supports future WebSocket upgrade:
+
+```javascript
+// Current: Block polling (MVP)
+setInterval(pollBlocks, 30000)
+
+// Phase 4: Add WebSocket listener
+const provider = new ethers.WebSocketProvider(RPC_WSS_URL)
+contract.on("EggMinted", handleEvent)
+
+// Heartbeat: detect silent WebSocket drops
+setInterval(checkWebSocketHealth, 60000)
+
+// Fallback: if WebSocket silent > 60s, switch to polling
+```
+
+### Deployment Command
 
 ```bash
-# Wallet API
-cd wallet-api
-docker build -t eggo-wallet-api .
-docker run -p 3001:3001 --env-file .env eggo-wallet-api
+# PocketBase already running at pb.eggoworld.io
+# After adding 21-sync-events.pb.js:
 
-# PocketBase (already deployed at pb.eggoworld.io)
 cd apps/backend
-docker-compose up -d
+docker-compose restart pocketbase
+
+# Verify sync running:
+docker logs pocketbase | grep "sync"
 ```
 
 </specifics>
@@ -227,24 +267,30 @@ docker-compose up -d
 <deferred>
 ## Deferred Ideas
 
-**Out of scope for Phase 2 (backend implementation complete):**
+**Out of scope for Phase 2 (backend event sync):**
 
-- Historical event backfill (sync from block 0) — Phase 4 deployment
+- WebSocket real-time sync — Phase 4 enhancement (polling-first approach)
+- Historical event backfill from block 0 — Phase 4 deployment
+- Dead-letter queue for failed events — overkill for MVP, use retry-with-backoff instead
 - Advanced analytics and reporting — Phase 6 admin dashboard
 - Multi-chain event sync — Phase 7 multi-chain support
-- Real-time WebSocket dashboard — Phase 3 frontend
-- Admin moderation tools — Phase 6 admin dashboard
+- Discord/Slack webhook alerts for critical errors — Phase 4/6 monitoring
 
-### Event Sync Deferred (MVP approach)
+### Marketplace Events Deferred
 
-- Full indexer service — can use simpler hook-based sync for MVP
-- Complex event aggregation — store raw events first, aggregate later
-- Advanced filtering and search — basic queries sufficient for MVP
+- `NFTListed`, `NFTSold` — Marketplace events deferred until Phase 3 frontend marketplace UI ready
+- Can add these events to sync hook when marketplace pages implemented
+
+### Separate Indexer Service Deferred
+
+- Current decision: PocketBase hook-based sync (MVP-first)
+- Can migrate to separate indexer service in Phase 6/7 if scaling requires it
+- Architecture designed to support future migration (state stored in PocketBase collections)
 
 </deferred>
 
 ---
 
 _Phase: 02-backend-integration_  
-_Context gathered: 2026-04-02_  
-_Next: Phase 3 - Frontend Marketplace (UI for all core actions)_
+_Context gathered: 2026-04-03 (Updated with event sync decisions)_  
+_Next: Phase 2 Implementation — Create 21-sync-events.pb.js hook with block polling, 5-event sync, retry-with-backoff_
