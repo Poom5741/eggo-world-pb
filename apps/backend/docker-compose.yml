@@ -20,6 +20,7 @@ services:
             WALLET_MASTER_KEY: production_key_change_this_32_characters
             PB_PUBLIC_URL: https://pb.eggoworld.io
             WALLET_API_URL: http://wallet-api:3001
+            WALLET_SRV_URL: http://wallet-api:3001
         expose:
             - "8090"
         volumes:
