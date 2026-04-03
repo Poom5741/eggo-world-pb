@@ -18,8 +18,18 @@
     "network": "bsc",
     "token": "usdt-bep20"
   },
-  "focus_areas": ["smart-contracts", "marketplace-ui", "commission-engine", "usdt-integration"],
-  "constraints": ["no-native-token", "static-export-cloudflare", "line-oauth-auth", "bsc-only"],
+  "focus_areas": [
+    "smart-contracts",
+    "marketplace-ui",
+    "commission-engine",
+    "usdt-integration"
+  ],
+  "constraints": [
+    "no-native-token",
+    "static-export-cloudflare",
+    "line-oauth-auth",
+    "bsc-only"
+  ],
   "next_command": "/gsd-plan-phase 1",
   "workflow": {
     "_auto_chain_active": false
