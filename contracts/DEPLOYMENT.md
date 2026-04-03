@@ -1,12 +1,25 @@
 # Egg Hatching Mechanism Deployment Guide
 
-## Deployment Status: ✅ READY
+## Deployment Status: ✅ DEPLOYED ON 0XL3 TESTNET
 
-### Contracts Deployed (in order):
-1. **CommissionDistribution** - Commission management
-2. **AnimalNFT** - Animal NFT ERC721 contract
-3. **EggNFT** - Egg NFT with hatching mechanism
-4. **FoodNFT** - Food NFT ERC1155 contract
+### Contracts Deployed (Chain ID 7117):
+**Deployed:** 2026-04-03  
+**Network:** 0XL3 Testnet  
+**Explorer:** https://exp.0xl3.com
+
+| Contract | Address |
+|----------|---------|
+| **MockUSDT** | `0xc015ebb27696b73E72Bef099b72791D7e666E2d0` |
+| **CommissionDistribution** | `0x3c48926556e766E4564af0E264A9980e7C3a1787` |
+| **AnimalNFT** | `0x973F2cA33E96FCC1fdbc48a7880b238b4C6be464` |
+| **EggNFT** | `0xd7135090d78854820722CbCe0B29481Dd5D4808c` |
+| **FoodNFT** | `0xbb0E0FcB40E209f7751A784F6b8d63E9C127D8fC` |
+
+**CoinStor Reserve:** `0x17A670280817999B4073eB6CE2D7B4Eb542d372b`  
+**Egg Mint Price:** 25 USDT  
+**Food Mint Price:** 0.50 USDT
+
+**Verification Status:** ⚠️ Manual verification required (Blockscout API issues)
 
 ### Cross-Contract Authorization:
 - ✅ CommissionDistribution → EggNFT & FoodNFT authorized
