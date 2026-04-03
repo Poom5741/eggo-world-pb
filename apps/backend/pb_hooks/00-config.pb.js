@@ -51,8 +51,27 @@ const CONFIG = {
   
   // Blockchain Configuration
   blockchain: {
+    // RPC Configuration
+    rpcUrl: process.env.BSC_RPC_URL || "https://rpc.0xl3.com",
+    rpcWssUrl: process.env.BSC_RPC_WSS_URL || "",
+    chainId: parseInt(process.env.BSC_CHAIN_ID || "7117"),
+    
+    // Platform settings
     platformAddress: '0x0000000000000000000000000000000000000000', // Platform fee recipient
-    platformFeePercent: 4 // 4% CoinStor fee
+    platformFeePercent: 4, // 4% CoinStor fee
+    
+    // Deployed contract addresses (Phase 1 deployment)
+    contracts: {
+      MockUSDT: "0xc015ebb27696b73E72Bef099b72791D7e666E2d0",
+      CommissionDistribution: "0x3c48926556e766E4564af0E264A9980e7C3a1787",
+      AnimalNFT: "0x973F2cA33E96FCC1fdbc48a7880b238b4C6be464",
+      EggNFT: "0xd7135090d78854820722CbCe0B29481Dd5D4808c",
+      FoodNFT: "0xbb0E0FcB40E209f7751A784F6b8d63E9C127D8fC"
+    },
+    
+    // Sync settings
+    pollingInterval: 30000, // 30 seconds
+    maxRetries: 3
   },
   
   // Game Configuration
