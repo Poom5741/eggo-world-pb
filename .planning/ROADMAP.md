@@ -57,7 +57,13 @@
 ### Phase 2: Backend Integration
 
 **Duration:** Days 6-8  
-**Goal:** PocketBase collections, hooks, wallet API
+**Goal:** PocketBase collections, hooks, wallet API, blockchain event sync  
+**Plans:** 1 plan  
+**Status:** Ready to execute
+
+#### Plans
+
+- [ ] 02-01-PLAN.md — Event sync hook with block polling, 5-event sync, crash recovery
 
 #### Tasks
 
