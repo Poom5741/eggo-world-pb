@@ -56,4 +56,4 @@ services:
 
 networks:
     pocketbase_network:
-        external: true
+        driver: bridge
