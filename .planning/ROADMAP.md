@@ -5,9 +5,15 @@
 ### Phase 1: Smart Contracts Foundation
 
 **Duration:** Days 1-5  
-**Goal:** Deploy working smart contracts on BSC testnet
+**Goal:** Deploy working smart contracts on BSC testnet  
+**Plans:** 1 plan  
+**Status:** Ready to deploy
 
-#### Tasks
+#### Plans
+
+- [ ] 01-01-PLAN.md — Deploy contracts to BSC testnet with configuration and verification
+
+#### Original Tasks
 
 1. **USDT Integration** (Day 1)
    - Deploy or integrate USDT (BEP-20) on BSC testnet
