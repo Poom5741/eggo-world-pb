@@ -151,14 +151,14 @@
 **Duration:** Days 9-10  
 **Goal:** Migrate wallet API from ethers v6 to dacc-js v0.0.5, integrate with LINE OAuth flow  
 **Plans:** 4 plans (2 original + 2 gap closure)  
-**Status:** Executing
+**Status:** ✅ COMPLETE
 
 #### Plans
 
 - [x] 04-01-PLAN.md — Migrate wallet-api to TypeScript + dacc-js v0.0.5 ✅ COMPLETE
-- [x] 04-02-PLAN.md — Update PocketBase hook + verify integration ⚠️ PARTIAL (blocked by hook conflicts)
-- [x] 04-03-PLAN.md — Gap closure: Fix legacy hook conflicts blocking PocketBase deployment
-- [ ] 04-04-PLAN.md — Gap closure: Complete integration testing (blocked until 04-03 complete)
+- [x] 04-02-PLAN.md — Update PocketBase hook + verify integration ✅ COMPLETE
+- [x] 04-03-PLAN.md — Gap closure: Fix legacy hook conflicts blocking PocketBase deployment ✅ COMPLETE
+- [x] 04-04-PLAN.md — Gap closure: Complete integration testing ✅ COMPLETE
 
 #### Tasks
 
