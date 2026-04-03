@@ -157,7 +157,7 @@
 
 - [x] 04-01-PLAN.md — Migrate wallet-api to TypeScript + dacc-js v0.0.5 ✅ COMPLETE
 - [x] 04-02-PLAN.md — Update PocketBase hook + verify integration ⚠️ PARTIAL (blocked by hook conflicts)
-- [ ] 04-03-PLAN.md — Gap closure: Fix legacy hook conflicts blocking PocketBase deployment
+- [x] 04-03-PLAN.md — Gap closure: Fix legacy hook conflicts blocking PocketBase deployment
 - [ ] 04-04-PLAN.md — Gap closure: Complete integration testing (blocked until 04-03 complete)
 
 #### Tasks
