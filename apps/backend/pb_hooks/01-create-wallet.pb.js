@@ -3,6 +3,13 @@
 
 console.log("Setting up create wallet hook...");
 
+// Fallback EGGO_CONFIG if not loaded from 00-config.pb.js
+const EGGO_CONFIG = globalThis.EGGO_CONFIG || {
+  wallet: {
+    srvUrl: process.env.WALLET_SRV_URL || "http://wallet-api:3001"
+  }
+};
+
 onRecordCreate((e) => {
   console.log("Create wallet hook triggered for user:", e.record.id);
 
