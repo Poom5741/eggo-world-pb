@@ -207,7 +207,7 @@ routerAdd("POST", "/api/v2/upgrade-egg-rarity", (e) => {
             } 
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 function createCommissionRecords(referralChain, totalAmount, eggId, type) {
     const commissionSplits = [0.25, 0.15, 0.10, 0.05]; // G1, G2, G3, G4

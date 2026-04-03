@@ -104,7 +104,7 @@ routerAdd("POST", "/api/v2/claim-commission", (e) => {
             } 
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 function callClaimCommissionContract(walletAddress, daccPublicKey, pin) {
     const eggNftAddress = $app.settings().meta('eggNftContractAddress') || '';

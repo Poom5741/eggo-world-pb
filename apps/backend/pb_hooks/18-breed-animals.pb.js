@@ -264,7 +264,7 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
             } 
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 function buildReferralChain(user, chain, level) {
     if (level >= 4) return;

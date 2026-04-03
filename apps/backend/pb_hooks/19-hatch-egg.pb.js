@@ -201,7 +201,7 @@ routerAdd("POST", "/api/v2/hatch-egg", (e) => {
             } 
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 function getFoodTypeDistribution(eggId) {
     const distribution = {

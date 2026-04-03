@@ -204,7 +204,7 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
             } 
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 function callMintEggContract(walletAddress, daccPublicKey, pin, referralChain, eggNftAddress) {
     const response = fetch('http://wallet-api:3001/api/wallet/mint-egg', {
