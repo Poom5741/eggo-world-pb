@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export type FoodType = 'grain' | 'fish' | 'insects' | 'herb';
@@ -32,46 +33,99 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
 
   return (
     <Card
+      variant="clay"
       className={cn(
-        'relative transition-all hover:shadow-lg',
-        food.is_consumed && 'opacity-50 grayscale',
-        selected && 'ring-2 ring-primary'
+        'relative overflow-hidden',
+        'rounded-clay-md shadow-clay-md', // Clay container (24px radius)
+        'transition-all duration-300 hover:shadow-clay-lg', // Hover lift
+        'bg-gradient-to-br from-card/80 to-card',
+        food.is_consumed && 'opacity-50 grayscale', // Consumed state
+        selected && 'ring-2 ring-primary shadow-clay-lg' // Selected state
       )}
     >
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 relative z-10">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium">Food #{food.food_id}</CardTitle>
-          <Badge className={config.color} variant="secondary">
-            {config.icon} {config.label}
+          <CardTitle className="text-sm font-medium font-[var(--font-pixel)] text-xs text-foreground">
+            Food #{food.food_id}
+          </CardTitle>
+          <Badge 
+            variant="clay" 
+            className={cn(
+              config.color,
+              'rounded-clay-full shadow-clay-sm',
+              'font-[var(--font-pixel)] text-xs'
+            )}
+          >
+            <span className="pixelated">{config.icon}</span> {config.label}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-2">
-          <div className="text-xs text-muted-foreground">
+      <CardContent className="relative z-10">
+        <div className="space-y-3">
+          {/* Food Icon - Pixel Art (preserved) */}
+          <div className={cn(
+            'rounded-clay-md bg-secondary/20',
+            'border-2 border-primary/30',
+            'flex items-center justify-center',
+            'p-clay-lg'
+          )}>
+            <div className={cn(
+              'w-20 h-20',
+              'flex items-center justify-center',
+              'text-4xl',
+              'pixelated' // CRITICAL: preserves pixel art rendering
+            )}>
+              {config.icon}
+            </div>
+          </div>
+
+          {/* Minted Date */}
+          <div className="font-[var(--font-pixel)] text-xs text-muted-foreground">
             Minted: {new Date(food.minted_at).toLocaleDateString()}
           </div>
           
+          {/* Consumed Badge - Clay styling */}
           {food.is_consumed && (
-            <Badge variant="destructive" className="w-full justify-center">
+            <Badge 
+              variant="clay" 
+              className={cn(
+                'w-full justify-center',
+                'bg-accent/50',
+                'rounded-clay-full shadow-clay-sm'
+              )}
+            >
               Consumed
             </Badge>
           )}
           
+          {/* Selection Checkbox - Clay variant */}
           {!disableSelection && !food.is_consumed && onSelect && (
             <div className="flex items-center space-x-2 pt-2">
               <Checkbox
                 id={`food-${food.food_id}`}
                 checked={selected}
                 onCheckedChange={() => onSelect(food.food_id)}
+                clay
               />
               <label
                 htmlFor={`food-${food.food_id}`}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="font-[var(--font-pixel)] text-xs peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 Select to feed
               </label>
             </div>
+          )}
+
+          {/* Use Button - Clay variant */}
+          {!disableSelection && !food.is_consumed && (
+            <Button
+              variant="clay"
+              size="clay-sm"
+              className="w-full font-[var(--font-pixel)] text-xs rounded-clay-full"
+              onClick={() => onSelect && onSelect(food.food_id)}
+            >
+              Use
+            </Button>
           )}
         </div>
       </CardContent>
