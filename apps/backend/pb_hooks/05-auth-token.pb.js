@@ -91,7 +91,7 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
 
         console.log("Returning user data for frontend authentication");
 
-        // Return the user data with password so frontend can authenticate
+        // Return the user data for frontend authentication (password NOT returned for security)
         return c.json(200, {
             success: true,
             user: {
@@ -99,8 +99,7 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
                 email: user.get('email') + '',
                 name: user.get('name') + '',
                 wallet: user.get('wallet') + ''
-            },
-            password: password
+            }
         });
 
     } catch (err) {
