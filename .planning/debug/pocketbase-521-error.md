@@ -1,16 +1,37 @@
 ---
-status: awaiting_human_verify
-trigger: "PocketBase 521 Web Server Is Down error at https://pb.eggoworld.io/"
+status: resolved
+trigger: "PocketBase user creation returning 400 Bad Request"
 created: 2026-04-03T00:00:00Z
-updated: 2026-04-03T06:38:00Z
+updated: 2026-04-04T04:30:00Z
+resolution: "Fixed hook scoping, disabled duplicate route, tested successfully"
 ---
 
-## Current Focus
+## Root Cause Found
 
-hypothesis: RESOLVED - Nginx reverse proxy was not running
-test: Verified all endpoints return 200 OK
-expecting: User confirms admin dashboard accessible
-next_action: Awaiting human verification
+**Issue:** Hook scope variable not accessible in callback
+
+**Fixed:** Rewrote hook using `var` inside `onRecordCreate` function (PocketBase JS VM scoping quirk)
+
+**Changes made:**
+1. Disabled duplicate route hook (03-wallet-api-endpoint.pb.js) - route conflict
+2. Rewrote 01-create-wallet.pb.js with proper var scoping
+3. Connected wallet-api container to pocketbase_network
+4. Restarted PocketBase
+
+## Resolution
+
+✅ User creation API returns 200 OK
+✅ Hook triggers and calls wallet-api successfully
+✅ Wallet, pin, daccPublickey fields populated in database
+✅ Plan 04-04 SUMMARY.md created
+✅ Phase 04 complete (5/5 plans)
+
+**Test logs:**
+```
+04:26:09 Create wallet hook triggered: e1pr5rx0zzshmcu
+04:26:11 Wallet address: 0xcEA76eD3eb5bBdeFb5329a948F2d465Be6aF81e8
+04:26:11 Wallet data saved to user record
+```
 
 ## Symptoms
 
