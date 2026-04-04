@@ -30,15 +30,25 @@ export default function DashboardPage() {
     
     const pb = createClient()
     
+    console.log('=== Dashboard auth check ===')
+    console.log('isAuthenticated:', isAuthenticated())
+    console.log('getUser:', getUser())
+    console.log('authStore.isValid:', pb.authStore.isValid)
+    console.log('authStore.record:', pb.authStore.record)
+    console.log('authStore.token:', pb.authStore.token ? 'present' : 'missing')
+    
     if (isAuthenticated()) {
       const currentUser = getUser()
+      console.log('User authenticated:', currentUser?.id)
       setUser(currentUser)
       fetchDashboardData(currentUser)
     } else {
+      console.log('Not authenticated, redirecting to /auth/login')
       router.push('/auth/login')
     }
 
     pb.authStore.onChange(() => {
+      console.log('Dashboard authStore changed')
       if (isAuthenticated()) {
         setUser(getUser())
       } else {

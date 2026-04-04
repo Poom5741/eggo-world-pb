@@ -46,6 +46,11 @@ describe('Sign-up Page - LINE OAuth Only', () => {
     expect(content).not.toContain("router.push('/auth/line')")
   })
 
+  it('sets default redirect to /dashboard for sign-up flow', () => {
+    expect(content).toContain("sessionStorage.setItem('redirectTo', '/dashboard')")
+    expect(content).toContain("redirectTo: redirectTo || '/dashboard'")
+  })
+
   it('has correct title', () => {
     expect(content).toContain('CREATE ACCOUNT')
     expect(content).toContain('JOIN EGGOWORLD WITH LINE')

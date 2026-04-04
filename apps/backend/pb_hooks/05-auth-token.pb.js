@@ -93,11 +93,17 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
             // Continue anyway
         }
 
-        console.log("Returning user data for frontend authentication");
+        console.log("Generating PocketBase JWT token...");
 
-        // Return the user data for frontend authentication (password NOT returned for security)
+        // Generate a real PocketBase JWT token from the record itself
+        const token = user.newAuthToken();
+
+        console.log("JWT token generated, returning user data with token");
+
+        // Return user data WITH the real JWT token for frontend authentication
         return c.json(200, {
             success: true,
+            token: token,
             user: {
                 id: user.id + '',
                 email: user.get('email') + '',

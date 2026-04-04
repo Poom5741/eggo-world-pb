@@ -11,35 +11,138 @@ function LineLoginContent() {
   const [status, setStatus] = useState<'loading' | 'error'>('loading')
 
   useEffect(() => {
-    // รับ auth data จาก line-callback.html (ผ่าน URL params)
     const params = new URLSearchParams(window.location.search)
+
+    // Support TWO redirect formats from line-callback.html:
+    // 1. email + password params (local/dev format - sends valid PocketBase credentials)
+    // 2. token + user params (production format - may have fake token)
     const email = params.get('email')
     const password = params.get('password')
+    const token = params.get('token')
+    const userParam = params.get('user')
 
-    // ถ้าไม่มี email/password → redirect ไป login (ป้องกัน direct navigation)
-    if (!email || !password) {
-      router.replace('/auth/login')
-      return
-    }
+    console.log('=== /auth/line page loaded ===')
+    console.log('URL:', window.location.href)
+    console.log('Email param present:', !!email)
+    console.log('Password param present:', !!password)
+    console.log('Token param present:', !!token)
+    console.log('User param present:', !!userParam)
 
-    setStatus('loading')
-    const pb = createClient()
-    pb.collection('users').authWithPassword(email, password)
-      .then((authData) => {
-        // authStore.onChange จะ sync cookie pb_auth ให้อัตโนมัติ
-        // ตั้งค่า cookie ซ้ำเพื่อให้แน่ใจ middleware อ่านได้ก่อน redirect
+    // Handle authentication
+    const authenticate = async () => {
+      // Format 2: Production callback sends token + user (+ possibly email+password)
+      if (token && userParam) {
+        try {
+          const userData = JSON.parse(decodeURIComponent(userParam))
+          console.log('Got token-based auth, user:', userData)
+
+          // PRIORITY: If we also have email+password, use authWithPassword
+          // to get a valid PocketBase JWT (works for both local and production)
+          if (email && password) {
+            console.log('Using authWithPassword with email+password')
+            const pb = createClient()
+            const authData = await pb.collection('users').authWithPassword(email, password)
+            console.log('authWithPassword SUCCESS, user:', authData.record?.id)
+
+            const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
+            console.log('Redirecting to:', redirectTo)
+            sessionStorage.removeItem('redirectTo')
+
+            window.location.href = redirectTo
+            return
+          }
+
+          // Fallback: Production sends only token+user (no email+password)
+          // The token is a simple base64 JSON (not a PocketBase JWT), so we need
+          // to get a real JWT by calling authWithPassword.
+          // We'll use the email from user data and reset the password via backend.
+          console.log('No email+password, extracting from user data and getting real JWT')
+
+          const userEmail = userData.email || (userData.sub ? `${userData.sub.slice(0, 8)}@line.eggo` : null)
+          if (!userEmail) {
+            throw new Error('Could not determine user email')
+          }
+
+          // Generate a random password and update it via backend
+          const newPassword = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('')
+
+          // Call backend to update password using fetch() directly (avoid pb.send() with fake auth)
+          const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://localhost:8090'
+          const response = await fetch(`${pbUrl}/api/auth/line-auth`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail, password: newPassword })
+          })
+
+          if (!response.ok) {
+            throw new Error(`Backend returned ${response.status}: ${response.statusText}`)
+          }
+
+          const result = await response.json()
+          if (!result.success) {
+            throw new Error(result.error || 'Backend failed to update password')
+          }
+
+          console.log('Backend returned JWT token, saving auth...')
+
+          // Clear the fake token from the client before saving the real one
+          const pb = createClient()
+          pb.authStore.clear()
+          localStorage.removeItem('pocketbase_auth')
+
+          // Save the real JWT token from the backend
+          const realToken = result.token
+          const backendUser = result.user
+          pb.authStore.save(realToken, backendUser)
+
+          console.log('Real JWT saved, authStore.isValid:', pb.authStore.isValid)
+
+          const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
+          console.log('Redirecting to:', redirectTo)
+          sessionStorage.removeItem('redirectTo')
+
+          window.location.href = redirectTo
+          return
+        } catch (err) {
+          console.error('Failed to process token-based auth:', err)
+          setError('Authentication failed. Please try again.')
+          setStatus('error')
+          return
+        }
+      }
+
+      // Format 1: Local/dev callback sends email + password
+      if (!email || !password) {
+        console.log('No auth params found, redirecting to /auth/login')
+        console.log('Full URL params:', window.location.search)
+        router.replace('/auth/login')
+        return
+      }
+
+      setStatus('loading')
+      console.log('Calling authWithPassword...')
+      const pb = createClient()
+      try {
+        const authData = await pb.collection('users').authWithPassword(email, password)
+        console.log('authWithPassword SUCCESS, user:', authData.record?.id)
         document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
 
-        // อ่าน redirectTo จาก sessionStorage และลบออกหลังใช้งาน (per D-03)
-        const redirectTo = sessionStorage.getItem('redirectTo') || '/'
+        const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
+        console.log('Redirecting to:', redirectTo)
         sessionStorage.removeItem('redirectTo')
 
-        router.replace(redirectTo)
-      })
-      .catch((_err) => {
-        setError('Authentication failed. Please try again.')
-        setStatus('error')  // แสดง error state พร้อม retry link
-      })
+        window.location.href = redirectTo
+      } catch (err) {
+        console.error('AuthWithPassword failed:', err)
+        console.error('Error details:', err.message, err.status, err.response)
+        setError(`Authentication failed: ${err.message || 'Unknown error'}. Please try again.`)
+        setStatus('error')
+      }
+    }
+
+    authenticate()
   }, [router])
 
   // แสดง loading state ขณะกำลัง authenticate

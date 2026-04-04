@@ -18,6 +18,8 @@ function LoginContent() {
   }, [router])
 
   const handleLineLogin = () => {
+    console.log('=== LOGIN BUTTON CLICKED ===')
+    console.log('redirectTo:', redirectTo)
     // เรียก LINE OAuth โดยตรง — ไม่ต้อง navigate ไป /auth/line ก่อน (per D-01)
     initiateLineLogin({ redirectTo: redirectTo ?? undefined })
   }

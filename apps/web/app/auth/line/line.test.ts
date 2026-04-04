@@ -47,4 +47,8 @@ describe('LINE Callback Handler - Pure Callback Only', () => {
     expect(helperContent).toContain('export function initiateLineLogin')
     expect(helperContent).toContain('export interface LineLoginOptions')
   })
+
+  it('defaults redirect to /dashboard when no redirectTo in sessionStorage', () => {
+    expect(content).toContain("sessionStorage.getItem('redirectTo') || '/dashboard'")
+  })
 })

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/pocketbase/client'
 import Image from 'next/image'
-import Dashboard from '@/components/dashboard'
 import { Header } from '@/components/header'
 import { Suspense } from 'react'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
@@ -12,11 +11,7 @@ import { useIsHydrated } from '@/hooks/use-is-hydrated'
 function PageContent() {
   // isHydrated = true เมื่อ component mount แล้ว (client-side เท่านั้น)
   const isHydrated = useIsHydrated()
-  const [user, setUser] = useState<any>(() => {
-    // โหลด auth จาก localStorage ทันที (sync) แทนการรอ useEffect — ลด blank flash (per D-05)
-    if (typeof window === 'undefined') return null
-    return createClient().authStore.record ?? null
-  })
+  const [checkingAuth, setCheckingAuth] = useState(true)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -40,12 +35,22 @@ function PageContent() {
     const pb = createClient()
 
     // ตั้งค่า user จาก authStore หลัง hydration
-    setUser(pb.authStore.record ?? null)
+    const user = pb.authStore.record
+
+    if (user) {
+      // ถ้า login อยู่แล้ว redirect ไป dashboard
+      router.replace('/dashboard')
+    } else {
+      setCheckingAuth(false)
+    }
 
     // ฟัง authStore onChange เพื่อ re-render เมื่อ auth state เปลี่ยน
-    // (เช่น หลัง OAuth callback redirect กลับมา)
-    const unsubscribe = pb.authStore.onChange(() => {
-      setUser(pb.authStore.record ?? null)
+    const unsubscribe = pb.authStore.onChange((token) => {
+      if (token) {
+        router.replace('/dashboard')
+      } else {
+        setCheckingAuth(false)
+      }
     })
 
     return () => {
@@ -54,17 +59,13 @@ function PageContent() {
     }
   }, [searchParams, router])
 
-  // แสดง loading จนกว่าจะ hydrate เสร็จ เพื่อป้องกัน hydration mismatch
-  if (!isHydrated) {
+  // แสดง loading จนกว่าจะเช็ค auth เสร็จ
+  if (!isHydrated || checkingAuth) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
       </div>
     )
-  }
-
-  if (user) {
-    return <Dashboard />
   }
 
   return (

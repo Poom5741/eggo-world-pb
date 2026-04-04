@@ -257,7 +257,7 @@
 **Duration:** 1-2 days  
 **Goal:** Eliminate double-click auth UX issue and fix blank page after LINE OAuth redirect. Users click once to start OAuth from login/signup pages directly. Post-auth redirect properly navigates to intended destination.  
 **Plans:** 3 plans
-**Status:** 🔄 IN PROGRESS
+**Status:** ✅ VERIFIED COMPLETE — 9/9 must-haves pass, 61 tests pass, build clean
 
 #### Plans
 

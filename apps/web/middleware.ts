@@ -16,8 +16,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (isAuthenticated && (pathname === '/auth/login' || pathname === '/auth/sign-up')) {
-    return NextResponse.redirect(new URL('/', request.url))
+  if (isAuthenticated && (pathname === '/auth/login' || pathname === '/auth/sign-up' || pathname === '/')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return NextResponse.next()
