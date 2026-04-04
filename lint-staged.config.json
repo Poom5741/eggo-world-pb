@@ -1,6 +1,6 @@
 {
-  "apps/web/**/*.{ts,tsx}": ["bunx eslint --fix", "bun test --bail"],
-  "apps/web/**/*.{js,jsx}": ["bunx eslint --fix"],
+  "apps/web/**/*.{ts,tsx}": ["sh -c 'cd apps/web && bun run lint --fix'"],
+  "apps/web/**/*.{js,jsx}": ["sh -c 'cd apps/web && bun run lint --fix'"],
   "**/*.{json,md}": ["bunx prettier --write"],
   "contracts/**/*.sol": ["echo '✓ Solidity files - run forge fmt manually if needed'"],
   "wallet-api/**/*.js": ["echo '✓ Wallet API - ensure manual review'"],

@@ -46,7 +46,6 @@
         const pb = new PocketBase(window.location.origin);
         const redirectURL = window.location.origin + "/line-callback.html";
         const LINE_CLIENT_ID = "2009441873";
-        const LINE_CLIENT_SECRET = "4ede94afa7d59b71ffda15a136ffddea";
 
         const loaderEl = document.getElementById("loader");
         const messageEl = document.getElementById("message");
@@ -92,40 +91,30 @@
             }
 
             try {
-                const tokenResponse = await fetch('https://api.line.me/oauth2/v2.1/token', {
+                // Exchange auth code for tokens via server-side endpoint (keeps client_secret secure)
+                const exchangeResponse = await fetch('/api/auth/line-exchange', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        grant_type: 'authorization_code',
-                        code: code,
-                        redirect_uri: redirectURL,
-                        client_id: LINE_CLIENT_ID,
-                        client_secret: LINE_CLIENT_SECRET
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code, redirect_uri: redirectURL })
                 });
 
-                if (!tokenResponse.ok) {
-                    const errText = await tokenResponse.text();
-                    throw new Error("Token exchange failed: " + errText);
+                if (!exchangeResponse.ok) {
+                    const errData = await exchangeResponse.json().catch(() => ({}));
+                    throw new Error("Token exchange failed: " + (errData?.error?.message || exchangeResponse.statusText));
                 }
 
-                const tokens = await tokenResponse.json();
-                console.log("Got tokens:", tokens.access_token ? "yes" : "no");
-
-                const userInfoResponse = await fetch('https://api.line.me/oauth2/v2.1/userinfo', {
-                    headers: { 'Authorization': 'Bearer ' + tokens.access_token }
-                });
-                
-                if (!userInfoResponse.ok) {
-                    throw new Error("Failed to get user info");
+                const exchangeResult = await exchangeResponse.json();
+                if (!exchangeResult.success) {
+                    throw new Error("Token exchange error: " + (exchangeResult.error?.message || "unknown error"));
                 }
-                
-                const userInfo = await userInfoResponse.json();
-                console.log("User info:", userInfo);
 
-                const sub = userInfo.sub;
-                const name = userInfo.name || 'LINE User';
-                const email = userInfo.email || `${sub.slice(0, 8)}@line.eggo`;
+                const data = exchangeResult.data;
+                console.log("Got tokens from server, sub:", data.sub ? "yes" : "no");
+
+                const sub = data.sub;
+                const name = data.name || 'LINE User';
+                const picture = data.picture || '';
+                const email = `${sub.slice(0, 8)}@line.eggo`;
 
                 console.log("Looking for user:", { sub, name, email });
 
@@ -166,6 +155,8 @@
                             name: name,
                             email: email,
                             emailVisibility: false,
+                            username: `line_${sub}`,
+                            externalId: `line_${sub}`,
                             password: password,
                             passwordConfirm: password
                         });

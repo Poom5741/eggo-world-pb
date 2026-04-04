@@ -41,8 +41,9 @@ function CallbackContent() {
             codeVerifier: '',
             redirectURL: redirectUrl,
             createData: {
-              emailVisibility: false,
-              username: `line_${code.substring(0, 12)}`
+              emailVisibility: false
+              // externalId and username are set automatically by PocketBase
+              // OAuth2 field mapping (id -> externalId) from the OIDC provider's sub claim
             }
           })
         })

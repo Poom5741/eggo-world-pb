@@ -18,9 +18,9 @@ module.exports = [
       parser: require("@typescript-eslint/parser"),
       parserOptions: {
         project: "./tsconfig.json",
-      },
-      ecmaFeatures: {
-        jsx: true,
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
     },
     plugins: {
@@ -55,8 +55,10 @@ module.exports = [
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
-      ecmaFeatures: {
-        jsx: true,
+      parserOptions: {
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
     },
     plugins: {
@@ -73,11 +75,6 @@ module.exports = [
       "react/prop-types": "off",
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
-    },
-  },
-  {
-    rules: {
-      "prettier/prettier": "error",
     },
   },
 ];

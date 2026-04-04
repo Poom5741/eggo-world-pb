@@ -69,6 +69,114 @@ app.post('/api/wallet/create', async (req, res) => {
     }
 });
 
+// Create wallet and save to PocketBase
+app.post("/api/wallet/create-and-save", async (req, res) => {
+    try {
+        const { userId, pbUrl, passwordSecretkey, publicEncryption } = req.body
+
+        if (!userId || !pbUrl) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: "userId and pbUrl are required",
+                    code: "MISSING_PARAMS"
+                }
+            })
+        }
+
+        console.log(`Creating and saving wallet for user: ${userId}`)
+
+        // Generate a new random wallet
+        const wallet = ethers.Wallet.createRandom()
+        const address = wallet.address
+        const privateKey = wallet.privateKey
+
+        // Encrypt the private key using the master key + userId
+        const encryptionKey = MASTER_KEY + userId
+        const encryptedPrivateKey = await encryptPrivateKey(privateKey, encryptionKey)
+
+        // Authenticate to PocketBase as admin
+        const adminEmail = process.env.PB_ADMIN_EMAIL
+        const adminPassword = process.env.PB_ADMIN_PASSWORD
+
+        if (!adminEmail || !adminPassword) {
+            console.error("PB_ADMIN_EMAIL or PB_ADMIN_PASSWORD not set")
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: "Server configuration error: missing PocketBase admin credentials",
+                    code: "CONFIG_ERROR"
+                }
+            })
+        }
+
+        // Auth with PocketBase superusers
+        const authResponse = await fetch(`${pbUrl}/api/collections/_superusers/auth-with-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ identity: adminEmail, password: adminPassword })
+        })
+
+        if (!authResponse.ok) {
+            const authErr = await authResponse.text()
+            console.error("PocketBase admin auth failed:", authErr)
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: "Failed to authenticate with PocketBase",
+                    code: "PB_AUTH_FAILED"
+                }
+            })
+        }
+
+        const authData = await authResponse.json()
+        const adminToken = authData.token
+
+        // Update user record with wallet address and daccPublickey
+        const updateResponse = await fetch(`${pbUrl}/api/collections/users/records/${userId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                wallet: address,
+                daccPublickey: `daccPublickey_${address}`
+            })
+        })
+
+        if (!updateResponse.ok) {
+            const updateErr = await updateResponse.text()
+            console.error("PocketBase user update failed:", updateErr)
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: "Failed to update user record in PocketBase",
+                    code: "PB_UPDATE_FAILED"
+                }
+            })
+        }
+
+        console.log(`Wallet created and saved for user ${userId}: ${address}`)
+
+        res.json({
+            success: true,
+            wallet_address: address
+        })
+
+    } catch (error) {
+        console.error("Error in create-and-save:", error)
+        res.status(500).json({
+            success: false,
+            error: {
+                message: "Failed to create and save wallet",
+                code: "WALLET_CREATION_FAILED",
+                details: process.env.NODE_ENV === "development" ? error.message : undefined
+            }
+        })
+    }
+})
+
 // Batch create wallets (for testing)
 app.post('/api/wallet/batch', async (req, res) => {
     try {

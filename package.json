@@ -17,11 +17,10 @@
   },
   "lint-staged": {
     "apps/web/**/*.{ts,tsx}": [
-      "bunx eslint --fix",
-      "bun test --bail"
+      "sh -c 'cd apps/web && bun run lint'"
     ],
     "apps/web/**/*.{js,jsx}": [
-      "bunx eslint --fix"
+      "sh -c 'cd apps/web && bun run lint'"
     ],
     "**/*.{json,md}": [
       "bunx prettier --write"

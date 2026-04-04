@@ -57,7 +57,7 @@ const CONFIG = {
     chainId: parseInt(process.env.BSC_CHAIN_ID || "7117"),
     
     // Platform settings
-    platformAddress: '0x0000000000000000000000000000000000000000', // Platform fee recipient
+    platformAddress: process.env.PLATFORM_ADDRESS || "0x0000000000000000000000000000000000000000", // Platform fee recipient
     platformFeePercent: 4, // 4% CoinStor fee
     
     // Deployed contract addresses (Phase 1 deployment)

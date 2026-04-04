@@ -81,7 +81,7 @@ function buildReferralChain(startReferrerId) {
     
     // Pad with platform address if chain < 4
     while (chain.length < 4) {
-        chain.push(PLATFORM_ADDRESS);
+        chain.push(EGGO_CONFIG.blockchain.platformAddress)
     }
     
     return chain;

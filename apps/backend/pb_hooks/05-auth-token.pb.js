@@ -13,14 +13,16 @@ routerAdd('POST', '/api/auth/line-user', (c) => {
 
     try {
         const records = $app.findRecordsByFilter(
-            'users',
-            `email = "${email}"`,
-            '',
-            1
-        );
+            "users",
+            "email = {:email}",
+            "",
+            1,
+            0,
+            { email: email }
+        )
 
         if (!records || records.length === 0) {
-            return c.json(404, { success: false, error: 'User not found' });
+            return c.json(404, { success: false, error: "User not found" })
         }
 
         const user = records[0];
@@ -64,15 +66,17 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
     try {
         console.log("Finding user by email...");
         const records = $app.findRecordsByFilter(
-            'users',
-            `email = "${email}"`,
-            '',
-            1
-        );
+            "users",
+            "email = {:email}",
+            "",
+            1,
+            0,
+            { email: email }
+        )
 
         if (!records || records.length === 0) {
-            console.log("User not found");
-            return c.json(404, { success: false, error: 'User not found' });
+            console.log("User not found")
+            return c.json(404, { success: false, error: "User not found" })
         }
 
         const user = records[0];
@@ -108,4 +112,138 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
     }
 });
 
-console.log("Line auth endpoint registered");
+console.log("Line auth endpoint registered")
+
+// ===== LINE TOKEN EXCHANGE ENDPOINT =====
+// Exchanges LINE auth code for tokens server-side (keeps client_secret secure)
+
+routerAdd("POST", "/api/auth/line-exchange", (e) => {
+    console.log("=== LINE-EXCHANGE ENDPOINT CALLED ===")
+    const body = e.requestInfo().body
+    const code = body?.code
+    const redirectUri = body?.redirect_uri
+
+    if (!code || !redirectUri) {
+        return e.json(400, {
+            success: false,
+            error: { message: "code and redirect_uri are required", code: "MISSING_PARAMS" }
+        })
+    }
+
+    const config = globalThis.EGGO_CONFIG
+    if (!config?.line?.channelId || !config?.line?.channelSecret) {
+        console.log("LINE config missing")
+        return e.json(500, {
+            success: false,
+            error: { message: "LINE credentials not configured", code: "CONFIG_ERROR" }
+        })
+    }
+
+    const channelId = config.line.channelId
+    const channelSecret = config.line.channelSecret
+
+    try {
+        // Exchange auth code for tokens via LINE API
+        const tokenRes = $http.send({
+            url: "https://api.line.me/oauth2/v2.1/token",
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: `grant_type=authorization_code&code=${encodeURIComponent(code)}&redirect_uri=${encodeURIComponent(redirectUri)}&client_id=${encodeURIComponent(channelId)}&client_secret=${encodeURIComponent(channelSecret)}`
+        })
+
+        console.log("LINE token response status:", tokenRes.statusCode)
+
+        if (tokenRes.statusCode !== 200) {
+            console.log("LINE token exchange failed:", tokenRes.raw)
+            return e.json(400, {
+                success: false,
+                error: { message: "LINE token exchange failed: " + tokenRes.raw, code: "TOKEN_EXCHANGE_FAILED" }
+            })
+        }
+
+        const tokens = tokenRes.json
+        const accessToken = tokens.access_token
+        const idToken = tokens.id_token
+
+        if (!accessToken) {
+            return e.json(400, {
+                success: false,
+                error: { message: "No access_token in LINE response", code: "TOKEN_MISSING" }
+            })
+        }
+
+        // Decode id_token JWT payload (base64) to extract user profile
+        let sub = ""
+        let name = "LINE User"
+        let picture = ""
+
+        if (idToken) {
+            try {
+                const parts = idToken.split(".")
+                if (parts.length >= 2) {
+                    // Base64url decode the JWT payload
+                    const jsonStr = atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
+                    const jwtPayload = JSON.parse(jsonStr)
+                    sub = jwtPayload.sub || ""
+                    name = jwtPayload.name || "LINE User"
+                    picture = jwtPayload.picture || ""
+                    console.log("Decoded JWT sub:", sub, "name:", name)
+                }
+            } catch (jwtErr) {
+                console.log("JWT decode error:", String(jwtErr))
+            }
+        }
+
+        // Fallback: get user info from LINE API if JWT decode failed
+        if (!sub) {
+            console.log("Falling back to LINE userinfo endpoint")
+            const userInfoRes = $http.send({
+                url: "https://api.line.me/oauth2/v2.1/userinfo",
+                method: "GET",
+                headers: { "Authorization": "Bearer " + accessToken }
+            })
+
+            if (userInfoRes.statusCode === 200) {
+                const userInfo = userInfoRes.json
+                sub = userInfo.sub || ""
+                name = userInfo.name || "LINE User"
+                picture = userInfo.picture || ""
+                console.log("Got userinfo sub:", sub)
+            } else {
+                console.log("Userinfo failed:", userInfoRes.statusCode)
+                return e.json(400, {
+                    success: false,
+                    error: { message: "Failed to get LINE user info", code: "USERINFO_FAILED" }
+                })
+            }
+        }
+
+        if (!sub) {
+            return e.json(400, {
+                success: false,
+                error: { message: "Could not determine LINE user ID", code: "SUB_MISSING" }
+            })
+        }
+
+        console.log("LINE exchange success for sub:", sub)
+
+        return e.json(200, {
+            success: true,
+            data: {
+                sub: sub,
+                name: name,
+                picture: picture,
+                access_token: accessToken
+            }
+        })
+
+    } catch (err) {
+        console.log("LINE exchange error:", String(err))
+        return e.json(500, {
+            success: false,
+            error: { message: String(err), code: "INTERNAL_ERROR" }
+        })
+    }
+})
+
+console.log("LINE exchange endpoint registered")

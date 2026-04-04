@@ -37,11 +37,13 @@ routerAdd('POST', '/api/users/register', (e) => {
     
     // Verify referrer exists by wallet
     const referrerRecords = $app.findRecordsByFilter(
-        'users',
-        `wallet = "${referrer_address}"`,
-        '',
-        1
-    );
+        "users",
+        "wallet = {:wallet}",
+        "",
+        1,
+        0,
+        { wallet: referrer_address }
+    )
     
     if (!referrerRecords || referrerRecords.length === 0) {
         console.log("Referrer not found:", referrer_address);
@@ -56,11 +58,13 @@ routerAdd('POST', '/api/users/register', (e) => {
     
     // Check if user already exists
     const existingUsers = $app.findRecordsByFilter(
-        'users',
-        `wallet = "${user_address}"`,
-        '',
-        1
-    );
+        "users",
+        "wallet = {:wallet}",
+        "",
+        1,
+        0,
+        { wallet: user_address }
+    )
     
     if (existingUsers && existingUsers.length > 0) {
         console.log("User already exists:", user_address);
@@ -132,7 +136,7 @@ function buildReferralChain(startReferrer) {
     
     // Pad with platform address if chain < 4
     while (chain.length < 4) {
-        chain.push(PLATFORM_ADDRESS);
+        chain.push(EGGO_CONFIG.blockchain.platformAddress)
     }
     
     return chain;
@@ -142,7 +146,7 @@ function createReferralRecords(referrerId, userId, chain) {
     const referralCollection = $app.findCollectionByNameOrId('referrals');
     
     chain.forEach((uplineId, index) => {
-        if (uplineId === PLATFORM_ADDRESS) return;
+        if (uplineId === EGGO_CONFIG.blockchain.platformAddress) return
         
         const record = new Record(referralCollection);
         record.set('referrer_id', uplineId);
@@ -164,14 +168,8 @@ function emitUserRegisteredEvent(user, referralChain) {
 }
 
 function generateRandomPassword() {
-    const crypto = require('crypto');
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-    let password = '';
-    const randomBytes = crypto.randomBytes(16);
-    for (let i = 0; i < 16; i++) {
-      password += chars.charAt(randomBytes[i] % chars.length);
-    }
-    return password;
+    // Use PocketBase's built-in $security API instead of Node.js crypto
+    return $security.randomString(32)
 }
 
 console.log("Register user endpoint registered");
