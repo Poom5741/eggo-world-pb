@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import compression from 'compression'
 import dotenv from 'dotenv'
 import { createWalletRouter } from './routes/createWallet.js'
 import type { Request, Response, NextFunction } from 'express'
@@ -12,7 +13,7 @@ dotenv.config()
 const app = express()
 const PORT = env.PORT
 
-// Middleware
+// Middleware - NO compression to fix PocketBase $http.send compatibility
 app.use(helmet())
 app.use(cors({
   origin: env.CORS_ORIGIN,
