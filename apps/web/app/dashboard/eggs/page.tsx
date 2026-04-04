@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Egg, Flame, TrendingUp, Wallet, RefreshCw } from 'lucide-react'
 import { Header } from '@/components/header'
 import { EggCard } from '@/components/egg-nft/EggCard'
+import { cn } from '@/lib/utils'
 
 export default function EggsDashboard() {
   const router = useRouter()
@@ -137,46 +138,53 @@ export default function EggsDashboard() {
       <main className="pt-20 pb-12">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="space-y-8">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <h1 className="font-[var(--font-pixel)] text-2xl md:text-3xl text-foreground flex items-center gap-3">
-                  <Egg className="w-8 h-8 text-primary" />
-                  MY EGG NFTs
-                </h1>
-                <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                  MANAGE YOUR EGGOVERSE COLLECTION
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                {updating && (
-                  <Badge variant="secondary" className="animate-pulse">
-                    Updating...
-                  </Badge>
-                )}
-                <Button
-                  onClick={handleRefresh}
-                  disabled={updating}
-                  variant="outline"
-                  size="sm"
-                  className="font-[var(--font-pixel)] text-xs"
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
-                  Refresh
-                </Button>
-                <Button
-                  onClick={() => router.push('/mint')}
-                  className="font-[var(--font-pixel)] text-sm border-4 border-primary/50 hover:border-primary"
-                >
-                  <Egg className="w-4 h-4 mr-2" />
-                  MINT NEW EGG
-                </Button>
+            {/* Header - Clay container */}
+            <div className={cn(
+              'rounded-clay-lg p-clay-xl',
+              'bg-card shadow-clay-lg',
+              'mb-clay-xl'
+            )}>
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <h1 className="font-[var(--font-pixel)] text-2xl md:text-3xl text-foreground flex items-center gap-3">
+                    <Egg className="w-8 h-8 text-primary" />
+                    MY EGG NFTs
+                  </h1>
+                  <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                    MANAGE YOUR EGGOVERSE COLLECTION
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {updating && (
+                    <Badge variant="secondary" className="animate-pulse">
+                      Updating...
+                    </Badge>
+                  )}
+                  <Button
+                    onClick={handleRefresh}
+                    disabled={updating}
+                    variant="outline"
+                    size="sm"
+                    className="font-[var(--font-pixel)] text-xs"
+                  >
+                    <RefreshCw className={`h-4 w-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                  <Button
+                    onClick={() => router.push('/mint')}
+                    variant="clay"
+                    size="clay-md"
+                  >
+                    <Egg className="w-4 h-4 mr-2" />
+                    MINT NEW EGG
+                  </Button>
+                </div>
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="border-2 border-primary/30 bg-card">
+            {/* Stats - Clay widgets */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-clay-xl">
+              <Card variant="clay" className="shadow-clay-lg">
                 <CardHeader className="pb-3">
                   <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
                     TOTAL EGGS
@@ -193,7 +201,7 @@ export default function EggsDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-accent/30 bg-card">
+              <Card variant="clay" className="shadow-clay-lg">
                 <CardHeader className="pb-3">
                   <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
                     HATCHED
@@ -210,7 +218,7 @@ export default function EggsDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-primary/30 bg-card">
+              <Card variant="clay" className="shadow-clay-lg">
                 <CardHeader className="pb-3">
                   <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
                     FOOD NFTs
@@ -227,7 +235,7 @@ export default function EggsDashboard() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-primary/30 bg-card">
+              <Card variant="clay" className="shadow-clay-lg">
                 <CardHeader className="pb-3">
                   <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
                     TOTAL VALUE
