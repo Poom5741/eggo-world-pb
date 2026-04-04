@@ -23,7 +23,10 @@ app.post('/api/wallet/create', async (req, res) => {
         if (!userId) {
             return res.status(400).json({ 
                 success: false, 
-                error: 'userId is required' 
+                error: {
+                    message: 'User ID is required',
+                    code: 'MISSING_USER_ID'
+                }
             });
         }
         
@@ -57,7 +60,11 @@ app.post('/api/wallet/create', async (req, res) => {
         console.error('Error creating wallet:', error);
         res.status(500).json({ 
             success: false, 
-            error: error.message 
+            error: {
+                message: 'Failed to create wallet',
+                code: 'WALLET_CREATION_FAILED',
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            }
         });
     }
 });
@@ -79,7 +86,14 @@ app.post('/api/wallet/batch', async (req, res) => {
         res.json({ success: true, data: wallets });
         
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Internal server error',
+                code: 'INTERNAL_ERROR',
+                details: process.env.NODE_ENV === 'development' ? error.message : undefined
+            }
+        });
     }
 });
 

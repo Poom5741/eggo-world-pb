@@ -30,7 +30,7 @@ export default function Page() {
           </div>
 
           <div className="space-y-2 text-center mb-6">
-            <h1 className="font-[var(--font-pixel)] text-sm text-primary">LOGIN</h1>
+            <h1 className="font-[var(--font-pixel)] text-2xl text-primary">LOGIN</h1>
             <p className="label">LOGIN WITH LINE</p>
           </div>
 

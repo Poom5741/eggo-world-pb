@@ -123,3 +123,37 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .page-title {
+    @apply text-2xl md:text-3xl font-[var(--font-pixel)] text-primary;
+  }
+
+  .section-title {
+    @apply text-lg md:text-xl font-semibold text-foreground;
+  }
+
+  .card {
+    @apply bg-card rounded-lg shadow-sm;
+  }
+
+  .card--primary {
+    @apply card border-4 border-primary/50 p-6;
+  }
+
+  .card--secondary {
+    @apply card border-2 border-primary/30 p-6;
+  }
+
+  .card--accent {
+    @apply card border-4 border-accent/50 p-6;
+  }
+
+  .btn-action {
+    @apply h-12 px-6 font-[var(--font-pixel)] text-xs transition-colors;
+  }
+}
