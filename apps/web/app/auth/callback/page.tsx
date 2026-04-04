@@ -4,6 +4,8 @@ import { createClient } from '@/lib/pocketbase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import Image from 'next/image'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 function CallbackContent() {
   const router = useRouter()
@@ -112,44 +114,74 @@ function CallbackContent() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <div className="card text-center">
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/eggoworld-logo.svg"
-              alt="EggoWorld"
-              width={48}
-              height={48}
-              loading="eager"
-              className="pixelated"
-            />
-          </div>
-
-          {status === 'loading' && (
-            <>
-              <div className="animate-pulse">
-                <h1 className="font-[var(--font-pixel)] text-sm text-primary">PROCESSING...</h1>
+        {/* Feedback card - Clay variant */}
+        <Card variant="clay" className="shadow-clay-lg text-center">
+          <CardHeader>
+            <div className="flex justify-center mb-4">
+              <div className={cn(
+                'rounded-clay-lg shadow-clay-md',
+                'bg-card/50 p-3'
+              )}>
+                <Image
+                  src="/eggoworld-logo.svg"
+                  alt="EggoWorld"
+                  width={48}
+                  height={48}
+                  loading="eager"
+                  className="pixelated"
+                />
               </div>
-              <p className="label mt-4">COMPLETING LOGIN</p>
-            </>
-          )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {status === 'loading' && (
+              <>
+                <div className="animate-pulse">
+                  <CardTitle className="font-[var(--font-pixel)] text-lg text-primary">
+                    PROCESSING...
+                  </CardTitle>
+                </div>
+                <CardDescription className="font-[var(--font-pixel)] text-xs">
+                  COMPLETING LOGIN
+                </CardDescription>
+              </>
+            )}
 
-          {status === 'success' && (
-            <>
-              <h1 className="font-[var(--font-pixel)] text-sm text-primary">SUCCESS!</h1>
-              <p className="label mt-4">REDIRECTING...</p>
-            </>
-          )}
+            {status === 'success' && (
+              <>
+                <CardTitle className="font-[var(--font-pixel)] text-lg text-primary">
+                  SUCCESS!
+                </CardTitle>
+                <CardDescription className="font-[var(--font-pixel)] text-xs">
+                  REDIRECTING...
+                </CardDescription>
+              </>
+            )}
 
-          {status === 'error' && (
-            <>
-              <h1 className="font-[var(--font-pixel)] text-sm text-accent">ERROR</h1>
-              <p className="label mt-4">{error}</p>
-              <a href="/auth/login" className="btn-primary inline-block mt-6">
-                TRY AGAIN
-              </a>
-            </>
-          )}
-        </div>
+            {status === 'error' && (
+              <>
+                <CardTitle className="font-[var(--font-pixel)] text-lg text-accent">
+                  ERROR
+                </CardTitle>
+                <CardDescription className="font-[var(--font-pixel)] text-xs">
+                  {error}
+                </CardDescription>
+                <a
+                  href="/auth/login"
+                  className={cn(
+                    'inline-block mt-4',
+                    'font-[var(--font-pixel)] text-xs',
+                    'rounded-clay shadow-clay-md px-6 py-3',
+                    'bg-primary hover:bg-primary/90 text-primary-foreground',
+                    'transition-all'
+                  )}
+                >
+                  TRY AGAIN
+                </a>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
