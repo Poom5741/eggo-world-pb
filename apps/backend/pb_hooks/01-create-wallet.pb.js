@@ -68,14 +68,14 @@ onRecordCreate((e) => {
     }
 
     var address = responseData.data.address;
-    var publicKey = responseData.data.publicKey || "";
 
     console.log("Wallet created successfully:", address);
 
     // Set wallet fields on record BEFORE e.next() so they are committed with the record
     // Field names match the live production DB schema: wallet_address, publicKey
+    // Note: publicKey field expects EVM address format; skip compressed EC public key
     e.record.set("wallet_address", address);
-    e.record.set("publicKey", publicKey);
+    e.record.set("publicKey", address);
 
     console.log("Wallet fields set on record");
 
