@@ -38,6 +38,8 @@
  * }
  */
 
+const WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
+
 routerAdd("POST", "/api/v2/feed-egg", (e) => {
     try {
         const user = $apis.requireAuth(e);
@@ -167,7 +169,7 @@ routerAdd("POST", "/api/v2/feed-egg", (e) => {
             eggNftAddress: eggNftAddress
         };
         
-        const walletResponse = fetch(EGGO_CONFIG.wallet.srvUrl + '/api/wallet/feed-egg', {
+        const walletResponse = fetch(WALLET_SRV_URL + '/api/wallet/feed-egg', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(walletPayload)

@@ -37,6 +37,7 @@
  */
 
 const FOOD_MINT_PRICE = "500000000000000000"; // 0.50 USDT in wei (18 decimals)
+const WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 routerAdd("POST", "/api/v2/mint-food", (e) => {
     try {
@@ -121,7 +122,7 @@ routerAdd("POST", "/api/v2/mint-food", (e) => {
             foodNftAddress: foodNftAddress
         };
         
-        const walletResponse = fetch(EGGO_CONFIG.wallet.srvUrl + '/api/wallet/mint-food', {
+        const walletResponse = fetch(WALLET_SRV_URL + '/api/wallet/mint-food', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(walletPayload)

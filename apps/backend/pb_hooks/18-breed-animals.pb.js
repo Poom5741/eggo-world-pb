@@ -36,6 +36,8 @@
  */
 
 const BREEDING_FEE = 5; // 5 USDT
+const WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
+const INITIAL_FOOD_COUNT = parseInt($os.getenv("INITIAL_FOOD_COUNT") || "2", 10)
 
 routerAdd("POST", "/api/v2/breed-animals", (e) => {
     try {
@@ -211,7 +213,7 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         breedingEgg.set('owner', user.id);
         breedingEgg.set('token_id', nextTokenId);
         breedingEgg.set('contract_address', contractAddress);
-        breedingEgg.set('food_count', EGGO_CONFIG.game.initialFoodCount);
+        breedingEgg.set('food_count', INITIAL_FOOD_COUNT);
         breedingEgg.set('is_hatched', false);
         breedingEgg.set('is_breeding_egg', true);
         breedingEgg.set('generation', childGeneration);
@@ -227,7 +229,7 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         
         // Call wallet-api to create breeding egg on blockchain (optional)
         try {
-            fetchWithRetry(EGGO_CONFIG.wallet.srvUrl + '/api/v1/breed-animals', {
+            fetchWithRetry(WALLET_SRV_URL + '/api/v1/breed-animals', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

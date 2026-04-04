@@ -8,11 +8,14 @@ routerAdd('GET', '/api/debug/oauth-config', (c) => {
   const authMethods = $app.dao().findAuthMethods('users');
   const lineProvider = authMethods.oauth2?.providers?.find(p => p.name === 'line');
   return c.json(200, {
-    environmentConfig: globalThis.EGGO_CONFIG?.line || {},
+    environmentConfig: {
+      channelId: $os.getenv("LINE_CHANNEL_ID") ? $os.getenv("LINE_CHANNEL_ID").substring(0, 4) + "..." : "",
+      callbackUrls: [$os.getenv("LINE_CALLBACK_URL") || ""]
+    },
     pocketbaseProvider: lineProvider || null,
     callbackUrlCheck: {
       expected: 'http://localhost:8090/api/oauth2-redirect',
-      lineConsoleConfigured: globalThis.EGGO_CONFIG?.line?.callbackUrls?.includes('http://localhost:8090/api/oauth2-redirect') || false
+      lineConsoleConfigured: ($os.getenv("LINE_CALLBACK_URL") || "").includes('http://localhost:8090/api/oauth2-redirect')
     }
   });
 });

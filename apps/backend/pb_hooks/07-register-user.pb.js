@@ -3,7 +3,8 @@
 
 console.log("Setting up register user endpoint...");
 
-// Use EGGO_CONFIG.blockchain.platformAddress instead of declaring PLATFORM_ADDRESS locally
+// Use $os.getenv for cross-file config access (globalThis is isolated per-file in PocketBase JSVM)
+const PLATFORM_ADDRESS = $os.getenv("PLATFORM_ADDRESS") || "0x0000000000000000000000000000000000000000"
 
 routerAdd('POST', '/api/users/register', (e) => {
     console.log("=== REGISTER USER ENDPOINT CALLED ===");
@@ -136,7 +137,7 @@ function buildReferralChain(startReferrer) {
     
     // Pad with platform address if chain < 4
     while (chain.length < 4) {
-        chain.push(EGGO_CONFIG.blockchain.platformAddress)
+        chain.push(PLATFORM_ADDRESS)
     }
     
     return chain;
@@ -146,7 +147,7 @@ function createReferralRecords(referrerId, userId, chain) {
     const referralCollection = $app.findCollectionByNameOrId('referrals');
     
     chain.forEach((uplineId, index) => {
-        if (uplineId === EGGO_CONFIG.blockchain.platformAddress) return
+        if (uplineId === PLATFORM_ADDRESS) return
         
         const record = new Record(referralCollection);
         record.set('referrer_id', uplineId);

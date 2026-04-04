@@ -33,6 +33,7 @@
  */
 
 const MIN_FOOD_TO_HATCH = 10;
+const WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 const SPECIES_OPTIONS = ['Chicken', 'Duck', 'Pig', 'Cow', 'Sheep', 'Dog', 'Cat', 'Rabbit'];
 const RARITY_OPTIONS = ['Common', 'Rare', 'Epic', 'Legendary'];
@@ -166,7 +167,7 @@ routerAdd("POST", "/api/v2/hatch-egg", (e) => {
         
         // Call wallet-api to hatch egg on blockchain (optional)
         try {
-            fetchWithRetry(EGGO_CONFIG.wallet.srvUrl + '/api/v1/hatch-egg', {
+            fetchWithRetry(WALLET_SRV_URL + '/api/v1/hatch-egg', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

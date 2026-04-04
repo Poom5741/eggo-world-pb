@@ -3,7 +3,8 @@
 
 console.log("Setting up referral chain hook...");
 
-// Use EGGO_CONFIG.blockchain.platformAddress instead of declaring PLATFORM_ADDRESS locally
+// Use $os.getenv for cross-file config access (globalThis is isolated per-file in PocketBase JSVM)
+const PLATFORM_ADDRESS = $os.getenv("PLATFORM_ADDRESS") || "0x0000000000000000000000000000000000000000"
 
 onRecordAfterCreateSuccess((e) => {
     const user = e.record;
@@ -81,7 +82,7 @@ function buildReferralChain(startReferrerId) {
     
     // Pad with platform address if chain < 4
     while (chain.length < 4) {
-        chain.push(EGGO_CONFIG.blockchain.platformAddress)
+        chain.push(PLATFORM_ADDRESS)
     }
     
     return chain;

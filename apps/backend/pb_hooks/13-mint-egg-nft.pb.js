@@ -32,7 +32,8 @@
  * }
  */
 
-// Use EGGO_CONFIG.game constants instead of declaring locally
+// Use $os.getenv for cross-file config access (globalThis is isolated per-file in PocketBase JSVM)
+const INITIAL_FOOD_COUNT = parseInt($os.getenv("INITIAL_FOOD_COUNT") || "2", 10)
 const MINT_PRICE = "25000000000000000000"; // 25 USDT in wei (18 decimals)
 
 routerAdd("POST", "/api/v2/mint-egg", (e) => {
@@ -153,7 +154,7 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
         record.set('owner', user.id);
         record.set('token_id', parseInt(txHash.slice(-8), 16) % 1000000);
         record.set('contract_address', eggNftAddress.toLowerCase());
-        record.set('food_count', EGGO_CONFIG.game.initialFoodCount);
+        record.set('food_count', INITIAL_FOOD_COUNT);
         record.set('is_hatched', false);
         record.set('generation', 0);
         record.set('is_breeding_egg', false);
@@ -186,7 +187,7 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
                 token_id: record.get('token_id'),
                 egg_id: record.get('egg_id'),
                 tx_hash: txHash,
-                food_count: EGGO_CONFIG.game.initialFoodCount,
+                food_count: INITIAL_FOOD_COUNT,
                 is_hatched: false,
                 generation: 0,
                 rarity_seed: raritySeed,

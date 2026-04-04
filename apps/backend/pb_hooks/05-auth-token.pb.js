@@ -130,17 +130,19 @@ routerAdd("POST", "/api/auth/line-exchange", (e) => {
         })
     }
 
-    const config = globalThis.EGGO_CONFIG
-    if (!config?.line?.channelId || !config?.line?.channelSecret) {
+    // Read LINE credentials directly from env ($os.getenv is the correct PocketBase JSVM API)
+    const channelId = $os.getenv("LINE_CHANNEL_ID") || ""
+    const channelSecret = $os.getenv("LINE_CHANNEL_SECRET") || ""
+
+    console.log("LINE channelId:", channelId ? channelId.substring(0, 4) + "..." : "(empty)")
+
+    if (!channelId || !channelSecret) {
         console.log("LINE config missing")
         return e.json(500, {
             success: false,
             error: { message: "LINE credentials not configured", code: "CONFIG_ERROR" }
         })
     }
-
-    const channelId = config.line.channelId
-    const channelSecret = config.line.channelSecret
 
     try {
         // Exchange auth code for tokens via LINE API
