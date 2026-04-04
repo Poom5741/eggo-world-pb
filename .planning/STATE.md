@@ -2,19 +2,19 @@
 gsd_state_version: 1.0
 milestone: v0.0.5
 milestone_name: milestone
-current_phase: 04
+current_phase: 05
 status: executing
-last_updated: "2026-04-04T05:57:19.663Z"
+last_updated: "2026-04-04T06:11:06.052Z"
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
+  total_plans: 16
+  completed_plans: 13
 ---
 
 # Project State
 
-**Current Phase:** 04
+**Current Phase:** 05
 **Last Updated:** 2026-04-02T12:48:17Z  
 **Session:** Project initialization
 
@@ -22,7 +22,7 @@ progress:
 
 ### Phase 04: LINE Wallet OAuth Integration
 
-**Status:** Executing Phase 04
+**Status:** Executing Phase 05
 
 - [x] TypeScript + dacc-js Migration (04-01)
 - [x] Backend Enhancements (04-02)
@@ -77,7 +77,17 @@ progress:
 - ✅ Completed Phase 04 Plan 04: LINE Wallet Integration Verification (2026-04-03)
 - ✅ Completed Phase 01 Plan 01: Deploy contracts to BSC testnet (2026-04-03)
 
-**Last Session:** 2026-04-04T05:57:19.660Z
+**Last Session:** 2026-04-04T06:12:26Z
+
+**Completed Phase 05 Plan 02:**
+
+- ✅ Integration Testing: dashboard tests, BuyEggFlow tests, commission distribution tests (2026-04-04)
+  - Created 8 dashboard page tests (auto-polling, "Updating..." indicators)
+  - Created BuyEggFlow component with 6 tests (USDT approval flow)
+  - Created 6 mint page tests (price display, bonus food)
+  - Created 2 Forge commission distribution tests (4-level MLM math)
+  - Total: 20 tests all passing
+  - Covered critical user flows before production deployment
 
 **Completed Phase 03 Plan 05:**
 
