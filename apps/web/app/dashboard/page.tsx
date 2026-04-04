@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Egg, Coins, TrendingUp, Wallet, RefreshCw, Flame } from 'lucide-react'
 import { Header } from '@/components/header'
+import { cn } from '@/lib/utils'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -141,8 +142,11 @@ export default function DashboardPage() {
               </Button>
             </div>
 
-            {/* Balance Summary Card */}
-            <Card className="border-4 border-primary/50 bg-card">
+            {/* Balance Summary Card - Clay XL variant for prominence */}
+            <Card variant="clay-xl" className={cn(
+              'bg-gradient-to-br from-primary/20 via-primary/10 to-transparent',
+              'shadow-clay-2xl'
+            )}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
@@ -166,9 +170,9 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="border-2 border-primary/30 bg-card">
+            {/* Stats Grid - Clay widgets */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-clay-xl">
+              <Card variant="clay" className="shadow-clay-lg">
                 <CardHeader className="pb-3">
                   <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
                     TOTAL EGGS
@@ -185,7 +189,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-accent/30 bg-card">
+              <Card variant="clay" className="shadow-clay-lg">
                 <CardHeader className="pb-3">
                   <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
                     FOOD NFTs
@@ -202,7 +206,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-primary/30 bg-card">
+              <Card variant="clay" className="shadow-clay-lg">
                 <CardHeader className="pb-3">
                   <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
                     PENDING COMMISSIONS
@@ -219,7 +223,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-2 border-primary/30 bg-card">
+              <Card variant="clay" className="shadow-clay-lg">
                 <CardHeader className="pb-3">
                   <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
                     TOTAL EARNED
@@ -237,8 +241,8 @@ export default function DashboardPage() {
               </Card>
             </div>
 
-            {/* Quick Actions */}
-            <Card className="border-2 border-primary/30 bg-card">
+            {/* Quick Actions - Clay container */}
+            <Card variant="clay-lg" className="shadow-clay-xl">
               <CardHeader>
                 <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
                   QUICK ACTIONS
@@ -251,32 +255,36 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Button
                     onClick={() => router.push('/mint')}
-                    className="font-[var(--font-pixel)] text-sm h-12 border-2 border-primary/50 hover:border-primary"
-                    variant="outline"
+                    variant="clay"
+                    size="clay-md"
+                    className="w-full"
                   >
                     <Egg className="w-4 h-4 mr-2" />
                     MINT EGG
                   </Button>
                   <Button
                     onClick={() => router.push('/mint/food')}
-                    className="font-[var(--font-pixel)] text-sm h-12 border-2 border-primary/50 hover:border-primary"
-                    variant="outline"
+                    variant="clay"
+                    size="clay-md"
+                    className="w-full"
                   >
                     <Flame className="w-4 h-4 mr-2" />
                     BUY FOOD
                   </Button>
                   <Button
                     onClick={() => router.push('/dashboard/eggs')}
-                    className="font-[var(--font-pixel)] text-sm h-12 border-2 border-primary/50 hover:border-primary"
-                    variant="outline"
+                    variant="clay"
+                    size="clay-md"
+                    className="w-full"
                   >
                     <Egg className="w-4 h-4 mr-2" />
                     MY EGGS
                   </Button>
                   <Button
                     onClick={() => router.push('/wallet')}
-                    className="font-[var(--font-pixel)] text-sm h-12 border-2 border-primary/50 hover:border-primary"
-                    variant="outline"
+                    variant="clay"
+                    size="clay-md"
+                    className="w-full"
                   >
                     <Wallet className="w-4 h-4 mr-2" />
                     WALLET
