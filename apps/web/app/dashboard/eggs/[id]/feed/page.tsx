@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useIsHydrated } from '@/hooks/use-is-hydrated';
 import { useFoodNft } from '@/hooks/use-food-nft';
-import { pb } from '@/lib/pocketbase/client';
+import { createClient } from '@/lib/pocketbase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -30,12 +30,12 @@ export default function FeedEggPage() {
     if (!isHydrated) return;
 
     const loadData = async () => {
-      const user = pb.authStore.record;
+      const user = createClient().authStore.record;
       if (!user) return;
 
       // Load egg
       try {
-        const eggs = await pb.collection('egg_nfts').getList(1, 1, {
+        const eggs = await createClient().collection('egg_nfts').getList(1, 1, {
           filter: `token_id = ${params.id} && owner.id = "${user.id}"`,
         });
         if (eggs.items.length > 0) {
@@ -61,7 +61,7 @@ export default function FeedEggPage() {
     return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin" /></div>;
   }
 
-  const user = pb.authStore.record;
+  const user = createClient().authStore.record;
   
   if (!user) {
     return (
@@ -100,7 +100,7 @@ export default function FeedEggPage() {
     if (result) {
       setFeedResult(result);
       // Reload egg data
-      const updatedEggs = await pb.collection('egg_nfts').getList(1, 1, {
+      const updatedEggs = await createClient().collection('egg_nfts').getList(1, 1, {
         filter: `token_id = ${egg.token_id} && owner.id = "${user.id}"`,
       });
       if (updatedEggs.items.length > 0) {

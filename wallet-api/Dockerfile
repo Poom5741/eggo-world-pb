@@ -5,9 +5,10 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --production
 
-COPY server.js .
+COPY src/ ./src/
+COPY tsconfig.json ./
 
 EXPOSE 3001
 
 ENV PORT=3001
-CMD ["bun", "server.js"]
+CMD ["bun", "src/index.ts"]

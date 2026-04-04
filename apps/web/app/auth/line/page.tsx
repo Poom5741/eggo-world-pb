@@ -1,14 +1,15 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Image from 'next/image'
+import { createClient } from '@/lib/pocketbase/client'
 
 // Production PocketBase URL
 const PRODUCTION_PB_URL = 'https://pb.eggoworld.io'
 const LINE_CLIENT_ID = '2009441873'
 
-// Generate random string for state parameter
+// สร้าง random string สำหรับ state parameter
 function generateRandomString(length: number) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'
   let result = ''
@@ -20,33 +21,48 @@ function generateRandomString(length: number) {
   return result
 }
 
-export default function LineLoginPage() {
+function LineLoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<'idle' | 'loading'>('idle')
 
   useEffect(() => {
-    // Check if we have auth data from redirect (from production PocketBase)
+    // รับ auth data ที่ส่งกลับมาจาก line-callback.html (ผ่าน URL params)
     const params = new URLSearchParams(window.location.search)
-    
-    // Backend sends: token and user (JSON string)
-    const token = params.get('token')
+    const email = params.get('email')
+    const password = params.get('password')
     const userData = params.get('user')
 
+    if (email && password) {
+      setStatus('loading')
+      // ใช้ PocketBase authWithPassword เพื่อรับ real JWT token
+      const pb = createClient()
+      pb.collection('users').authWithPassword(email, password)
+        .then((authData) => {
+          // authStore.onChange จะ sync cookie pb_auth และ localStorage อัตโนมัติ
+          // ตั้งค่า cookie ซ้ำเพื่อให้แน่ใจ middleware อ่านได้ก่อน redirect
+          document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
+          router.replace('/')
+        })
+        .catch((_err) => {
+          console.error('LINE auth error:', _err)
+          setError('Authentication failed. Please try again.')
+          setStatus('idle')
+        })
+      return
+    }
+
+    // Fallback: รับ token โดยตรง (legacy path)
+    const token = params.get('token')
     if (token && userData) {
       try {
-        // Parse user from URL param
         const user = JSON.parse(decodeURIComponent(userData))
-        
-        // Store in localStorage
-        localStorage.setItem('pocketbase_auth', JSON.stringify({
-          token: token,
-          model: user
-        }))
-
-        // Redirect to home
-        router.push('/')
-      } catch (err) {
+        const pb = createClient()
+        pb.authStore.save(token, user)
+        document.cookie = `pb_auth=${token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
+        router.replace('/')
+      } catch {
         setError('Failed to restore session')
       }
     }
@@ -55,10 +71,10 @@ export default function LineLoginPage() {
   const handleLineLogin = async () => {
     setError(null)
     try {
-      // Get referrer from URL or sessionStorage
+      // ดึง referrer จาก URL หรือ sessionStorage
       const referrer = searchParams.get('referrer') || sessionStorage.getItem('referrer')
       
-      // Generate state parameter with return URL and referrer encoded
+      // ฝัง returnUrl (frontend origin) ใน state เพื่อให้ line-callback.html redirect กลับมา
       const returnUrl = `${window.location.origin}/auth/line`
       const stateData = {
         random: generateRandomString(16),
@@ -67,13 +83,12 @@ export default function LineLoginPage() {
       }
       const state = btoa(JSON.stringify(stateData))
       
-      // Store state and referrer in sessionStorage for verification
       sessionStorage.setItem('oauth_state', state)
       if (referrer) {
         sessionStorage.setItem('referrer', referrer)
       }
 
-      // Build LINE OAuth URL directly
+      // สร้าง LINE OAuth URL — redirect ไปที่ PocketBase line-callback.html
       const redirectUri = `${PRODUCTION_PB_URL}/line-callback.html`
       const authUrl = 'https://access.line.me/oauth2/v2.1/authorize' +
         '?response_type=code' +
@@ -83,12 +98,37 @@ export default function LineLoginPage() {
         '&state=' + encodeURIComponent(state)
 
       console.log('Redirecting to LINE OAuth:', authUrl)
-      console.log('Referrer:', referrer)
       window.location.href = authUrl
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to initiate LINE login')
       console.error('LINE login error:', err)
     }
+  }
+
+  // แสดง loading state ขณะกำลัง authenticate
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <div className="card text-center">
+            <div className="flex justify-center mb-6">
+              <Image
+                src="/eggoworld-logo.svg"
+                alt="EggoWorld"
+                width={48}
+                height={48}
+                loading="eager"
+                className="pixelated"
+              />
+            </div>
+            <div className="animate-pulse">
+              <h1 className="font-[var(--font-pixel)] text-sm text-primary">PROCESSING...</h1>
+            </div>
+            <p className="label mt-4">COMPLETING LOGIN</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -109,9 +149,6 @@ export default function LineLoginPage() {
           <div className="space-y-2 text-center mb-6">
             <h1 className="font-[var(--font-pixel)] text-sm text-primary">LOGIN</h1>
             <p className="label">CONTINUE WITH LINE</p>
-            <p className="text-xs text-muted-foreground mt-2">
-              Using production: {PRODUCTION_PB_URL}
-            </p>
           </div>
 
           {error && (
@@ -132,5 +169,17 @@ export default function LineLoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LineLoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+      </div>
+    }>
+      <LineLoginContent />
+    </Suspense>
   )
 }

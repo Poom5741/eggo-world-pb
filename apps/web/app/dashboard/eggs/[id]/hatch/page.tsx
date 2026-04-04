@@ -15,8 +15,6 @@ import {
   getSigner, 
   getEggNftContract, 
   parseEggHatchedEvent,
-  getRarityName,
-  getSpeciesName,
   Rarity,
   Species,
 } from '@/lib/contracts/eggNft'

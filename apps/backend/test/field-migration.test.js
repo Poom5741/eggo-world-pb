@@ -16,17 +16,17 @@ describe("Field Name Migration - dacc-js", () => {
   };
 
   const hooksToCheck = [
-    "02-wallet-endpoint.pb.js",
-    "04-auth-token.pb.js",
-    "05-referral-chain.pb.js",
-    "06-wallet-balance.pb.js",
-    "06-register-user.pb.js",
-    "07-withdraw-usdt.pb.js",
-    "08-spend-usdt.pb.js",
-    "09-transfer-usdt.pb.js",
-    "10-update-tier.pb.js",
-    "13-mint-food-nft.pb.js",
-    "14-feed-egg.pb.js"
+    "03-wallet-api-endpoint.pb.js",
+    "05-auth-token.pb.js",
+    "06-referral-chain.pb.js",
+    "08-wallet-balance.pb.js",
+    "07-register-user.pb.js",
+    "09-withdraw-usdt.pb.js",
+    "10-spend-usdt.pb.js",
+    "11-transfer-usdt.pb.js",
+    "12-update-tier.pb.js",
+    "15-mint-food-nft.pb.js",
+    "16-feed-egg.pb.js"
   ];
 
   test("should not use deprecated field: wallet_address", () => {

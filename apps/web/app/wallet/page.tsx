@@ -8,7 +8,7 @@ import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { cn } from '@/lib/utils'
 import { Header } from '@/components/header'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { WithdrawForm } from '@/components/WithdrawForm'
@@ -25,8 +25,6 @@ export default function WalletPage() {
   const { balance, loading: polling, error, refresh } = useWalletPoll(user?.wallet)
 
   useEffect(() => {
-    setIsHydrated(true)
-
     const pb = createClient()
 
     if (isAuthenticated()) {

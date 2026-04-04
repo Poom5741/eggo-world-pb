@@ -2,19 +2,22 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient, isAuthenticated, getUser } from '@/lib/pocketbase/client'
+import { createClient } from '@/lib/pocketbase/client'
 import Image from 'next/image'
 import Dashboard from '@/components/dashboard'
 import { Header } from '@/components/header'
 import { Suspense } from 'react'
+import { useIsHydrated } from '@/hooks/use-is-hydrated'
 
 function PageContent() {
+  // isHydrated = true เมื่อ component mount แล้ว (client-side เท่านั้น)
+  const isHydrated = useIsHydrated()
   const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    // ตรวจ error params จาก OAuth callback
     const error = searchParams.get('error')
     const errorCode = searchParams.get('error_code')
     
@@ -29,25 +32,26 @@ function PageContent() {
       return
     }
 
+    // สร้าง PocketBase client และโหลด auth จาก localStorage
     const pb = createClient()
-    
-    if (isAuthenticated()) {
-      setUser(getUser())
-      setLoading(false)
-    } else {
-      setLoading(false)
-    }
 
-    pb.authStore.onChange(() => {
-      if (isAuthenticated()) {
-        setUser(getUser())
-      } else {
-        setUser(null)
-      }
+    // ตั้งค่า user จาก authStore หลัง hydration
+    setUser(pb.authStore.record ?? null)
+
+    // ฟัง authStore onChange เพื่อ re-render เมื่อ auth state เปลี่ยน
+    // (เช่น หลัง OAuth callback redirect กลับมา)
+    const unsubscribe = pb.authStore.onChange(() => {
+      setUser(pb.authStore.record ?? null)
     })
+
+    return () => {
+      // Cleanup listener เมื่อ component unmount
+      unsubscribe()
+    }
   }, [searchParams, router])
 
-  if (loading) {
+  // แสดง loading จนกว่าจะ hydrate เสร็จ เพื่อป้องกัน hydration mismatch
+  if (!isHydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>

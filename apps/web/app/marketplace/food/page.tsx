@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useIsHydrated } from '@/hooks/use-is-hydrated';
 import { useFoodNft } from '@/hooks/use-food-nft';
-import { pb } from '@/lib/pocketbase/client';
+import { createClient } from '@/lib/pocketbase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -11,14 +11,12 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ShoppingCart } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
 
 const FOOD_PRICE = 0.50;
 const MAX_QUANTITY = 100;
 
-export default function FoodMarketplacePage() {
+function FoodMarketplaceContent() {
   const isHydrated = useIsHydrated();
-  const searchParams = useSearchParams();
   const [quantity, setQuantity] = useState<number>(10);
   const [referrerId, setReferrerId] = useState<string>('');
   const { loading, error, mintFood } = useFoodNft();
@@ -28,7 +26,7 @@ export default function FoodMarketplacePage() {
     return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin" /></div>;
   }
 
-  const user = pb.authStore.record;
+  const user = createClient().authStore.record;
   
   if (!user) {
     return (
@@ -171,5 +169,13 @@ export default function FoodMarketplacePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function FoodMarketplacePage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin" /></div>}>
+      <FoodMarketplaceContent />
+    </Suspense>
   );
 }

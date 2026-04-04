@@ -12,7 +12,7 @@ interface WalletModalProps {
 const RECIPIENT_WALLET = '0xdEf0d71cD65aCFfD54fdf03B0128E14f8d97a60e'
 const REQUIRED_AMOUNT = 25
 
-export default function WalletModal({ profile, onClose, onTransactionSubmitted }: WalletModalProps) {
+export default function WalletModal({ profile: _profile, onClose, onTransactionSubmitted }: WalletModalProps) {
   const [txHash, setTxHash] = useState('')
   const [receiverWallet, setReceiverWallet] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)

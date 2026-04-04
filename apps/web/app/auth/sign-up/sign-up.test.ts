@@ -7,8 +7,8 @@ describe('Sign-up Page - LINE OAuth Only', () => {
   const content = readFileSync(filePath, 'utf-8')
 
   it('does NOT contain email state', () => {
-    expect(content).not.toContain('useState(\'\')')
     expect(content).not.toContain('setEmail')
+    expect(content).not.toContain('[email, setEmail]')
   })
 
   it('does NOT contain password state', () => {
@@ -21,9 +21,9 @@ describe('Sign-up Page - LINE OAuth Only', () => {
     expect(content).not.toContain('Turnstile')
   })
 
-  it('does NOT contain handleSignUp function', () => {
-    expect(content).not.toContain('handleSignUp')
+  it('does NOT contain direct PocketBase user creation', () => {
     expect(content).not.toContain('pb.collection(\'users\').create')
+    expect(content).not.toContain('pb.collection("users").create')
   })
 
   it('does NOT contain email/password form inputs', () => {

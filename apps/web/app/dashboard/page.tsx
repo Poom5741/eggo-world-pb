@@ -7,7 +7,7 @@ import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Egg, Coins, TrendingUp, Wallet, RefreshCw, Flame, Users } from 'lucide-react'
+import { Egg, Coins, TrendingUp, Wallet, RefreshCw, Flame } from 'lucide-react'
 import { Header } from '@/components/header'
 
 export default function DashboardPage() {

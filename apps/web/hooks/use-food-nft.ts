@@ -1,14 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useIsHydrated } from '@/hooks/use-is-hydrated';
-import { pb } from '@/lib/pocketbase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2 } from 'lucide-react';
+import { createClient } from '@/lib/pocketbase/client';
 
 interface MintResult {
   food_ids: number[];
@@ -31,6 +24,7 @@ export function useFoodNft() {
     setError(null);
 
     try {
+      const pb = createClient();
       const response = await pb.send('/api/v2/mint-food', {
         method: 'POST',
         body: {
@@ -58,7 +52,8 @@ export function useFoodNft() {
     setError(null);
 
     try {
-      const response = await pb.send('/api/v2/feed-egg', {
+      const pb2 = createClient();
+      const response = await pb2.send('/api/v2/feed-egg', {
         method: 'POST',
         body: {
           egg_token_id,
@@ -82,6 +77,7 @@ export function useFoodNft() {
 
   const getUserFoodNfts = async (userId: string) => {
     try {
+      const pb = createClient();
       const records = await pb.collection('food_nfts').getList(1, 100, {
         filter: `owner = "${userId}" && is_consumed = false`,
       });
@@ -94,6 +90,7 @@ export function useFoodNft() {
 
   const getTotalFoodConsumed = async (userId: string): Promise<number> => {
     try {
+      const pb = createClient();
       const user = await pb.collection('users').getOne(userId);
       return user.total_food_consumed || 0;
     } catch (err) {

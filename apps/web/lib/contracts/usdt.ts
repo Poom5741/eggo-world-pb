@@ -1,4 +1,4 @@
-import { BrowserProvider, Contract } from 'ethers'
+import { Contract } from 'ethers'
 
 // USDT contract address on BSC
 export const USDT_ADDRESS = process.env.NEXT_PUBLIC_USDT_ADDRESS || '0x55d398326f99059fF775485246999027B3197955'

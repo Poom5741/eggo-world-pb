@@ -6,7 +6,7 @@ import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Egg, Flame, Sparkles, TrendingUp, Wallet, RefreshCw } from 'lucide-react'
+import { Egg, Flame, TrendingUp, Wallet, RefreshCw } from 'lucide-react'
 import { Header } from '@/components/header'
 import { EggCard } from '@/components/egg-nft/EggCard'
 
@@ -43,8 +43,10 @@ export default function EggsDashboard() {
     
     if (isAuthenticated()) {
       const currentUser = getUser()
-      setUser(currentUser)
-      fetchEggs(currentUser.id)
+      if (currentUser) {
+        setUser(currentUser)
+        fetchEggs(currentUser.id)
+      }
     } else {
       router.push('/auth/login')
     }

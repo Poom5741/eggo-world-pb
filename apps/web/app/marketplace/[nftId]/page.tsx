@@ -9,12 +9,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ListForSaleModal } from '@/components/ListForSaleModal'
 import Image from 'next/image'
-import { Loader2, ShoppingBag, User, Package, Layers, Tag, RefreshCw } from 'lucide-react'
+import { Loader2, ShoppingBag, User, Package, Layers, Tag } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'sonner'
 import { parseUnits } from 'ethers'
 import { getSigner } from '@/lib/contracts/eggNft'
-import { getUSDTContract, USDT_ADDRESS } from '@/lib/contracts/usdt'
+import { getUSDTContract } from '@/lib/contracts/usdt'
 import { getMarketplaceContract, MARKETPLACE_ADDRESS } from '@/lib/contracts/marketplace'
 
 interface NftData {
@@ -31,6 +31,7 @@ interface NftData {
   is_listed?: boolean
   image?: string
   created: string
+  token_id?: number
 }
 
 export default function NftDetailPage() {
@@ -52,8 +53,6 @@ export default function NftDetailPage() {
   }
 
   useEffect(() => {
-    setIsHydrated(true)
-    
     const pb = createClient()
     
     if (isAuthenticated()) {
@@ -80,7 +79,7 @@ export default function NftDetailPage() {
         const nftData = await pb.collection('nfts').getOne(nftId, {
           expand: 'owner'
         })
-        setNft(nftData as NftData)
+        setNft(nftData as unknown as NftData)
         
         // Check ownership
         if (user && nftData.owner === user.id) {
@@ -197,7 +196,7 @@ export default function NftDetailPage() {
     }
   }
 
-  const handleListForSale = () => {
+  const _handleListForSale = () => {
     // Handled by ListForSaleModal component
   }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { createClient, logout } from '@/lib/pocketbase/client'
+import { createClient } from '@/lib/pocketbase/client'
 import { useRouter } from 'next/navigation'
 
 export default function LogoutButton() {

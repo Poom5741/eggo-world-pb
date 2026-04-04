@@ -49,21 +49,25 @@ function CallbackContent() {
         })
 
         const authData = await response.json()
-        console.log('Auth response:', authData)
+        console.warn('Auth response:', authData)
 
         if (!response.ok) {
           throw new Error(authData.message || 'Authentication failed')
         }
 
         // Save auth to PocketBase client
+        // authStore.onChange จะ sync cookie pb_auth ให้อัตโนมัติ
         pb.authStore.save(authData.token, authData.record)
+
+        // ตั้งค่า cookie ซ้ำเพื่อให้แน่ใจว่า middleware อ่านได้ก่อน redirect
+        document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
 
         // Check if this is a new user and we have a referrer
         const isFreshSignUp = authData.record?.created === authData.record?.updated
         const referrer = sessionStorage.getItem('referrer')
         
         if (isFreshSignUp && referrer) {
-          console.log('New user with referrer, registering...')
+          console.warn('New user with referrer, registering...')
           
           // Call registration endpoint to set up referral chain
           const registrationResponse = await fetch(`${pb.baseUrl}/api/users/register`, {
@@ -81,10 +85,10 @@ function CallbackContent() {
           })
           
           const registrationResult = await registrationResponse.json()
-          console.log('Registration result:', registrationResult)
+          console.warn('Registration result:', registrationResult)
           
           if (!registrationResult.success) {
-            console.error('Registration failed:', registrationResult.error)
+            console.warn('Registration failed:', registrationResult.error)
             // Continue anyway - referral chain might already exist
           }
         }
@@ -93,11 +97,12 @@ function CallbackContent() {
         sessionStorage.removeItem('referrer')
 
         setStatus('success')
-        setTimeout(() => router.push('/'), 1500)
+        // redirect ทันทีหลัง auth สำเร็จ ไม่ต้องรอ
+        router.push('/')
       } catch (err) {
         setStatus('error')
         setError(err instanceof Error ? err.message : 'Authentication failed')
-        console.error('Auth error:', err)
+        console.warn('Auth error:', err)
       }
     }
 

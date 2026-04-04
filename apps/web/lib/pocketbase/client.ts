@@ -15,17 +15,22 @@ export function createClient(): PocketBase {
         try {
           const { token, model } = JSON.parse(stored)
           pb.authStore.save(token, model)
-        } catch (e) {
+        } catch {
           localStorage.removeItem('pocketbase_auth')
         }
       }
 
-      // Subscribe to authStore changes to sync with localStorage
+      // Subscribe to authStore changes to sync with localStorage and cookie
       pb.authStore.onChange((token, model) => {
         if (token && model) {
+          // บันทึก auth ใน localStorage สำหรับ client-side
           localStorage.setItem('pocketbase_auth', JSON.stringify({ token, model }))
+          // ตั้งค่า cookie pb_auth เพื่อให้ middleware อ่านได้
+          document.cookie = `pb_auth=${token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
         } else {
           localStorage.removeItem('pocketbase_auth')
+          // ลบ cookie เมื่อ logout
+          document.cookie = 'pb_auth=; path=/; max-age=0'
         }
       })
     }
@@ -52,8 +57,9 @@ export function logout() {
   const client = createClient()
   client.authStore.clear()
   
-  // Clear localStorage auth data
+  // ลบ auth data ออกจาก localStorage และ cookie
   if (typeof window !== 'undefined') {
     localStorage.removeItem('pocketbase_auth')
+    document.cookie = 'pb_auth=; path=/; max-age=0'
   }
 }

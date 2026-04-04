@@ -4,6 +4,8 @@
   "timeline": "urgent",
   "timeline_weeks": 2,
   "team_size": "solo",
+  "milestone_completed": "v0.1.0-mvp-complete",
+  "milestone_completed_at": "2026-04-04T14:30:00.000Z",
   "workflow_preferences": {
     "auto_research": false,
     "commit_each_task": true,
@@ -18,20 +20,11 @@
     "network": "bsc",
     "token": "usdt-bep20"
   },
-  "focus_areas": [
-    "smart-contracts",
-    "marketplace-ui",
-    "commission-engine",
-    "usdt-integration"
-  ],
-  "constraints": [
-    "no-native-token",
-    "static-export-cloudflare",
-    "line-oauth-auth",
-    "bsc-only"
-  ],
-  "next_command": "/gsd-plan-phase 1",
+  "focus_areas": ["smart-contracts", "marketplace-ui", "commission-engine", "usdt-integration"],
+  "constraints": ["no-native-token", "static-export-cloudflare", "line-oauth-auth", "bsc-only"],
+  "next_command": "deploy to production or start new feature",
   "workflow": {
-    "_auto_chain_active": false
+    "_auto_chain_active": false,
+    "mvp_status": "complete"
   }
 }

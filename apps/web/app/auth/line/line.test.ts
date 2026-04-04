@@ -19,10 +19,10 @@ describe('LINE Login Page - No Email Option', () => {
   })
 
   it('contains LOGIN title (not LINE LOGIN)', () => {
-    expect(content).toContain('<h1')
-    const titleMatch = content.match(/<h1[^>]*>([^<]+)<\/h1>/)
-    expect(titleMatch).toBeTruthy()
-    expect(titleMatch?.[1]).toBe('LOGIN')
+    // The main page state (idle) shows LOGIN title
+    // The loading state shows PROCESSING... — both h1 elements exist in source
+    expect(content).toContain('>LOGIN<')
+    expect(content).not.toContain('>LINE LOGIN<')
   })
 
   it('contains CONTINUE WITH LINE subtitle', () => {

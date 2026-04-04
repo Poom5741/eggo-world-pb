@@ -45,8 +45,6 @@ export default function ReferralDashboardPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    setIsHydrated(true)
-    
     const pb = createClient()
     
     if (isAuthenticated()) {
@@ -98,7 +96,8 @@ export default function ReferralDashboardPage() {
   const handleCopyLink = async () => {
     if (!user) return
     
-    const referralLink = `${typeof window !== 'undefined' ? window.location.origin}/auth/sign-up?referrer=${user.id}`
+    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const referralLink = `${origin}/auth/sign-up?referrer=${user.id}`
     
     try {
       await navigator.clipboard.writeText(referralLink)
@@ -236,7 +235,7 @@ export default function ReferralDashboardPage() {
                   <div className="flex gap-2">
                     <Input
                       readOnly
-                      value={`${typeof window !== 'undefined' ? window.location.origin}/auth/sign-up?referrer=${user.id}`}
+                      value={`${typeof window !== 'undefined' ? window.location.origin : ''}/auth/sign-up?referrer=${user.id}`}
                       className="font-mono text-sm"
                     />
                     <Button

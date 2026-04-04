@@ -2,10 +2,10 @@
 
 import { isAuthenticated } from '@/lib/pocketbase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import Image from 'next/image'
 
-export default function Page() {
+function SignUpContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [referrer, setReferrer] = useState('')
@@ -71,5 +71,17 @@ export default function Page() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+      </div>
+    }>
+      <SignUpContent />
+    </Suspense>
   )
 }

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Coins, TrendingUp, Wallet, Loader2, CheckCircle2, AlertCircle, DollarSign, RefreshCw } from 'lucide-react'
+import { Coins, TrendingUp, Wallet, Loader2, CheckCircle2, DollarSign, RefreshCw } from 'lucide-react'
 import { Header } from '@/components/header'
 
 export default function CommissionsDashboard() {
@@ -49,8 +49,10 @@ export default function CommissionsDashboard() {
     
     if (isAuthenticated()) {
       const currentUser = getUser()
-      setUser(currentUser)
-      fetchData(currentUser.id)
+      if (currentUser) {
+        setUser(currentUser)
+        fetchData(currentUser.id)
+      }
     } else {
       router.push('/auth/login')
     }

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { pb } from '@/lib/pocketbase/client'
+import { createClient } from '@/lib/pocketbase/client'
 import { AlertCircle, CheckCircle2, Tag } from 'lucide-react'
 
 interface ListForSaleModalProps {
@@ -37,7 +37,7 @@ export function ListForSaleModal({ nftId, onSuccess }: ListForSaleModalProps) {
       }
 
       // Update NFT in PocketBase
-      await pb.collection('nfts').update(nftId, {
+      await createClient().collection('nfts').update(nftId, {
         is_listed: true,
         listed_price: priceNum
       })

@@ -1,4 +1,4 @@
-import { BrowserProvider, Contract } from 'ethers'
+import { Contract } from 'ethers'
 
 // Marketplace contract address
 export const MARKETPLACE_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_ADDRESS || '0x0000000000000000000000000000000000000000'

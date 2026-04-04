@@ -194,53 +194,20 @@
                     }
                 }
                 
-                // If we have a return URL (from local development), redirect back with auth data
-                if (returnUrl && returnUrl.includes('localhost')) {
-                    console.log("Redirecting back to local development:", returnUrl);
-                    
-                    // Authenticate via backend to get token
-                    console.log("About to call line-auth with email:", email, "password length:", password ? password.length : 'undefined');
-                    try {
-                                    const tokenRes = await fetch(window.location.origin + '/api/auth/line-auth', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ email: email, password: password })
-                                    });
-                                    console.log("line-auth response status:", tokenRes.status);
+                // ถ้ามี returnUrl ใน state ให้ส่ง email+password กลับไปให้ frontend app เสมอ
+                // (ทั้ง production และ local dev)
+                if (returnUrl) {
+                    console.log("Redirecting back to frontend:", returnUrl);
                                     
-                                    if (tokenRes.ok) {
-                                        const tokenData = await tokenRes.json();
-                                        console.log("line-auth response:", JSON.stringify(tokenData));
-                                        console.log("Got user data from backend, creating simple auth token...");
-                                        
-                                        // Create a simple auth token (base64 encoded user data + timestamp)
-                                        const timestamp = Date.now();
-                                        const tokenData_b64 = btoa(JSON.stringify({
-                                            userId: tokenData.user.id,
-                                            email: tokenData.user.email,
-                                            timestamp: timestamp,
-                                            exp: timestamp + (7 * 24 * 60 * 60 * 1000) // 7 days
-                                        }));
-                                        
-                                        console.log("Created simple token");
-                                        
-                                        const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData_b64)}&user=${encodeURIComponent(JSON.stringify({
-                                            id: tokenData.user.id,
-                                            email: tokenData.user.email,
-                                            name: tokenData.user.name,
-                                            wallet_address: tokenData.user.wallet_address
-                                        }))}`;
-                                        window.location.href = redirectWithAuth;
-                                    } else {
-                                        throw new Error("Failed to authenticate");
-                                    }
-                                } catch (tokenErr) {
-                                    console.log("Auth failed, redirecting without token:", tokenErr.message);
-                                    const redirectWithAuth = `${returnUrl}?token=&user=${encodeURIComponent(JSON.stringify(user))}`;
-                                    window.location.href = redirectWithAuth;
-                                }
-                                return;
-                            }
+                    // ส่ง email และ password เพื่อให้ frontend เรียก authWithPassword เอง
+                    const redirectWithAuth = `${returnUrl}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&user=${encodeURIComponent(JSON.stringify({
+                        id: user.id || user.userId,
+                        email: email,
+                        name: name
+                    }))}`;
+                    window.location.href = redirectWithAuth;
+                    return;
+                }
                             
                 if (!user.wallet) {
                     console.log("Creating wallet via API...");
@@ -265,64 +232,29 @@
                 }
 
                 localStorage.setItem('pb_auth', JSON.stringify({ token: pb.authStore.token, model: user }));
-
-                // If we have a return URL (from local development), redirect back with auth data
-                if (returnUrl && returnUrl.includes('localhost')) {
-                    console.log("Redirecting back to local development:", returnUrl);
-                    
-                    // Authenticate via backend to get token
-                    try {
-                        const tokenRes = await fetch(window.location.origin + '/api/auth/line-auth', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ email: email, password: password })
-                        });
-                        
-                        if (tokenRes.ok) {
-                            const tokenData = await tokenRes.json();
-                            console.log("Got user data from backend (new user), creating simple auth token...");
-                            
-                            // Create a simple auth token (base64 encoded user data + timestamp)
-                            const timestamp = Date.now();
-                            const tokenData_b64 = btoa(JSON.stringify({
-                                userId: tokenData.user.id,
-                                email: tokenData.user.email,
-                                timestamp: timestamp,
-                                exp: timestamp + (7 * 24 * 60 * 60 * 1000) // 7 days
-                            }));
-                            
-                            console.log("Created simple token (new user)");
-                            
-                            const redirectWithAuth = `${returnUrl}?token=${encodeURIComponent(tokenData_b64)}&user=${encodeURIComponent(JSON.stringify({
-                                id: tokenData.user.id,
-                                email: tokenData.user.email,
-                                name: tokenData.user.name,
-                                wallet_address: tokenData.user.wallet_address
-                            }))}`;
-                            window.location.href = redirectWithAuth;
-                        } else {
-                            throw new Error("Failed to authenticate");
-                        }
-                    } catch (tokenErr) {
-                        console.log("Auth failed, redirecting without token:", tokenErr.message);
-                        const redirectWithAuth = `${returnUrl}?token=&user=${encodeURIComponent(JSON.stringify(user))}`;
-                        window.location.href = redirectWithAuth;
-                    }
+                
+                // ถ้ามี returnUrl ใน state ให้ redirect กลับไป frontend ด้วย email+password
+                if (returnUrl) {
+                    console.log("Redirecting back to frontend (post-wallet):", returnUrl);
+                    const redirectWithAuth = `${returnUrl}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&user=${encodeURIComponent(JSON.stringify({
+                        id: user.id,
+                        email: email,
+                        name: name
+                    }))}`;
+                    window.location.href = redirectWithAuth;
                     return;
                 }
-
+                
+                // Fallback: แสดงหน้าสำเร็จ (production without returnUrl)
                 loaderEl.style.display = "none";
                 messageEl.className = "message success";
                 messageEl.innerHTML = `
                     <strong>✓ Login Successful!</strong><br><br>
                     <strong>Name:</strong> ${user.name || 'N/A'}<br>
                     <strong>Email:</strong> ${user.email || 'N/A'}<br>
-                    <strong>Wallet:</strong> <code>${user.wallet_address || 'N/A'}</code><br>
-                    <br><details><summary>Details</summary><pre>${JSON.stringify(user, null, 2)}</pre></details>
+                    <br>กรุณากลับไปหน้าแอปพลิเคชันแล้วล็อกอินใหม่
                 `;
                 
-                setTimeout(() => window.location.href = "/line-login.html", 3000);
-
             } catch (err) {
                 console.error("Error:", err);
                 showError(err.message + (err.data?.data ? " - " + JSON.stringify(err.data.data) : ""));

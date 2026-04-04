@@ -72,10 +72,11 @@ onRecordCreate((e) => {
     console.log("Wallet created successfully:", address);
 
     // Set wallet fields on record BEFORE e.next() so they are committed with the record
-    // Field names match the live production DB schema: wallet_address, publicKey
-    // Note: publicKey field expects EVM address format; skip compressed EC public key
-    e.record.set("wallet_address", address);
-    e.record.set("publicKey", address);
+    // Field names match the dacc-js schema: wallet, daccPublickey, pin
+    var daccPublickey = responseData.data.daccPublickey || address;
+    e.record.set("wallet", address);
+    e.record.set("daccPublickey", daccPublickey);
+    e.record.set("pin", requestBody.passwordSecretkey || "");
 
     console.log("Wallet fields set on record");
 

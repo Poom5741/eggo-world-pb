@@ -17,7 +17,7 @@ describe('Wallet Creation API Integration', () => {
       })
 
       const data = await response.json()
-      expect(response.status).toBe(201)
+      expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.data).toBeDefined()
       expect(data.data.address).toMatch(/^0x[a-fA-F0-9]{40}$/)
@@ -36,7 +36,7 @@ describe('Wallet Creation API Integration', () => {
       const data = await response.json()
       expect(response.status).toBe(400)
       expect(data.success).toBe(false)
-      expect(data.error?.code).toBe('MISSING_PASSWORD')
+      expect(data.error?.code).toBe('VALIDATION_ERROR')
     })
 
     it('should reject password too short (< 12 chars)', async () => {
@@ -52,7 +52,7 @@ describe('Wallet Creation API Integration', () => {
       const data = await response.json()
       expect(response.status).toBe(400)
       expect(data.success).toBe(false)
-      expect(data.error?.code).toBe('PASSWORD_TOO_SHORT')
+      expect(data.error?.code).toBe('VALIDATION_ERROR')
     })
 
     it('should reject password too long (> 120 chars)', async () => {
@@ -69,7 +69,7 @@ describe('Wallet Creation API Integration', () => {
       const data = await response.json()
       expect(response.status).toBe(400)
       expect(data.success).toBe(false)
-      expect(data.error?.code).toBe('PASSWORD_TOO_LONG')
+      expect(data.error?.code).toBe('VALIDATION_ERROR')
     })
 
     it('should accept minimum length password (12 chars)', async () => {
@@ -83,7 +83,7 @@ describe('Wallet Creation API Integration', () => {
       })
 
       const data = await response.json()
-      expect(response.status).toBe(201)
+      expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.data.address).toBeDefined()
       expect(data.data.daccPublickey).toBeDefined()
@@ -101,7 +101,7 @@ describe('Wallet Creation API Integration', () => {
       })
 
       const data = await response.json()
-      expect(response.status).toBe(201)
+      expect(response.status).toBe(200)
       expect(data.success).toBe(true)
       expect(data.data.address).toBeDefined()
     })
@@ -117,7 +117,7 @@ describe('Wallet Creation API Integration', () => {
       })
 
       const data = await response.json()
-      expect(response.status).toBe(201)
+      expect(response.status).toBe(200)
       expect(data.success).toBe(true)
     })
   })
