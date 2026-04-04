@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v0.1.0-mvp-complete
 milestone_name: MVP Complete - All Core Features
 completed_phases: ["01", "02", "03", "04", "05"]
-current_phase: null
-status: complete
-last_updated: "2026-04-04T14:30:00.000Z"
+current_phase: "06"
+status: in_progress
+last_updated: "2026-04-04T15:00:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 5
@@ -17,9 +17,9 @@ progress:
 # Project State
 
 **Milestone:** v0.1.0-mvp-complete ✅  
-**Status:** COMPLETE - All phases done  
-**Last Updated:** 2026-04-04T14:30:00Z  
-**Session:** Milestone completion - All core phases verified and documented
+**Status:** Phase 06 COMPLETE — Auth Flow Revamp (all 3 waves done)  
+**Last Updated:** 2026-04-04T16:00:00Z  
+**Session:** Phase 6 complete — Wave 3 hydration flash fix, full build + test verification passed
 
 ## Completed Phases Summary
 
@@ -237,6 +237,9 @@ progress:
 | 2026-04-04 | Completed Phase 05 Plan 03                        | Production deployment config: Docker health checks, deployment checklist, testnet docs                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 2026-04-04 | Completed Phase 05 Plan 04                        | UI polish: visual consistency, error messages, bug tracking                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | 2026-04-04 | **MILESTONE COMPLETE**                            | **v0.1.0-mvp-complete: All 5 core phases done, 17/17 plans complete**                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 2026-04-04 | Completed Phase 06 Plan 01 (Wave 1)               | LINE OAuth direct flow: initiateLineLogin, /auth/line pure callback handler, line-oauth.ts                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 2026-04-04 | Completed Phase 06 Plan 02 (Wave 2)               | Middleware redirectTo, auth page cleanup, useSearchParams wiring, sessionStorage                                                                                                                                                                                                                                                                                                                                                                                                                |
+| 2026-04-04 | Completed Phase 06 Plan 03 (Wave 3)               | Root page hydration flash fix (useState lazy init), 61/61 tests pass, build verified (19 routes)                                                                                                                                                                                                                                                                                                                                                                                                |
 | 2026-04-04 | Fixed BUG-006: LINE OAuth blank page              | line-callback.html redirected to /line-login.html instead of frontend; fake token stored; fixed to redirect with email+password for real authWithPassword call (3 files)                                                                                                                                                                                                                                                                                                                        |
 | 2026-04-04 | Frontend route audit (Task 4)                     | Fixed 9 bugs across 8 files: invalid setIsHydrated calls, pb named import errors, missing Suspense wrappers, template literal parse error, installed ethers@6.16.0. Build passes all 17 routes.                                                                                                                                                                                                                                                                                                 |
 | 2026-04-04 | Phase 5 test run & fixes (Task 6)                 | All test suites fixed and passing: 147 forge tests, 59 frontend tests, 14 wallet-api tests, 5 backend file-check tests. Fixed: bunfig.toml+happy-dom DOM env, stale test expectations (sign-up, line-login), wallet API error codes (201→200, VALIDATION_ERROR), Dockerfile (src/index.ts), field names in 01-create-wallet.pb.js (wallet/daccPublickey/pin). Backend PocketBase-requiring tests fail as expected when PB not running (52 connection failures).                                 |
