@@ -40,9 +40,10 @@ describe('Sign-up Page - LINE OAuth Only', () => {
     expect(content).not.toContain('/auth/sign-up-success')
   })
 
-  it('contains LINE sign-up button', () => {
+  it('contains LINE sign-up button that calls initiateLineLogin', () => {
     expect(content).toContain('SIGN UP WITH LINE')
-    expect(content).toContain('/auth/line')
+    expect(content).toContain('initiateLineLogin')
+    expect(content).not.toContain("router.push('/auth/line')")
   })
 
   it('has correct title', () => {

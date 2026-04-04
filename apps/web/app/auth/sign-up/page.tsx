@@ -1,6 +1,7 @@
 'use client'
 
 import { isAuthenticated } from '@/lib/pocketbase/client'
+import { initiateLineLogin } from '@/lib/auth/line-oauth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 import Image from 'next/image'
@@ -9,6 +10,7 @@ function SignUpContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [referrer, setReferrer] = useState('')
+  const redirectTo = searchParams.get('redirectTo')  // อ่าน redirectTo จาก URL params
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -25,8 +27,8 @@ function SignUpContent() {
   }, [router, searchParams])
 
   const handleSignUp = () => {
-    const redirectUrl = `/auth/line${referrer ? `?referrer=${referrer}` : ''}`
-    router.push(redirectUrl)
+    // เรียก LINE OAuth โดยตรง — ไม่ต้อง navigate ไป /auth/line ก่อน (per D-01)
+    initiateLineLogin({ referrer: referrer || undefined, redirectTo: redirectTo || undefined })
   }
 
   return (
