@@ -2,12 +2,18 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
-function Card({ className, ...props }: React.ComponentProps<'div'>) {
+function Card({ className, variant = 'default', ...props }: React.ComponentProps<'div'> & {
+  variant?: 'default' | 'clay' | 'clay-lg' | 'clay-xl'
+}) {
   return (
     <div
       data-slot="card"
       className={cn(
-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+        'bg-card text-card-foreground flex flex-col gap-6 py-6',
+        variant === 'default' && 'rounded-xl border shadow-sm',
+        variant === 'clay' && 'rounded-clay-md shadow-clay-lg bg-clay-volume-md p-clay-lg',
+        variant === 'clay-lg' && 'rounded-clay-lg shadow-clay-xl bg-clay-volume-lg p-clay-xl',
+        variant === 'clay-xl' && 'rounded-clay-xl shadow-clay-2xl bg-clay-volume-2xl p-clay-2xl',
         className,
       )}
       {...props}
