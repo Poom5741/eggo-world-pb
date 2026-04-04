@@ -19,15 +19,22 @@ function RadioGroup({
   )
 }
 
+interface RadioGroupItemProps extends React.ComponentProps<typeof RadioGroupPrimitive.Item> {
+  variant?: 'default' | 'clay'
+}
+
 function RadioGroupItem({
   className,
+  variant = 'default',
   ...props
-}: React.ComponentProps<typeof RadioGroupPrimitive.Item>) {
+}: RadioGroupItemProps) {
   return (
     <RadioGroupPrimitive.Item
       data-slot="radio-group-item"
       className={cn(
-        'border-input text-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 aspect-square size-4 shrink-0 rounded-full border shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
+        'aspect-square size-4 shrink-0 border text-primary transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
+        variant === 'default' && 'border-input focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 rounded-full shadow-xs',
+        variant === 'clay' && 'rounded-full border-primary/20 shadow-clay-sm data-[state=checked]:shadow-clay-md data-[state=checked]:bg-primary/10 focus-visible:border-primary focus-visible:ring-primary/20 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30',
         className,
       )}
       {...props}
