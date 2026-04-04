@@ -242,7 +242,7 @@
                                 return;
                             }
                             
-                if (!user.wallet_address) {
+                if (!user.wallet) {
                     console.log("Creating wallet via API...");
                     try {
                         const walletRes = await fetch(window.location.origin + '/api/wallet/create', {
