@@ -4,18 +4,18 @@ milestone: v0.0.5
 milestone_name: milestone
 current_phase: 05
 status: executing
-last_updated: "2026-04-04T06:11:06.052Z"
+  last_updated: "2026-04-04T06:15:00Z"
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 16
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State
 
 **Current Phase:** 05
-**Last Updated:** 2026-04-02T12:48:17Z  
+**Last Updated:** 2026-04-04T06:15:00Z  
 **Session:** Project initialization
 
 ## Progress
@@ -76,8 +76,18 @@ progress:
 - ✅ Completed Phase 04 Plan 01: TypeScript + dacc-js Migration (2026-04-03)
 - ✅ Completed Phase 04 Plan 04: LINE Wallet Integration Verification (2026-04-03)
 - ✅ Completed Phase 01 Plan 01: Deploy contracts to BSC testnet (2026-04-03)
+- ✅ Completed Phase 05 Plan 01: Security Fixes (2026-04-04)
 
-**Last Session:** 2026-04-04T06:12:26Z
+**Last Session:** 2026-04-04T06:15:00Z
+
+**Completed Phase 05 Plan 01:**
+
+- ✅ Security Fixes: crypto.randomBytes, password removal, Zod validation (2026-04-04)
+  - Replaced Math.random() with crypto.randomBytes() in 2 pb_hooks files
+  - Removed password from API response in 05-auth-token.pb.js
+  - Added Zod validation to wallet-api createWallet endpoint
+  - 3 atomic commits, 4 files modified
+  - Fixed 1 CRITICAL + 2 HIGH security vulnerabilities from CONCERNS.md
 
 **Completed Phase 05 Plan 02:**
 
@@ -186,6 +196,7 @@ progress:
 | 2026-04-03 | Completed Phase 04 Plan 04             | LINE Wallet integration verified (2 files, 224 lines, 13 tests)                  |
 | 2026-04-03 | Completed Phase 01 Plan 01             | Smart contracts deployed to 0XL3 testnet (5 contracts)                           |
 | 2026-04-03 | Completed Phase 02 Plan 01             | Blockchain event sync hook (3 files, 767 lines, 5 event handlers)                |
+| 2026-04-04 | Completed Phase 05 Plan 01             | Security fixes: crypto.randomBytes, password removal, Zod validation (4 files, 3 commits) |
 
 ## Quick Commands
 
