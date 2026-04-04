@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Loader2, Flame, Wallet, CheckCircle2, AlertCircle, ShoppingCart } from 'lucide-react'
 import { Header } from '@/components/header'
+import { cn } from '@/lib/utils'
 
 const FOOD_PRICE = 0.50
 const MAX_QUANTITY = 100
@@ -147,7 +148,7 @@ export default function BuyFoodPage() {
             </div>
 
             {/* Purchase Card */}
-            <Card className="border-4 border-primary/50 bg-card">
+            <Card variant="clay-lg" className="w-full max-w-2xl mx-auto shadow-clay-xl">
               <CardHeader>
                 <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
                   FOOD NFT PURCHASE
