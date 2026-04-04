@@ -1,7 +1,20 @@
 import { Router } from 'express'
 import type { Request, Response } from 'express'
 import { createDaccWallet } from 'dacc-js'
+import { z } from 'zod'
 import { env } from '../env.js'
+
+// Validation schemas with Zod
+const createWalletSchema = z.object({
+  passwordSecretkey: z.string()
+    .min(env.MIN_PASSWORD_LENGTH, `Password must be at least ${env.MIN_PASSWORD_LENGTH} characters`)
+    .max(env.MAX_PASSWORD_LENGTH, `Password must be no more than ${env.MAX_PASSWORD_LENGTH} characters`),
+  publicEncryption: z.boolean().optional(),
+  dataStorageNetwork: z.string().optional(),
+  pkWalletForSaveData: z.string().optional(),
+  minPassword: z.number().optional(),
+  maxPassword: z.number().optional()
+})
 
 const router = Router()
 
@@ -30,48 +43,30 @@ interface CreateWalletResponse {
 // POST /api/wallet/create
 router.post('/create', async (req: Request, res: Response) => {
   try {
-    const body: CreateWalletRequest = req.body
+    // Validate request body with Zod
+    const validation = createWalletSchema.safeParse(req.body)
 
-    // Validate required fields
-    if (!body.passwordSecretkey) {
+    if (!validation.success) {
       return res.status(400).json({
         success: false,
         error: {
-          message: 'passwordSecretkey is required',
-          code: 'MISSING_PASSWORD'
+          message: 'Invalid input',
+          code: 'VALIDATION_ERROR',
+          details: validation.error.errors
         }
-      } as CreateWalletResponse)
+      })
     }
 
-    // Validate password length
-    if (body.passwordSecretkey.length < env.MIN_PASSWORD_LENGTH) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: `Password must be at least ${env.MIN_PASSWORD_LENGTH} characters long`,
-          code: 'PASSWORD_TOO_SHORT'
-        }
-      } as CreateWalletResponse)
-    }
-
-    if (body.passwordSecretkey.length > env.MAX_PASSWORD_LENGTH) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: `Password must be no more than ${env.MAX_PASSWORD_LENGTH} characters long`,
-          code: 'PASSWORD_TOO_LONG'
-        }
-      } as CreateWalletResponse)
-    }
+    const { passwordSecretkey, publicEncryption, dataStorageNetwork, pkWalletForSaveData, minPassword, maxPassword } = validation.data
 
     // Create wallet using dacc-js
     const wallet = await createDaccWallet({
-      passwordSecretkey: body.passwordSecretkey,
-      publicEncryption: body.publicEncryption || false,
-      dataStorageNetwork: body.dataStorageNetwork as any,
-      pkWalletForSaveData: body.pkWalletForSaveData as any,
-      minPassword: body.minPassword || env.MIN_PASSWORD_LENGTH,
-      maxPassword: body.maxPassword || env.MAX_PASSWORD_LENGTH
+      passwordSecretkey,
+      publicEncryption: publicEncryption || false,
+      dataStorageNetwork: dataStorageNetwork as any,
+      pkWalletForSaveData: pkWalletForSaveData as any,
+      minPassword: minPassword || env.MIN_PASSWORD_LENGTH,
+      maxPassword: maxPassword || env.MAX_PASSWORD_LENGTH
     })
 
     // Return success response
@@ -81,7 +76,7 @@ router.post('/create', async (req: Request, res: Response) => {
         address: wallet.address,
         daccPublickey: wallet.daccPublickey
       }
-    } as CreateWalletResponse)
+    })
 
   } catch (error: any) {
     console.error('Create wallet error:', error)
@@ -92,7 +87,7 @@ router.post('/create', async (req: Request, res: Response) => {
         message: error.message || 'Failed to create wallet',
         code: 'WALLET_CREATION_FAILED'
       }
-    } as CreateWalletResponse)
+    })
   }
 })
 
