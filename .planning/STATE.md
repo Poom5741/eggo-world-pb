@@ -4,12 +4,13 @@ milestone: v0.0.5
 milestone_name: milestone
 current_phase: 05
 status: executing
-  last_updated: "2026-04-04T06:15:00Z"
+last_updated: "2026-04-04T06:33:49.514Z"
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 16
   completed_plans: 14
+  percent: 88
 ---
 
 # Project State
@@ -197,6 +198,40 @@ progress:
 | 2026-04-03 | Completed Phase 01 Plan 01             | Smart contracts deployed to 0XL3 testnet (5 contracts)                           |
 | 2026-04-03 | Completed Phase 02 Plan 01             | Blockchain event sync hook (3 files, 767 lines, 5 event handlers)                |
 | 2026-04-04 | Completed Phase 05 Plan 01             | Security fixes: crypto.randomBytes, password removal, Zod validation (4 files, 3 commits) |
+| 2026-04-04 | Completed Phase 05 Plan 02             | Integration testing: 20 tests passing (dashboard, BuyEggFlow, commission distribution) |
+| 2026-04-04 | Completed Phase 05 Plan 03             | Production deployment: Docker health checks, deployment checklist, testnet addresses documented |
+| 2026-04-04 | Completed Phase 05 Plan 04             | UI polish: globals.css utility classes, auth title fix, error message standardization |
+
+## Active Bugs
+
+**Last Updated:** 2026-04-04
+
+### Critical (Security/Funds at Risk)
+
+| ID | Description | Status | Fixed In |
+|------|-------------|--------|----------|
+| — | No critical bugs | — | — |
+
+### High (Core Loop Broken)
+
+| ID | Description | Status | Fixed In |
+|------|-------------|--------|----------|
+| — | No high-severity bugs | — | — |
+
+### Medium (UX Issues)
+
+| ID | Description | Status | Fixed In |
+|------|-------------|--------|----------|
+| BUG-001 | Pre-commit hooks fail in local dev (bunx not in PATH for husky) | Open | Pending |
+| BUG-002 | Event sync hook awaiting production deployment verification | Open | Pending |
+
+### Low (Cosmetic)
+
+| ID | Description | Status | Fixed In |
+|------|-------------|--------|----------|
+| BUG-003 | Card border widths mixed (border-2 vs border-4) — functional but inconsistent | Low | 05-04 |
+| BUG-004 | Auth login page title too small (text-sm) — fixed to text-2xl | Fixed | 05-04 |
+| BUG-005 | wallet-api error responses missing error codes — fixed with standardized error objects | Fixed | 05-04 |
 
 ## Quick Commands
 
