@@ -35,42 +35,32 @@ onRecordCreate((e) => {
     });
 
     console.log("Wallet-api response status:", response.statusCode);
-    console.log("Response body type:", typeof response.body);
-    console.log("Response json type:", typeof response.json);
-    console.log("Response body is null:", response.body === null);
-    console.log("Response body is undefined:", response.body === undefined);
-    if (response.body !== null && response.body !== undefined) {
-      console.log("Response body constructor:", response.body.constructor && response.body.constructor.name);
-      console.log("Response body length:", response.body.length);
-    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw new Error("Wallet-api returned status " + response.statusCode);
     }
 
-    // Parse response body (may be byte array in PocketBase JSVM)
-    var responseBody = response.body;
-    if (Array.isArray(response.body)) {
-      responseBody = "";
-      for (var i = 0; i < response.body.length; i++) {
-        responseBody += String.fromCharCode(response.body[i]);
-      }
-    } else if (typeof response.body === "object" && response.body !== null && typeof response.body.length !== "undefined") {
-      responseBody = "";
-      for (var j = 0; j < response.body.length; j++) {
-        responseBody += String.fromCharCode(response.body[j]);
-      }
-    }
-
-    if (!responseBody || responseBody.trim() === "") {
-      throw new Error("Wallet-api returned empty response body");
-    }
-
+    // In PocketBase JSVM, $http.send() with JSON response auto-parses into response.json
+    // response.body may be undefined for JSON content-type responses
     var responseData;
-    try {
-      responseData = JSON.parse(responseBody);
-    } catch (parseError) {
-      throw new Error("Failed to parse wallet-api response: " + responseBody);
+    if (response.json && typeof response.json === "object") {
+      responseData = response.json;
+    } else if (response.body) {
+      // Fallback: parse body if it's a string or byte array
+      var responseBody = response.body;
+      if (Array.isArray(response.body)) {
+        responseBody = "";
+        for (var i = 0; i < response.body.length; i++) {
+          responseBody += String.fromCharCode(response.body[i]);
+        }
+      }
+      try {
+        responseData = JSON.parse(responseBody);
+      } catch (parseError) {
+        throw new Error("Failed to parse wallet-api response: " + responseBody);
+      }
+    } else {
+      throw new Error("Wallet-api returned empty response");
     }
 
     if (!responseData.success) {
