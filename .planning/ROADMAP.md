@@ -104,8 +104,8 @@
 ### Phase 3: Frontend Marketplace
 
 **Duration:** Days 9-12  
-**Goal:** User-facing UI for all core actions
-**Plans:** 5 plans
+**Goal:** User-facing UI for all core actions  
+**Plans:** 5 plans  
 **Status:** ✅ VERIFIED COMPLETE — 17 routes render, 9 bugs fixed (BUG-007–BUG-012), build passes
 
 #### Plans
@@ -317,6 +317,102 @@
 
 ---
 
+### Phase 7: Claymorphism Redesign
+
+**Duration:** 1 week  
+**Goal:** Redesign entire UI with hybrid "Clay Frames, Pixel Content" aesthetic - modern claymorphism containers showcasing retro pixel art NFTs  
+**Plans:** 7 plans  
+**Status:** 🔄 IN PROGRESS - Plans created, ready for execution
+
+#### Plans
+
+- [ ] 07-02-PLAN.md — Foundation: globals.css claymorphism tokens (Wave 1)
+- [ ] 07-03-PLAN.md — UI Primitives Part 1: Button, Card, Badge, Input, Label, Spinner (Wave 2)
+- [ ] 07-04-PLAN.md — UI Primitives Part 2: Dialog, Alert, Progress, Table, Navigation, Dropdown (Wave 3)
+- [ ] 07-05-PLAN.md — NFT Cards: EggCard, FoodCard, ReferralChainDisplay hybrid redesign (Wave 3)
+- [ ] 07-06-PLAN.md — Pages Wave 1: Landing, Dashboard, Auth, Eggs, Referrals, Wallet (Wave 4)
+- [ ] 07-07-PLAN.md — Pages Wave 2: Mint, Feed, Hatch, Marketplace, Commissions + modals (Wave 5)
+- [ ] 07-08-PLAN.md — Polish: Design system docs, accessibility audit, performance, cross-browser testing (Wave 6)
+
+#### Design Philosophy
+
+**Hybrid Approach:** Modern UI frames (claymorphism) showcasing retro game content (pixel art)
+
+**Convert to Claymorphism:**
+- ✅ Card containers (EggCard, FoodCard wrappers)
+- ✅ Buttons (all CTA buttons - Hatch, Feed, Mint, Buy)
+- ✅ Input fields and forms
+- ✅ Modals and dialogs (ListForSaleModal, WalletModal)
+- ✅ Navigation elements (Header, sidebar)
+- ✅ Dashboard widgets (stats cards, balance display)
+- ✅ Badge and status indicators
+- ✅ Alert/toast notifications
+
+**Preserve Pixel Art:**
+- ✅ NFT sprites (eggs, food, animals) - these are the CONTENT
+- ✅ Press Start 2P font for headings and labels
+- ✅ Lucide icons (already vector, fits both styles)
+- ✅ 8-bit decorative elements (stars, particles)
+- ✅ Retro animations (twinkle, float, glitch - work with clay)
+
+#### Tasks
+
+1. **Design Tokens** (Day 1)
+   - Add claymorphism shadow system (sm, md, lg, xl, 2xl)
+   - Add border radius scale (16px to 40px)
+   - Add color extensions for highlights/shadows
+   - Update Tailwind config in globals.css
+
+2. **UI Primitives** (Days 2-3)
+   - Update button.tsx with clay variants
+   - Update card.tsx with clay variants
+   - Update badge, input, dialog, alert components
+   - Maintain backward compatibility
+
+3. **NFT Cards** (Day 4)
+   - EggCard: Clay container (32px radius) + pixel egg sprite
+   - FoodCard: Clay frame (24px radius) + pixel food sprite
+   - ReferralChainDisplay: Clay depth hierarchy (G1-G4)
+
+4. **Pages Wave 1** (Days 5-6)
+   - Landing page: Hero, pricing, features with clay depth
+   - Dashboard: Stat widgets, NFT grid
+   - Auth pages: Login, signup, callback, error forms
+   - Eggs, Referrals, Wallet pages
+
+5. **Pages Wave 2** (Days 7-8)
+   - Mint pages: Step flow with clay indicators
+   - Feed/Hatch pages: Progress and celebration cards
+   - Marketplace: Listing and detail pages
+   - Commissions page: Breakdown widgets
+
+6. **Polish & Documentation** (Days 9-10)
+   - Update DESIGN_SYSTEM.md with claymorphism section
+   - Accessibility audit (WCAG AA compliance)
+   - Performance optimization (shadow rendering)
+   - Cross-browser testing
+
+#### Deliverables
+
+- ✅ Complete claymorphism design token system
+- ✅ 15+ UI components updated with clay variants
+- ✅ 17 pages redesigned with hybrid aesthetic
+- ✅ Design system documentation updated
+- ✅ Accessibility audit report (WCAG AA)
+- ✅ Browser compatibility report
+
+#### Success Criteria
+
+- All UI containers display with claymorphism (shadows, radius 16-40px)
+- All NFT sprites remain pixelated (sharp edges, pixelated rendering)
+- Typography maintains Press Start 2P for headings
+- Hybrid aesthetic clear: "modern museum displaying vintage art"
+- All components pass WCAG AA contrast requirements
+- 60 FPS performance on modern browsers
+- Cross-browser compatibility (Chrome, Firefox, Safari, Edge 120+)
+
+---
+
 ## Post-MVP Roadmap (Week 3+)
 
 ### Phase 5: Breeding & Tiers
@@ -354,7 +450,6 @@ Day 13-14: Testing & Launch
 **Risk:** Smart contract delays cascade to all subsequent phases
 
 **Mitigation:**
-
 - Daily progress checks
 - Use AI for code generation
 - Defer non-critical features

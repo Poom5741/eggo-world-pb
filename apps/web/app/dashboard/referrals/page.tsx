@@ -166,9 +166,9 @@ export default function ReferralDashboardPage() {
             </div>
           ) : (
             <>
-              {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="border-2 border-primary/30">
+              {/* Summary Cards - Clay widgets */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-clay-xl">
+                <Card variant="clay" className="shadow-clay-lg">
                   <CardHeader className="pb-3">
                     <CardDescription className="text-xs text-muted-foreground flex items-center gap-2">
                       <Users className="w-4 h-4" />
@@ -185,7 +185,7 @@ export default function ReferralDashboardPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-primary/30">
+                <Card variant="clay" className="shadow-clay-lg">
                   <CardHeader className="pb-3">
                     <CardDescription className="text-xs text-muted-foreground flex items-center gap-2">
                       <Wallet className="w-4 h-4" />
@@ -202,7 +202,7 @@ export default function ReferralDashboardPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 border-primary/30">
+                <Card variant="clay" className="shadow-clay-lg">
                   <CardHeader className="pb-3">
                     <CardDescription className="text-xs text-muted-foreground flex items-center gap-2">
                       <DollarSign className="w-4 h-4" />
@@ -220,8 +220,8 @@ export default function ReferralDashboardPage() {
                 </Card>
               </div>
 
-              {/* Referral Link */}
-              <Card>
+              {/* Referral Link - Clay container */}
+              <Card variant="clay-lg" className="shadow-clay-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Link className="w-5 h-5" />
@@ -236,11 +236,12 @@ export default function ReferralDashboardPage() {
                     <Input
                       readOnly
                       value={`${typeof window !== 'undefined' ? window.location.origin : ''}/auth/sign-up?referrer=${user.id}`}
-                      className="font-mono text-sm"
+                      className="font-mono text-sm clay-input"
                     />
                     <Button
                       onClick={handleCopyLink}
-                      variant={copied ? 'default' : 'outline'}
+                      variant={copied ? 'clay' : 'clay-secondary'}
+                      size="clay-md"
                       className="min-w-[100px]"
                     >
                       {copied ? (
@@ -262,8 +263,8 @@ export default function ReferralDashboardPage() {
                 </CardContent>
               </Card>
 
-              {/* Downline Table */}
-              <Card>
+              {/* Downline Table - Clay container */}
+              <Card variant="clay-lg" className="shadow-clay-xl">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="w-5 h-5" />
@@ -299,7 +300,7 @@ export default function ReferralDashboardPage() {
                         {referralData?.g1.map((downlineUser) => (
                           <TableRow key={downlineUser.id}>
                             <TableCell className="font-mono text-sm">
-                              <Badge variant="outline">
+                              <Badge variant="outline" className="shadow-clay-sm">
                                 {truncateAddress(downlineUser.wallet_address)}
                               </Badge>
                             </TableCell>
@@ -307,12 +308,12 @@ export default function ReferralDashboardPage() {
                               {formatDate(downlineUser.created)}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="secondary">
+                              <Badge variant="secondary" className="shadow-clay-sm">
                                 {downlineUser.egg_purchases || 0}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="secondary">
+                              <Badge variant="secondary" className="shadow-clay-sm">
                                 {downlineUser.food_purchases || 0}
                               </Badge>
                             </TableCell>
