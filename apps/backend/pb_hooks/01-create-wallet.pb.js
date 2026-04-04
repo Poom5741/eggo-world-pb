@@ -42,8 +42,16 @@ onRecordCreate((e) => {
 
     // Parse response body (may be byte array in PocketBase JSVM)
     var responseBody = response.body;
-    if (typeof response.body === "object" && response.body.length !== undefined) {
-      responseBody = String.fromCharCode.apply(null, response.body);
+    if (Array.isArray(response.body)) {
+      responseBody = "";
+      for (var i = 0; i < response.body.length; i++) {
+        responseBody += String.fromCharCode(response.body[i]);
+      }
+    } else if (typeof response.body === "object" && response.body !== null && typeof response.body.length !== "undefined") {
+      responseBody = "";
+      for (var j = 0; j < response.body.length; j++) {
+        responseBody += String.fromCharCode(response.body[j]);
+      }
     }
 
     if (!responseBody || responseBody.trim() === "") {
