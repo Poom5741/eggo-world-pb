@@ -1,6 +1,8 @@
 "use client"
 
 import { Coins, TrendingUp, Users, DollarSign } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 interface CommissionBreakdownProps {
   g1?: number
@@ -20,114 +22,123 @@ export function CommissionBreakdown({
   coinStor = 0 
 }: CommissionBreakdownProps) {
   const percentages = {
-    g1: 20,
-    g2: 10,
+    g1: 25,
+    g2: 15,
     g3: 10,
-    g4: 10,
+    g4: 5,
     coinStor: 4,
-    treasury: 46
+    treasury: 41
   }
 
+  const tiers = [
+    { label: 'G1 (Direct)', value: g1, percentage: percentages.g1, icon: Users },
+    { label: 'G2', value: g2, percentage: percentages.g2, icon: TrendingUp },
+    { label: 'G3', value: g3, percentage: percentages.g3, icon: TrendingUp },
+    { label: 'G4', value: g4, percentage: percentages.g4, icon: TrendingUp },
+  ]
+
   return (
-    <div className="space-y-3 bg-secondary/20 p-4 border border-primary/30">
+    <div className={cn(
+      'space-y-clay-md',
+      'shadow-clay-lg rounded-clay-lg p-clay-lg', // Clay container
+      'bg-gradient-to-br from-card/80 to-card'
+    )}>
       <h3 className="font-[var(--font-pixel)] text-sm text-primary flex items-center gap-2">
-        <Coins className="w-4 h-4" />
+        <Coins className="w-4 h-4 pixelated" />
         COMMISSION BREAKDOWN
       </h3>
 
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="w-3 h-3 text-primary" />
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
-              G1 (Direct)
-            </span>
+      <div className="space-y-clay-md">
+        {/* Commission Tiers - Clay rows with badges */}
+        {tiers.map((tier, index) => (
+          <div
+            key={index}
+            className={cn(
+              'flex items-center justify-between',
+              'shadow-clay-sm rounded-clay-md p-clay', // Clay row container
+              'bg-secondary/20',
+              index === 0 && 'bg-primary/10 shadow-clay-md' // Highlight G1
+            )}
+          >
+            <div className="flex items-center gap-clay-md">
+              <tier.icon className="w-3 h-3 text-primary pixelated" />
+              <span className="font-[var(--font-pixel)] text-xs text-foreground">
+                {tier.label}
+              </span>
+            </div>
+            <div className="flex items-center gap-clay-md">
+              <Badge
+                variant="clay"
+                className={cn(
+                  'rounded-clay-full shadow-clay-sm',
+                  'font-[var(--font-pixel)] text-xs',
+                  index === 0 ? 'bg-primary' : 'bg-secondary'
+                )}
+              >
+                {tier.percentage}%
+              </Badge>
+              <span className="font-[var(--font-pixel)] text-xs text-primary">
+                {tier.value.toFixed(2)} USDT
+              </span>
+            </div>
           </div>
-          <div className="text-right">
-            <span className="font-[var(--font-pixel)] text-xs text-primary">
-              {g1.toFixed(2)} USDT
-            </span>
-            <span className="font-[var(--font-pixel)] text-xs text-muted-foreground ml-2">
-              ({percentages.g1}%)
-            </span>
-          </div>
-        </div>
+        ))}
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-3 h-3 text-secondary-foreground" />
+        {/* CoinStor Fee - Clay row */}
+        <div className={cn(
+          'flex items-center justify-between',
+          'shadow-clay-sm rounded-clay-md p-clay',
+          'bg-secondary/20',
+          'border-t border-primary/30 pt-clay'
+        )}>
+          <div className="flex items-center gap-clay-md">
+            <DollarSign className="w-3 h-3 text-primary pixelated" />
             <span className="font-[var(--font-pixel)] text-xs text-foreground">
-              G2
+              CoinStor Reserve
             </span>
           </div>
-          <div className="text-right">
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
-              {g2.toFixed(2)} USDT
-            </span>
-            <span className="font-[var(--font-pixel)] text-xs text-muted-foreground ml-2">
-              ({percentages.g2}%)
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-3 h-3 text-secondary-foreground" />
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
-              G3
-            </span>
-          </div>
-          <div className="text-right">
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
-              {g3.toFixed(2)} USDT
-            </span>
-            <span className="font-[var(--font-pixel)] text-xs text-muted-foreground ml-2">
-              ({percentages.g3}%)
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-3 h-3 text-secondary-foreground" />
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
-              G4
-            </span>
-          </div>
-          <div className="text-right">
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
-              {g4.toFixed(2)} USDT
-            </span>
-            <span className="font-[var(--font-pixel)] text-xs text-muted-foreground ml-2">
-              ({percentages.g4}%)
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between pt-2 border-t border-primary/30">
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-3 h-3 text-primary" />
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
-              CoinStor (4%)
-            </span>
-          </div>
-          <div className="text-right">
+          <div className="flex items-center gap-clay-md">
+            <Badge
+              variant="clay"
+              className={cn(
+                'rounded-clay-full shadow-clay-sm',
+                'bg-secondary',
+                'font-[var(--font-pixel)] text-xs'
+              )}
+            >
+              {percentages.coinStor}%
+            </Badge>
             <span className="font-[var(--font-pixel)] text-xs text-primary">
               {coinStor.toFixed(2)} USDT
             </span>
-            <span className="font-[var(--font-pixel)] text-xs text-muted-foreground ml-2">
-              ({percentages.coinStor}%)
-            </span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t-2 border-primary">
+        {/* Total - Clay emphasis */}
+        <div className={cn(
+          'flex items-center justify-between',
+          'shadow-clay-md rounded-clay-md p-clay',
+          'bg-primary/10',
+          'border-t-2 border-primary pt-clay'
+        )}>
           <span className="font-[var(--font-pixel)] text-sm text-foreground">
-            TOTAL (25 USDT)
+            TOTAL
           </span>
-          <span className="font-[var(--font-pixel)] text-sm text-primary">
-            {total.toFixed(2)} USDT
-          </span>
+          <div className="flex items-center gap-clay-md">
+            <Badge
+              variant="clay"
+              className={cn(
+                'rounded-clay-full shadow-clay-sm',
+                'bg-primary',
+                'font-[var(--font-pixel)] text-xs'
+              )}
+            >
+              100%
+            </Badge>
+            <span className="font-[var(--font-pixel)] text-sm text-primary">
+              {total.toFixed(2)} USDT
+            </span>
+          </div>
         </div>
       </div>
     </div>
