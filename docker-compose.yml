@@ -37,17 +37,19 @@ services:
     ports:
       - 3001:3001
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
       - PORT=3001
       - MIN_PASSWORD_LENGTH=12
       - MAX_PASSWORD_LENGTH=120
       - PUBLIC_ENCRYPTION=false
-      - CORS_ORIGIN=*
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY}
+      - DACC_MNEMONIC=${DACC_MNEMONIC}
     networks:
       - eggo-network
     restart: unless-stopped
     healthcheck:
-      test: [CMD, wget, --quiet, --tries=1, --spider, http://localhost:3001/health]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -69,10 +71,11 @@ services:
       - eggo-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 10s
 
 networks:
   eggo-network:
