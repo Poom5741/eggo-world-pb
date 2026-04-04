@@ -36,8 +36,8 @@
  */
 
 const BREEDING_FEE = 5; // 5 USDT
-const WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
-const INITIAL_FOOD_COUNT = parseInt($os.getenv("INITIAL_FOOD_COUNT") || "2", 10)
+var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
+var INITIAL_FOOD_COUNT = parseInt($os.getenv("INITIAL_FOOD_COUNT") || "2", 10)
 
 routerAdd("POST", "/api/v2/breed-animals", (e) => {
     try {

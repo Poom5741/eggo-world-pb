@@ -36,7 +36,7 @@
 const UPGRADE_FEE_PER_FOOD = 5; // 5 USDT per food item
 const MAX_FOOD_COUNT = 20;
 const MIN_FOOD_FOR_UPGRADE = 10;
-const WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
+var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 routerAdd("POST", "/api/v2/upgrade-egg-rarity", (e) => {
     try {

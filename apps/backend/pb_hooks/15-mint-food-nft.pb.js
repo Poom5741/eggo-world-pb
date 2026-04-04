@@ -37,7 +37,7 @@
  */
 
 const FOOD_MINT_PRICE = "500000000000000000"; // 0.50 USDT in wei (18 decimals)
-const WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
+var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 routerAdd("POST", "/api/v2/mint-food", (e) => {
     try {

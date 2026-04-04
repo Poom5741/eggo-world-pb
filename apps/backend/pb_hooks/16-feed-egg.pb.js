@@ -38,7 +38,7 @@
  * }
  */
 
-const WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
+var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 routerAdd("POST", "/api/v2/feed-egg", (e) => {
     try {

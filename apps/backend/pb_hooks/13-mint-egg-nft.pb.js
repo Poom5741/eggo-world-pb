@@ -33,7 +33,7 @@
  */
 
 // Use $os.getenv for cross-file config access (globalThis is isolated per-file in PocketBase JSVM)
-const INITIAL_FOOD_COUNT = parseInt($os.getenv("INITIAL_FOOD_COUNT") || "2", 10)
+var INITIAL_FOOD_COUNT = parseInt($os.getenv("INITIAL_FOOD_COUNT") || "2", 10)
 const MINT_PRICE = "25000000000000000000"; // 25 USDT in wei (18 decimals)
 
 routerAdd("POST", "/api/v2/mint-egg", (e) => {

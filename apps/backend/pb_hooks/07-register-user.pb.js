@@ -4,7 +4,7 @@
 console.log("Setting up register user endpoint...");
 
 // Use $os.getenv for cross-file config access (globalThis is isolated per-file in PocketBase JSVM)
-const PLATFORM_ADDRESS = $os.getenv("PLATFORM_ADDRESS") || "0x0000000000000000000000000000000000000000"
+var PLATFORM_ADDRESS = $os.getenv("PLATFORM_ADDRESS") || "0x0000000000000000000000000000000000000000"
 
 routerAdd('POST', '/api/users/register', (e) => {
     console.log("=== REGISTER USER ENDPOINT CALLED ===");

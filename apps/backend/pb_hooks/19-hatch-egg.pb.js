@@ -33,7 +33,7 @@
  */
 
 const MIN_FOOD_TO_HATCH = 10;
-const WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
+var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 const SPECIES_OPTIONS = ['Chicken', 'Duck', 'Pig', 'Cow', 'Sheep', 'Dog', 'Cat', 'Rabbit'];
 const RARITY_OPTIONS = ['Common', 'Rare', 'Epic', 'Legendary'];
