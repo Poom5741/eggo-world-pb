@@ -75,8 +75,11 @@ export default function WalletPage() {
             </p>
           </div>
 
-          {/* Balance Card */}
-          <Card className="border-4 border-primary/50 bg-card">
+          {/* Balance Card - Clay XL variant with maximum depth */}
+          <Card variant="clay-xl" className={cn(
+            'bg-gradient-to-br from-primary/20 via-primary/10 to-transparent',
+            'shadow-clay-2xl'
+          )}>
             <CardHeader>
               <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
                 USDT BALANCE
@@ -106,11 +109,11 @@ export default function WalletPage() {
 
               {/* Sync Button */}
               <Button
-                variant="outline"
-                size="sm"
+                variant="clay"
+                size="clay-md"
                 onClick={refresh}
                 disabled={polling}
-                className="font-[var(--font-pixel)] text-xs border-2 border-primary/50"
+                className="font-[var(--font-pixel)] text-xs"
               >
                 <RefreshCw className={cn("h-4 w-4 mr-2", polling && "animate-spin")} />
                 {polling ? 'Syncing...' : 'Sync Wallet'}
