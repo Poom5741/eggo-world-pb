@@ -205,9 +205,18 @@
 ### Phase 5: Testing & Launch
 
 **Duration:** Days 13-14  
-**Goal:** Production deployment, bug fixes
+**Goal:** Production deployment, bug fixes, and UI polish  
+**Plans:** 4 plans  
+**Status:** Planned
 
-#### Tasks
+#### Plans
+
+- [ ] 05-01-PLAN.md — Security fixes: crypto.randomBytes(), remove password from API, Zod validation
+- [ ] 05-02-PLAN.md — Integration testing: dashboard tests, BuyEggFlow tests, commission distribution tests
+- [ ] 05-03-PLAN.md — Production deployment: Docker health checks, BSC mainnet deployment, deployment checklist
+- [ ] 05-04-PLAN.md — UI polish & bug fixes: visual consistency, English error messages, bug tracking
+
+#### Original Tasks
 
 1. **Integration Testing** (Day 13)
    - End-to-end user flow tests
@@ -314,6 +323,17 @@ Day 13-14: Testing & Launch
 | Backend Complete   | Day 8       | ⏳ Pending |
 | UI Complete        | Day 12      | ⏳ Pending |
 | Production Launch  | Day 14      | ⏳ Pending |
+
+### Phase 8: Add playwright e2e to this project to do e2e test in every function
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 7
+**Plans:** 0 plans
+
+Plans:
+
+- [ ] TBD (run /gsd-plan-phase 8 to break down)
 
 ---
 
