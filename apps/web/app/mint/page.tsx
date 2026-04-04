@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Egg, Wallet, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Header } from '@/components/header'
+import { cn } from '@/lib/utils'
 
 const MINT_PRICE = 25
 const INITIAL_FOOD_COUNT = 2
@@ -133,8 +134,34 @@ export default function MintPage() {
               </p>
             </div>
 
+            {/* Step Indicators */}
+            <div className="flex items-center justify-center gap-clay-lg mb-clay-xl">
+              <div className="flex items-center gap-clay-md">
+                <div className={cn(
+                  'w-10 h-10 rounded-clay-full',
+                  'flex items-center justify-center',
+                  'font-[var(--font-pixel)] text-xs',
+                  'bg-primary text-primary-foreground shadow-clay-md'
+                )}>
+                  1
+                </div>
+                <div className={cn(
+                  'w-16 h-1 rounded-clay-full',
+                  'bg-primary shadow-clay-sm'
+                )} />
+              </div>
+              <div className={cn(
+                'w-10 h-10 rounded-clay-full',
+                'flex items-center justify-center',
+                'font-[var(--font-pixel)] text-xs',
+                'bg-secondary/20 text-muted-foreground shadow-clay-sm'
+              )}>
+                2
+              </div>
+            </div>
+
             {/* Mint Card */}
-            <Card className="border-4 border-primary/50 bg-card">
+            <Card variant="clay-lg" className="w-full max-w-2xl mx-auto shadow-clay-xl">
               <CardHeader>
                 <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
                   EGG MINTING
