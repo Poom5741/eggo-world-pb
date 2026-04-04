@@ -214,7 +214,7 @@
 - [x] 05-01-PLAN.md — Security fixes: crypto.randomBytes(), remove password from API, Zod validation
 - [x] 05-02-PLAN.md — Integration testing: dashboard tests, BuyEggFlow tests, commission distribution tests
 - [ ] 05-03-PLAN.md — Production deployment: Docker health checks, BSC mainnet deployment, deployment checklist
-- [ ] 05-04-PLAN.md — UI polish & bug fixes: visual consistency, English error messages, bug tracking
+- [x] 05-04-PLAN.md — UI polish & bug fixes: visual consistency, English error messages, bug tracking
 
 #### Original Tasks
 
