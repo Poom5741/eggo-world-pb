@@ -10,6 +10,14 @@ services:
       - 8090:8090
     environment:
       - WALLET_SRV_URL=http://wallet-api:3001
+      - LINE_CHANNEL_ID=${LINE_CHANNEL_ID:-}
+      - LINE_CHANNEL_SECRET=${LINE_CHANNEL_SECRET:-}
+      - LINE_CALLBACK_URL=${LINE_CALLBACK_URL:-http://localhost:8090/api/oauth2-redirect}
+      - APP_URL=${APP_URL:-http://localhost:8090}
+      - NODE_ENV=${NODE_ENV:-development}
+      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-development-key-change-in-production}
+      - PB_PUBLIC_URL=${PB_PUBLIC_URL:-http://localhost:8090}
+      - WALLET_API_URL=${WALLET_API_URL:-http://wallet-api:3001}
       - POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL}
       - POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD}
     volumes:
@@ -45,6 +53,8 @@ services:
       - CORS_ORIGIN=${CORS_ORIGIN:-*}
       - WALLET_MASTER_KEY=${WALLET_MASTER_KEY}
       - DACC_MNEMONIC=${DACC_MNEMONIC}
+      - PB_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL:-admin@eggo.local}
+      - PB_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD:-admin123}
     networks:
       - eggo-network
     restart: unless-stopped
@@ -71,7 +81,7 @@ services:
       - eggo-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80/"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider --no-check-certificate https://localhost/api/health || wget --quiet --tries=1 --spider http://localhost:8090/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3

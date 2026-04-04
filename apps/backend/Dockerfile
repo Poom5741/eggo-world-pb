@@ -15,8 +15,10 @@ RUN apk add --no-cache \
 # Create directories
 RUN mkdir -p /pb /pb_data /pb_hooks /pb_public /pb_migrations
 
-# Download and install PocketBase (ARM64 for Apple Silicon)
-RUN curl -L "https://github.com/pocketbase/pocketbase/releases/download/v${POCKETBASE_VERSION}/pocketbase_${POCKETBASE_VERSION}_linux_arm64.zip" -o pocketbase.zip && \
+# Download and install PocketBase (auto-detect architecture)
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ]; then PB_ARCH="arm64"; else PB_ARCH="amd64"; fi && \
+    curl -L "https://github.com/pocketbase/pocketbase/releases/download/v${POCKETBASE_VERSION}/pocketbase_${POCKETBASE_VERSION}_linux_${PB_ARCH}.zip" -o pocketbase.zip && \
     unzip pocketbase.zip && \
     rm pocketbase.zip && \
     cp pocketbase /pb/pocketbase
