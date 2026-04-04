@@ -1,0 +1,29 @@
+version: '3.8'
+
+# Add this to your production server's docker-compose.yml
+# Or run: docker-compose -f docker-compose.wallet-api.yml up -d
+
+services:
+  wallet-api:
+    image: wallet-api:latest
+    container_name: wallet-api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DACC_MNEMONIC=${DACC_MNEMONIC:?DACC_MNEMONIC is required}
+      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:?WALLET_MASTER_KEY is required (min 32 chars)}
+    networks:
+      - pocketbase_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  pocketbase_network:
+    driver: bridge
