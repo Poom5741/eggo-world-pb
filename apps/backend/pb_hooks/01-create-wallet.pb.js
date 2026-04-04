@@ -73,8 +73,9 @@ onRecordCreate((e) => {
     console.log("Wallet created successfully:", address);
 
     // Set wallet fields on record BEFORE e.next() so they are committed with the record
-    e.record.set("wallet", address);
-    e.record.set("daccPublickey", publicKey);
+    // Field names match the live production DB schema: wallet_address, publicKey
+    e.record.set("wallet_address", address);
+    e.record.set("publicKey", publicKey);
 
     console.log("Wallet fields set on record");
 
