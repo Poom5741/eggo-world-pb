@@ -36,9 +36,16 @@ describe('Login Page - LINE OAuth Only', () => {
     expect(content).not.toContain('SIGN UP')
   })
 
-  it('contains LINE login button', () => {
-    expect(content).toContain('LOGIN WITH LINE')
-    expect(content).toContain('/auth/line')
+  it('calls initiateLineLogin directly (no /auth/line navigation)', () => {
+    expect(content).toContain('initiateLineLogin')
+    expect(content).toContain('@/lib/auth/line-oauth')
+    expect(content).not.toContain('href="/auth/line"')
+  })
+
+  it('uses useSearchParams for redirectTo', () => {
+    expect(content).toContain('useSearchParams')
+    expect(content).toContain('redirectTo')
+    expect(content).toContain('Suspense')
   })
 
   it('has correct title', () => {
