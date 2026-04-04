@@ -10,7 +10,10 @@ export async function middleware(request: NextRequest) {
   const isAuthenticated = !!pbAuth
 
   if (!isAuthenticated && !isPublicPath) {
-    return NextResponse.redirect(new URL('/auth/login', request.url))
+    const loginUrl = new URL('/auth/login', request.url)
+    // เพิ่ม redirectTo เพื่อให้ login page redirect กลับหลัง auth สำเร็จ
+    loginUrl.searchParams.set('redirectTo', pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
   if (isAuthenticated && (pathname === '/auth/login' || pathname === '/auth/sign-up')) {
