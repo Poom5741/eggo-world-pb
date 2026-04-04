@@ -35,6 +35,14 @@ onRecordCreate((e) => {
     });
 
     console.log("Wallet-api response status:", response.statusCode);
+    console.log("Response body type:", typeof response.body);
+    console.log("Response json type:", typeof response.json);
+    console.log("Response body is null:", response.body === null);
+    console.log("Response body is undefined:", response.body === undefined);
+    if (response.body !== null && response.body !== undefined) {
+      console.log("Response body constructor:", response.body.constructor && response.body.constructor.name);
+      console.log("Response body length:", response.body.length);
+    }
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw new Error("Wallet-api returned status " + response.statusCode);
