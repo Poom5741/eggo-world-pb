@@ -15,10 +15,12 @@ onRecordCreate((e) => {
 
   try {
     // Generate secure password secret key (20 chars with special chars)
+    const crypto = require('crypto');
     const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
     let passwordSecretkey = "";
+    const randomBytes = crypto.randomBytes(20);
     for (let i = 0; i < 20; i++) {
-      passwordSecretkey += charset.charAt(Math.floor(Math.random() * charset.length));
+      passwordSecretkey += charset.charAt(randomBytes[i] % charset.length);
     }
 
     console.log("Generated password secret key for user:", e.record.id);

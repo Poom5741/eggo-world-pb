@@ -164,10 +164,12 @@ function emitUserRegisteredEvent(user, referralChain) {
 }
 
 function generateRandomPassword() {
+    const crypto = require('crypto');
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
     let password = '';
+    const randomBytes = crypto.randomBytes(16);
     for (let i = 0; i < 16; i++) {
-        password += chars[Math.floor(Math.random() * chars.length)];
+      password += chars.charAt(randomBytes[i] % chars.length);
     }
     return password;
 }
