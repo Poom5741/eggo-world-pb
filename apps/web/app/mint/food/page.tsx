@@ -135,11 +135,15 @@ export default function BuyFoodPage() {
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="space-y-8">
             {/* Header */}
-            <div className="text-center space-y-4">
+            <div className={cn(
+              'rounded-clay-lg p-clay-xl',
+              'bg-card shadow-clay-lg',
+              'text-center space-y-4'
+            )}>
               <div className="flex justify-center">
                 <Flame className="w-16 h-16 text-primary animate-pulse" />
               </div>
-              <h1 className="font-[var(--font-pixel)] text-2xl md:text-3xl text-foreground">
+              <h1 className="font-[var(--font-pixel)] text-2xl md:text-3xl text-primary">
                 BUY FOOD NFTs
               </h1>
               <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
