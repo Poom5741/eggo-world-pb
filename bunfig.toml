@@ -1,0 +1,9 @@
+[test]
+# Exclude git submodules and generated files
+exclude = [
+  "**/lib/**",
+  "**/node_modules/**",
+  "**/.next/**",
+  "**/dist/**",
+  "**/build/**",
+]
