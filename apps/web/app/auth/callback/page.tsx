@@ -40,7 +40,10 @@ function CallbackContent() {
             code: code,
             codeVerifier: '',
             redirectURL: redirectUrl,
-            createData: { emailVisibility: false }
+            createData: {
+              emailVisibility: false,
+              username: `line_${code.substring(0, 12)}`
+            }
           })
         })
 
