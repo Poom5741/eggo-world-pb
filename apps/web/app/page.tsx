@@ -12,7 +12,11 @@ import { useIsHydrated } from '@/hooks/use-is-hydrated'
 function PageContent() {
   // isHydrated = true เมื่อ component mount แล้ว (client-side เท่านั้น)
   const isHydrated = useIsHydrated()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<any>(() => {
+    // โหลด auth จาก localStorage ทันที (sync) แทนการรอ useEffect — ลด blank flash (per D-05)
+    if (typeof window === 'undefined') return null
+    return createClient().authStore.record ?? null
+  })
   const router = useRouter()
   const searchParams = useSearchParams()
 
