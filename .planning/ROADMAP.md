@@ -252,6 +252,71 @@
 
 ---
 
+### Phase 6: Auth Flow Revamp
+
+**Duration:** 1-2 days  
+**Goal:** Eliminate double-click auth UX issue and fix blank page after LINE OAuth redirect. Users click once to start OAuth from login/signup pages directly. Post-auth redirect properly navigates to intended destination.  
+**Plans:** 3 plans
+**Status:** 🔄 IN PROGRESS
+
+#### Plans
+
+- [ ] 06-01-PLAN.md — Shared LINE OAuth helper + middleware redirectTo (Wave 1)
+- [ ] 06-02-PLAN.md — Revamp auth pages: login, sign-up, /auth/line callback handler (Wave 2)
+- [ ] 06-03-PLAN.md — Root page hydration fix + full build verification (Wave 3)
+
+#### Problems to Solve
+
+1. **Double-click issue** — `/auth/login` and `/auth/sign-up` link to `/auth/line` as an intermediate page, which then shows another LINE button. User must click twice.
+2. **Blank page after redirect** — After LINE OAuth completes and `/auth/line` calls `authWithPassword` + sets cookie, `router.replace('/')` lands on the root page which shows blank "LOADING..." during React hydration.
+3. **No `redirectTo` tracking** — After auth always goes to `/` regardless of where user was trying to go.
+
+#### Tasks
+
+1. **Shared LINE OAuth helper** (`apps/web/lib/auth/line-oauth.ts`)
+   - `initiateLineLogin({ referrer?, redirectTo? })` builds LINE auth URL and navigates immediately
+   - Stores `redirectTo` and `referrer` in `sessionStorage` before redirecting
+
+2. **Update `/auth/login/page.tsx`**
+   - Replace `<a href="/auth/line">` with button calling `initiateLineLogin()` directly
+   - Read `redirectTo` from query params, save to `sessionStorage`
+   - Use UI/UX Pro Max design system for polish
+
+3. **Update `/auth/sign-up/page.tsx`**
+   - Replace navigate-to-/auth/line flow with direct `initiateLineLogin()` call
+   - Carry `referrer` and `redirectTo` through OAuth state
+   - Use UI/UX Pro Max design system for polish
+
+4. **Revamp `/auth/line/page.tsx`** — pure callback handler
+   - No LINE login button visible (move to login/signup pages)
+   - On mount: detect `?email=&password=` params → `authWithPassword` → redirect to `sessionStorage.redirectTo || '/'`
+   - If no callback params: redirect to `/auth/login`
+   - Only renders a loading/processing state
+
+5. **Update `middleware.ts`**
+   - Append `?redirectTo=<encoded path>` when redirecting unauthenticated users to `/auth/login`
+
+6. **Fix root page hydration flash**
+   - Reduce blank "LOADING..." state duration on `/` after auth redirect
+
+#### Deliverables
+
+- Shared LINE OAuth initiation helper extracted
+- Login page directly triggers LINE OAuth on single click
+- Sign-up page directly triggers LINE OAuth on single click
+- `/auth/line` is a pure silent callback handler
+- Post-auth navigation uses `redirectTo` when available
+- No more blank page flash after OAuth
+
+#### Success Criteria
+
+- User clicks "LOGIN WITH LINE" on `/auth/login` → directly goes to LINE OAuth (no intermediate page)
+- After OAuth completes, user lands on intended page (or `/` if no `redirectTo`)
+- No visible blank/white screen flash on post-auth navigation
+- `/auth/line` navigated to directly (without callback params) redirects to `/auth/login`
+
+---
+
 ## Post-MVP Roadmap (Week 3+)
 
 ### Phase 5: Breeding & Tiers
