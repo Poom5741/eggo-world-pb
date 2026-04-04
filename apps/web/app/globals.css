@@ -42,6 +42,40 @@
   --sidebar-accent-foreground: #fef9c3;
   --sidebar-border: #0f3460;
   --sidebar-ring: #facc15;
+
+  /* ============================================
+     CLAYMORPHISM SHADOW TOKENS
+     รูปแบบ: outer shadow + inner shadow สำหรับ volume
+     ============================================ */
+  --shadow-clay-sm: 4px 4px 8px rgba(0,0,0,0.1), inset 2px 2px 4px rgba(255,255,255,0.1);
+  --shadow-clay-md: 8px 8px 16px rgba(0,0,0,0.12), inset 4px 4px 8px rgba(255,255,255,0.15);
+  --shadow-clay-lg: 12px 12px 24px rgba(0,0,0,0.15), inset 6px 6px 12px rgba(255,255,255,0.2);
+  --shadow-clay-xl: 16px 16px 32px rgba(0,0,0,0.2), inset 8px 8px 16px rgba(255,255,255,0.25);
+  --shadow-clay-2xl: 20px 20px 40px rgba(0,0,0,0.25), inset 10px 10px 20px rgba(255,255,255,0.3);
+
+  /* ============================================
+     CLAYMORPHISM BORDER RADIUS TOKENS
+     แทนที่ระบบ --radius: 0px เดิม
+     ============================================ */
+  --radius-clay-sm: 16px;
+  --radius-clay: 20px;
+  --radius-clay-md: 24px;
+  --radius-clay-lg: 32px;
+  --radius-clay-xl: 40px;
+  --radius-clay-full: 9999px;
+
+  /* ============================================
+     CLAYMORPHISM COLOR EXTENSIONS
+     สีสำหรับ highlights และ shadows
+     ============================================ */
+  --primary-highlight: rgba(250, 204, 21, 0.15);
+  --primary-shadow: rgba(250, 204, 21, 0.3);
+  --secondary-highlight: rgba(15, 52, 96, 0.1);
+  --secondary-shadow: rgba(15, 52, 96, 0.4);
+  --card-highlight: rgba(22, 33, 62, 0.15);
+  --card-shadow: rgba(22, 33, 62, 0.5);
+  --accent-highlight: rgba(233, 69, 96, 0.15);
+  --accent-shadow: rgba(233, 69, 96, 0.4);
 }
 
 .dark {
@@ -77,6 +111,28 @@
   --sidebar-accent-foreground: #fef9c3;
   --sidebar-border: #0f3460;
   --sidebar-ring: #facc15;
+
+  /* ============================================
+     CLAYMORPHISM SHADOW TOKENS (DARK MODE)
+     ปรับ opacity ให้มองเห็นบนพื้นมืด
+     ============================================ */
+  --shadow-clay-sm: 4px 4px 8px rgba(0,0,0,0.4), inset 2px 2px 4px rgba(255,255,255,0.05);
+  --shadow-clay-md: 8px 8px 16px rgba(0,0,0,0.5), inset 4px 4px 8px rgba(255,255,255,0.08);
+  --shadow-clay-lg: 12px 12px 24px rgba(0,0,0,0.6), inset 6px 6px 12px rgba(255,255,255,0.1);
+  --shadow-clay-xl: 16px 16px 32px rgba(0,0,0,0.7), inset 8px 8px 16px rgba(255,255,255,0.12);
+  --shadow-clay-2xl: 20px 20px 40px rgba(0,0,0,0.8), inset 10px 10px 20px rgba(255,255,255,0.15);
+
+  /* ============================================
+     CLAYMORPHISM COLOR EXTENSIONS (DARK MODE)
+     ============================================ */
+  --primary-highlight: rgba(250, 204, 21, 0.08);
+  --primary-shadow: rgba(250, 204, 21, 0.5);
+  --secondary-highlight: rgba(15, 52, 96, 0.05);
+  --secondary-shadow: rgba(15, 52, 96, 0.6);
+  --card-highlight: rgba(22, 33, 62, 0.08);
+  --card-shadow: rgba(22, 33, 62, 0.7);
+  --accent-highlight: rgba(233, 69, 96, 0.08);
+  --accent-shadow: rgba(233, 69, 96, 0.6);
 }
 
 @theme inline {
@@ -119,6 +175,34 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* ============================================
+     CLAYMORPHISM THEME EXTENSIONS
+     ============================================ */
+  /* Border Radius Scale */
+  --radius-clay-sm: var(--radius-clay-sm);
+  --radius-clay: var(--radius-clay);
+  --radius-clay-md: var(--radius-clay-md);
+  --radius-clay-lg: var(--radius-clay-lg);
+  --radius-clay-xl: var(--radius-clay-xl);
+  --radius-clay-full: var(--radius-clay-full);
+
+  /* Shadow System */
+  --shadow-clay-sm: var(--shadow-clay-sm);
+  --shadow-clay-md: var(--shadow-clay-md);
+  --shadow-clay-lg: var(--shadow-clay-lg);
+  --shadow-clay-xl: var(--shadow-clay-xl);
+  --shadow-clay-2xl: var(--shadow-clay-2xl);
+
+  /* Color Extensions */
+  --color-clay-primary-highlight: var(--primary-highlight);
+  --color-clay-primary-shadow: var(--primary-shadow);
+  --color-clay-secondary-highlight: var(--secondary-highlight);
+  --color-clay-secondary-shadow: var(--secondary-shadow);
+  --color-clay-card-highlight: var(--card-highlight);
+  --color-clay-card-shadow: var(--card-shadow);
+  --color-clay-accent-highlight: var(--accent-highlight);
+  --color-clay-accent-shadow: var(--accent-shadow);
 }
 
 @layer base {
@@ -127,6 +211,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Support for claymorphism - subtle background gradient */
+    background-image: radial-gradient(circle at top left, 
+      rgba(255,255,255,0.02) 0%, 
+      transparent 40%, 
+      rgba(0,0,0,0.02) 100%);
   }
 }
 
@@ -312,3 +401,66 @@
 .divider {
   @apply border-t-2 border-primary/30 pt-4;
 }
+
+/* ============================================
+   CLAYMORPHISM GRADIENT UTILITIES
+   สำหรับสร้าง volume effects
+   ============================================ */
+.bg-clay-volume-sm {
+  background: linear-gradient(145deg, 
+    rgba(255,255,255,0.05) 0%, 
+    transparent 50%, 
+    rgba(0,0,0,0.05) 100%);
+}
+
+.bg-clay-volume-md {
+  background: linear-gradient(145deg, 
+    rgba(255,255,255,0.08) 0%, 
+    transparent 50%, 
+    rgba(0,0,0,0.08) 100%);
+}
+
+.bg-clay-volume-lg {
+  background: linear-gradient(145deg, 
+    rgba(255,255,255,0.12) 0%, 
+    transparent 50%, 
+    rgba(0,0,0,0.12) 100%);
+}
+
+/* ============================================
+   CLAYMORPHISM SHADOW UTILITIES
+   ============================================ */
+.shadow-clay-sm { box-shadow: var(--shadow-clay-sm); }
+.shadow-clay-md { box-shadow: var(--shadow-clay-md); }
+.shadow-clay-lg { box-shadow: var(--shadow-clay-lg); }
+.shadow-clay-xl { box-shadow: var(--shadow-clay-xl); }
+.shadow-clay-2xl { box-shadow: var(--shadow-clay-2xl); }
+
+/* ============================================
+   CLAYMORPHISM RADIUS UTILITIES
+   ============================================ */
+.rounded-clay-sm { border-radius: var(--radius-clay-sm); }
+.rounded-clay { border-radius: var(--radius-clay); }
+.rounded-clay-md { border-radius: var(--radius-clay-md); }
+.rounded-clay-lg { border-radius: var(--radius-clay-lg); }
+.rounded-clay-xl { border-radius: var(--radius-clay-xl); }
+.rounded-clay-full { border-radius: var(--radius-clay-full); }
+
+/* ============================================
+   CLAYMORPHISM SPACING UTILITIES
+   สำหรับ depth
+   ============================================ */
+/* Padding */
+.p-clay-sm { padding: 12px; }
+.p-clay { padding: 16px; }
+.p-clay-md { padding: 20px; }
+.p-clay-lg { padding: 24px; }
+.p-clay-xl { padding: 32px; }
+.p-clay-2xl { padding: 40px; }
+
+/* Gap */
+.gap-clay-sm { gap: 12px; }
+.gap-clay { gap: 16px; }
+.gap-clay-md { gap: 20px; }
+.gap-clay-lg { gap: 24px; }
+.gap-clay-xl { gap: 32px; }
