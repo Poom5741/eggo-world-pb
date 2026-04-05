@@ -149,13 +149,13 @@
 
   /* ============================================
      CLAYMORPHISM BORDER RADIUS TOKENS
-     แทนที่ระบบ --radius: 0px เดิม
+     Match Jules: DEFAULT=1rem, lg=2rem, xl=3rem
      ============================================ */
   --radius-clay-sm: 16px;
   --radius-clay: 20px;
   --radius-clay-md: 24px;
-  --radius-clay-lg: 32px;
-  --radius-clay-xl: 40px;
+  --radius-clay-lg: 32px;  /* Jules xl = 3rem = 48px */
+  --radius-clay-xl: 48px;  /* Match Jules rounded-xl = 3rem */
   --radius-clay-full: 9999px;
 
   /* ============================================
