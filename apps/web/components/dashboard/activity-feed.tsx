@@ -173,7 +173,7 @@ export function ActivityFeed({ transactions: propTransactions, loading: propLoad
             className="font-[var(--font-pixel)] text-xs"
             onClick={() => {
               // Future: Navigate to transaction history page
-              console.log('Navigate to transaction history')
+              // TODO: Implement transaction history page navigation
             }}
           >
             View All History

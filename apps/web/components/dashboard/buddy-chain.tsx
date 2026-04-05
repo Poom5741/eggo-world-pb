@@ -34,6 +34,8 @@ const LEVEL_COLORS = {
 } as const
 
 // Target buddies per level for percentage calculation
+// @deprecated Not currently used (percentage is calculated from props), kept for reference
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TARGET_BUDDIES = 50
 
 /**

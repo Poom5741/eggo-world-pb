@@ -7,7 +7,9 @@ import { cn } from '@/lib/utils'
 
 /**
  * ค่าคงที่สำหรับ component BalanceCard
+ * @deprecated Not currently used, kept for future manual refresh feature
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const POLLING_INTERVAL = 30000 // 30 seconds per D-11
 
 /**
