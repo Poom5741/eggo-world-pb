@@ -1,6 +1,74 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* Jules Design System - Complete Color Token System */
+@theme inline {
+  /* Primary colors */
+  --color-primary: #776300;
+  --color-primary-container: #ffd709;
+  --color-primary-dim: #695700;
+  --color-primary-fixed: #ffd709;
+  --color-primary-fixed-dim: #efc900;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #5b4b00;
+  --color-on-primary-fixed: #453900;
+  --color-on-primary-fixed-variant: #665500;
+  
+  /* Secondary colors */
+  --color-secondary: #995200;
+  --color-secondary-container: #ffc69a;
+  --color-secondary-dim: #874800;
+  --color-secondary-fixed: #ffc69a;
+  --color-secondary-fixed-dim: #ffb375;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #6f3a00;
+  --color-on-secondary-fixed: #532a00;
+  --color-on-secondary-fixed-variant: #7c4100;
+  
+  /* Tertiary colors */
+  --color-tertiary: #00750c;
+  --color-tertiary-container: #59ee50;
+  --color-tertiary-dim: #006709;
+  --color-tertiary-fixed: #59ee50;
+  --color-tertiary-fixed-dim: #49e043;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #005406;
+  --color-on-tertiary-fixed: #003e03;
+  --color-on-tertiary-fixed-variant: #005f07;
+  
+  /* Surface colors */
+  --color-surface: #fffbff;
+  --color-surface-dim: #eee686;
+  --color-surface-bright: #fffbff;
+  --color-surface-container-low: #fffae1;
+  --color-surface-container: #fef6a5;
+  --color-surface-container-high: #f9f19b;
+  --color-surface-container-highest: #f3eb91;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-variant: #f3eb91;
+  --color-surface-tint: #776300;
+  
+  /* On-surface colors */
+  --color-on-surface: #3d3905;
+  --color-on-surface-variant: #6b662f;
+  --color-on-background: #3d3905;
+  --color-background: #fffbff;
+  
+  /* Error colors */
+  --color-error: #be2d06;
+  --color-error-container: #f95630;
+  --color-error-dim: #b92902;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #520c00;
+  
+  /* Neutral colors */
+  --color-outline: #878248;
+  --color-outline-variant: #c2bb7b;
+  --color-inverse-surface: #100f00;
+  --color-inverse-on-surface: #a59f61;
+  --color-inverse-primary: #ffd709;
+}
+
 @font-face {
   font-family: 'PixelFont';
   src: url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
