@@ -422,7 +422,7 @@ export default function CommissionsDashboard() {
                 <p className="font-[var(--font-pixel)] text-foreground">LOADING HISTORY...</p>
               </div>
             ) : commissions.length === 0 ? (
-              <Card className="border-2 border-primary/30 bg-card">
+              <Card variant="clay-lg" className="border-2 border-primary/30 bg-card shadow-clay-xl">
                 <CardContent className="py-12 text-center space-y-4">
                   <Coins className="w-16 h-16 mx-auto text-muted-foreground" />
                   <div className="space-y-2">
@@ -436,7 +436,7 @@ export default function CommissionsDashboard() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="border-2 border-primary/30 bg-card">
+              <Card variant="clay-lg" className="border-2 border-primary/30 bg-card shadow-clay-xl">
                 <CardHeader>
                   <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
                     COMMISSION HISTORY
@@ -447,12 +447,15 @@ export default function CommissionsDashboard() {
                     {commissions.slice(0, 10).map((commission, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-3 bg-secondary/20 border border-primary/30"
+                        className={cn(
+                          'flex items-center justify-between p-3 rounded-clay-sm',
+                          'bg-secondary/20 shadow-clay-sm'
+                        )}
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <Badge
-                              variant={commission.level === 1 ? 'default' : 'secondary'}
+                              variant={commission.level === 1 ? 'clay' : 'clay-secondary'}
                               className="font-[var(--font-pixel)] text-xs"
                             >
                               G{commission.level}
@@ -466,7 +469,7 @@ export default function CommissionsDashboard() {
                           </span>
                         </div>
                         <Badge
-                          variant={commission.claimed ? 'default' : 'secondary'}
+                          variant={commission.claimed ? 'clay' : 'clay-secondary'}
                           className="font-[var(--font-pixel)] text-xs"
                         >
                           {commission.claimed ? 'CLAIMED' : 'PENDING'}

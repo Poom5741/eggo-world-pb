@@ -389,18 +389,18 @@ export default function NftDetailPage() {
               </Card>
 
               {/* Additional Info */}
-              <Card>
+              <Card variant="clay" className="shadow-clay-md">
                 <CardHeader>
-                  <CardTitle>Information</CardTitle>
+                  <CardTitle className="font-[var(--font-pixel)] text-xs">Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Token ID</span>
-                    <span className="font-mono">{nft.id}</span>
+                    <span className="text-muted-foreground font-[var(--font-pixel)] text-xs">Token ID</span>
+                    <span className="font-mono font-[var(--font-pixel)] text-xs">{nft.id}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Created</span>
-                    <span>{new Date(nft.created).toLocaleDateString()}</span>
+                    <span className="text-muted-foreground font-[var(--font-pixel)] text-xs">Created</span>
+                    <span className="font-[var(--font-pixel)] text-xs">{new Date(nft.created).toLocaleDateString()}</span>
                   </div>
                 </CardContent>
               </Card>

@@ -134,34 +134,34 @@ function FoodMarketplaceContent() {
         </Card>
 
         {mintResult && (
-          <Card>
+          <Card variant="clay" className="shadow-clay-lg bg-primary/10">
             <CardHeader>
-              <CardTitle className="text-green-600">✓ Minting Successful!</CardTitle>
+              <CardTitle className="text-green-600 font-[var(--font-pixel)] text-sm">✓ Minting Successful!</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-clay-lg">
                 <div>
-                  <Label>Food NFTs Minted</Label>
-                  <p className="text-2xl font-bold">{mintResult.food_ids.length}</p>
+                  <Label className="font-[var(--font-pixel)] text-xs">Food NFTs Minted</Label>
+                  <p className="text-2xl font-bold font-[var(--font-pixel)] text-primary">{mintResult.food_ids.length}</p>
                 </div>
                 <div>
-                  <Label>Total Cost</Label>
-                  <p className="text-2xl font-bold">{mintResult.total_cost} USDT</p>
+                  <Label className="font-[var(--font-pixel)] text-xs">Total Cost</Label>
+                  <p className="text-2xl font-bold font-[var(--font-pixel)] text-primary">{mintResult.total_cost} USDT</p>
                 </div>
               </div>
 
               <div>
-                <Label>Food Type Distribution</Label>
-                <div className="grid grid-cols-4 gap-2 mt-2">
-                  <Badge className="bg-yellow-500">🌾 {mintResult.food_type_distribution.grain} Grain</Badge>
-                  <Badge className="bg-blue-500">🐟 {mintResult.food_type_distribution.fish} Fish</Badge>
-                  <Badge className="bg-green-500">🦗 {mintResult.food_type_distribution.insects} Insects</Badge>
-                  <Badge className="bg-purple-500">🌿 {mintResult.food_type_distribution.herb} Herb</Badge>
+                <Label className="font-[var(--font-pixel)] text-xs">Food Type Distribution</Label>
+                <div className="grid grid-cols-4 gap-clay-md mt-2">
+                  <Badge variant="clay" className="bg-yellow-500 shadow-clay-sm">🌾 {mintResult.food_type_distribution.grain} Grain</Badge>
+                  <Badge variant="clay" className="bg-blue-500 shadow-clay-sm">🐟 {mintResult.food_type_distribution.fish} Fish</Badge>
+                  <Badge variant="clay" className="bg-green-500 shadow-clay-sm">🦗 {mintResult.food_type_distribution.insects} Insects</Badge>
+                  <Badge variant="clay" className="bg-purple-500 shadow-clay-sm">🌿 {mintResult.food_type_distribution.herb} Herb</Badge>
                 </div>
               </div>
 
               <div>
-                <Label>Transaction Hash</Label>
+                <Label className="font-[var(--font-pixel)] text-xs">Transaction Hash</Label>
                 <p className="text-xs font-mono break-all">{mintResult.tx_hash}</p>
               </div>
             </CardContent>

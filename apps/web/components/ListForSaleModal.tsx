@@ -114,7 +114,9 @@ export function ListForSaleModal({ nftId, onSuccess }: ListForSaleModalProps) {
           <Button
             onClick={handleList}
             disabled={loading || !price}
-            className="w-full font-[var(--font-pixel)] text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors"
+            variant="clay"
+            size="clay-md"
+            className="w-full"
           >
             {loading ? (
               <>

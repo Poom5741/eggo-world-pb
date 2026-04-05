@@ -280,7 +280,9 @@ export default function HatchEggPage() {
                   <Button
                     onClick={handleHatch}
                     disabled={loading || !canHatch}
-                    className="w-full font-[var(--font-pixel)] text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors"
+                    variant="clay"
+                    size="clay-xl"
+                    className="w-full"
                   >
                     {loading ? (
                       <>

@@ -113,8 +113,11 @@ export default function FeedEggPage() {
   return (
     <div className="container mx-auto py-10 px-4">
       <div className="max-w-4xl mx-auto space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold">Feed Your Egg</h1>
+        <div className={cn(
+          'rounded-clay-lg p-clay-xl',
+          'bg-card shadow-clay-lg'
+        )}>
+          <h1 className="text-3xl font-bold text-primary">Feed Your Egg</h1>
           <p className="text-muted-foreground">Feed Food NFTs to progress toward hatching</p>
         </div>
 
@@ -192,22 +195,22 @@ export default function FeedEggPage() {
           </div>
 
           <div className="space-y-4">
-            <Card>
+            <Card variant="clay-lg" className="shadow-clay-xl">
               <CardHeader>
-                <CardTitle>Your Food NFTs</CardTitle>
-                <CardDescription>
+                <CardTitle className="font-[var(--font-pixel)] text-sm">Your Food NFTs</CardTitle>
+                <CardDescription className="font-[var(--font-pixel)] text-xs">
                   Select food items to feed ({selectedFoodIds.length} selected)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {error && (
                   <Alert variant="destructive" className="mb-4">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription className="font-[var(--font-pixel)] text-xs">{error}</AlertDescription>
                   </Alert>
                 )}
 
                 {foodItems.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">
+                  <p className="text-muted-foreground text-center py-8 font-[var(--font-pixel)] text-xs">
                     No Food NFTs available. Visit the{' '}
                     <a href="/marketplace/food" className="text-primary underline">
                       Food Marketplace
@@ -215,7 +218,7 @@ export default function FeedEggPage() {
                     to mint some.
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 gap-4 max-h-[600px] overflow-y-auto p-2">
+                  <div className="grid grid-cols-2 gap-clay-lg max-h-[600px] overflow-y-auto p-2">
                     {foodItems.map((food) => (
                       <FoodCard
                         key={food.food_id}
@@ -238,6 +241,8 @@ export default function FeedEggPage() {
                   <Button
                     onClick={handleFeed}
                     disabled={loading || selectedFoodIds.length === 0}
+                    variant="clay"
+                    size="clay-lg"
                     className="w-full mt-4"
                   >
                     {loading ? (
