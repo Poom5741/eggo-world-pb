@@ -13,6 +13,7 @@ export interface FeaturedEggHeroProps {
   egg: EggData
   onFeed?: (eggId: number) => void
   onPlay?: (eggId: number) => void
+  onHatch?: (egg: EggData) => void
 }
 
 /**
@@ -22,7 +23,7 @@ export interface FeaturedEggHeroProps {
  * Large card with egg image, details, progress bar, and action buttons
  * การ์ดใหญ่แสดงรูปภาพไข่ รายละเอียด แถบความคืบหน้า และปุ่มดำเนินการ
  */
-export function FeaturedEggHero({ egg, onFeed, onPlay }: FeaturedEggHeroProps) {
+export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch }: FeaturedEggHeroProps) {
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -94,20 +95,34 @@ export function FeaturedEggHero({ egg, onFeed, onPlay }: FeaturedEggHeroProps) {
             
             {/* Action Buttons - ปุ่มดำเนินการ */}
             <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => onFeed?.(egg.egg_id)}
-                className="clay-button bg-primary-container text-on-primary-container py-5 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:bg-primary-container/90 transition-colors"
-              >
-                <span className="material-symbols-outlined">restaurant</span>
-                FEED ME
-              </button>
-              <button
-                onClick={() => onPlay?.(egg.egg_id)}
-                className="clay-button bg-white text-primary py-5 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:bg-white/90 transition-colors"
-              >
-                <span className="material-symbols-outlined">play_circle</span>
-                PLAY
-              </button>
+              {egg.food_count >= 10 && !egg.is_hatched ? (
+                // แสดงปุ่ม HATCH เมื่อพร้อมฟัก
+                <button
+                  onClick={() => onHatch?.(egg)}
+                  className="col-span-2 clay-button bg-primary text-on-primary py-5 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:bg-primary-fixed-dim transition-colors shadow-lg"
+                >
+                  <span className="material-symbols-outlined">auto_fix_high</span>
+                  HATCH NOW!
+                </button>
+              ) : (
+                // แสดงปุ่ม FEED และ PLAY ปกติ
+                <>
+                  <button
+                    onClick={() => onFeed?.(egg.egg_id)}
+                    className="clay-button bg-primary-container text-on-primary-container py-5 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:bg-primary-container/90 transition-colors"
+                  >
+                    <span className="material-symbols-outlined">restaurant</span>
+                    FEED ME
+                  </button>
+                  <button
+                    onClick={() => onPlay?.(egg.egg_id)}
+                    className="clay-button bg-white text-primary py-5 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:bg-white/90 transition-colors"
+                  >
+                    <span className="material-symbols-outlined">play_circle</span>
+                    PLAY
+                  </button>
+                </>
+              )}
             </div>
             
             {/* Eggo's Tip Box - กล่องคำแนะนำจาก Eggo */}

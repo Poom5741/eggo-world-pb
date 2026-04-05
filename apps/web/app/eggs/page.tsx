@@ -1,12 +1,14 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import LayoutWrapper from '@/components/LayoutWrapper'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { useEggPoll, EggData } from '@/hooks/use-egg-poll'
 import { FeaturedEggHero } from '@/components/eggs/featured-egg-hero'
 import { EggCard } from '@/components/eggs/egg-card'
+import { HatchRevealModal } from '@/components/eggs/hatch-reveal-modal'
+import { FeedDialog } from '@/components/eggs/feed-dialog'
 import { createClient } from '@/lib/pocketbase/client'
 
 /**
@@ -24,11 +26,19 @@ export default function Eggs() {
   const isHydrated = useIsHydrated()
   const pb = createClient()
   
+  // State for hatching egg - สถานะสำหรับไข่ที่กำลังฟัก
+  const [hatchingEgg, setHatchingEgg] = useState<EggData | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  
+  // State for feeding egg - สถานะสำหรับไข่ที่กำลังให้อาหาร
+  const [feedingEgg, setFeedingEgg] = useState<EggData | null>(null)
+  const [feedDialogOpen, setFeedDialogOpen] = useState(false)
+  
   // Get authenticated user (after hydration)
   const user = isHydrated ? pb.authStore.record : null
   
   // Fetch eggs with auto-polling
-  const { eggs, loading, error } = useEggPoll(user?.wallet, 30000)
+  const { eggs, loading, error, refresh } = useEggPoll(user?.wallet, 30000)
   
   // Auth guard - redirect to login if not authenticated
   useEffect(() => {
@@ -37,11 +47,13 @@ export default function Eggs() {
     }
   }, [isHydrated, user, router])
   
-  // Handle manage egg action
+  // Handle manage egg action - เปิด FeedDialog เมื่อคลิก "Manage Egg"
   const handleManageEgg = (eggId: number) => {
-    // TODO: Navigate to egg detail/manage page
-    console.log('Manage egg:', eggId)
-    // router.push(`/eggs/${eggId}/manage`)
+    const egg = eggs.find(e => e.egg_id === eggId)
+    if (egg) {
+      setFeedingEgg(egg)
+      setFeedDialogOpen(true)
+    }
   }
   
   // Handle feed action
@@ -54,6 +66,18 @@ export default function Eggs() {
   const handlePlayEgg = (eggId: number) => {
     // TODO: Implement play interaction
     console.log('Play with egg:', eggId)
+  }
+  
+  // Handle hatch button click - จัดการการคลิกปุ่มฟักไข่
+  const handleHatchEgg = (egg: EggData) => {
+    setHatchingEgg(egg)
+    setModalOpen(true)
+  }
+  
+  // Handle hatch success - จัดการฟักไข่สำเร็จ
+  const handleHatchSuccess = () => {
+    // Refresh egg list to show updated status
+    refresh()
   }
   
   // Loading state - แสดงสถานะกำลังโหลด
@@ -160,6 +184,7 @@ export default function Eggs() {
             egg={eggs[0]} // First egg has highest food_count (sorted by hook)
             onFeed={handleFeedEgg}
             onPlay={handlePlayEgg}
+            onHatch={handleHatchEgg}
           />
         )}
         
@@ -170,10 +195,21 @@ export default function Eggs() {
               key={egg.id}
               egg={egg}
               onManage={handleManageEgg}
+              onHatch={handleHatchEgg}
             />
           ))}
         </div>
       </div>
+      
+      {/* Hatch Reveal Modal - โมดัลฟักไข่ */}
+      {hatchingEgg && (
+        <HatchRevealModal
+          egg={hatchingEgg}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          onSuccess={handleHatchSuccess}
+        />
+      )}
     </LayoutWrapper>
   )
 }

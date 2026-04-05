@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils'
 export interface EggCardProps {
   egg: EggData
   onManage: (eggId: number) => void
+  onHatch?: (egg: EggData) => void
 }
 
 /**
@@ -110,12 +111,24 @@ export function EggCard({ egg, onManage }: EggCardProps) {
       </div>
       
       {/* Manage Button - ปุ่มจัดการ */}
-      <button
-        onClick={() => onManage(egg.egg_id)}
-        className="w-full py-3 bg-surface-container-high rounded-full font-bold text-sm text-primary hover:bg-primary-container transition-colors"
-      >
-        Manage Egg
-      </button>
+      <div className="space-y-3">
+        <button
+          onClick={() => onManage(egg.egg_id)}
+          className="w-full py-3 bg-surface-container-high rounded-full font-bold text-sm text-primary hover:bg-primary-container transition-colors"
+        >
+          Manage Egg
+        </button>
+        
+        {/* HATCH button - shows when egg has 10 food items and not hatched */}
+        {egg.food_count >= 10 && !egg.is_hatched && onHatch && (
+          <button
+            onClick={() => onHatch && onHatch(egg)}
+            className="w-full py-3 bg-primary text-on-primary rounded-full font-black text-lg hover:bg-primary-fixed-dim transition-colors shadow-lg"
+          >
+            🎉 HATCH!
+          </button>
+        )}
+      </div>
     </div>
   )
 }
