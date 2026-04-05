@@ -7,17 +7,17 @@ source:
   - 10-03-SUMMARY.md
   - 10-04-SUMMARY.md
 started: "2026-04-05T14:15:00Z"
-updated: "2026-04-05T14:15:00Z"
+  updated: "2026-04-05T14:25:00Z"
 ---
 
 ## Current Test
 
 <!-- OVERWRITE each test - shows where we are -->
 
-**Retest Test 1:** Bug fixed — changed `user?.wallet` to `user?.wallet_address` in eggs page, dashboard, and wallet page.
+**Retest Test 1:** Bug fixed — corrected field name from `wallet_address` to `wallet` (PocketBase users collection field).
 
 number: 1
-name: Egg NFT Page Display (RETEST)
+name: Egg NFT Page Display (RETEST #2)
 expected: |
 Navigate to /eggs page while authenticated. Page displays:
 
@@ -30,7 +30,7 @@ Navigate to /eggs page while authenticated. Page displays:
 
 ---
 
-**Issue found in Test 1:** Infinite API loop — `owner = "null"` string instead of wallet address. **FIXED** in commit ba62723 — changed `user?.wallet` to `user?.wallet_address`.
+**Issue found in Test 1:** "Wallet Not Connected" shown incorrectly. **ROOT CAUSE:** Field name mismatch — PocketBase stores wallet in `wallet` field (not `wallet_address`). **FIXED** in commit f54e405.
 
 ## Tests
 
