@@ -85,11 +85,11 @@ export default function DashboardPage() {
 
       // Calculate referral levels from commission records
       // Group commissions by referrer level (G1-G4)
-      const levelCounts = { 1: 0, 2: 0, 3: 0, 4: 0 }
+      const levelCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 }
       commissionsData.items.forEach((record: any) => {
         const level = record.level // Assuming commission_records has a 'level' field (1-4)
         if (level >= 1 && level <= 4) {
-          levelCounts[level as keyof typeof levelCounts]++
+          levelCounts[level]++
         }
       })
 
@@ -97,8 +97,8 @@ export default function DashboardPage() {
       const TARGET_BUDDIES = 50
       const levels = [1, 2, 3, 4].map((lvl) => ({
         level: lvl,
-        count: levelCounts[lvl as keyof typeof levelCounts],
-        percentage: (levelCounts[lvl as keyof typeof levelCounts] / TARGET_BUDDIES) * 100,
+        count: levelCounts[lvl],
+        percentage: (levelCounts[lvl] / TARGET_BUDDIES) * 100,
         commissionRate: lvl === 1 ? 0.20 : 0.10,
       }))
 

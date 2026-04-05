@@ -33,11 +33,14 @@ const LEVEL_COLORS = {
   },
 } as const
 
+// Target buddies per level for percentage calculation
+const TARGET_BUDDIES = 50
+
 /**
  * Referral level data structure
  * โครงสร้างข้อมูลระดับการแนะนำ
  */
-interface ReferralLevel {
+export interface ReferralLevel {
   level: number // 1-4
   count: number // Number of buddies at this level
   percentage: number // Fill percentage (0-100)
@@ -46,12 +49,29 @@ interface ReferralLevel {
 
 /**
  * BuddyChain component props
- *Props ของคอมโพเนนต์ BuddyChain
+ * Props ของคอมโพเนนต์ BuddyChain
  */
-interface BuddyChainProps {
+export interface BuddyChainProps {
   levels: ReferralLevel[]
   loading?: boolean
   error?: string | null
+}
+
+/**
+ * Normalize levels to ensure exactly 4 levels with defaults
+ * ทำให้ระดับเป็นมาตรฐานให้มี 4 ระดับเสมอ
+ */
+const normalizeLevels = (levels: ReferralLevel[]): ReferralLevel[] => {
+  if (levels.length === 4) return levels
+  
+  return [1, 2, 3, 4].map((lvl) =>
+    levels.find((l) => l.level === lvl) || {
+      level: lvl,
+      count: 0,
+      percentage: 0,
+      commissionRate: COMMISSION_RATES[lvl - 1],
+    }
+  )
 }
 
 /**
@@ -59,14 +79,16 @@ interface BuddyChainProps {
  * แสดงแผนผัง Buddy Chain แบบ 4 ระดับ
  */
 export function BuddyChain({ levels, loading = false, error = null }: BuddyChainProps) {
-  // Loading state
+  const normalizedLevels = normalizeLevels(levels)
+
+  // Loading state with skeleton UI
   if (loading) {
     return (
       <Card variant="clay-lg" className="shadow-clay-xl">
         <CardContent>
           <div className="grid grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((level) => (
-              <div key={level} className="flex flex-col items-center animate-pulse">
+            {normalizedLevels.map((levelData) => (
+              <div key={levelData.level} className="flex flex-col items-center animate-pulse">
                 <div className="w-full aspect-square bg-surface-container rounded-2xl" />
                 <div className="h-4 w-12 mt-2 bg-surface-container rounded" />
                 <div className="h-3 w-16 mt-1 bg-surface-container rounded" />
@@ -90,18 +112,6 @@ export function BuddyChain({ levels, loading = false, error = null }: BuddyChain
       </Card>
     )
   }
-
-  // Ensure we have exactly 4 levels
-  const normalizedLevels = levels.length === 4
-    ? levels
-    : [1, 2, 3, 4].map((lvl) =>
-        levels.find((l) => l.level === lvl) || {
-          level: lvl,
-          count: 0,
-          percentage: 0,
-          commissionRate: COMMISSION_RATES[lvl - 1],
-        }
-      )
 
   return (
     <Card variant="clay-lg" className="shadow-clay-xl">
