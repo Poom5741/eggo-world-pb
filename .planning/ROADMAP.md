@@ -76,9 +76,13 @@
 5. Hatch flow triggers `EggNFT.hatchEgg(eggId)` transaction and waits for confirmation
 6. Hatch reveal animation displays newly hatched Animal NFT with rarity badge (Common/Rare/Epic/Legendary)
 7. Egg status updates automatically after blockchain confirmation
-   **Plans:** TBD
+   **Plans:** 4 plans
    **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
-   **UI hint:** yes
+   **Plans:**
+   - [ ] 10-01-PLAN.md — Egg display foundation with polling and cards (EGG-01, EGG-02)
+   - [ ] 10-02-PLAN.md — Feed flow with quick-fill and contract integration (EGG-03, EGG-04)
+   - [ ] 10-03-PLAN.md — Hatch flow with reveal animation (EGG-05, EGG-06)
+   - [ ] 10-04-PLAN.md — Polish: loading, error handling, polling indicators (EGG-07)
 
 ### Phase 11: Marketplace
 
@@ -120,7 +124,7 @@
 | ---------------------- | ------------ | ---------------- | -------------- | ----------- | --------- |
 | 8 - Foundation & Auth  | 6            | 6                | 3/3            | Planned     | -         |
 | 9 - Dashboard & Wallet | 6            | 6                | 0/0            | Not started | -         |
-| 10 - Egg Management    | 7            | 7                | 0/0            | Not started | -         |
+| 10 - Egg Management    | 7            | 7                | 0/4            | Planned     | -         |
 | 11 - Marketplace       | 6            | 6                | 0/0            | Not started | -         |
 | 12 - Mobile & Polish   | 5            | 5                | 0/0            | Not started | -         |
 
