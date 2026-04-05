@@ -12,28 +12,27 @@ started: "2026-04-05T14:15:00Z"
 
 ## Current Test
 
-**✅ BLOCKER RESOLVED:** Backend collections created and verified working!
+**✅ ALL BLOCKERS RESOLVED:** Backend fully working via production URL!
 
 **Completed:**
 
-- ✅ Fixed `user.wallet` field reference (was `user.wallet_address`)
+- ✅ Fixed `user.wallet` field reference (commits `ba62723`, `f54e405`)
 - ✅ Created 5 collections via migration: `egg_nfts`, `commission_records`, `transactions`, `animal_nfts`, `food_nfts`
-- ✅ PocketBase running in Docker container
-- ✅ Collections verified via API (returning 403 "superusers only" = collections exist with auth rules)
-
-**Remaining:**
-
-- ⏳ Cloudflare 521 error - nginx/PocketBase connectivity through Cloudflare
-- ⏳ Resume frontend UAT testing once production URL is accessible
+- ✅ Fixed nginx HTTPS configuration (port 443)
+- ✅ Production URL working: `https://pb.eggoworld.io`
+- ✅ All collections verified via production API
 
 **Backend Status:**
 
 ```
-$ curl http://localhost/api/collections/egg_nfts/records?perPage=1
+$ curl https://pb.eggoworld.io/api/collections/egg_nfts/records?perPage=1
 {"data":{},"message":"Only superusers can perform this action.","status":403}
+
+$ curl https://pb.eggoworld.io/api/health
+{"message":"API is healthy.","code":200,"data":{}}
 ```
 
-✓ Collections exist and auth is working!
+**Ready:** Frontend can now test against production backend!
 
 ---
 
@@ -46,9 +45,7 @@ $ curl http://localhost/api/collections/egg_nfts/records?perPage=1
 ### 1. Egg NFT Page Display
 
 expected: Navigate to /eggs page while authenticated. Page displays featured egg hero at top, grid of egg cards below (3 cols desktop), each showing egg image, name (#ID), rarity badge, element type, feeding progress (X/10). "Updating..." badge pulses during polling. Loading skeleton on initial fetch.
-result: blocked
-blocked_by: backend
-reason: "PocketBase collections (egg_nfts, commission_records, transactions) returning 404 on pb.eggoworld.io. Frontend code correct — backend collections need migration/deployment."
+result: [pending]
 
 ### 2. Feed Flow - Quick Fill
 
@@ -100,29 +97,18 @@ result: [pending]
 total: 10
 passed: 0
 issues: 0
-pending: 9
+pending: 10
 skipped: 0
-blocked: 1
+blocked: 0
 
 ## Gaps
 
-[none — backend collections created and verified]
+[none — backend fully operational]
 
 ## Blockers
 
-- **Production URL (Cloudflare 521):** `https://pb.eggoworld.io` returning 521 error
-  - Nginx ↔ PocketBase working locally (verified)
-  - Cloudflare origin connectivity issue
-  - Frontend can test locally against `http://localhost:8090`
-- **Test 1 blocked:** Cannot verify egg display via production URL
-  - Workaround: Test frontend locally with `NEXT_PUBLIC_POCKETBASE_URL=http://localhost:8090`
+[none — all resolved]
 
-**Backend Collections Created:**
+**Backend Status:** ✅ All collections working via `https://pb.eggoworld.io`
 
-- `egg_nfts` ✓
-- `commission_records` ✓
-- `transactions` ✓
-- `animal_nfts` ✓
-- `food_nfts` ✓
-
-All collections return 403 "superusers only" = properly configured with auth rules.
+**Frontend Testing:** Ready to test at `https://<your-frontend-url>/eggs` with production backend
