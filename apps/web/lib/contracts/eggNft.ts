@@ -90,6 +90,22 @@ export function getSpeciesName(species: Species): string {
 }
 
 /**
+ * ฟังก์ชันตรวจสอบจำนวนอาหารที่ไข่มีอยู่
+ * Check how many food items an egg has
+ * @param signer - ผู้เซ็นธุรกรรม
+ * @param tokenId - Token ID ของไข่ NFT
+ * @returns จำนวนอาหารปัจจุบัน
+ */
+export async function getFoodCount(
+  signer: any,
+  tokenId: number
+): Promise<number> {
+  const contract = getEggNftContract(signer)
+  const count = await contract.getFoodCount(tokenId)
+  return Number(count)
+}
+
+/**
  * ฟังก์ชันให้อาหารไข่เพื่อเพิ่มความหายาก
  * ต้องให้อาหารครบ 10 ชิ้นก่อน ถึงจะใช้ฟังก์ชันนี้ได้
  * @param signer - ผู้เซ็นธุรกรรม (เจ้าของไข่)
