@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
-import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { QuickActions } from '@/components/dashboard/quick-actions'
 import { BuddyChain } from '@/components/dashboard/buddy-chain'
 import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import LayoutWrapper from '@/components/LayoutWrapper'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -90,6 +90,37 @@ export default function DashboardPage() {
         if (level >= 1 && level <= 4) {
           levelCounts[level]++
         }
+      })
+
+      // Target: 50 buddies per level for percentage calculation
+      const TARGET_BUDDIES = 50
+      const levels = [1, 2, 3, 4].map((lvl) => ({
+        level: lvl,
+        count: levelCounts[lvl],
+        percentage: (levelCounts[lvl] / TARGET_BUDDIES) * 100,
+        commissionRate: lvl === 1 ? 0.20 : 0.10,
+      }))
+
+      setReferralLevels(levels)
+    } catch (err: any) {
+      // Suppress auto-cancel errors (normal during navigation)
+      if (isAutoCancelError(err)) {
+        return
+      }
+      // Handle 404 errors gracefully - show empty state
+      if (isNotFound(err)) {
+        // Set default empty state
+        setProfile(null)
+        setStats({ totalEggs: 0, totalFood: 0, totalCommissions: 0 })
+        setReferralLevels([1, 2, 3, 4].map(lvl => ({ level: lvl, count: 0, percentage: 0, commissionRate: lvl === 1 ? 0.20 : 0.10 })))
+        return
+      }
+      // Log other errors
+      console.error('Failed to fetch dashboard data:', err.message || err)
+    } finally {
+      setLoading(false)
+    }
+  }
       })
 
       // Target: 50 buddies per level for percentage calculation
