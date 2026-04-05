@@ -6,8 +6,8 @@
 - [ ] **FOUND-02**: Join page initiates LINE OAuth with single-click button
 - [ ] **FOUND-03**: Auth callback handler processes LINE OAuth response and redirects to dashboard
 - [ ] **FOUND-04**: Navigation components render correctly (TopNav desktop, BottomNav mobile, SideNav)
-- [ ] **FOUND-05**: LayoutWrapper provides consistent structure across all pages
-- [ ] **FOUND-06**: Material Symbols icons load and display correctly
+- [x] **FOUND-05**: LayoutWrapper provides consistent structure across all pages
+- [x] **FOUND-06**: Material Symbols icons load and display correctly
 
 ## Dashboard & Wallet Integration
 

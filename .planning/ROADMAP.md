@@ -34,7 +34,7 @@
 6. LayoutWrapper provides consistent page structure throughout the application
    **Plans:** 3 plans
    **Plans:**
-   - [ ] 08-foundation-auth-01-PLAN.md — Material Symbols + LayoutWrapper foundation
+   - [x] 08-foundation-auth-01-PLAN.md — Material Symbols + LayoutWrapper foundation
    - [ ] 08-foundation-auth-02-PLAN.md — Navigation components (TopNav, SideNav, BottomNav)
    - [ ] 08-foundation-auth-03-PLAN.md — Auth pages (Landing, Join, Callback)
          **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
