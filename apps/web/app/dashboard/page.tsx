@@ -11,7 +11,7 @@ import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import { ActiveEggsCard } from '@/components/dashboard/active-eggs-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Coins, TrendingUp, Wallet, RefreshCw, Flame } from 'lucide-react'
+import { RefreshCw, Wallet } from 'lucide-react'
 import { Header } from '@/components/header'
 
 export default function DashboardPage() {
@@ -187,8 +187,8 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center text-xs text-muted-foreground">
-                    <Egg className="w-3 h-3 mr-1" />
-                    NFTs owned
+                    <span className="material-symbols-outlined text-sm mr-1">trending_up</span>
+                    All time earnings
                   </div>
                 </CardContent>
               </Card>
