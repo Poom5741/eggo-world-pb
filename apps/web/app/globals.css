@@ -28,6 +28,30 @@
   --border: #eab308;
   --input: #eab308;
   --ring: #ca8a04;
+  
+  /* Surface colors for navigation and containers */
+  --surface: rgba(254, 243, 199, 0.8);
+  --surface-container: #fef3c7;
+  --surface-container-high: #fde68a;
+  --surface-container-highest: #fcd34d;
+  --surface-container-low: #fef9c3;
+  --surface-dark: rgba(68, 56, 4, 0.8);
+  --surface-container-dark: #443804;
+  
+  /* Extended color palette */
+  --primary-container: #fde047;
+  --on-primary: #fffbeb;
+  --on-primary-container: #443804;
+  --secondary-container: #fef08a;
+  --on-secondary: #fffbeb;
+  --on-secondary-container: #443804;
+  --tertiary: #f59e0b;
+  --tertiary-container: #fcd34d;
+  --on-tertiary: #fffbeb;
+  --on-tertiary-container: #443804;
+  --on-surface: #443804;
+  --on-surface-variant: #854d0e;
+  
   --chart-1: #facc15;
   --chart-2: #e94560;
   --chart-3: #0f3460;
@@ -98,6 +122,30 @@
   --border: #ca8a04;
   --input: #ca8a04;
   --ring: #fef3c7;
+  
+  /* Dark mode surface colors */
+  --surface: rgba(68, 56, 4, 0.8);
+  --surface-container: #71601e;
+  --surface-container-high: #856d28;
+  --surface-container-highest: #a18235;
+  --surface-container-low: #5c4f17;
+  --surface-dark: rgba(68, 56, 4, 0.9);
+  --surface-container-dark: #71601e;
+  
+  /* Extended dark mode colors */
+  --primary-container: #ca8a04;
+  --on-primary: #443804;
+  --on-primary-container: #fef3c7;
+  --secondary-container: #ca8a04;
+  --on-secondary: #443804;
+  --on-secondary-container: #fef3c7;
+  --tertiary: #fde047;
+  --tertiary-container: #ca8a04;
+  --on-tertiary: #443804;
+  --on-tertiary-container: #fef3c7;
+  --on-surface: #fef3c7;
+  --on-surface-variant: #fef3c7;
+  
   --card-highlight: rgba(113, 96, 30, 0.3);
   --card-shadow: rgba(68, 56, 4, 0.5);
   --accent-highlight: rgba(253, 224, 71, 0.2);
