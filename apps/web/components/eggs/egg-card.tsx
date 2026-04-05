@@ -14,6 +14,7 @@ export interface EggCardProps {
   egg: EggData
   onManage: (eggId: number) => void
   onHatch?: (egg: EggData) => void
+  polling?: boolean
 }
 
 /**
@@ -61,7 +62,7 @@ function getStatus(foodCount: number, isHatched: boolean): string {
  * Displays egg image, name, rarity badge, element type,
  * feeding progress bar (X/10), and "Manage Egg" button
  */
-export function EggCard({ egg, onManage }: EggCardProps) {
+export function EggCard({ egg, onManage, polling }: EggCardProps) {
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -77,7 +78,14 @@ export function EggCard({ egg, onManage }: EggCardProps) {
       "hover:-translate-y-2 transition-transform duration-300"
     )}>
       {/* Egg Image Section - ส่วนแสดงรูปภาพไข่ */}
-      <div className="bg-surface-container h-48 rounded-lg mb-6 flex items-center justify-center inner-dip overflow-hidden">
+      <div className="bg-surface-container h-48 rounded-lg mb-6 flex items-center justify-center inner-dip overflow-hidden relative">
+        {/* "Updating..." badge during polling - ป้าย "Updating..." ขณะกำลังโพล */}
+        {polling && (
+          <Badge variant="clay" className="absolute top-2 right-2 animate-pulse gap-1">
+            <span className="material-symbols-outlined text-xs animate-spin">sync</span>
+            Updating...
+          </Badge>
+        )}
         <img
           alt={`Egg ${egg.egg_id}`}
           className="h-32 object-contain"

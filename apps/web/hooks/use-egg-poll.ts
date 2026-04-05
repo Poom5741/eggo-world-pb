@@ -26,6 +26,8 @@ interface UseEggPollReturn {
   loading: boolean
   error: string | null
   refresh: () => Promise<void>
+  polling: boolean
+  lastUpdated: Date | null
 }
 
 /**
@@ -48,6 +50,9 @@ export function useEggPoll(
   const [eggs, setEggs] = useState<EggData[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pollInterval, setPollInterval] = useState(intervalMs)
+  const [errorCount, setErrorCount] = useState(0)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   /**
    * Fetch egg NFTs from PocketBase
@@ -73,26 +78,37 @@ export function useEggPoll(
 
       setEggs(records.items as EggData[])
       setError(null)
+      setErrorCount(0) // Reset error count on success - รีเซ็ตจำนวนข้อผิดพลาดเมื่อสำเร็จ
+      setLastUpdated(new Date())
+      setPollInterval(intervalMs) // Reset to normal interval - รีเซ็ตเป็นช่วงเวลาปกติ
     } catch (err: any) {
-      // Handle error
+      // Handle error - จัดการข้อผิดพลาด
       setError(err.message || 'Unknown error occurred')
+      
+      // Exponential backoff: 30s → 60s → 120s → 5min (max)
+      // per D-20: min(30000 * Math.pow(2, errorCount), 300000)
+      const newErrorCount = errorCount + 1
+      setErrorCount(newErrorCount)
+      const backoffInterval = Math.min(30000 * Math.pow(2, newErrorCount), 300000)
+      setPollInterval(backoffInterval)
     } finally {
       setLoading(false)
     }
-  }, [walletAddress])
+  }, [walletAddress, errorCount, intervalMs])
 
   useEffect(() => {
     // Initial fetch on mount
     fetchEggs()
 
-    // Poll every intervalMs (per D-16: 30 seconds)
-    const pollInterval = setInterval(fetchEggs, intervalMs)
+    // Poll every pollInterval (per D-16: 30 seconds, with exponential backoff on errors per D-20)
+    // โพลทุกๆ pollInterval (30 วินาทีตาม D-16, มี exponential backoff เมื่อมีข้อผิดพลาดตาม D-20)
+    const pollIntervalId = setInterval(fetchEggs, pollInterval)
 
     // Cleanup on unmount
     return () => {
-      clearInterval(pollInterval)
+      clearInterval(pollIntervalId)
     }
-  }, [fetchEggs, intervalMs])
+  }, [fetchEggs, pollInterval])
 
-  return { eggs, loading, error, refresh: fetchEggs }
+  return { eggs, loading, error, refresh: fetchEggs, polling: loading, lastUpdated }
 }
