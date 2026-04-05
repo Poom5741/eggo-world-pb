@@ -5,13 +5,12 @@ import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { BalanceCard } from '@/components/dashboard/balance-card'
-import { BuddyChain } from '@/components/dashboard/buddy-chain'
 import { QuickActions } from '@/components/dashboard/quick-actions'
 import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import { ActiveEggsCard } from '@/components/dashboard/active-eggs-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { RefreshCw, Wallet } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { Header } from '@/components/header'
 
 export default function DashboardPage() {
@@ -174,77 +173,6 @@ export default function DashboardPage() {
               refresh={refreshBalance}
             />
 
-            {/* Stats Grid - Clay widgets */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-clay-xl">
-              <Card variant="clay" className="shadow-clay-lg">
-                <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                    TOTAL EGGS
-                  </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-foreground">
-                    {stats.totalEggs}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <span className="material-symbols-outlined text-sm mr-1">trending_up</span>
-                    All time earnings
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card variant="clay" className="shadow-clay-lg">
-                <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                    FOOD NFTs
-                  </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-accent">
-                    {stats.totalFood}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <Flame className="w-3 h-3 mr-1" />
-                    Bonus from eggs
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card variant="clay" className="shadow-clay-lg">
-                <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                    PENDING COMMISSIONS
-                  </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-primary">
-                    {stats.totalCommissions.toFixed(2)} USDT
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <Coins className="w-3 h-3 mr-1" />
-                    Ready to claim
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card variant="clay" className="shadow-clay-lg">
-                <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                    TOTAL EARNED
-                  </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-foreground">
-                    {usdtTotalEarned.toFixed(2)} USDT
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    All time earnings
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             {/* Buddy Chain Referral Visualization */}
             <BuddyChain levels={referralLevels} loading={loading} />
 
@@ -261,61 +189,8 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Active Eggs Card - Replace first stat card */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-clay-xl">
-              <ActiveEggsCard count={stats.totalEggs} />
-
-              <Card variant="clay" className="shadow-clay-lg">
-                <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                    FOOD NFTs
-                  </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-accent">
-                    {stats.totalFood}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <Flame className="w-3 h-3 mr-1" />
-                    Bonus from eggs
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card variant="clay" className="shadow-clay-lg">
-                <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                    PENDING COMMISSIONS
-                  </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-primary">
-                    {stats.totalCommissions.toFixed(2)} USDT
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <Coins className="w-3 h-3 mr-1" />
-                    Ready to claim
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card variant="clay" className="shadow-clay-lg">
-                <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                    TOTAL EARNED
-                  </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-foreground">
-                    {usdtTotalEarned.toFixed(2)} USDT
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center text-xs text-muted-foreground">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    All time earnings
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Active Eggs Card with stats */}
+            <ActiveEggsCard count={stats.totalEggs} />
 
             {/* Loading State */}
             {loading && (
