@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   // Auto-polling for wallet balance (per D-11: 30 seconds)
-  const { balance, loading: balanceLoading, refresh: refreshBalance } = useWalletPoll(user?.wallet)
+  const { balance, loading: balanceLoading, refresh: refreshBalance } = useWalletPoll(user?.wallet_address)
 
   useEffect(() => {
     setIsHydrated(true)
