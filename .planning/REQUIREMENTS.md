@@ -75,35 +75,35 @@
 
 ## Traceability
 
-| Requirement | Phase | Plan | Status |
-| ----------- | ----- | ---- | ------ |
-| FOUND-01    | TBD   | TBD  | —      |
-| FOUND-02    | TBD   | TBD  | —      |
-| FOUND-03    | TBD   | TBD  | —      |
-| FOUND-04    | TBD   | TBD  | —      |
-| FOUND-05    | TBD   | TBD  | —      |
-| FOUND-06    | TBD   | TBD  | —      |
-| FOUND-07    | TBD   | TBD  | —      |
-| DASH-01     | TBD   | TBD  | —      |
-| DASH-02     | TBD   | TBD  | —      |
-| DASH-03     | TBD   | TBD  | —      |
-| DASH-04     | TBD   | TBD  | —      |
-| DASH-05     | TBD   | TBD  | —      |
-| EGG-01      | TBD   | TBD  | —      |
-| EGG-02      | TBD   | TBD  | —      |
-| EGG-03      | TBD   | TBD  | —      |
-| EGG-04      | TBD   | TBD  | —      |
-| EGG-05      | TBD   | TBD  | —      |
-| EGG-06      | TBD   | TBD  | —      |
-| EGG-07      | TBD   | TBD  | —      |
-| MKT-01      | TBD   | TBD  | —      |
-| MKT-02      | TBD   | TBD  | —      |
-| MKT-03      | TBD   | TBD  | —      |
-| MKT-04      | TBD   | TBD  | —      |
-| MKT-05      | TBD   | TBD  | —      |
-| MKT-06      | TBD   | TBD  | —      |
-| MOB-01      | TBD   | TBD  | —      |
-| MOB-02      | TBD   | TBD  | —      |
-| MOB-03      | TBD   | TBD  | —      |
-| MOB-04      | TBD   | TBD  | —      |
-| MOB-05      | TBD   | TBD  | —      |
+| Requirement | Phase    | Plan | Status |
+| ----------- | -------- | ---- | ------ |
+| FOUND-01    | Phase 8  | TBD  | —      |
+| FOUND-02    | Phase 8  | TBD  | —      |
+| FOUND-03    | Phase 8  | TBD  | —      |
+| FOUND-04    | Phase 8  | TBD  | —      |
+| FOUND-05    | Phase 8  | TBD  | —      |
+| FOUND-06    | Phase 8  | TBD  | —      |
+| FOUND-07    | Phase 9  | TBD  | —      |
+| DASH-01     | Phase 9  | TBD  | —      |
+| DASH-02     | Phase 9  | TBD  | —      |
+| DASH-03     | Phase 9  | TBD  | —      |
+| DASH-04     | Phase 9  | TBD  | —      |
+| DASH-05     | Phase 9  | TBD  | —      |
+| EGG-01      | Phase 10 | TBD  | —      |
+| EGG-02      | Phase 10 | TBD  | —      |
+| EGG-03      | Phase 10 | TBD  | —      |
+| EGG-04      | Phase 10 | TBD  | —      |
+| EGG-05      | Phase 10 | TBD  | —      |
+| EGG-06      | Phase 10 | TBD  | —      |
+| EGG-07      | Phase 10 | TBD  | —      |
+| MKT-01      | Phase 11 | TBD  | —      |
+| MKT-02      | Phase 11 | TBD  | —      |
+| MKT-03      | Phase 11 | TBD  | —      |
+| MKT-04      | Phase 11 | TBD  | —      |
+| MKT-05      | Phase 11 | TBD  | —      |
+| MKT-06      | Phase 11 | TBD  | —      |
+| MOB-01      | Phase 12 | TBD  | —      |
+| MOB-02      | Phase 12 | TBD  | —      |
+| MOB-03      | Phase 12 | TBD  | —      |
+| MOB-04      | Phase 12 | TBD  | —      |
+| MOB-05      | Phase 12 | TBD  | —      |
