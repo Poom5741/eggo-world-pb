@@ -9,25 +9,25 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: #1a1a2e;
-  --foreground: #fef9c3;
-  --card: #16213e;
-  --card-foreground: #fef9c3;
-  --popover: #16213e;
-  --popover-foreground: #fef9c3;
-  --primary: #facc15;
-  --primary-foreground: #1a1a2e;
-  --secondary: #0f3460;
-  --secondary-foreground: #fef9c3;
-  --muted: #0f3460;
-  --muted-foreground: #94a3b8;
-  --accent: #e94560;
-  --accent-foreground: #ffffff;
+  --background: #fffbeb;
+  --foreground: #443804;
+  --card: #fef3c7;
+  --card-foreground: #443804;
+  --popover: #fef3c7;
+  --popover-foreground: #443804;
+  --primary: #ca8a04;
+  --primary-foreground: #fffbeb;
+  --secondary: #854d0e;
+  --secondary-foreground: #fffbeb;
+  --muted: #fef3c7;
+  --muted-foreground: #854d0e;
+  --accent: #fde047;
+  --accent-foreground: #443804;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #0f3460;
-  --input: #0f3460;
-  --ring: #facc15;
+  --border: #eab308;
+  --input: #eab308;
+  --ring: #ca8a04;
   --chart-1: #facc15;
   --chart-2: #e94560;
   --chart-3: #0f3460;
@@ -79,60 +79,29 @@
 }
 
 .dark {
-  --background: #1a1a2e;
-  --foreground: #fef9c3;
-  --card: #16213e;
-  --card-foreground: #fef9c3;
-  --popover: #16213e;
-  --popover-foreground: #fef9c3;
-  --primary: #facc15;
-  --primary-foreground: #1a1a2e;
-  --secondary: #0f3460;
-  --secondary-foreground: #fef9c3;
-  --muted: #0f3460;
-  --muted-foreground: #94a3b8;
-  --accent: #e94560;
-  --accent-foreground: #ffffff;
+  --background: #443804;
+  --foreground: #fef3c7;
+  --card: #71601e;
+  --card-foreground: #fef3c7;
+  --popover: #71601e;
+  --popover-foreground: #fef3c7;
+  --primary: #fef3c7;
+  --primary-foreground: #443804;
+  --secondary: #a16207;
+  --secondary-foreground: #fef3c7;
+  --muted: #71601e;
+  --muted-foreground: #fef3c7;
+  --accent: #fde047;
+  --accent-foreground: #443804;
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #0f3460;
-  --input: #0f3460;
-  --ring: #facc15;
-  --chart-1: #facc15;
-  --chart-2: #e94560;
-  --chart-3: #0f3460;
-  --chart-4: #fef9c3;
-  --chart-5: #94a3b8;
-  --sidebar: #16213e;
-  --sidebar-foreground: #fef9c3;
-  --sidebar-primary: #facc15;
-  --sidebar-primary-foreground: #1a1a2e;
-  --sidebar-accent: #0f3460;
-  --sidebar-accent-foreground: #fef9c3;
-  --sidebar-border: #0f3460;
-  --sidebar-ring: #facc15;
-
-  /* ============================================
-     CLAYMORPHISM SHADOW TOKENS (DARK MODE)
-     ปรับ opacity ให้มองเห็นบนพื้นมืด
-     ============================================ */
-  --shadow-clay-sm: 4px 4px 8px rgba(0,0,0,0.4), inset 2px 2px 4px rgba(255,255,255,0.05);
-  --shadow-clay-md: 8px 8px 16px rgba(0,0,0,0.5), inset 4px 4px 8px rgba(255,255,255,0.08);
-  --shadow-clay-lg: 12px 12px 24px rgba(0,0,0,0.6), inset 6px 6px 12px rgba(255,255,255,0.1);
-  --shadow-clay-xl: 16px 16px 32px rgba(0,0,0,0.7), inset 8px 8px 16px rgba(255,255,255,0.12);
-  --shadow-clay-2xl: 20px 20px 40px rgba(0,0,0,0.8), inset 10px 10px 20px rgba(255,255,255,0.15);
-
-  /* ============================================
-     CLAYMORPHISM COLOR EXTENSIONS (DARK MODE)
-     ============================================ */
-  --primary-highlight: rgba(250, 204, 21, 0.08);
-  --primary-shadow: rgba(250, 204, 21, 0.5);
-  --secondary-highlight: rgba(15, 52, 96, 0.05);
-  --secondary-shadow: rgba(15, 52, 96, 0.6);
-  --card-highlight: rgba(22, 33, 62, 0.08);
-  --card-shadow: rgba(22, 33, 62, 0.7);
-  --accent-highlight: rgba(233, 69, 96, 0.08);
-  --accent-shadow: rgba(233, 69, 96, 0.6);
+  --border: #ca8a04;
+  --input: #ca8a04;
+  --ring: #fef3c7;
+  --card-highlight: rgba(113, 96, 30, 0.3);
+  --card-shadow: rgba(68, 56, 4, 0.5);
+  --accent-highlight: rgba(253, 224, 71, 0.2);
+  --accent-shadow: rgba(202, 138, 4, 0.4);
 }
 
 @theme inline {

@@ -1,9 +1,12 @@
 import Link from 'next/link'
-import LayoutWrapper from '@/components/LayoutWrapper'
+import TopNav from '@/components/TopNav'
+import BottomNavMobile from '@/components/BottomNavMobile'
 
 export default function Home() {
   return (
-    <LayoutWrapper>
+    <>
+      <TopNav />
+      
       {/* Background Orbs */}
       <div className="fixed inset-0 pointer-events-none -z-10">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-container opacity-20 rounded-full blur-[120px]"></div>
@@ -11,7 +14,7 @@ export default function Home() {
         <div className="absolute top-[40%] right-[10%] w-[30%] h-[30%] bg-secondary-container opacity-15 rounded-full blur-[80px]"></div>
       </div>
 
-      <main className="pt-0">
+      <main className="pt-20 pb-24 lg:pb-0">
         {/* Hero Section */}
         <section className="relative px-6 py-20 lg:py-32 flex flex-col lg:flex-row items-center justify-between max-w-7xl mx-auto overflow-hidden">
           <div className="lg:w-1/2 space-y-8 z-10 text-center lg:text-left">
@@ -259,6 +262,8 @@ export default function Home() {
           </div>
         </footer>
       </main>
-    </LayoutWrapper>
+      
+      <BottomNavMobile />
+    </>
   )
 }
