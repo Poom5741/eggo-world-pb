@@ -122,36 +122,6 @@ export default function DashboardPage() {
     }
   }
 
-      // Target: 50 buddies per level for percentage calculation
-      const TARGET_BUDDIES = 50
-      const levels = [1, 2, 3, 4].map((lvl) => ({
-        level: lvl,
-        count: levelCounts[lvl],
-        percentage: (levelCounts[lvl] / TARGET_BUDDIES) * 100,
-        commissionRate: lvl === 1 ? 0.20 : 0.10,
-      }))
-
-      setReferralLevels(levels)
-    } catch (err: any) {
-      // Suppress auto-cancel and 404 errors
-      if (isAutoCancelError(err)) {
-        // Silent - normal during navigation
-        return
-      }
-      if (isNotFound(err)) {
-        // Set empty state for missing collections/data
-        setProfile(null)
-        setStats({ totalEggs: 0, totalFood: 0, totalCommissions: 0 })
-        setReferralLevels([])
-        return
-      }
-      // Log other errors
-      console.error('Failed to fetch dashboard data:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   // Refresh function kept for future use (manual refresh button can be re-added)
   const _handleRefresh = async () => {
     if (user) {
