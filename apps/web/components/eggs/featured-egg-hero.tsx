@@ -14,6 +14,7 @@ export interface FeaturedEggHeroProps {
   onFeed?: (eggId: number) => void
   onPlay?: (eggId: number) => void
   onHatch?: (egg: EggData) => void
+  polling?: boolean
 }
 
 /**
@@ -23,7 +24,7 @@ export interface FeaturedEggHeroProps {
  * Large card with egg image, details, progress bar, and action buttons
  * การ์ดใหญ่แสดงรูปภาพไข่ รายละเอียด แถบความคืบหน้า และปุ่มดำเนินการ
  */
-export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch }: FeaturedEggHeroProps) {
+export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch, polling }: FeaturedEggHeroProps) {
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -42,6 +43,13 @@ export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch }: FeaturedEggHer
           {/* Left Column: Egg Image - ฝั่งซ้าย: รูปภาพไข่ */}
           <div className="relative flex justify-center">
             <div className="w-72 h-96 bg-white/40 backdrop-blur-sm rounded-[5rem] clay-card flex items-center justify-center p-8 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+              {/* "Updating..." badge during polling - ป้าย "Updating..." ขณะกำลังโพล */}
+              {polling && (
+                <Badge variant="clay" className="absolute top-4 right-4 animate-pulse gap-1">
+                  <span className="material-symbols-outlined text-xs animate-spin">sync</span>
+                  Updating...
+                </Badge>
+              )}
               <img
                 alt="Featured Egg"
                 className="w-full h-full object-contain drop-shadow-2xl"

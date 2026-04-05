@@ -37,8 +37,8 @@ export default function Eggs() {
   // Get authenticated user (after hydration)
   const user = isHydrated ? pb.authStore.record : null
   
-  // Fetch eggs with auto-polling
-  const { eggs, loading, error, refresh } = useEggPoll(user?.wallet, 30000)
+   // Fetch eggs with auto-polling
+   const { eggs, loading, error, refresh, polling } = useEggPoll(user?.wallet, 30000)
   
   // Auth guard - redirect to login if not authenticated
   useEffect(() => {
@@ -120,6 +120,41 @@ export default function Eggs() {
   if (!user) {
     return null
   }
+
+  // Check for wallet - ตรวจสอบว่ามี wallet หรือไม่
+  // Handle no wallet case - จัดการกรณีไม่มี wallet
+  const hasWallet = user?.wallet
+  if (isHydrated && !hasWallet) {
+    return (
+      <LayoutWrapper>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div>
+              <h1 className="text-5xl font-pixel-style text-primary mb-2">My Egg Inventory</h1>
+              <p className="text-on-surface-variant max-w-md">
+                Manage your digital companions, keep them fed, and watch them hatch into legendary creatures.
+              </p>
+            </div>
+          </div>
+          
+          {/* No Wallet State - สถานะไม่มี wallet */}
+          <div className="bg-surface-container-low rounded-xl p-12 clay-card text-center">
+            <span className="material-symbols-outlined text-6xl text-primary mb-4">account_balance_wallet</span>
+            <h2 className="text-2xl font-pixel-style text-primary mb-2">Wallet Not Connected</h2>
+            <p className="text-on-surface-variant mb-6">
+              Please connect your wallet to view your eggs
+            </p>
+            <button
+              onClick={() => router.push('/dashboard')}
+              className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
+            >
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      </LayoutWrapper>
+    )
+  }
   
   // Empty state - กรณีไม่มีไข่
   if (eggs.length === 0) {
@@ -141,12 +176,22 @@ export default function Eggs() {
             <p className="text-on-surface-variant mb-6">
               You don&apos;t have any Egg NFTs yet. Start your journey by purchasing your first egg!
             </p>
-            <button
-              onClick={() => router.push('/mint')}
-              className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
-            >
-              Get Your First Egg
-            </button>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => router.push('/mint')}
+                className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
+              >
+                Get Your First Egg
+              </button>
+              {/* Manual retry button - ปุ่มลองใหม่ด้วยตนเอง */}
+              <button
+                onClick={refresh}
+                className="clay-button bg-surface-container text-primary py-4 px-8 rounded-xl font-black text-lg flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined">refresh</span>
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
       </LayoutWrapper>
@@ -185,6 +230,7 @@ export default function Eggs() {
             onFeed={handleFeedEgg}
             onPlay={handlePlayEgg}
             onHatch={handleHatchEgg}
+            polling={polling}
           />
         )}
         
@@ -196,6 +242,7 @@ export default function Eggs() {
               egg={egg}
               onManage={handleManageEgg}
               onHatch={handleHatchEgg}
+              polling={polling}
             />
           ))}
         </div>
