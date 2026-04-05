@@ -6,9 +6,12 @@ import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { BalanceCard } from '@/components/dashboard/balance-card'
 import { BuddyChain } from '@/components/dashboard/buddy-chain'
+import { QuickActions } from '@/components/dashboard/quick-actions'
+import { ActivityFeed } from '@/components/dashboard/activity-feed'
+import { ActiveEggsCard } from '@/components/dashboard/active-eggs-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Egg, Coins, TrendingUp, Wallet, RefreshCw, Flame } from 'lucide-react'
+import { Coins, TrendingUp, Wallet, RefreshCw, Flame } from 'lucide-react'
 import { Header } from '@/components/header'
 
 export default function DashboardPage() {
@@ -245,57 +248,74 @@ export default function DashboardPage() {
             {/* Buddy Chain Referral Visualization */}
             <BuddyChain levels={referralLevels} loading={loading} />
 
-            {/* Quick Actions - Clay container */}
-            <Card variant="clay-lg" className="shadow-clay-xl">
-              <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
-                  QUICK ACTIONS
-                </CardTitle>
-                <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                  Jump into the action
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Button
-                    onClick={() => router.push('/mint')}
-                    variant="clay"
-                    size="clay-md"
-                    className="w-full"
-                  >
-                    <Egg className="w-4 h-4 mr-2" />
-                    MINT EGG
-                  </Button>
-                  <Button
-                    onClick={() => router.push('/mint/food')}
-                    variant="clay"
-                    size="clay-md"
-                    className="w-full"
-                  >
-                    <Flame className="w-4 h-4 mr-2" />
-                    BUY FOOD
-                  </Button>
-                  <Button
-                    onClick={() => router.push('/dashboard/eggs')}
-                    variant="clay"
-                    size="clay-md"
-                    className="w-full"
-                  >
-                    <Egg className="w-4 h-4 mr-2" />
-                    MY EGGS
-                  </Button>
-                  <Button
-                    onClick={() => router.push('/wallet')}
-                    variant="clay"
-                    size="clay-md"
-                    className="w-full"
-                  >
-                    <Wallet className="w-4 h-4 mr-2" />
-                    WALLET
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Quick Actions and Activity Feed - Jules layout */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+              {/* Left column: QuickActions (xl:col-span-4) */}
+              <div className="xl:col-span-4">
+                <QuickActions />
+              </div>
+              
+              {/* Right column: ActivityFeed (xl:col-span-8) */}
+              <div className="xl:col-span-8">
+                <ActivityFeed userId={user?.id} />
+              </div>
+            </div>
+
+            {/* Active Eggs Card - Replace first stat card */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-clay-xl">
+              <ActiveEggsCard count={stats.totalEggs} />
+
+              <Card variant="clay" className="shadow-clay-lg">
+                <CardHeader className="pb-3">
+                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                    FOOD NFTs
+                  </CardDescription>
+                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-accent">
+                    {stats.totalFood}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <Flame className="w-3 h-3 mr-1" />
+                    Bonus from eggs
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card variant="clay" className="shadow-clay-lg">
+                <CardHeader className="pb-3">
+                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                    PENDING COMMISSIONS
+                  </CardDescription>
+                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-primary">
+                    {stats.totalCommissions.toFixed(2)} USDT
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <Coins className="w-3 h-3 mr-1" />
+                    Ready to claim
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card variant="clay" className="shadow-clay-lg">
+                <CardHeader className="pb-3">
+                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                    TOTAL EARNED
+                  </CardDescription>
+                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-foreground">
+                    {usdtTotalEarned.toFixed(2)} USDT
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center text-xs text-muted-foreground">
+                    <TrendingUp className="w-3 h-3 mr-1" />
+                    All time earnings
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Loading State */}
             {loading && (
