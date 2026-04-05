@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { BalanceCard } from '@/components/dashboard/balance-card'
+import { BuddyChain } from '@/components/dashboard/buddy-chain'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Egg, Coins, TrendingUp, Wallet, RefreshCw, Flame } from 'lucide-react'
@@ -20,6 +21,7 @@ export default function DashboardPage() {
     totalCommissions: 0,
     totalFood: 0
   })
+  const [referralLevels, setReferralLevels] = useState<Array<{ level: number; count: number; percentage: number; commissionRate: number }>>([])
   const [loading, setLoading] = useState(true)
 
   // Auto-polling for wallet balance (per D-11: 30 seconds)
@@ -80,6 +82,27 @@ export default function DashboardPage() {
         totalFood,
         totalCommissions
       })
+
+      // Calculate referral levels from commission records
+      // Group commissions by referrer level (G1-G4)
+      const levelCounts = { 1: 0, 2: 0, 3: 0, 4: 0 }
+      commissionsData.items.forEach((record: any) => {
+        const level = record.level // Assuming commission_records has a 'level' field (1-4)
+        if (level >= 1 && level <= 4) {
+          levelCounts[level as keyof typeof levelCounts]++
+        }
+      })
+
+      // Target: 50 buddies per level for percentage calculation
+      const TARGET_BUDDIES = 50
+      const levels = [1, 2, 3, 4].map((lvl) => ({
+        level: lvl,
+        count: levelCounts[lvl as keyof typeof levelCounts],
+        percentage: (levelCounts[lvl as keyof typeof levelCounts] / TARGET_BUDDIES) * 100,
+        commissionRate: lvl === 1 ? 0.20 : 0.10,
+      }))
+
+      setReferralLevels(levels)
     } catch (err) {
       console.error('Failed to fetch dashboard data:', err)
     } finally {
@@ -218,6 +241,9 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Buddy Chain Referral Visualization */}
+            <BuddyChain levels={referralLevels} loading={loading} />
 
             {/* Quick Actions - Clay container */}
             <Card variant="clay-lg" className="shadow-clay-xl">
