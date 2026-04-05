@@ -59,8 +59,8 @@ export function useEggPoll(
    * ดึงข้อมูล Egg NFT จาก PocketBase
    */
   const fetchEggs = useCallback(async () => {
-    if (!walletAddress) {
-      // No wallet address, skip fetch
+    // No wallet address or empty string, skip fetch
+    if (!walletAddress || walletAddress === '') {
       return
     }
 
