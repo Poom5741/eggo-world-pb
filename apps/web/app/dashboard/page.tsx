@@ -146,7 +146,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div className="space-y-2">
                 <h1 className="font-[var(--font-pixel)] text-2xl md:text-3xl text-foreground flex items-center gap-3">
-                  <Wallet className="w-8 h-8 text-primary" />
+                  <span className="material-symbols-outlined text-4xl text-primary">account_balance_wallet</span>
                   DASHBOARD
                 </h1>
                 <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
