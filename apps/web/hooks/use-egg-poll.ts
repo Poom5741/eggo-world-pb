@@ -1,0 +1,98 @@
+import { useState, useEffect, useCallback } from 'react'
+import { createClient } from '@/lib/pocketbase/client'
+
+/**
+ * Egg NFT data structure
+ * โครงสร้างข้อมูล Egg NFT
+ */
+export interface EggData {
+  id: string
+  egg_id: number
+  food_count: number
+  is_hatched: boolean
+  token_id: string
+  minted_at: string
+  rarity_seed?: number
+  element_type?: string
+  owner?: string
+}
+
+/**
+ * Return type for useEggPoll hook
+ * ประเภทข้อมูลที่ถูกส่งกลับจาก hook
+ */
+interface UseEggPollReturn {
+  eggs: EggData[]
+  loading: boolean
+  error: string | null
+  refresh: () => Promise<void>
+}
+
+/**
+ * Auto-polling hook for egg NFTs
+ * Hook สำหรับดึงข้อมูล Egg NFT อัตโนมัติทุก 30 วินาที
+ * 
+ * @param walletAddress - Wallet address to query eggs for
+ * @param intervalMs - Polling interval in milliseconds (default: 30000 = 30 seconds)
+ * @returns Object with eggs array, loading state, error, and refresh function
+ * 
+ * @example
+ * ```typescript
+ * const { eggs, loading, error, refresh } = useEggPoll(user?.wallet, 30000)
+ * ```
+ */
+export function useEggPoll(
+  walletAddress: string | undefined,
+  intervalMs: number = 30000 // 30 seconds per D-16
+): UseEggPollReturn {
+  const [eggs, setEggs] = useState<EggData[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  /**
+   * Fetch egg NFTs from PocketBase
+   * ดึงข้อมูล Egg NFT จาก PocketBase
+   */
+  const fetchEggs = useCallback(async () => {
+    if (!walletAddress) {
+      // No wallet address, skip fetch
+      return
+    }
+
+    setLoading(true)
+    try {
+      // Get PocketBase client
+      const pb = createClient()
+      
+      // Fetch from egg_nfts collection with filter and sort
+      // กรองตามเจ้าของและเรียงตาม food_count (มากไปน้อย)
+      const records = await pb.collection('egg_nfts').getList(1, 100, {
+        filter: `owner = "${walletAddress}" && is_hatched = false`,
+        sort: '-food_count', // Sort by food_count descending (eggs closest to hatching first)
+      })
+
+      setEggs(records.items as EggData[])
+      setError(null)
+    } catch (err: any) {
+      // Handle error
+      setError(err.message || 'Unknown error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }, [walletAddress])
+
+  useEffect(() => {
+    // Initial fetch on mount
+    fetchEggs()
+
+    // Poll every intervalMs (per D-16: 30 seconds)
+    const pollInterval = setInterval(fetchEggs, intervalMs)
+
+    // Cleanup on unmount
+    return () => {
+      clearInterval(pollInterval)
+    }
+  }, [fetchEggs, intervalMs])
+
+  return { eggs, loading, error, refresh: fetchEggs }
+}
