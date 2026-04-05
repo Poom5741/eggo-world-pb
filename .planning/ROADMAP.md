@@ -10,7 +10,7 @@
 ## Phases
 
 - [x] **Phase 8: Foundation & Auth** - Landing page, LINE OAuth flow, navigation structure
-- [ ] **Phase 9: Dashboard & Wallet** - Real-time balance, referral tracking, activity feed
+- [x] **Phase 9: Dashboard & Wallet** - Real-time balance, referral tracking, activity feed
 - [ ] **Phase 10: Egg Management** - Egg listing, feeding flow, hatching mechanics
 - [ ] **Phase 11: Marketplace** - NFT listings, buy/sell flows, commission display
 - [ ] **Phase 12: Mobile & Polish** - Responsive breakpoints, touch interactions, test coverage
@@ -58,9 +58,11 @@
    **Plans:** 3 plans
    **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
    **Plans:**
-   - [ ] 09-dashboard-wallet-01-PLAN.md — Balance card with auto-polling (FOUND-07, DASH-01)
-   - [ ] 09-dashboard-wallet-02-PLAN.md — Buddy Chain referral visualization (DASH-02)
-   - [ ] 09-dashboard-wallet-03-PLAN.md — Quick actions + activity feed (DASH-03, DASH-04, DASH-05)
+   - [x] 09-dashboard-wallet-01-PLAN.md — Balance card with auto-polling (FOUND-07, DASH-01)
+   - [x] 09-dashboard-wallet-02-PLAN.md — Buddy Chain referral visualization (DASH-02)
+   - [x] 09-dashboard-wallet-03-PLAN.md — Quick actions + activity feed (DASH-03, DASH-04, DASH-05)
+   **Status:** ✅ COMPLETE (2026-04-05)
+   **Summary:** All DASH requirements complete, balance polling working
 
 ### Phase 10: Egg Management
 
@@ -79,7 +81,7 @@
    **Plans:** 4 plans
    **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
    **Plans:**
-   - [ ] 10-01-PLAN.md — Egg display foundation with polling and cards (EGG-01, EGG-02)
+   - [x] 10-01-PLAN.md — Egg display foundation with polling and cards (EGG-01, EGG-02) ✅ COMPLETE
    - [ ] 10-02-PLAN.md — Feed flow with quick-fill and contract integration (EGG-03, EGG-04)
    - [ ] 10-03-PLAN.md — Hatch flow with reveal animation (EGG-05, EGG-06)
    - [ ] 10-04-PLAN.md — Polish: loading, error handling, polling indicators (EGG-07)
@@ -122,9 +124,9 @@
 
 | Phase                  | Requirements | Success Criteria | Plans Complete | Status      | Completed |
 | ---------------------- | ------------ | ---------------- | -------------- | ----------- | --------- |
-| 8 - Foundation & Auth  | 6            | 6                | 3/3            | Planned     | -         |
-| 9 - Dashboard & Wallet | 6            | 6                | 0/0            | Not started | -         |
-| 10 - Egg Management    | 7            | 7                | 0/4            | Planned     | -         |
+| 8 - Foundation & Auth  | 6            | 6                | 3/3            | Complete    | 2026-04-05 |
+| 9 - Dashboard & Wallet | 6            | 6                | 3/3            | Complete    | 2026-04-05 |
+| 10 - Egg Management    | 7            | 7                | 1/4            | Executing   | -         |
 | 11 - Marketplace       | 6            | 6                | 0/0            | Not started | -         |
 | 12 - Mobile & Polish   | 5            | 5                | 0/0            | Not started | -         |
 
@@ -152,8 +154,8 @@
 | DASH-03     | Phase 9  | TBD  | —      |
 | DASH-04     | Phase 9  | TBD  | —      |
 | DASH-05     | Phase 9  | TBD  | —      |
-| EGG-01      | Phase 10 | TBD  | —      |
-| EGG-02      | Phase 10 | TBD  | —      |
+| EGG-01      | Phase 10 | 01   | ✅     |
+| EGG-02      | Phase 10 | 01   | ✅     |
 | EGG-03      | Phase 10 | TBD  | —      |
 | EGG-04      | Phase 10 | TBD  | —      |
 | EGG-05      | Phase 10 | TBD  | —      |
