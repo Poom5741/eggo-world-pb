@@ -55,8 +55,12 @@
 4. Quick action buttons (Feed All, Hatch Ready, Buy Food) trigger correct navigation flows
 5. Recent activity shows last 10 transactions from PocketBase
 6. Active eggs count displays correctly with egg preview avatars
-   **Plans:** TBD
+   **Plans:** 3 plans
    **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
+   **Plans:**
+   - [ ] 09-dashboard-wallet-01-PLAN.md — Balance card with auto-polling (FOUND-07, DASH-01)
+   - [ ] 09-dashboard-wallet-02-PLAN.md — Buddy Chain referral visualization (DASH-02)
+   - [ ] 09-dashboard-wallet-03-PLAN.md — Quick actions + activity feed (DASH-03, DASH-04, DASH-05)
 
 ### Phase 10: Egg Management
 
