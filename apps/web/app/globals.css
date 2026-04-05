@@ -35,6 +35,7 @@
   --surface-container-high: #fde68a;
   --surface-container-highest: #fcd34d;
   --surface-container-low: #fef9c3;
+  --surface-container-lowest: #fef3c7;
   --surface-dark: rgba(68, 56, 4, 0.8);
   --surface-container-dark: #443804;
   
@@ -51,6 +52,7 @@
   --on-tertiary-container: #443804;
   --on-surface: #443804;
   --on-surface-variant: #854d0e;
+  --outline-variant: #854d0e;
   
   --chart-1: #facc15;
   --chart-2: #e94560;
@@ -129,6 +131,7 @@
   --surface-container-high: #856d28;
   --surface-container-highest: #a18235;
   --surface-container-low: #5c4f17;
+  --surface-container-lowest: #71601e;
   --surface-dark: rgba(68, 56, 4, 0.9);
   --surface-container-dark: #71601e;
   
@@ -145,6 +148,7 @@
   --on-tertiary-container: #fef3c7;
   --on-surface: #fef3c7;
   --on-surface-variant: #fef3c7;
+  --outline-variant: #fef3c7;
   
   --card-highlight: rgba(113, 96, 30, 0.3);
   --card-shadow: rgba(68, 56, 4, 0.5);

@@ -62,7 +62,7 @@ export default function Home() {
                 <h2 className="text-4xl md:text-5xl font-black text-on-surface">Genesis Collection</h2>
                 <p className="text-on-surface-variant max-w-md">Discover the first wave of Eggo elements and rare food clusters.</p>
               </div>
-              <button className="bg-white px-8 py-3 rounded-full font-bold shadow-md hover:shadow-xl transition-all">Explore All NFTs</button>
+              <button className="bg-[var(--surface-container-highest)] px-8 py-3 rounded-full font-bold shadow-md hover:shadow-xl transition-all">Explore All NFTs</button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -144,8 +144,8 @@ export default function Home() {
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-              <div className="w-24 h-24 bg-inverse-surface rounded-[2rem] shadow-xl flex items-center justify-center transform hover:-rotate-6 transition-transform">
-                <span className="material-symbols-outlined text-4xl text-primary-fixed" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">auto_awesome</span>
+              <div className="w-24 h-24 bg-[var(--secondary)] rounded-[2rem] shadow-xl flex items-center justify-center transform hover:-rotate-6 transition-transform">
+                <span className="material-symbols-outlined text-4xl text-[var(--on-secondary)]" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">auto_awesome</span>
               </div>
               <div>
                 <h3 className="text-2xl font-black text-on-surface">Hatch</h3>
@@ -158,7 +158,7 @@ export default function Home() {
         {/* Features & Community */}
         <section className="py-24 px-6 bg-surface-container-highest">
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12">
-            <div className="lg:w-1/2 bg-white p-12 rounded-[2rem] shadow-xl relative overflow-hidden group">
+            <div className="lg:w-1/2 bg-[var(--surface)] p-12 rounded-[2rem] shadow-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-secondary-container opacity-20 rounded-bl-full group-hover:scale-150 transition-transform duration-700"></div>
               <div className="relative z-10 space-y-6">
                 <span className="material-symbols-outlined text-5xl text-secondary" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">group_add</span>
@@ -168,7 +168,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="lg:w-1/2 bg-surface p-12 rounded-[2rem] shadow-xl border-4 border-dashed border-outline-variant relative overflow-hidden group">
+            <div className="lg:w-1/2 bg-[var(--surface)] p-12 rounded-[2rem] shadow-xl border-4 border-dashed border-[var(--border)] relative overflow-hidden group">
               <div className="relative z-10 space-y-6">
                 <span className="material-symbols-outlined text-5xl text-tertiary" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">event</span>
                 <h2 className="text-4xl font-black">Community Events</h2>
@@ -191,12 +191,12 @@ export default function Home() {
             <div className="absolute top-0 left-0 w-full h-full opacity-10" style={{backgroundImage: "url('https://www.transparenttextures.com/patterns/60-lines.png')"}}></div>
             <div className="relative z-10 space-y-8">
               <h2 className="text-5xl md:text-7xl font-black text-on-primary">READY TO HATCH?</h2>
-              <p className="text-primary-fixed-dim text-xl max-w-xl mx-auto">Join thousands of collectors in the most vibrant pet ecosystem on the blockchain.</p>
+              <p className="text-[var(--on-surface)]/70 text-xl max-w-xl mx-auto">Join thousands of collectors in the most vibrant pet ecosystem on the blockchain.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <button className="bg-white text-primary px-12 py-5 rounded-[2rem] font-headline font-black text-2xl shadow-2xl hover:scale-105 transition-transform">
                   Join Discord
                 </button>
-                <button className="bg-primary-dim text-white px-12 py-5 rounded-[2rem] font-headline font-black text-2xl border-2 border-white/20 hover:bg-primary transition-colors">
+                <button className="bg-[var(--secondary)] text-[var(--on-secondary)] px-12 py-5 rounded-[2rem] font-headline font-black text-2xl border-2 border-[var(--foreground)]/20 hover:bg-[var(--secondary-container)] transition-colors">
                   Hatch Now
                 </button>
               </div>
@@ -205,10 +205,10 @@ export default function Home() {
         </section>
 
         {/* Footer */}
-        <footer className="bg-surface-container-lowest pt-20 pb-32 lg:pb-12 px-6">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-outline-variant/20 pb-12">
+        <footer className="bg-[var(--surface-container-low)] pt-20 pb-32 lg:pb-12 px-6">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 border-b border-[var(--border)]/20 pb-12">
             <div className="space-y-6">
-              <div className="text-3xl font-black italic text-yellow-900 font-headline">EggoWorld</div>
+              <div className="text-3xl font-black italic text-[var(--on-surface)] font-headline">EggoWorld</div>
               <p className="text-on-surface-variant">The future of pet gaming, built with love and clay.</p>
               <div className="flex space-x-4">
                 <div className="w-10 h-10 bg-surface-container flex items-center justify-center rounded-[2rem] hover:bg-primary-container transition-colors cursor-pointer">
