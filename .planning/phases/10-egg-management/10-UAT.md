@@ -7,14 +7,37 @@ source:
   - 10-03-SUMMARY.md
   - 10-04-SUMMARY.md
 started: "2026-04-05T14:15:00Z"
-  updated: "2026-04-05T14:30:00Z"
+  updated: "2026-04-05T14:50:00Z"
 ---
 
 ## Current Test
 
-**BLOCKED:** Backend collections not deployed to production PocketBase.
+**PARTIALLY FIXED:** Frontend wallet field bug fixed. Backend collections need manual creation via Admin UI.
 
-**Awaiting:** Production database migration for `egg_nfts`, `commission_records`, `transactions` collections.
+**Completed:**
+
+- ✅ Fixed `user.wallet` field reference (was `user.wallet_address`)
+- ✅ Created collection JSON schemas in `apps/backend/collections/`
+- ✅ PocketBase running on server
+
+**Remaining:**
+
+- ⏳ Create 5 collections via PocketBase Admin UI: `egg_nfts`, `commission_records`, `transactions`, `animal_nfts`, `food_nfts`
+
+**Manual Steps Required:**
+
+1. Open https://pb.eggoworld.io/_/
+2. Login: `admin@eggo.local` / `admin123`
+3. For each collection: Settings → Import Collection → Upload JSON from `apps/backend/collections/{name}.json`
+4. Save each collection
+
+**Collection Files Ready:**
+
+- `apps/backend/collections/egg_nfts.json`
+- `apps/backend/collections/commission_records.json`
+- `apps/backend/collections/transactions.json` (created today)
+- `apps/backend/collections/animal_nfts.json`
+- `apps/backend/collections/food_nfts.json`
 
 ---
 
@@ -85,11 +108,21 @@ blocked: 1
 
 ## Gaps
 
-[none — currently blocked by backend deployment]
+[none — backend collections need manual creation via Admin UI]
 
 ## Blockers
 
-- **Backend collections not deployed:** `egg_nfts`, `commission_records`, `transactions` collections missing or inaccessible on `pb.eggoworld.io`
-  - Test 1 blocked: Cannot verify egg display
-  - Tests 2-10 blocked: Depend on Test 1 passing
-  - Resolution: Deploy PocketBase migrations to production
+- **Backend collections need manual creation:** PocketBase Admin UI import required for 5 collections
+  - `egg_nfts` - Egg NFT ownership and feeding progress
+  - `commission_records` - Referral commission tracking
+  - `transactions` - Transaction history
+  - `animal_nfts` - Hatched animal NFTs
+  - `food_nfts` - Food item NFTs
+
+  **How to fix:**
+  1. SSH to server: `ssh -i ~/.ssh/poom-server root@204.168.144.14`
+  2. Collection JSONs are at: `/root/eggo-world-pb/apps/backend/collections/`
+  3. Or access Admin UI: https://pb.eggoworld.io/_/ (login: admin@eggo.local / admin123)
+  4. Import each collection via Settings → Import Collection
+
+  **Frontend code is correct** — verified wallet field fix in commits ba62723, f54e405
