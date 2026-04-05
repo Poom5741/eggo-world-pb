@@ -14,15 +14,23 @@ updated: "2026-04-05T14:15:00Z"
 
 <!-- OVERWRITE each test - shows where we are -->
 
-number: 2
-name: Feed Flow - Quick Fill
+**Retest Test 1:** Bug fixed — changed `user?.wallet` to `user?.wallet_address` in eggs page, dashboard, and wallet page.
+
+number: 1
+name: Egg NFT Page Display (RETEST)
 expected: |
-Click "FEED ME" button on an egg card with <10 food. Dialog opens showing "Quick Fill: Auto-select 10 food items". Click "Confirm" button. Transaction toast appears. After confirmation, egg card shows updated food count (e.g., "4/10" → "14/10" or caps at 10).
-awaiting: user response
+Navigate to /eggs page while authenticated. Page displays:
+
+- Featured egg hero section at top (large egg image, name, progress bar)
+- Grid of egg cards below (3 columns desktop, responsive)
+- Each card shows: egg image, name (#ID), rarity badge, element type, feeding progress (X/10)
+- "Updating..." badge pulses in top-right corner of egg images during polling
+- Loading skeleton appears during initial fetch
+  awaiting: user response
 
 ---
 
-**Issue found in Test 1:** Infinite API loop — `owner = "null"` string instead of wallet address. Diagnosing...
+**Issue found in Test 1:** Infinite API loop — `owner = "null"` string instead of wallet address. **FIXED** in commit ba62723 — changed `user?.wallet` to `user?.wallet_address`.
 
 ## Tests
 
