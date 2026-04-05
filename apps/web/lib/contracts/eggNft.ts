@@ -3,16 +3,18 @@ import { BrowserProvider, Contract } from 'ethers'
 // EggNFT contract address (update from .env or config in production)
 export const EGG_NFT_ADDRESS = process.env.NEXT_PUBLIC_EGG_NFT_ADDRESS || '0x0000000000000000000000000000000000000000'
 
-// Minimal ABI for hatchEgg function and EggHatched event
+// Minimal ABI for EggNFT functions (hatchEgg, upgradeEggRarity, getFoodCount, etc.)
 export const EGG_NFT_ABI = [
   // Functions
   'function hatchEgg(uint256 eggId) external returns (uint256 animalId)',
+  'function upgradeEggRarity(uint256 eggTokenId, uint256[] calldata foodIds) external',
   'function getEggProperties(uint256 tokenId) external view returns (uint256 egg_id, address owner, uint256 food_count, bool is_hatched, uint256 rarity_seed, address[4] referral_chain, uint256 animal_token_id, uint256 parent1_animal_id, uint256 parent2_animal_id, bool is_breeding_egg, uint256 rarity_upgrade_count, uint256 generation)',
   'function getFoodCount(uint256 tokenId) external view returns (uint256)',
   'function isEggHatched(uint256 tokenId) external view returns (bool)',
   
   // Events
   'event EggHatched(uint256 indexed egg_id, uint256 indexed animal_id, uint8 rarity, uint8 species)',
+  'event EggUpgraded(uint256 indexed egg_id, uint256 new_food_count, uint256 rarity_bonus)',
 ] as const
 
 // Rarity enum matching Solidity contract
@@ -85,4 +87,26 @@ export function getRarityName(rarity: Rarity): string {
 // Convert species number to string
 export function getSpeciesName(species: Species): string {
   return Species[species]
+}
+
+/**
+ * ฟังก์ชันให้อาหารไข่เพื่อเพิ่มความหายาก
+ * ต้องให้อาหารครบ 10 ชิ้นก่อน ถึงจะใช้ฟังก์ชันนี้ได้
+ * @param signer - ผู้เซ็นธุรกรรม (เจ้าของไข่)
+ * @param eggTokenId - Token ID ของไข่ NFT
+ * @param foodIds - อาร์เรย์ของ Food NFT IDs ที่จะใช้ (ต้องมากกว่า 0)
+ * @returns Transaction hash
+ */
+export async function upgradeEggRarity(
+  signer: any,
+  eggTokenId: number,
+  foodIds: number[]
+): Promise<string> {
+  if (foodIds.length === 0) {
+    throw new Error('Must provide at least 1 food item to upgrade')
+  }
+  
+  const contract = getEggNftContract(signer)
+  const tx = await contract.upgradeEggRarity(eggTokenId, foodIds)
+  return tx.hash
 }
