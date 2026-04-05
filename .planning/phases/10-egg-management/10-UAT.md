@@ -7,39 +7,27 @@ source:
   - 10-03-SUMMARY.md
   - 10-04-SUMMARY.md
 started: "2026-04-05T14:15:00Z"
-  updated: "2026-04-05T14:25:00Z"
+  updated: "2026-04-05T14:30:00Z"
 ---
 
 ## Current Test
 
-<!-- OVERWRITE each test - shows where we are -->
+**BLOCKED:** Backend collections not deployed to production PocketBase.
 
-**Retest Test 1:** Bug fixed — corrected field name from `wallet_address` to `wallet` (PocketBase users collection field).
-
-number: 1
-name: Egg NFT Page Display (RETEST #2)
-expected: |
-Navigate to /eggs page while authenticated. Page displays:
-
-- Featured egg hero section at top (large egg image, name, progress bar)
-- Grid of egg cards below (3 columns desktop, responsive)
-- Each card shows: egg image, name (#ID), rarity badge, element type, feeding progress (X/10)
-- "Updating..." badge pulses in top-right corner of egg images during polling
-- Loading skeleton appears during initial fetch
-  awaiting: user response
+**Awaiting:** Production database migration for `egg_nfts`, `commission_records`, `transactions` collections.
 
 ---
 
-**Issue found in Test 1:** "Wallet Not Connected" shown incorrectly. **ROOT CAUSE:** Field name mismatch — PocketBase stores wallet in `wallet` field (not `wallet_address`). **FIXED** in commit f54e405.
+**Blocker:** PocketBase collections (`egg_nfts`, `commission_records`, `transactions`, `users` record access) returning 404 on `pb.eggoworld.io`. Frontend code is correct — backend collections need to be migrated/deployed.
 
 ## Tests
 
 ### 1. Egg NFT Page Display
 
 expected: Navigate to /eggs page while authenticated. Page displays featured egg hero at top, grid of egg cards below (3 cols desktop), each showing egg image, name (#ID), rarity badge, element type, feeding progress (X/10). "Updating..." badge pulses during polling. Loading skeleton on initial fetch.
-result: issue
-reported: "Page has bug repeatedly calling endpoint so it cannot be render. Fetch shows owner = \"null\" string instead of actual wallet address, causing infinite API calls"
-severity: blocker
+result: blocked
+blocked_by: backend
+reason: "PocketBase collections (egg_nfts, commission_records, transactions) returning 404 on pb.eggoworld.io. Frontend code correct — backend collections need migration/deployment."
 
 ### 2. Feed Flow - Quick Fill
 
@@ -90,17 +78,18 @@ result: [pending]
 
 total: 10
 passed: 0
-issues: 1
+issues: 0
 pending: 9
 skipped: 0
+blocked: 1
 
 ## Gaps
 
-- truth: "Egg NFT page displays with featured hero and egg card grid"
-  status: failed
-  reason: "User reported: Page has bug repeatedly calling endpoint so it cannot be render. Fetch shows owner = \"null\" string instead of actual wallet address, causing infinite API calls"
-  severity: blocker
-  test: 1
-  artifacts: []
-  missing: []
-  debug_session: null
+[none — currently blocked by backend deployment]
+
+## Blockers
+
+- **Backend collections not deployed:** `egg_nfts`, `commission_records`, `transactions` collections missing or inaccessible on `pb.eggoworld.io`
+  - Test 1 blocked: Cannot verify egg display
+  - Tests 2-10 blocked: Depend on Test 1 passing
+  - Resolution: Deploy PocketBase migrations to production
