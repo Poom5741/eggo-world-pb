@@ -28,10 +28,10 @@ export default function Home() {
               Welcome to EggoWorld, where pixels meet clay. Collect food, feed your Eggos, and watch them evolve into legendary digital companions.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start pt-4">
-              <Link href="/join" className="clay-btn bg-primary-container text-on-primary-container px-10 py-5 rounded-xl font-headline font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl">
+              <Link href="/join" className="clay-btn bg-primary-container text-on-primary-container px-10 py-5 rounded-[2rem] font-headline font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl">
                 Join the EggoWorld
               </Link>
-              <Link href="/marketplace" className="px-10 py-5 rounded-xl font-headline font-bold text-lg hover:bg-surface-container-low transition-colors">
+              <Link href="/marketplace" className="px-10 py-5 rounded-[2rem] font-headline font-bold text-lg hover:bg-surface-container-low transition-colors">
                 View Marketplace
               </Link>
             </div>
@@ -44,10 +44,10 @@ export default function Home() {
                 className="w-full h-full object-contain drop-shadow-[0_20px_50px_rgba(119,99,0,0.4)] animate-float" 
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIyPc9E9hhRj6Naem1md-_SjAlnWv3C9t9Jd1ptVysafOeZMyE_DVEnm59Uwf0ktgCkWuUNv03y60br8lIo1qaWcOgDm_PqFCVCCtr-M2rGRlk7s7EgGaYs14WJecmxGBdeRzV8JXCLmUPxR7rPWXVLhcFrK1D4sb5xnisNibPTfReqZA4s2lMTPjYO0K6qgxPBoDWQ_RG5brJU4xgaZh_XLPWlpT0tB4cFOLwn5Fs6zyzEqDRDJQV4vyxAZDG57JdfzAoWRe2I75Y"
               />
-              <div className="absolute -top-10 -right-10 bg-secondary-container p-6 rounded-xl shadow-xl transform rotate-12">
+              <div className="absolute -top-10 -right-10 bg-secondary-container p-6 rounded-[2rem] shadow-xl transform rotate-12">
                 <span className="material-symbols-outlined text-4xl text-on-secondary-container" style={{fontVariationSettings: "'FILL' 1"}}>egg</span>
               </div>
-              <div className="absolute bottom-4 -left-12 bg-tertiary-container p-6 rounded-xl shadow-xl transform -rotate-12">
+              <div className="absolute bottom-4 -left-12 bg-tertiary-container p-6 rounded-[2rem] shadow-xl transform -rotate-12">
                 <span className="material-symbols-outlined text-4xl text-on-tertiary-container" style={{fontVariationSettings: "'FILL' 1"}}>restaurant</span>
               </div>
             </div>
@@ -66,7 +66,7 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="md:col-span-2 bg-surface p-8 rounded-lg shadow-lg flex flex-col justify-between group overflow-hidden">
+              <div className="md:col-span-2 bg-surface p-8 rounded-[2.5rem] shadow-lg flex flex-col justify-between group overflow-hidden">
                 <div className="relative">
                   <img alt="Egg NFT" className="w-full h-64 object-contain group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJ6frJgjpBlqFXuzYqunCrkcnnHrIj8Ukva6o2cTE8neIItCV4J28vaz5wEainQmW6P8zOBRIbMUWGcG0GU-hCSgLLEMDyp5D46yUinWRHGU-58MzD8mNrdTrgE01MmAKgbjfXw9g3CyiDxduwTVuRrACp3LfETkA_Xt-qILRZZkr2WRGm5QvcXkezcmsOOdRFaH4e2ZDnQOOcXiy-qUkSw7tu2t3ZSzJeNsnF6ENfsH1dxBSCXa_8KGNzuKneq7mcu1IDz7g84S1i"/>
                   <div className="absolute top-0 right-0 bg-primary text-on-primary px-4 py-1 rounded-full text-sm font-bold">LEGENDARY</div>
@@ -80,7 +80,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-surface-container-high p-6 rounded-lg shadow-md flex flex-col">
+              <div className="bg-surface-container-high p-6 rounded-[2rem] shadow-md flex flex-col">
                 <img alt="Food NFT" className="w-full h-40 object-contain mb-4" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlvVtHt4eUTbKPHMQoGhwRSQ3sWTS9tLRrnGkXHZzP8ua7kOspxfb0vdtYBee9aBKKEnPrxFVcxrrlZoPFcSBn4PWwcDwB7Dqs2dv9fTDfNnyZGuHjBY5UiCrjCUDPiIvtPop6q5ZpYU8ZI_I9cckwwhagVO08ZwnXZ04y3Jn6K0uDLMrLX_E20U591_Ctp1nTwNcaqLt6leMfC0nlKlQAQxPwiQDKER0h9UqKo9t6HAeit3rto07WagYZQjjWz_OipXEYhjlrHxv9"/>
                 <h3 className="font-black text-lg">Berry Boost Pack</h3>
                 <p className="text-sm text-on-surface-variant mt-2">+25 Energy</p>
@@ -90,7 +90,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="bg-surface-container-high p-6 rounded-lg shadow-md flex flex-col">
+              <div className="bg-surface-container-high p-6 rounded-[2rem] shadow-md flex flex-col">
                 <img alt="Food NFT" className="w-full h-40 object-contain mb-4 filter hue-rotate-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7DaaxzvQiGkXTawQJCzTuM3HIzGknVUd_qRkNsikAm83DjzxVgljUgw5wqFznjCCmqbiEvsQi5YgdO_01U0etn3BDhlWcreGmRZCk5YbpGuRWk9ejLaiD9aWtO-eHugQyTIBHKeVT40HoGZv79cESweBYhzoQBZMt_JmSMDQzByVqSzU1W4WEqb9olbKTuCHYbfWhX2TcVmkjR3xEMK8vHpAvGiQlkBrFgLyb9PajFPLxcGO1XK9lOhnX9vMirOWnUxPWpzHlykR2"/>
                 <h3 className="font-black text-lg">Blue Honey Core</h3>
                 <p className="text-sm text-on-surface-variant mt-2">+50 Vitality</p>
@@ -114,7 +114,7 @@ export default function Home() {
             <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-surface-container z-0 -translate-y-12"></div>
 
             <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-              <div className="w-24 h-24 bg-primary-container rounded-xl shadow-xl flex items-center justify-center transform hover:rotate-6 transition-transform">
+              <div className="w-24 h-24 bg-primary-container rounded-[2rem] shadow-xl flex items-center justify-center transform hover:rotate-6 transition-transform">
                 <span className="material-symbols-outlined text-4xl text-on-primary-container" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">shopping_bag</span>
               </div>
               <div>
@@ -124,7 +124,7 @@ export default function Home() {
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-              <div className="w-24 h-24 bg-secondary-container rounded-xl shadow-xl flex items-center justify-center transform hover:-rotate-6 transition-transform">
+              <div className="w-24 h-24 bg-secondary-container rounded-[2rem] shadow-xl flex items-center justify-center transform hover:-rotate-6 transition-transform">
                 <span className="material-symbols-outlined text-4xl text-on-secondary-container" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">restaurant</span>
               </div>
               <div>
@@ -134,7 +134,7 @@ export default function Home() {
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-              <div className="w-24 h-24 bg-tertiary-container rounded-xl shadow-xl flex items-center justify-center transform hover:rotate-6 transition-transform">
+              <div className="w-24 h-24 bg-tertiary-container rounded-[2rem] shadow-xl flex items-center justify-center transform hover:rotate-6 transition-transform">
                 <span className="material-symbols-outlined text-4xl text-on-tertiary-container" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">volunteer_activism</span>
               </div>
               <div>
@@ -144,7 +144,7 @@ export default function Home() {
             </div>
 
             <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-              <div className="w-24 h-24 bg-inverse-surface rounded-xl shadow-xl flex items-center justify-center transform hover:-rotate-6 transition-transform">
+              <div className="w-24 h-24 bg-inverse-surface rounded-[2rem] shadow-xl flex items-center justify-center transform hover:-rotate-6 transition-transform">
                 <span className="material-symbols-outlined text-4xl text-primary-fixed" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">auto_awesome</span>
               </div>
               <div>
@@ -158,7 +158,7 @@ export default function Home() {
         {/* Features & Community */}
         <section className="py-24 px-6 bg-surface-container-highest">
           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-12">
-            <div className="lg:w-1/2 bg-white p-12 rounded-xl shadow-xl relative overflow-hidden group">
+            <div className="lg:w-1/2 bg-white p-12 rounded-[2rem] shadow-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-secondary-container opacity-20 rounded-bl-full group-hover:scale-150 transition-transform duration-700"></div>
               <div className="relative z-10 space-y-6">
                 <span className="material-symbols-outlined text-5xl text-secondary" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">group_add</span>
@@ -168,7 +168,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="lg:w-1/2 bg-surface p-12 rounded-xl shadow-xl border-4 border-dashed border-outline-variant relative overflow-hidden group">
+            <div className="lg:w-1/2 bg-surface p-12 rounded-[2rem] shadow-xl border-4 border-dashed border-outline-variant relative overflow-hidden group">
               <div className="relative z-10 space-y-6">
                 <span className="material-symbols-outlined text-5xl text-tertiary" style={{fontVariationSettings: "'FILL' 1"}} aria-hidden="true">event</span>
                 <h2 className="text-4xl font-black">Community Events</h2>
@@ -187,16 +187,16 @@ export default function Home() {
 
         {/* Final CTA */}
         <section className="py-32 px-6 text-center">
-          <div className="max-w-4xl mx-auto bg-primary p-16 rounded-xl shadow-[0_40px_100px_rgba(119,99,0,0.3)] relative overflow-hidden">
+          <div className="max-w-4xl mx-auto bg-primary p-16 rounded-[2rem] shadow-[0_40px_100px_rgba(119,99,0,0.3)] relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-full opacity-10" style={{backgroundImage: "url('https://www.transparenttextures.com/patterns/60-lines.png')"}}></div>
             <div className="relative z-10 space-y-8">
               <h2 className="text-5xl md:text-7xl font-black text-on-primary">READY TO HATCH?</h2>
               <p className="text-primary-fixed-dim text-xl max-w-xl mx-auto">Join thousands of collectors in the most vibrant pet ecosystem on the blockchain.</p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <button className="bg-white text-primary px-12 py-5 rounded-xl font-headline font-black text-2xl shadow-2xl hover:scale-105 transition-transform">
+                <button className="bg-white text-primary px-12 py-5 rounded-[2rem] font-headline font-black text-2xl shadow-2xl hover:scale-105 transition-transform">
                   Join Discord
                 </button>
-                <button className="bg-primary-dim text-white px-12 py-5 rounded-xl font-headline font-black text-2xl border-2 border-white/20 hover:bg-primary transition-colors">
+                <button className="bg-primary-dim text-white px-12 py-5 rounded-[2rem] font-headline font-black text-2xl border-2 border-white/20 hover:bg-primary transition-colors">
                   Hatch Now
                 </button>
               </div>
@@ -211,13 +211,13 @@ export default function Home() {
               <div className="text-3xl font-black italic text-yellow-900 font-headline">EggoWorld</div>
               <p className="text-on-surface-variant">The future of pet gaming, built with love and clay.</p>
               <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-surface-container flex items-center justify-center rounded-lg hover:bg-primary-container transition-colors cursor-pointer">
+                <div className="w-10 h-10 bg-surface-container flex items-center justify-center rounded-[2rem] hover:bg-primary-container transition-colors cursor-pointer">
                   <span className="material-symbols-outlined" aria-hidden="true">share</span>
                 </div>
-                <div className="w-10 h-10 bg-surface-container flex items-center justify-center rounded-lg hover:bg-primary-container transition-colors cursor-pointer">
+                <div className="w-10 h-10 bg-surface-container flex items-center justify-center rounded-[2rem] hover:bg-primary-container transition-colors cursor-pointer">
                   <span className="material-symbols-outlined" aria-hidden="true">forum</span>
                 </div>
-                <div className="w-10 h-10 bg-surface-container flex items-center justify-center rounded-lg hover:bg-primary-container transition-colors cursor-pointer">
+                <div className="w-10 h-10 bg-surface-container flex items-center justify-center rounded-[2rem] hover:bg-primary-container transition-colors cursor-pointer">
                   <span className="material-symbols-outlined" aria-hidden="true">public</span>
                 </div>
               </div>
@@ -246,7 +246,7 @@ export default function Home() {
             <div>
               <h4 className="font-black mb-6">Newsletter</h4>
               <p className="text-sm text-on-surface-variant mb-4">Get the latest egg-straordinary updates.</p>
-              <div className="flex bg-surface-container-high rounded-lg p-1">
+              <div className="flex bg-surface-container-high rounded-[2rem] p-1">
                 <input className="bg-transparent border-none focus:ring-0 text-sm flex-grow px-4" placeholder="Email address" type="email"/>
                 <button className="bg-primary text-on-primary p-2 rounded-md material-symbols-outlined" aria-label="Send newsletter signup">send</button>
               </div>
