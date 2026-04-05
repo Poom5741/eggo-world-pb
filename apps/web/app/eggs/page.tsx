@@ -210,6 +210,16 @@ export default function Eggs() {
           onSuccess={handleHatchSuccess}
         />
       )}
+      
+      {/* Feed Dialog - ไดอะล็อกให้อาหาร */}
+      {feedingEgg && (
+        <FeedDialog
+          egg={feedingEgg}
+          open={feedDialogOpen}
+          onOpenChange={setFeedDialogOpen}
+          onSuccess={handleHatchSuccess} // Refresh eggs after feeding
+        />
+      )}
     </LayoutWrapper>
   )
 }
