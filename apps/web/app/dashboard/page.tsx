@@ -190,8 +190,7 @@ export default function DashboardPage() {
               <div 
                 key={i}
                 className={`
-                  w-8 h-8 rounded-full border-2 border-white
-                  ${i === 0 ? 'bg-primary-container' : i === 1 ? 'bg-secondary-container' : 'bg-tertiary-container'}
+                  w-8 h-8 rounded-full bg-primary-container border-2 border-white
                   flex items-center justify-center
                 `}
               >
@@ -199,7 +198,7 @@ export default function DashboardPage() {
               </div>
             ))}
             {stats.totalEggs > 3 && (
-              <div className="w-8 h-8 rounded-full border-2 border-white bg-surface-container flex items-center justify-center text-[10px] font-bold">
+              <div className="w-8 h-8 rounded-full bg-surface-container border-2 border-white flex items-center justify-center text-[10px] font-bold">
                 +{stats.totalEggs - 3}
               </div>
             )}
