@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -86,6 +87,21 @@ export default function ReferralDashboardPage() {
         lifetimeEarnings: userData.total_earned_usdt || 0
       })
     } catch (err: any) {
+      // Suppress auto-cancel errors
+      if (isAutoCancelError(err)) {
+        return
+      }
+      // Handle 404 errors - show empty state
+      if (isNotFound(err)) {
+        setReferralData({
+          user: null,
+          g1: [],
+          totalDirect: 0,
+          lifetimeEarnings: 0
+        })
+        return
+      }
+      // Log other errors
       console.error('Failed to fetch referral data:', err)
       setError('Failed to load referral data')
     } finally {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/pocketbase/client'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
@@ -37,7 +38,17 @@ export function TransactionHistory({ userId }: TransactionHistoryProps) {
           sort: '-created'
         })
         setTransactions(result.items as Transaction[])
-      } catch (error) {
+      } catch (error: any) {
+        // Suppress auto-cancel errors
+        if (isAutoCancelError(error)) {
+          return
+        }
+        // Handle 404 errors gracefully
+        if (isNotFound(error)) {
+          setTransactions([])
+          return
+        }
+        // Log other errors
         console.error('Failed to fetch transactions:', error)
       } finally {
         setLoading(false)

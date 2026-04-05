@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { createClient, isAuthenticated } from '@/lib/pocketbase/client'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -79,6 +80,16 @@ export default function HatchEggPage() {
         setError('Egg not found or you do not own it')
       }
     } catch (err: any) {
+      // Suppress auto-cancel errors
+      if (isAutoCancelError(err)) {
+        return
+      }
+      // Handle 404 errors
+      if (isNotFound(err)) {
+        setError('Egg not found or you do not own it')
+        return
+      }
+      // Log other errors
       console.error('Failed to fetch egg data:', err)
       setError('Failed to load egg data')
     }

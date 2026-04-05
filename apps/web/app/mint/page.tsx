@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -54,7 +55,17 @@ export default function MintPage() {
     try {
       const data = await pb.collection('users').getOne(userId)
       setProfile(data)
-    } catch (err) {
+    } catch (err: any) {
+      // Suppress auto-cancel errors
+      if (isAutoCancelError(err)) {
+        return
+      }
+      // Handle 404 errors - user not found
+      if (isNotFound(err)) {
+        setProfile(null)
+        return
+      }
+      // Log other errors
       console.error('Failed to fetch profile:', err)
     }
   }

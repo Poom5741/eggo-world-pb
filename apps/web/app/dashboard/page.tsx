@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { QuickActions } from '@/components/dashboard/quick-actions'
 import { BuddyChain } from '@/components/dashboard/buddy-chain'
@@ -101,7 +102,20 @@ export default function DashboardPage() {
       }))
 
       setReferralLevels(levels)
-    } catch (err) {
+    } catch (err: any) {
+      // Suppress auto-cancel and 404 errors
+      if (isAutoCancelError(err)) {
+        // Silent - normal during navigation
+        return
+      }
+      if (isNotFound(err)) {
+        // Set empty state for missing collections/data
+        setProfile(null)
+        setStats({ totalEggs: 0, totalFood: 0, totalCommissions: 0 })
+        setReferralLevels([])
+        return
+      }
+      // Log other errors
       console.error('Failed to fetch dashboard data:', err)
     } finally {
       setLoading(false)

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -86,12 +87,18 @@ export default function NftDetailPage() {
           setIsOwner(true)
         }
       } catch (err: any) {
-        console.error('Failed to fetch NFT:', err)
-        if (err.status === 404) {
-          setError('NFT not found')
-        } else {
-          setError('Failed to load NFT details')
+        // Suppress auto-cancel errors
+        if (isAutoCancelError(err)) {
+          return
         }
+        // Handle 404 errors
+        if (isNotFound(err)) {
+          setError('NFT not found')
+          return
+        }
+        // Log other errors
+        console.error('Failed to fetch NFT:', err)
+        setError('Failed to load NFT details')
       } finally {
         setLoading(false)
       }

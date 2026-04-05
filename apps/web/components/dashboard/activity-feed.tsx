@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/pocketbase/client'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 
 /**
  * Transaction data structure per D-25
@@ -130,10 +131,23 @@ export function ActivityFeed({ transactions: propTransactions, loading: propLoad
         setTransactions(mappedTransactions)
         setError(null)
       } catch (err: any) {
-        console.error('Failed to fetch transactions:', err)
+        // Suppress auto-cancel errors (normal during navigation)
+        if (isAutoCancelError(err)) {
+          setLoading(false)
+          return
+        }
+        // Handle 404 errors gracefully - show empty state
+        if (isNotFound(err)) {
+          setTransactions([])
+          setError(null)
+          setLoading(false)
+          return
+        }
+        // Log other errors
+        console.error('Failed to fetch transactions:', err.message || err)
         setError(err.message || 'Failed to load transactions')
       } finally {
-        setLoading(false)
+        if (loading) setLoading(false)
       }
     }
 

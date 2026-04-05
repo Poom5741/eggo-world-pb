@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -113,7 +114,19 @@ export default function CommissionsDashboard() {
         g3Earnings: g3,
         g4Earnings: g4
       })
-    } catch (err) {
+    } catch (err: any) {
+      // Suppress auto-cancel errors
+      if (isAutoCancelError(err)) {
+        return
+      }
+      // Handle 404 errors - show empty state
+      if (isNotFound(err)) {
+        setProfile(null)
+        setCommissions([])
+        setStats({ totalPending: 0, totalClaimed: 0, g1Earnings: 0, g2Earnings: 0, g3Earnings: 0, g4Earnings: 0 })
+        return
+      }
+      // Log other errors
       console.error('Failed to fetch data:', err)
     } finally {
       setLoading(false)

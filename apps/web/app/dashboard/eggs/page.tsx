@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -82,7 +83,18 @@ export default function EggsDashboard() {
         totalFood,
         totalValue: totalEggs * 25
       })
-    } catch (err) {
+    } catch (err: any) {
+      // Suppress auto-cancel errors
+      if (isAutoCancelError(err)) {
+        return
+      }
+      // Handle 404 errors - show empty state
+      if (isNotFound(err)) {
+        setEggs([])
+        setStats({ totalEggs: 0, hatchedEggs: 0, totalFood: 0, totalValue: 0 })
+        return
+      }
+      // Log other errors
       console.error('Failed to fetch eggs:', err)
     } finally {
       setLoading(false)
