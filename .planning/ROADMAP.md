@@ -35,7 +35,7 @@
    **Plans:** 3 plans
    **Plans:**
    - [x] 08-foundation-auth-01-PLAN.md — Material Symbols + LayoutWrapper foundation
-   - [ ] 08-foundation-auth-02-PLAN.md — Navigation components (TopNav, SideNav, BottomNav)
+   - [x] 08-foundation-auth-02-PLAN.md — Navigation components (TopNav, SideNav, BottomNav)
    - [ ] 08-foundation-auth-03-PLAN.md — Auth pages (Landing, Join, Callback)
          **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
          **UI hint:** yes
