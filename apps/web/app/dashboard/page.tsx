@@ -7,10 +7,8 @@ import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { BalanceCard } from '@/components/dashboard/balance-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Egg, Coins, TrendingUp, Wallet, RefreshCw, Flame } from 'lucide-react'
 import { Header } from '@/components/header'
-import { cn } from '@/lib/utils'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -110,7 +108,6 @@ export default function DashboardPage() {
     return null
   }
 
-  const usdtBalance = parseFloat(balance.usdt || '0')
   const usdtTotalEarned = parseFloat(profile?.usdt_total_earned || '0')
 
   return (
