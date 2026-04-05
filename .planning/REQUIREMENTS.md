@@ -20,8 +20,8 @@
 
 ## Egg Management
 
-- [ ] **EGG-01**: My Eggs page lists all user's Egg NFTs with status badges
-- [ ] **EGG-02**: Egg card shows feeding progress (X/10 food items)
+- [x] **EGG-01**: My Eggs page lists all user's Egg NFTs with status badges
+- [x] **EGG-02**: Egg card shows feeding progress (X/10 food items)
 - [x] **EGG-03**: Feed flow allows selecting egg and exactly 10 food items
 - [x] **EGG-04**: Feed transaction calls smart contract with correct parameters
 - [x] **EGG-05**: Hatch flow triggers EggNFT.hatchEgg() transaction

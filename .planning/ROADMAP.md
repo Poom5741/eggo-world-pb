@@ -11,7 +11,7 @@
 
 - [x] **Phase 8: Foundation & Auth** - Landing page, LINE OAuth flow, navigation structure
 - [x] **Phase 9: Dashboard & Wallet** - Real-time balance, referral tracking, activity feed
-- [ ] **Phase 10: Egg Management** - Egg listing, feeding flow, hatching mechanics
+- [x] **Phase 10: Egg Management** - Egg listing, feeding flow, hatching mechanics (completed 2026-04-05)
 - [ ] **Phase 11: Marketplace** - NFT listings, buy/sell flows, commission display
 - [ ] **Phase 12: Mobile & Polish** - Responsive breakpoints, touch interactions, test coverage
 
@@ -61,8 +61,8 @@
    - [x] 09-dashboard-wallet-01-PLAN.md — Balance card with auto-polling (FOUND-07, DASH-01)
    - [x] 09-dashboard-wallet-02-PLAN.md — Buddy Chain referral visualization (DASH-02)
    - [x] 09-dashboard-wallet-03-PLAN.md — Quick actions + activity feed (DASH-03, DASH-04, DASH-05)
-   **Status:** ✅ COMPLETE (2026-04-05)
-   **Summary:** All DASH requirements complete, balance polling working
+         **Status:** ✅ COMPLETE (2026-04-05)
+         **Summary:** All DASH requirements complete, balance polling working
 
 ### Phase 10: Egg Management
 
@@ -78,15 +78,15 @@
 5. Hatch flow triggers `EggNFT.hatchEgg(eggId)` transaction and waits for confirmation
 6. Hatch reveal animation displays newly hatched Animal NFT with rarity badge (Common/Rare/Epic/Legendary)
 7. Egg status updates automatically after blockchain confirmation
-   **Plans:** 4 plans
-    **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
-    **Plans:**
-    - [x] 10-01-PLAN.md — Egg display foundation with polling and cards (EGG-01, EGG-02) ✅ COMPLETE
-    - [x] 10-02-PLAN.md — Feed flow with quick-fill and contract integration (EGG-03, EGG-04) ✅ COMPLETE
-    - [x] 10-03-PLAN.md — Hatch flow with reveal animation (EGG-05, EGG-06) ✅ COMPLETE
-    - [x] 10-04-PLAN.md — Polish: loading, error handling, polling indicators (EGG-07) ✅ COMPLETE
-    **Status:** ✅ COMPLETE (2026-04-05)
-    **Summary:** All EGG requirements complete, polling with backoff working, loading/error states implemented
+   **Plans:** 4/4 plans complete
+   **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
+   **Plans:**
+   - [x] 10-01-PLAN.md — Egg display foundation with polling and cards (EGG-01, EGG-02) ✅ COMPLETE
+   - [x] 10-02-PLAN.md — Feed flow with quick-fill and contract integration (EGG-03, EGG-04) ✅ COMPLETE
+   - [x] 10-03-PLAN.md — Hatch flow with reveal animation (EGG-05, EGG-06) ✅ COMPLETE
+   - [x] 10-04-PLAN.md — Polish: loading, error handling, polling indicators (EGG-07) ✅ COMPLETE
+         **Status:** ✅ COMPLETE (2026-04-05)
+         **Summary:** All EGG requirements complete, polling with backoff working, loading/error states implemented
 
 ### Phase 11: Marketplace
 
@@ -124,13 +124,13 @@
 
 ## Progress
 
-| Phase                  | Requirements | Success Criteria | Plans Complete | Status      | Completed |
-| ---------------------- | ------------ | ---------------- | -------------- | ----------- | --------- |
+| Phase                  | Requirements | Success Criteria | Plans Complete | Status      | Completed  |
+| ---------------------- | ------------ | ---------------- | -------------- | ----------- | ---------- |
 | 8 - Foundation & Auth  | 6            | 6                | 3/3            | Complete    | 2026-04-05 |
 | 9 - Dashboard & Wallet | 6            | 6                | 3/3            | Complete    | 2026-04-05 |
 | 10 - Egg Management    | 7            | 7                | 4/4            | Complete    | 2026-04-05 |
-| 11 - Marketplace       | 6            | 6                | 0/0            | Not started | -         |
-| 12 - Mobile & Polish   | 5            | 5                | 0/0            | Not started | -         |
+| 11 - Marketplace       | 6            | 6                | 0/0            | Not started | -          |
+| 12 - Mobile & Polish   | 5            | 5                | 0/0            | Not started | -          |
 
 ---
 
