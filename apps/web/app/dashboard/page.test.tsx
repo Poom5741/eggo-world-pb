@@ -10,40 +10,40 @@ import { join } from 'path'
  * using file content assertions (Phase 8 pattern for OAuth flows)
  */
 
+// Paths relative to apps/web directory
+const dashboardPath = join(process.cwd(), 'app/dashboard/page.tsx')
+const balanceCardPath = join(process.cwd(), 'components/dashboard/balance-card.tsx')
+const buddyChainPath = join(process.cwd(), 'components/dashboard/buddy-chain.tsx')
+
+// Read file contents for assertions - handle errors gracefully
+const getDashboardContent = () => {
+  try {
+    const content = readFileSync(dashboardPath, 'utf-8')
+    return content
+  } catch (err: any) {
+    return ''
+  }
+}
+
+const getBalanceCardContent = () => {
+  try {
+    const content = readFileSync(balanceCardPath, 'utf-8')
+    return content
+  } catch (err: any) {
+    return ''
+  }
+}
+
+const getBuddyChainContent = () => {
+  try {
+    const content = readFileSync(buddyChainPath, 'utf-8')
+    return content
+  } catch (err: any) {
+    return ''
+  }
+}
+
 describe('Dashboard Balance Card', () => {
-  // Paths relative to apps/web directory
-  const dashboardPath = join(process.cwd(), 'app/dashboard/page.tsx')
-  const balanceCardPath = join(process.cwd(), 'components/dashboard/balance-card.tsx')
-
-  // Read file contents for assertions - handle errors gracefully
-  const getDashboardContent = () => {
-    try {
-      const content = readFileSync(dashboardPath, 'utf-8')
-      return content
-    } catch (err: any) {
-      return ''
-    }
-  }
-
-  const getBalanceCardContent = () => {
-    try {
-      const content = readFileSync(balanceCardPath, 'utf-8')
-      return content
-    } catch (err: any) {
-      return ''
-    }
-  }
-
-  // BuddyChain path defined in outer describe block
-  const buddyChainPath = join(process.cwd(), 'components/dashboard/buddy-chain.tsx')
-  const getBuddyChainContent = () => {
-    try {
-      const content = readFileSync(buddyChainPath, 'utf-8')
-      return content
-    } catch (err: any) {
-      return ''
-    }
-  }
 
   describe('useWalletPoll Integration', () => {
     it('should import and use useWalletPoll hook', () => {
@@ -183,8 +183,8 @@ describe('Buddy Chain Referral Visualization', () => {
       const content = getBuddyChainContent()
       // Check for grid layout with 4 columns
       expect(content).toContain('grid-cols-4')
-      // Check for 4 level mappings or iterations
-      expect(content).toMatch(/level.*map|levels\.map|Lvl.*1.*Lvl.*2.*Lvl.*3.*Lvl.*4/)
+      // Check for level mapping or iterations
+      expect(content).toMatch(/level.*map|levels\.map|normalizedLevels\.map|\[1, 2, 3, 4\]\.map/)
     })
   })
 
