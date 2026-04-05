@@ -471,3 +471,62 @@
 .gap-clay-md { gap: 20px; }
 .gap-clay-lg { gap: 24px; }
 .gap-clay-xl { gap: 32px; }
+
+/* ============================================
+   CLAYMORPHISM PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Hardware acceleration for clay shadows */
+.shadowclay-sm,
+.shadowclay-md,
+.shadowclay-lg,
+.shadowclay-xl,
+.shadowclay-2xl,
+[class*="shadow-clay-"],
+[class*="rounded-clay-"] {
+  will-change: box-shadow;
+  transform: translateZ(0); /* Force GPU acceleration */
+  backface-visibility: hidden;
+}
+
+/* Reduce shadow complexity on mobile */
+@media (max-width: 768px) {
+  .shadowclay-2xl,
+  [class*="shadow-clay-2xl"] {
+    box-shadow: var(--shadow-clay-lg) !important; /* Use simpler shadow */
+  }
+  
+  .shadowclay-xl,
+  [class*="shadow-clay-xl"] {
+    box-shadow: var(--shadow-clay-md) !important;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .clay-button,
+  .clay-input,
+  .clay-card,
+  [class*="clay-shadow-"],
+  [class*="shadow-clay-"] {
+    transition: none !important;
+  }
+  
+  .animate-float {
+    animation: none;
+  }
+}
+
+/* Prevent layout shift from shadows */
+[class*="clay-"] {
+  margin: 4px; /* Reserve space for shadows */
+}
+
+/* Optimize clay gradients */
+.bg-clay-volume-sm,
+.bg-clay-volume-md,
+.bg-clay-volume-lg,
+.bg-clay-volume-2xl {
+  will-change: background;
+  transform: translateZ(0);
+}

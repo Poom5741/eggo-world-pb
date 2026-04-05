@@ -87,17 +87,57 @@ function LineLoginContent() {
 
           console.log('Backend returned JWT token, saving auth...')
 
-          // Clear the fake token from the client before saving the real one
-          const pb = createClient()
-          pb.authStore.clear()
-          localStorage.removeItem('pocketbase_auth')
-
           // Save the real JWT token from the backend
           const realToken = result.token
           const backendUser = result.user
-          pb.authStore.save(realToken, backendUser)
+          
+          console.log('Token received:', realToken)
+          console.log('Token parts:', realToken.split('.').length)
+          
+          // Decode JWT payload to verify it's valid
+          try {
+            const payload = JSON.parse(atob(realToken.split('.')[1]))
+            console.log('JWT payload:', payload)
+            console.log('Token exp:', payload.exp, 'Current time:', Date.now()/1000)
+            console.log('Token expired:', payload.exp && payload.exp < Date.now()/1000)
+          } catch (e) {
+            console.error('Failed to decode JWT:', e)
+          }
+          
+          console.log('User data:', backendUser)
+          
+          // PocketBase authStore.save() expects a proper record object
+          // We need to pass the user data in the format PocketBase expects
+          const recordModel = {
+            id: backendUser.id,
+            email: backendUser.email,
+            name: backendUser.name,
+            wallet: backendUser.wallet,
+            collectionId: '_pb_users_auth_',
+            collectionName: 'users'
+          }
+          
+          const pb = createClient()
+          pb.authStore.save(realToken, recordModel)
 
           console.log('Real JWT saved, authStore.isValid:', pb.authStore.isValid)
+          console.log('AuthStore record:', pb.authStore.record)
+          console.log('AuthStore token:', pb.authStore.token)
+
+          // ALSO save to localStorage directly (client.ts onChange handler will sync cookie)
+          localStorage.setItem('pocketbase_auth', JSON.stringify({
+            token: realToken,
+            record: recordModel
+          }))
+
+          // EXPLICITLY set the cookie to ensure middleware can read it
+          // (onChange handler might not fire before redirect)
+          document.cookie = `pb_auth=${realToken}; path=/; max-age=${7 * 86400}; SameSite=Lax`
+          console.log('Cookie set explicitly')
+          
+          // Verify cookie was set
+          const cookieValue = document.cookie.split(';').find(c => c.trim().startsWith('pb_auth='))
+          console.log('Cookie verification:', !!cookieValue)
 
           const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
           console.log('Redirecting to:', redirectTo)

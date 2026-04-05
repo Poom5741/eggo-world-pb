@@ -109,7 +109,7 @@ export function TransactionHistory({ userId }: TransactionHistoryProps) {
   }
 
   return (
-    <Card className="border-4 border-primary/50 bg-card">
+    <Card variant="clay-lg" className="border-4 border-primary/50 bg-card shadow-clay-xl">
       <CardHeader>
         <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
           TRANSACTION HISTORY
@@ -127,7 +127,7 @@ export function TransactionHistory({ userId }: TransactionHistoryProps) {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="hover:shadow-clay-sm">
                   <TableHead className="font-[var(--font-pixel)] text-xs">Date</TableHead>
                   <TableHead className="font-[var(--font-pixel)] text-xs">Type</TableHead>
                   <TableHead className="font-[var(--font-pixel)] text-xs">Amount</TableHead>
@@ -137,7 +137,7 @@ export function TransactionHistory({ userId }: TransactionHistoryProps) {
               </TableHeader>
               <TableBody>
                 {transactions.map((tx) => (
-                  <TableRow key={tx.id}>
+                  <TableRow key={tx.id} className="hover:shadow-clay-sm">
                     <TableCell className="font-[var(--font-pixel)] text-xs">
                       {new Date(tx.created).toLocaleDateString()}
                     </TableCell>
