@@ -24,9 +24,9 @@
 - [ ] **EGG-02**: Egg card shows feeding progress (X/10 food items)
 - [x] **EGG-03**: Feed flow allows selecting egg and exactly 10 food items
 - [x] **EGG-04**: Feed transaction calls smart contract with correct parameters
-- [ ] **EGG-05**: Hatch flow triggers EggNFT.hatchEgg() transaction
-- [ ] **EGG-06**: Hatch reveal displays Animal NFT with rarity badge
-- [ ] **EGG-07**: Egg status updates after blockchain confirmation
+- [x] **EGG-05**: Hatch flow triggers EggNFT.hatchEgg() transaction
+- [x] **EGG-06**: Hatch reveal displays Animal NFT with rarity badge
+- [x] **EGG-07**: Egg status updates after blockchain confirmation
 
 ## Marketplace Integration
 
@@ -91,11 +91,11 @@
 | DASH-05     | Phase 9  | TBD  | —      |
 | EGG-01      | Phase 10 | TBD  | —      |
 | EGG-02      | Phase 10 | TBD  | —      |
-| EGG-03      | Phase 10 | TBD  | —      |
-| EGG-04      | Phase 10 | TBD  | —      |
-| EGG-05      | Phase 10 | TBD  | —      |
-| EGG-06      | Phase 10 | TBD  | —      |
-| EGG-07      | Phase 10 | TBD  | —      |
+| EGG-03      | Phase 10 | 02   | —      |
+| EGG-04      | Phase 10 | 02   | —      |
+| EGG-05      | Phase 10 | 03   | ✅     |
+| EGG-06      | Phase 10 | 03   | ✅     |
+| EGG-07      | Phase 10 | 03   | ✅     |
 | MKT-01      | Phase 11 | TBD  | —      |
 | MKT-02      | Phase 11 | TBD  | —      |
 | MKT-03      | Phase 11 | TBD  | —      |

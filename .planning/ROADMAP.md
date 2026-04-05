@@ -83,7 +83,7 @@
    **Plans:**
    - [x] 10-01-PLAN.md — Egg display foundation with polling and cards (EGG-01, EGG-02) ✅ COMPLETE
    - [ ] 10-02-PLAN.md — Feed flow with quick-fill and contract integration (EGG-03, EGG-04)
-   - [ ] 10-03-PLAN.md — Hatch flow with reveal animation (EGG-05, EGG-06)
+   - [x] 10-03-PLAN.md — Hatch flow with reveal animation (EGG-05, EGG-06) ✅ COMPLETE
    - [ ] 10-04-PLAN.md — Polish: loading, error handling, polling indicators (EGG-07)
 
 ### Phase 11: Marketplace
