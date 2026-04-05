@@ -32,9 +32,13 @@
 4. Navigation components (TopNav, SideNav, BottomNav) render correctly on all device sizes
 5. Material Symbols icons load and display consistently across all pages
 6. LayoutWrapper provides consistent page structure throughout the application
-   **Plans:** TBD
-   **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
-   **UI hint:** yes
+   **Plans:** 3 plans
+   **Plans:**
+   - [ ] 08-foundation-auth-01-PLAN.md — Material Symbols + LayoutWrapper foundation
+   - [ ] 08-foundation-auth-02-PLAN.md — Navigation components (TopNav, SideNav, BottomNav)
+   - [ ] 08-foundation-auth-03-PLAN.md — Auth pages (Landing, Join, Callback)
+         **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
+         **UI hint:** yes
 
 ### Phase 9: Dashboard & Wallet
 
@@ -108,7 +112,7 @@
 
 | Phase                  | Requirements | Success Criteria | Plans Complete | Status      | Completed |
 | ---------------------- | ------------ | ---------------- | -------------- | ----------- | --------- |
-| 8 - Foundation & Auth  | 6            | 6                | 0/0            | Not started | -         |
+| 8 - Foundation & Auth  | 6            | 6                | 3/3            | Planned     | -         |
 | 9 - Dashboard & Wallet | 6            | 6                | 0/0            | Not started | -         |
 | 10 - Egg Management    | 7            | 7                | 0/0            | Not started | -         |
 | 11 - Marketplace       | 6            | 6                | 0/0            | Not started | -         |
@@ -126,12 +130,12 @@
 
 | Requirement | Phase    | Plan | Status |
 | ----------- | -------- | ---- | ------ |
-| FOUND-01    | Phase 8  | TBD  | —      |
-| FOUND-02    | Phase 8  | TBD  | —      |
-| FOUND-03    | Phase 8  | TBD  | —      |
-| FOUND-04    | Phase 8  | TBD  | —      |
-| FOUND-05    | Phase 8  | TBD  | —      |
-| FOUND-06    | Phase 8  | TBD  | —      |
+| FOUND-01    | Phase 8  | 03   | —      |
+| FOUND-02    | Phase 8  | 03   | —      |
+| FOUND-03    | Phase 8  | 03   | —      |
+| FOUND-04    | Phase 8  | 02   | —      |
+| FOUND-05    | Phase 8  | 01   | —      |
+| FOUND-06    | Phase 8  | 01   | —      |
 | FOUND-07    | Phase 9  | TBD  | —      |
 | DASH-01     | Phase 9  | TBD  | —      |
 | DASH-02     | Phase 9  | TBD  | —      |
