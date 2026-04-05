@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
+import { BalanceCard } from '@/components/dashboard/balance-card'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -142,33 +143,13 @@ export default function DashboardPage() {
               </Button>
             </div>
 
-            {/* Balance Summary Card - Clay XL variant for prominence */}
-            <Card variant="clay-xl" className={cn(
-              'bg-gradient-to-br from-primary/20 via-primary/10 to-transparent',
-              'shadow-clay-2xl'
-            )}>
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                    USDT BALANCE
-                  </CardDescription>
-                  {balanceLoading && (
-                    <Badge variant="secondary" className="animate-pulse">
-                      Updating...
-                    </Badge>
-                  )}
-                </div>
-                <CardTitle className="font-[var(--font-pixel)] text-4xl text-primary">
-                  {usdtBalance.toFixed(2)} USDT
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <Wallet className="w-3 h-3 mr-1" />
-                  Available for minting and purchases
-                </div>
-              </CardContent>
-            </Card>
+            {/* Balance Summary Card - Using BalanceCard component */}
+            <BalanceCard 
+              balance={balance}
+              loading={balanceLoading}
+              error={null}
+              refresh={refreshBalance}
+            />
 
             {/* Stats Grid - Clay widgets */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-clay-xl">
