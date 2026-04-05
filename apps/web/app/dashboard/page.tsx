@@ -121,7 +121,6 @@ export default function DashboardPage() {
       setLoading(false)
     }
   }
-      })
 
       // Target: 50 buddies per level for percentage calculation
       const TARGET_BUDDIES = 50
