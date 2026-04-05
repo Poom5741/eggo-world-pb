@@ -88,89 +88,49 @@ SELL / HOLD / BREED on Marketplace
 
 ---
 
-## Current State (v0.0.5 — Shipped 2026-04-05)
+## Current Milestone: v0.0.6 Frontend Migration & Integration
 
-### ✅ Shipped in v0.0.5
+**Goal:** Replace current frontend with Jules-generated claymorphism design using TDD while maintaining full backend integration
 
-**Smart Contracts:**
+**Target features:**
 
-- MockUSDT, CommissionDistribution, AnimalNFT, EggNFT, FoodNFT deployed to 0XL3 testnet
-- All cross-contract authorizations configured
-- 147/147 Forge tests passing
+- Modern claymorphism UI with Material Symbols icons
+- LINE OAuth authentication with new Join/Login pages
+- Dashboard with real-time USDT balance and referral tracking
+- Egg management (view, feed, hatch) with smart contract integration
+- Marketplace with buy/sell flows and commission display
+- Mobile-responsive navigation (TopNav, SideNav, BottomNav)
+- Full test coverage using TDD (Red→Green→Refactor cycles)
 
-**Backend:**
+**Development Approach:**
 
-- PocketBase event sync hook with block polling (30s interval)
-- Crash recovery via lastProcessedBlock tracking
-- 5 event handlers (EggMinted, FoodMinted, AnimalMinted, EggHatched, CommissionDistributed)
-
-**Frontend:**
-
-- 17 routes rendering correctly
-- Full user flow: Buy Egg → Buy Food → Feed → Hatch → List → Sell
-- Auto-polling wallet balance with useWalletPoll hook
-- Product detail pages + referral dashboard
-
-**Auth & Wallet:**
-
-- LINE OAuth integration with single-click login
-- TypeScript + dacc-js v0.0.5 wallet API migration
-- Auto-wallet creation on signup (20-char random password)
-- Header with user avatar, name, wallet, navigation
-
-**UI/UX:**
-
-- Claymorphism redesign complete (hybrid "Clay Frames, Pixel Content")
-- 12+ UI components with clay variants
-- 14+ pages redesigned
-- WCAG 2.1 AA compliant, 60 FPS performance
-
-**Testing:**
-
-- 63 tests passing across auth, wallet, dashboard flows
-- Build passes clean
-
-### 🎯 Next Milestone Focus
-
-**Candidate areas:**
-
-- Breeding & Tiers mechanics
-- Admin dashboard & analytics
-- Secondary market royalties
-- Performance optimization
-- Additional game features
+- Test-Driven Generation for all phases
+- Each phase: red (test) → green (implement) → refactor commits
+- Preserve existing backend endpoints and PocketBase collections
+- Maintain LINE OAuth single-click flow
+- Support static export for Cloudflare Pages
 
 ---
 
-## Constraints
+## Evolution
 
-**Technical Constraints:**
+This document evolves at phase transitions and milestone boundaries.
 
-- Must use USDT (BEP-20), no native token
-- Static export for Cloudflare Pages deployment
-- LINE OAuth for authentication (Thai market)
-- BSC network only (no multi-chain initially)
+**After each phase transition** (via `/gsd-transition`):
 
----
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
 
-## Key Decisions (v0.0.5)
+**After each milestone** (via `/gsd-complete-milestone`):
 
-| Decision                         | Rationale                                 | Outcome                           |
-| -------------------------------- | ----------------------------------------- | --------------------------------- |
-| Hybrid claymorphism UI           | Modern containers showcase pixel art NFTs | ✅ Good — clear visual hierarchy  |
-| Direct LINE OAuth initiation     | Eliminate double-click friction           | ✅ Good — single-click flow works |
-| dacc-js over ethers v6           | LINE Wallet integration requirement       | ✅ Good — working integration     |
-| PocketBase event sync            | Blockchain → DB synchronization           | ✅ Good — crash recovery works    |
-| Default redirect to `/dashboard` | Post-auth UX clarity                      | ✅ Good — users see their data    |
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
 
 ---
 
-## References
-
-- **Design System:** `.planning/DESIGN_SYSTEM.md`
-- **Milestone Archive:** `.planning/milestones/v0.0.5-ROADMAP.md`
-- **Reference Implementation:** `resources/mvp-foodcourt/` (for patterns only)
-
----
-
-_Last updated: 2026-04-05 after v0.0.5 Claymorphism UI Launch_
+_Last updated: 2026-04-05 — v0.0.6 Frontend Migration started_
