@@ -347,6 +347,19 @@
 
 /* Standardized Component Classes */
 
+/* Material Symbols icon font */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+}
+
 /* Buttons */
 .btn-primary {
   @apply bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground font-[var(--font-pixel)] text-xs px-6 py-3 border-4 border-primary transition-all;
