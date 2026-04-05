@@ -9,7 +9,7 @@
 
 ## Phases
 
-- [ ] **Phase 8: Foundation & Auth** - Landing page, LINE OAuth flow, navigation structure
+- [x] **Phase 8: Foundation & Auth** - Landing page, LINE OAuth flow, navigation structure
 - [ ] **Phase 9: Dashboard & Wallet** - Real-time balance, referral tracking, activity feed
 - [ ] **Phase 10: Egg Management** - Egg listing, feeding flow, hatching mechanics
 - [ ] **Phase 11: Marketplace** - NFT listings, buy/sell flows, commission display
@@ -33,12 +33,14 @@
 5. Material Symbols icons load and display consistently across all pages
 6. LayoutWrapper provides consistent page structure throughout the application
    **Plans:** 3 plans
+   **Status:** ✅ COMPLETE (2026-04-05)
    **Plans:**
    - [x] 08-foundation-auth-01-PLAN.md — Material Symbols + LayoutWrapper foundation
    - [x] 08-foundation-auth-02-PLAN.md — Navigation components (TopNav, SideNav, BottomNav)
-   - [ ] 08-foundation-auth-03-PLAN.md — Auth pages (Landing, Join, Callback)
+   - [x] 08-foundation-auth-03-PLAN.md — Auth pages (Landing, Join, Callback)
          **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
          **UI hint:** yes
+         **Summary:** 18 tests passing, build succeeds, all FOUND-01/02/03 requirements complete
 
 ### Phase 9: Dashboard & Wallet
 
