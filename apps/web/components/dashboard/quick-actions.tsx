@@ -1,7 +1,6 @@
 "use client"
 
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 /**
  * Quick Action item interface
@@ -58,7 +57,7 @@ const DEFAULT_ACTIONS: QuickAction[] = [
 
 /**
  * QuickActions Component
- * การ์ด Quick Actions สำหรับเข้าถึงฟีเจอร์หลักอย่างรวดเร็ว
+ * คอมโพเนนต์ Quick Actions สำหรับเข้าถึงฟีเจอร์หลักอย่างรวดเร็ว
  * 
  * Features per Jules design:
  * - 3 action cards with colored containers (primary, secondary, tertiary)
@@ -66,6 +65,7 @@ const DEFAULT_ACTIONS: QuickAction[] = [
  * - Title + description on left, chevron on right
  * - Hover: scale-[1.02], Active: scale-[0.98] per D-11
  * - Claymorphism styling with rounded-xl
+ * - No Card wrapper - returns inline buttons
  * 
  * @example
  * ```tsx
@@ -76,56 +76,45 @@ export function QuickActions({ actions }: QuickActionsProps) {
   const router = useRouter()
   const quickActions = actions || DEFAULT_ACTIONS
 
-  // Color mapping for container backgrounds
-  // การจับคู่สีสำหรับพื้นหลังของ container
-  const colorMap: Record<string, string> = {
-    primary: 'bg-primary-container text-on-primary-container',
-    secondary: 'bg-secondary-container text-on-secondary-container',
-    tertiary: 'bg-tertiary-container text-on-tertiary-container'
-  }
-
   return (
-    <Card variant="clay-lg" className="shadow-clay-xl">
-      <CardHeader>
-        <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
-          QUICK ACTIONS
-        </CardTitle>
-        <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-          Jump into the action
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col space-y-4">
-          {quickActions.map((action) => (
-            <button
-              key={action.id}
-              onClick={() => router.push(action.href)}
-              className={`
-                w-full flex items-center justify-between p-6 rounded-xl clay-card
-                ${colorMap[action.color]}
-                hover:scale-[1.02] active:scale-[0.98] transition-transform
-              `}
-            >
-              {/* Left side: Icon + Text */}
-              <div className="flex items-center space-x-4">
-                {/* Icon circle with white/40 background */}
-                <div className="w-12 h-12 bg-white/40 rounded-2xl flex items-center justify-center">
-                  <span className="material-symbols-outlined">{action.icon}</span>
-                </div>
-                
-                {/* Title and description */}
-                <div className="text-left">
-                  <p className="font-bold">{action.title}</p>
-                  <p className="text-xs opacity-70">{action.description}</p>
-                </div>
+    <div className="flex flex-col space-y-4">
+      {quickActions.map((action) => {
+        // Color mapping for container backgrounds per Jules design
+        const colorStyles = {
+          primary: 'bg-primary-container text-on-primary-container',
+          secondary: 'bg-secondary-container text-on-secondary-container',
+          tertiary: 'bg-tertiary-container text-on-tertiary-container'
+        }
+
+        return (
+          <button
+            key={action.id}
+            onClick={() => router.push(action.href)}
+            className={`
+              w-full flex items-center justify-between p-6 rounded-xl clay-card
+              ${colorStyles[action.color]}
+              hover:scale-[1.02] active:scale-[0.98] transition-transform
+            `}
+          >
+            {/* Left side: Icon + Text */}
+            <div className="flex items-center space-x-4">
+              {/* Icon circle with white/40 background */}
+              <div className="w-12 h-12 bg-white/40 rounded-2xl flex items-center justify-center">
+                <span className="material-symbols-outlined">{action.icon}</span>
               </div>
               
-              {/* Right side: Chevron icon */}
-              <span className="material-symbols-outlined">chevron_right</span>
-            </button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+              {/* Title and description */}
+              <div className="text-left">
+                <p className="font-bold">{action.title}</p>
+                <p className="text-xs opacity-70">{action.description}</p>
+              </div>
+            </div>
+            
+            {/* Right side: Chevron icon */}
+            <span className="material-symbols-outlined">chevron_right</span>
+          </button>
+        )
+      })}
+    </div>
   )
 }

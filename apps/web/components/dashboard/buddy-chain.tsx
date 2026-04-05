@@ -1,7 +1,5 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
-
 /**
  * Buddy Chain Referral Visualization Component
  * แสดงแผนผังการแนะนำแบบ 4 ระดับ
@@ -79,6 +77,8 @@ const normalizeLevels = (levels: ReferralLevel[]): ReferralLevel[] => {
 /**
  * BuddyChain Component
  * แสดงแผนผัง Buddy Chain แบบ 4 ระดับ
+ * 
+ * Note: No Card wrapper - returns inline grid for embedding in parent card
  */
 export function BuddyChain({ levels, loading = false, error = null }: BuddyChainProps) {
   const normalizedLevels = normalizeLevels(levels)
@@ -86,72 +86,60 @@ export function BuddyChain({ levels, loading = false, error = null }: BuddyChain
   // Loading state with skeleton UI
   if (loading) {
     return (
-      <Card variant="clay-lg" className="shadow-clay-xl">
-        <CardContent>
-          <div className="grid grid-cols-4 gap-4">
-            {normalizedLevels.map((levelData) => (
-              <div key={levelData.level} className="flex flex-col items-center animate-pulse">
-                <div className="w-full aspect-square bg-surface-container rounded-2xl" />
-                <div className="h-4 w-12 mt-2 bg-surface-container rounded" />
-                <div className="h-3 w-16 mt-1 bg-surface-container rounded" />
-              </div>
-            ))}
+      <div className="grid grid-cols-4 gap-4">
+        {normalizedLevels.map((levelData) => (
+          <div key={levelData.level} className="flex flex-col items-center animate-pulse">
+            <div className="w-full aspect-square bg-surface-container rounded-2xl" />
+            <div className="h-4 w-12 mt-2 bg-surface-container rounded" />
+            <div className="h-3 w-16 mt-1 bg-surface-container rounded" />
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
     )
   }
 
   // Error state
   if (error) {
     return (
-      <Card variant="clay-lg" className="shadow-clay-xl">
-        <CardContent>
-          <div className="flex items-center justify-center py-8">
-            <p className="text-sm text-destructive">{error}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center py-8">
+        <p className="text-sm text-destructive">{error}</p>
+      </div>
     )
   }
 
   return (
-    <Card variant="clay-lg" className="shadow-clay-xl">
-      <CardContent>
-        <div className="grid grid-cols-4 gap-4">
-          {normalizedLevels.map((levelData) => {
-            const colors = LEVEL_COLORS[levelData.level as keyof typeof LEVEL_COLORS]
+    <div className="grid grid-cols-4 gap-4">
+      {normalizedLevels.map((levelData) => {
+        const colors = LEVEL_COLORS[levelData.level as keyof typeof LEVEL_COLORS]
+        
+        return (
+          <div key={levelData.level} className="flex flex-col items-center">
+            {/* Square card with percentage fill */}
+            <div className="w-full aspect-square bg-surface-container rounded-2xl clay-card-inset flex flex-col items-center justify-center relative mb-3 overflow-hidden">
+              {/* Percentage fill bar at bottom */}
+              <div
+                className={`absolute bottom-0 left-0 w-full ${colors.fill} transition-all duration-500`}
+                style={{ height: `${Math.min(levelData.percentage, 100)}%` }}
+              />
+              
+              {/* Percentage text overlay */}
+              <span className={`pixel-font text-2xl relative z-10 ${colors.text}`}>
+                {Math.round(levelData.percentage)}%
+              </span>
+            </div>
             
-            return (
-              <div key={levelData.level} className="flex flex-col items-center">
-                {/* Square card with percentage fill */}
-                <div className="w-full aspect-square bg-surface-container rounded-2xl clay-card-inset flex flex-col items-center justify-center relative mb-3 overflow-hidden">
-                  {/* Percentage fill bar at bottom */}
-                  <div
-                    className={`absolute bottom-0 left-0 w-full ${colors.fill} transition-all duration-500`}
-                    style={{ height: `${Math.min(levelData.percentage, 100)}%` }}
-                  />
-                  
-                  {/* Percentage text overlay */}
-                  <span className={`pixel-font text-2xl relative z-10 ${colors.text}`}>
-                    {Math.round(levelData.percentage)}%
-                  </span>
-                </div>
-                
-                {/* Level label */}
-                <p className="text-xs font-bold text-on-surface-variant/60 uppercase">
-                  Lvl {levelData.level}
-                </p>
-                
-                {/* Buddy count */}
-                <p className="font-bold text-sm md:text-base">
-                  {levelData.count} Buddies
-                </p>
-              </div>
-            )
-          })}
-        </div>
-      </CardContent>
-    </Card>
+            {/* Level label */}
+            <p className="text-xs font-bold text-on-surface-variant/60 uppercase">
+              Lvl {levelData.level}
+            </p>
+            
+            {/* Buddy count */}
+            <p className="font-bold text-sm md:text-base">
+              {levelData.count} Buddies
+            </p>
+          </div>
+        )
+      })}
+    </div>
   )
 }

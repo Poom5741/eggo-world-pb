@@ -7,6 +7,7 @@ import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { QuickActions } from '@/components/dashboard/quick-actions'
 import { BuddyChain } from '@/components/dashboard/buddy-chain'
 import { ActivityFeed } from '@/components/dashboard/activity-feed'
+import LayoutWrapper from '@/components/LayoutWrapper'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -134,11 +135,11 @@ export default function DashboardPage() {
   const totalReferralEarnings = stats.totalCommissions
 
   return (
-    <div className="min-h-screen bg-background">
+    <LayoutWrapper>
       {/* Header per Jules design */}
-      <header className="flex justify-between items-center mb-10 px-2 lg:px-8 pt-24">
+      <header className="flex justify-between items-center mb-10 px-2 lg:px-0">
         <div>
-          <h2 className="font-[var(--font-pixel)] text-3xl lg:text-4xl text-on-surface-variant">Dashboard</h2>
+          <h2 className="pixel-font text-3xl lg:text-4xl text-on-surface-variant">Dashboard</h2>
           <p className="text-on-surface-variant/60 font-medium">Welcome back, {user?.name || 'User'} #{user?.id?.substring(0, 8)}</p>
         </div>
         <div className="flex items-center space-x-4">
@@ -160,108 +161,104 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="pb-12 px-2 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Top 3-Card Grid per Jules design */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {/* Card 1: Balance */}
-            <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden shadow-clay-lg">
-              <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:rotate-12 transition-transform">
-                <span className="material-symbols-outlined text-5xl text-primary">payments</span>
-              </div>
-              <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">Balance</p>
-              <h3 className="font-[var(--font-pixel)] text-4xl text-primary">
-                {balanceLoading ? '...' : usdtBalance.toFixed(2)}
-              </h3>
-              <p className="text-xs font-bold text-tertiary flex items-center mt-2">
-                <span className="material-symbols-outlined text-sm mr-1">trending_up</span> 
-                {balanceLoading ? 'Updating...' : 'USDT'}
-              </p>
-            </div>
-
-            {/* Card 2: Active Eggs */}
-            <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden border-t-8 border-primary-container shadow-clay-lg">
-              <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform">
-                <span className="material-symbols-outlined text-5xl text-primary">egg</span>
-              </div>
-              <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">Active Eggs</p>
-              <h3 className="font-[var(--font-pixel)] text-4xl text-primary">{stats.totalEggs}</h3>
-              <div className="flex mt-4 -space-x-2">
-                {[0, 1, 2].map((i) => (
-                  <div 
-                    key={i}
-                    className={`
-                      w-8 h-8 rounded-full border-2 border-white
-                      ${i === 0 ? 'bg-primary-container' : i === 1 ? 'bg-secondary-container' : 'bg-tertiary-container'}
-                      flex items-center justify-center
-                    `}
-                  >
-                    <span className="material-symbols-outlined text-xs text-white">egg</span>
-                  </div>
-                ))}
-                {stats.totalEggs > 3 && (
-                  <div className="w-8 h-8 rounded-full border-2 border-white bg-surface-container flex items-center justify-center text-[10px] font-bold">
-                    +{stats.totalEggs - 3}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Card 3: Referral Earnings */}
-            <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden shadow-clay-lg">
-              <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:-translate-y-2 transition-transform">
-                <span className="material-symbols-outlined text-5xl text-secondary">groups</span>
-              </div>
-              <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">Referral Earnings</p>
-              <h3 className="font-[var(--font-pixel)] text-4xl text-secondary">{totalReferralEarnings.toFixed(2)}</h3>
-              <p className="text-xs font-bold text-on-surface-variant/60 mt-2">
-                {referralLevels.reduce((sum, lvl) => sum + lvl.count, 0)} active buddies
-              </p>
-            </div>
+      {/* Top 3-Card Grid per Jules design */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Card 1: Balance */}
+        <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:rotate-12 transition-transform">
+            <span className="material-symbols-outlined text-5xl text-primary">payments</span>
           </div>
-
-          {/* Split Section: Quick Actions + Buddy Chain */}
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-8">
-            {/* Left: Quick Actions (4 cols) */}
-            <div className="xl:col-span-4 flex flex-col space-y-4">
-              <h4 className="font-[var(--font-pixel)] text-xl px-2 text-on-surface-variant">Quick Actions</h4>
-              <QuickActions />
-            </div>
-
-            {/* Right: Buddy Chain (8 cols) */}
-            <div className="xl:col-span-8 bg-surface-container-lowest p-8 rounded-xl clay-card shadow-clay-xl">
-              <div className="flex justify-between items-start mb-8">
-                <div>
-                  <h4 className="font-[var(--font-pixel)] text-xl text-on-surface-variant">Buddy Chain</h4>
-                  <p className="text-sm text-on-surface-variant/60 font-medium">4-Level Growth Insights</p>
-                </div>
-                <button className="text-primary font-bold text-sm flex items-center hover:text-primary/80 transition-colors">
-                  Invite more <span className="material-symbols-outlined ml-1">add_circle</span>
-                </button>
-              </div>
-              <BuddyChain levels={referralLevels} loading={loading} />
-            </div>
-          </div>
-
-          {/* Bottom: Recent Activity (full width) */}
-          <div className="bg-surface-container-lowest p-8 rounded-xl clay-card shadow-clay-xl">
-            <div className="flex justify-between items-center mb-6">
-              <h4 className="font-[var(--font-pixel)] text-xl text-on-surface-variant">Recent Activity</h4>
-              <button className="text-xs font-bold text-primary-dim py-2 px-4 bg-primary-container/30 rounded-full hover:bg-primary-container/50 transition-colors">
-                View All History
-              </button>
-            </div>
-            <ActivityFeed userId={user?.id} />
-          </div>
-
-          {/* Loading State */}
-          {loading && (
-            <div className="flex items-center justify-center py-12">
-              <p className="font-[var(--font-pixel)] text-foreground">LOADING DASHBOARD...</p>
-            </div>
-          )}
+          <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">Balance</p>
+          <h3 className="pixel-font text-4xl text-primary">
+            {balanceLoading ? '...' : usdtBalance.toFixed(2)}
+          </h3>
+          <p className="text-xs font-bold text-tertiary flex items-center mt-2">
+            <span className="material-symbols-outlined text-sm mr-1">trending_up</span> 
+            {balanceLoading ? 'Updating...' : 'USDT'}
+          </p>
         </div>
-      </main>
-    </div>
+
+        {/* Card 2: Active Eggs */}
+        <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden border-t-8 border-primary-container">
+          <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-5xl text-primary">egg</span>
+          </div>
+          <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">Active Eggs</p>
+          <h3 className="pixel-font text-4xl text-primary">{stats.totalEggs}</h3>
+          <div className="flex mt-4 -space-x-2">
+            {[0, 1, 2].map((i) => (
+              <div 
+                key={i}
+                className={`
+                  w-8 h-8 rounded-full border-2 border-white
+                  ${i === 0 ? 'bg-primary-container' : i === 1 ? 'bg-secondary-container' : 'bg-tertiary-container'}
+                  flex items-center justify-center
+                `}
+              >
+                <span className="material-symbols-outlined text-xs">egg</span>
+              </div>
+            ))}
+            {stats.totalEggs > 3 && (
+              <div className="w-8 h-8 rounded-full border-2 border-white bg-surface-container flex items-center justify-center text-[10px] font-bold">
+                +{stats.totalEggs - 3}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Card 3: Referral Earnings */}
+        <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:-translate-y-2 transition-transform">
+            <span className="material-symbols-outlined text-5xl text-secondary">groups</span>
+          </div>
+          <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">Referral Earnings</p>
+          <h3 className="pixel-font text-4xl text-secondary">{totalReferralEarnings.toFixed(2)}</h3>
+          <p className="text-xs font-bold text-on-surface-variant/60 mt-2">
+            {referralLevels.reduce((sum, lvl) => sum + lvl.count, 0)} active buddies
+          </p>
+        </div>
+      </div>
+
+      {/* Split Section: Quick Actions + Buddy Chain */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-8">
+        {/* Left: Quick Actions (4 cols) */}
+        <div className="xl:col-span-4 flex flex-col space-y-4">
+          <h4 className="pixel-font text-xl px-2">Quick Actions</h4>
+          <QuickActions />
+        </div>
+
+        {/* Right: Buddy Chain (8 cols) */}
+        <div className="xl:col-span-8 bg-surface-container-lowest p-8 rounded-xl clay-card">
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h4 className="pixel-font text-xl">Buddy Chain</h4>
+              <p className="text-sm text-on-surface-variant/60 font-medium">4-Level Growth Insights</p>
+            </div>
+            <button className="text-primary font-bold text-sm flex items-center">
+              Invite more <span className="material-symbols-outlined ml-1">add_circle</span>
+            </button>
+          </div>
+          <BuddyChain levels={referralLevels} loading={loading} />
+        </div>
+      </div>
+
+      {/* Bottom: Recent Activity (full width) */}
+      <div className="bg-surface-container-lowest p-8 rounded-xl clay-card">
+        <div className="flex justify-between items-center mb-6">
+          <h4 className="pixel-font text-xl">Recent Activity</h4>
+          <button className="text-xs font-bold text-primary-dim py-2 px-4 bg-primary-container/30 rounded-full hover:bg-primary-container/50 transition-colors">
+            View All History
+          </button>
+        </div>
+        <ActivityFeed userId={user?.id} />
+      </div>
+
+      {/* Loading State */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <p className="pixel-font text-on-surface-variant">LOADING DASHBOARD...</p>
+        </div>
+      )}
+    </LayoutWrapper>
   )
 }

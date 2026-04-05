@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/pocketbase/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 
 /**
  * Transaction data structure per D-25
@@ -82,6 +80,7 @@ function formatRelativeTime(dateString: string): string {
  * - Slide animation on hover (hover:translate-x-2) per D-12
  * - "View All History" button in header per D-15
  * - Card structure: icon circle (left), title + timestamp (center), amount (right)
+ * - No Card wrapper - returns inline content for embedding
  * 
  * @example
  * ```tsx
@@ -146,94 +145,61 @@ export function ActivityFeed({ transactions: propTransactions, loading: propLoad
   const displayLoading = propLoading !== undefined ? propLoading : loading
   const displayError = propError !== undefined ? propError : error
 
-  // Color mapping for icon circles
-  const colorMap: Record<string, string> = {
-    primary: 'bg-primary-container text-on-primary-container',
-    secondary: 'bg-secondary-container text-on-secondary-container',
-    tertiary: 'bg-tertiary-container text-on-tertiary-container'
-  }
-
   return (
-    <Card variant="clay-lg" className="shadow-clay-xl">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="font-[var(--font-pixel)] text-xl text-foreground">
-              Recent Activity
-            </CardTitle>
-            <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-              Last 10 transactions
-            </CardDescription>
-          </div>
-          
-          {/* View All History button per D-15 */}
-          <Button
-            variant="outline"
-            size="sm"
-            className="font-[var(--font-pixel)] text-xs"
-            onClick={() => {
-              // Future: Navigate to transaction history page
-              // TODO: Implement transaction history page navigation
-            }}
-          >
-            View All History
-          </Button>
+    <div className="space-y-4">
+      {displayLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <p className="pixel-font text-sm text-on-surface-variant/60">
+            Loading transactions...
+          </p>
         </div>
-      </CardHeader>
-      <CardContent>
-        {displayLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <p className="font-[var(--font-pixel)] text-sm text-muted-foreground">
-              Loading transactions...
-            </p>
-          </div>
-        ) : displayError ? (
-          <div className="flex items-center justify-center py-8">
-            <p className="text-sm text-destructive">{displayError}</p>
-          </div>
-        ) : displayTransactions.length === 0 ? (
-          <div className="flex items-center justify-center py-8">
-            <p className="font-[var(--font-pixel)] text-sm text-muted-foreground">
-              No transactions yet
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {displayTransactions.map((transaction) => (
-              <div
-                key={transaction.id}
-                className={`
-                  flex items-center justify-between p-4 rounded-2xl
-                  bg-surface-container-low
-                  hover:translate-x-2 transition-transform duration-300
-                `}
-              >
-                {/* Left: Icon circle */}
-                <div className="flex items-center space-x-4">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${colorMap[transaction.color]}`}>
-                    <span className="material-symbols-outlined text-lg">{transaction.icon}</span>
-                  </div>
-                  
-                  {/* Center: Title + timestamp */}
-                  <div>
-                    <p className="font-bold text-sm">{transaction.title}</p>
-                    <p className="text-[10px] font-bold text-on-surface-variant/50 uppercase">
-                      {formatRelativeTime(transaction.timestamp)}
-                    </p>
-                  </div>
-                </div>
-                
-                {/* Right: Amount */}
-                <div className="text-right">
-                  <p className={`font-bold ${transaction.amount >= 0 ? 'text-tertiary' : 'text-error'}`}>
-                    {transaction.amount >= 0 ? '+' : ''}{transaction.amount.toFixed(2)} USDT
-                  </p>
-                </div>
+      ) : displayError ? (
+        <div className="flex items-center justify-center py-8">
+          <p className="text-sm text-destructive">{displayError}</p>
+        </div>
+      ) : displayTransactions.length === 0 ? (
+        <div className="flex items-center justify-center py-8">
+          <p className="pixel-font text-sm text-on-surface-variant/60">
+            No transactions yet
+          </p>
+        </div>
+      ) : (
+        displayTransactions.map((transaction) => (
+          <div
+            key={transaction.id}
+            className={`
+              flex items-center justify-between p-4 rounded-2xl
+              bg-surface-container-low
+              hover:translate-x-2 transition-transform duration-300
+            `}
+          >
+            {/* Left: Icon circle */}
+            <div className="flex items-center space-x-4">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center 
+                ${transaction.color === 'primary' ? 'bg-primary-container text-on-primary-container' : 
+                  transaction.color === 'secondary' ? 'bg-secondary-container text-on-secondary-container' : 
+                  'bg-tertiary-container text-on-tertiary-container'}`}>
+                <span className="material-symbols-outlined text-lg">{transaction.icon}</span>
               </div>
-            ))}
+              
+              {/* Center: Title + timestamp */}
+              <div>
+                <p className="font-bold text-sm">{transaction.title}</p>
+                <p className="text-[10px] font-bold text-on-surface-variant/50 uppercase">
+                  {formatRelativeTime(transaction.timestamp)}
+                </p>
+              </div>
+            </div>
+            
+            {/* Right: Amount */}
+            <div className="text-right">
+              <p className={`font-bold ${transaction.amount >= 0 ? 'text-tertiary' : 'text-error'}`}>
+                {transaction.amount >= 0 ? '+' : ''}{transaction.amount.toFixed(2)} USDT
+              </p>
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        ))
+      )}
+    </div>
   )
 }
