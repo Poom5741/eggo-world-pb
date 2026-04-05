@@ -36,10 +36,27 @@ export default function Eggs() {
   
   // Get authenticated user (after hydration)
   const user = isHydrated ? pb.authStore.record : null
-  const walletAddress = user?.wallet || ''
+  const walletAddress = user?.wallet ?? ''
   
-   // Fetch eggs with auto-polling
-   const { eggs, loading, refresh, polling } = useEggPoll(walletAddress, 30000)
+  // Fetch user profile to get wallet if not in auth record
+  const [userWallet, setUserWallet] = useState<string>('')
+  
+  useEffect(() => {
+    if (isHydrated && user?.id && !user?.wallet) {
+      // Fetch full user record to get wallet field
+      pb.collection('users').getOne(user.id).then((userData: any) => {
+        setUserWallet(userData.wallet || '')
+      }).catch(console.error)
+    } else if (user?.wallet) {
+      setUserWallet(user.wallet)
+    }
+  }, [isHydrated, user?.id, user?.wallet])
+  
+  // Use fetched wallet address
+  const effectiveWalletAddress = userWallet || walletAddress
+  
+  // Fetch eggs with auto-polling
+  const { eggs, loading, refresh, polling } = useEggPoll(effectiveWalletAddress, 30000)
   
   // Auth guard - redirect to login if not authenticated
   useEffect(() => {
@@ -82,7 +99,7 @@ export default function Eggs() {
   }
   
   // Loading state - แสดงสถานะกำลังโหลด
-  if (!isHydrated || loading) {
+  if (!isHydrated || loading || (!effectiveWalletAddress && user)) {
     return (
       <LayoutWrapper>
         <div className="max-w-6xl mx-auto">
