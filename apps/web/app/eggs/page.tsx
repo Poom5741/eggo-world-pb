@@ -1,0 +1,179 @@
+'use client'
+
+import React, { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import LayoutWrapper from '@/components/LayoutWrapper'
+import { useIsHydrated } from '@/hooks/use-is-hydrated'
+import { useEggPoll, EggData } from '@/hooks/use-egg-poll'
+import { FeaturedEggHero } from '@/components/eggs/featured-egg-hero'
+import { EggCard } from '@/components/eggs/egg-card'
+import { createClient } from '@/lib/pocketbase/client'
+
+/**
+ * My Eggs page - displays user's Egg NFT inventory
+ * หน้าที่แสดง Egg NFT ที่ผู้ใช้เป็นเจ้าของ
+ * 
+ * Features:
+ * - Featured egg hero (egg closest to hatching)
+ * - Grid of all user's eggs with feeding progress
+ * - Auto-polling every 30 seconds
+ * - Auth guard (redirects to login if not authenticated)
+ */
+export default function Eggs() {
+  const router = useRouter()
+  const isHydrated = useIsHydrated()
+  const pb = createClient()
+  
+  // Get authenticated user (after hydration)
+  const user = isHydrated ? pb.authStore.record : null
+  
+  // Fetch eggs with auto-polling
+  const { eggs, loading, error } = useEggPoll(user?.wallet, 30000)
+  
+  // Auth guard - redirect to login if not authenticated
+  useEffect(() => {
+    if (isHydrated && !user) {
+      router.push('/auth/login')
+    }
+  }, [isHydrated, user, router])
+  
+  // Handle manage egg action
+  const handleManageEgg = (eggId: number) => {
+    // TODO: Navigate to egg detail/manage page
+    console.log('Manage egg:', eggId)
+    // router.push(`/eggs/${eggId}/manage`)
+  }
+  
+  // Handle feed action
+  const handleFeedEgg = (eggId: number) => {
+    // TODO: Implement feed flow
+    console.log('Feed egg:', eggId)
+  }
+  
+  // Handle play action
+  const handlePlayEgg = (eggId: number) => {
+    // TODO: Implement play interaction
+    console.log('Play with egg:', eggId)
+  }
+  
+  // Loading state - แสดงสถานะกำลังโหลด
+  if (!isHydrated || loading) {
+    return (
+      <LayoutWrapper>
+        <div className="max-w-6xl mx-auto">
+          {/* Header Skeleton - โครงร่างส่วนหัว */}
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div className="space-y-4">
+              <div className="h-16 w-80 bg-surface-container rounded-lg animate-pulse" />
+              <div className="h-4 w-64 bg-surface-container rounded animate-pulse" />
+            </div>
+            <div className="h-20 w-48 bg-surface-container rounded-lg animate-pulse" />
+          </div>
+          
+          {/* Featured Egg Hero Skeleton - โครงร่าง Featured Egg */}
+          <div className="mb-16">
+            <div className="bg-surface-container-low rounded-xl p-8 h-96 clay-card animate-pulse" />
+          </div>
+          
+          {/* Egg Grid Skeleton - โครงร่างตารางไข่ */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-surface-container-lowest p-6 rounded-xl clay-card">
+                <div className="h-48 bg-surface-container rounded-lg mb-6 animate-pulse" />
+                <div className="h-6 w-40 bg-surface-container rounded mb-4 animate-pulse" />
+                <div className="h-4 w-32 bg-surface-container rounded mb-6 animate-pulse" />
+                <div className="h-2 w-full bg-surface-container rounded mb-2 animate-pulse" />
+                <div className="h-10 w-full bg-surface-container-high rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </LayoutWrapper>
+    )
+  }
+  
+  // Not authenticated - จะถูก redirect ไป login
+  if (!user) {
+    return null
+  }
+  
+  // Empty state - กรณีไม่มีไข่
+  if (eggs.length === 0) {
+    return (
+      <LayoutWrapper>
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div>
+              <h1 className="text-5xl font-pixel-style text-primary mb-2">My Egg Inventory</h1>
+              <p className="text-on-surface-variant max-w-md">
+                Manage your digital companions, keep them fed, and watch them hatch into legendary creatures.
+              </p>
+            </div>
+          </div>
+          
+          <div className="bg-surface-container-low rounded-xl p-12 clay-card text-center">
+            <span className="material-symbols-outlined text-6xl text-primary mb-4">egg</span>
+            <h2 className="text-2xl font-pixel-style text-primary mb-2">No Eggs Yet</h2>
+            <p className="text-on-surface-variant mb-6">
+              You don&apos;t have any Egg NFTs yet. Start your journey by purchasing your first egg!
+            </p>
+            <button
+              onClick={() => router.push('/mint')}
+              className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
+            >
+              Get Your First Egg
+            </button>
+          </div>
+        </div>
+      </LayoutWrapper>
+    )
+  }
+  
+  // Main content - เนื้อหาหลัก
+  return (
+    <LayoutWrapper>
+      <div className="max-w-6xl mx-auto">
+        {/* Page Header - ส่วนหัวของหน้า */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+          <div>
+            <h1 className="text-5xl font-pixel-style text-primary mb-2">My Egg Inventory</h1>
+            <p className="text-on-surface-variant max-w-md">
+              Manage your digital companions, keep them fed, and watch them hatch into legendary creatures.
+            </p>
+          </div>
+          <div className="flex gap-4">
+            <div className="clay-card bg-surface-container-lowest px-6 py-4 rounded-lg flex items-center gap-4">
+              <span className="material-symbols-outlined text-primary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>
+                token
+              </span>
+              <div>
+                <div className="text-xs font-bold text-on-surface-variant uppercase">Egg Power</div>
+                <div className="text-xl font-black text-primary">{eggs.length * 1000}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Featured Egg Hero - ไข่ที่ใกล้จะฟักที่สุด */}
+        {eggs.length > 0 && (
+          <FeaturedEggHero
+            egg={eggs[0]} // First egg has highest food_count (sorted by hook)
+            onFeed={handleFeedEgg}
+            onPlay={handlePlayEgg}
+          />
+        )}
+        
+        {/* Egg Grid - ตารางแสดงไข่ทั้งหมด */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {eggs.slice(1).map((egg) => (
+            <EggCard
+              key={egg.id}
+              egg={egg}
+              onManage={handleManageEgg}
+            />
+          ))}
+        </div>
+      </div>
+    </LayoutWrapper>
+  )
+}
