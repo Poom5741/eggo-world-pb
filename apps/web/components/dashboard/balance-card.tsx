@@ -6,6 +6,11 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 /**
+ * ค่าคงที่สำหรับ component BalanceCard
+ */
+const POLLING_INTERVAL = 30000 // 30 seconds per D-11
+
+/**
  * BalanceCard Component Props
  * Props สำหรับ component BalanceCard
  */
