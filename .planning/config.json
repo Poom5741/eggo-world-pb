@@ -20,8 +20,18 @@
     "network": "bsc",
     "token": "usdt-bep20"
   },
-  "focus_areas": ["smart-contracts", "marketplace-ui", "commission-engine", "usdt-integration"],
-  "constraints": ["no-native-token", "static-export-cloudflare", "line-oauth-auth", "bsc-only"],
+  "focus_areas": [
+    "smart-contracts",
+    "marketplace-ui",
+    "commission-engine",
+    "usdt-integration"
+  ],
+  "constraints": [
+    "no-native-token",
+    "static-export-cloudflare",
+    "line-oauth-auth",
+    "bsc-only"
+  ],
   "next_command": "deploy to production or start new feature",
   "workflow": {
     "_auto_chain_active": false,

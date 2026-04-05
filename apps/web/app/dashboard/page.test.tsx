@@ -20,7 +20,7 @@ const getDashboardContent = () => {
   try {
     const content = readFileSync(dashboardPath, 'utf-8')
     return content
-  } catch (err: any) {
+  } catch (_err: any) {
     return ''
   }
 }
@@ -29,7 +29,7 @@ const getBalanceCardContent = () => {
   try {
     const content = readFileSync(balanceCardPath, 'utf-8')
     return content
-  } catch (err: any) {
+  } catch (_err: any) {
     return ''
   }
 }
@@ -38,7 +38,38 @@ const getBuddyChainContent = () => {
   try {
     const content = readFileSync(buddyChainPath, 'utf-8')
     return content
-  } catch (err: any) {
+  } catch (_err: any) {
+    return ''
+  }
+}
+
+const quickActionsPath = join(process.cwd(), 'components/dashboard/quick-actions.tsx')
+const activityFeedPath = join(process.cwd(), 'components/dashboard/activity-feed.tsx')
+const activeEggsCardPath = join(process.cwd(), 'components/dashboard/active-eggs-card.tsx')
+
+const getQuickActionsContent = () => {
+  try {
+    const content = readFileSync(quickActionsPath, 'utf-8')
+    return content
+  } catch (_err: any) {
+    return ''
+  }
+}
+
+const getActivityFeedContent = () => {
+  try {
+    const content = readFileSync(activityFeedPath, 'utf-8')
+    return content
+  } catch (_err: any) {
+    return ''
+  }
+}
+
+const getActiveEggsCardContent = () => {
+  try {
+    const content = readFileSync(activeEggsCardPath, 'utf-8')
+    return content
+  } catch (_err: any) {
     return ''
   }
 }
@@ -273,6 +304,388 @@ describe('Buddy Chain Referral Visualization', () => {
     it('should define BuddyChainProps interface', () => {
       const content = getBuddyChainContent()
       expect(content).toMatch(/interface.*BuddyChainProps|type.*BuddyChainProps/)
+    })
+  })
+})
+
+describe('Quick Actions Component', () => {
+  describe('Component Structure', () => {
+    it('should have QuickActions component file', () => {
+      const content = getQuickActionsContent()
+      expect(content).toBeTruthy()
+      expect(content.length).toBeGreaterThan(0)
+    })
+
+    it('should export QuickActions component', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('QuickActions')
+      expect(content).toMatch(/export.*QuickActions|function QuickActions/)
+    })
+
+    it('should display 3 action cards', () => {
+      const content = getQuickActionsContent()
+      // Check for 3 action buttons/cards
+      expect(content).toContain('Feed All Eggs')
+      expect(content).toContain('Hatch Ready Eggs')
+      expect(content).toContain('Buy Food Bundle')
+    })
+  })
+
+  describe('Action Card Icons', () => {
+    it('should use Material Symbols icons', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('material-symbols-outlined')
+    })
+
+    it('should use restaurant icon for Feed All per D-02', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('restaurant')
+    })
+
+    it('should use auto_fix_high icon for Hatch Ready per D-02', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('auto_fix_high')
+    })
+
+    it('should use shopping_basket icon for Buy Food per D-02', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('shopping_basket')
+    })
+  })
+
+  describe('Container Colors', () => {
+    it('should use primary-container for Feed All per D-10', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('bg-primary-container')
+      expect(content).toContain('Feed All')
+    })
+
+    it('should use secondary-container for Hatch Ready per D-10', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('bg-secondary-container')
+      expect(content).toContain('Hatch Ready')
+    })
+
+    it('should use tertiary-container for Buy Food per D-10', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('bg-tertiary-container')
+      expect(content).toContain('Buy Food')
+    })
+  })
+
+  describe('Hover and Active States', () => {
+    it('should have hover:scale-[1.02] per D-11', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('hover:scale-[1.02]')
+    })
+
+    it('should have active:scale-[0.98] per D-11', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('active:scale-[0.98]')
+    })
+
+    it('should have transition-transform class', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('transition-transform')
+    })
+  })
+
+  describe('Navigation', () => {
+    it('should navigate to /mint for Feed All', () => {
+      const content = getQuickActionsContent()
+      expect(content).toMatch(/router\.push.*['"]\/mint['"]/)
+    })
+
+    it('should navigate to /mint/food for Buy Food', () => {
+      const content = getQuickActionsContent()
+      expect(content).toMatch(/router\.push.*['"]\/mint\/food['"]/)
+    })
+
+    it('should navigate to dashboard/eggs for Hatch Ready', () => {
+      const content = getQuickActionsContent()
+      expect(content).toMatch(/router\.push.*['"].*eggs['"]/)
+    })
+  })
+
+  describe('Card Design', () => {
+    it('should have icon circle with w-12 h-12', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('w-12')
+      expect(content).toContain('h-12')
+    })
+
+    it('should have rounded-2xl for icon container', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('rounded-2xl')
+    })
+
+    it('should have white/40 background for icon circle', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('bg-white/40')
+    })
+
+    it('should have chevron icon on right', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('chevron_right')
+    })
+
+    it('should display description text', () => {
+      const content = getQuickActionsContent()
+      expect(content).toContain('Requires')
+      expect(content).toContain('units of food')
+      expect(content).toContain('eggs ready')
+      expect(content).toContain('Refill')
+    })
+  })
+})
+
+describe('Activity Feed Component', () => {
+  describe('Component Structure', () => {
+    it('should have ActivityFeed component file', () => {
+      const content = getActivityFeedContent()
+      expect(content).toBeTruthy()
+      expect(content.length).toBeGreaterThan(0)
+    })
+
+    it('should export ActivityFeed component', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('ActivityFeed')
+      expect(content).toMatch(/export.*ActivityFeed|function ActivityFeed/)
+    })
+
+    it('should accept transactions array as props', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('transactions')
+      expect(content).toMatch(/transactions.*Transaction\[\]|transactions.*\[/)
+    })
+
+    it('should show last 10 transactions limit', () => {
+      const content = getActivityFeedContent()
+      expect(content).toMatch(/limit.*10|10.*limit|getList.*10|perPage.*10/)
+    })
+  })
+
+  describe('Transaction Categorization', () => {
+    it('should use egg_alt icon for hatch transactions per D-25', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('egg_alt')
+      expect(content).toContain('hatch')
+    })
+
+    it('should use egg icon for mint_egg transactions per D-25', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('egg')
+      expect(content).toContain('mint')
+    })
+
+    it('should use group icon for commission transactions per D-25', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('group')
+      expect(content).toContain('commission')
+    })
+
+    it('should use payments icon for sale transactions per D-25', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('payments')
+      expect(content).toContain('sale')
+    })
+
+    it('should use shopping_cart icon for mint_food transactions per D-25', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('shopping_cart')
+      expect(content).toContain('food')
+    })
+  })
+
+  describe('Color Coding', () => {
+    it('should use tertiary color for hatch transactions per D-14', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('tertiary')
+      expect(content).toContain('hatch')
+    })
+
+    it('should use secondary color for purchase transactions per D-14', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('secondary')
+      expect(content).toMatch(/purchase|mint_food/)
+    })
+
+    it('should use primary color for commission transactions per D-14', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('primary')
+      expect(content).toContain('commission')
+    })
+  })
+
+  describe('Card Structure', () => {
+    it('should have icon circle with w-10 h-10', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('w-10')
+      expect(content).toContain('h-10')
+    })
+
+    it('should have rounded-full for icon circle', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('rounded-full')
+    })
+
+    it('should display transaction title', () => {
+      const content = getActivityFeedContent()
+      expect(content).toMatch(/title|Title|Hatched|Minted|Commission|Sale/)
+    })
+
+    it('should display timestamp', () => {
+      const content = getActivityFeedContent()
+      expect(content).toMatch(/timestamp|Timestamp|ago|AM|PM/)
+    })
+
+    it('should display amount aligned right', () => {
+      const content = getActivityFeedContent()
+      expect(content).toMatch(/amount|Amount|text-right|justify-end/)
+    })
+  })
+
+  describe('Hover Animation', () => {
+    it('should have hover:translate-x-2 per D-12', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('hover:translate-x-2')
+    })
+
+    it('should have transition-transform class', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('transition-transform')
+    })
+
+    it('should have duration-300 animation', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('duration-300')
+    })
+  })
+
+  describe('View All History Button', () => {
+    it('should have View All History button in header per D-15', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('View All')
+      expect(content).toContain('History')
+    })
+
+    it('should have button in header section', () => {
+      const content = getActivityFeedContent()
+      expect(content).toMatch(/header|Header|flex.*justify-between/)
+    })
+  })
+
+  describe('Data Fetching', () => {
+    it('should query PocketBase transactions collection', () => {
+      const content = getActivityFeedContent()
+      expect(content).toMatch(/collection\(.*transaction|collection\(.*activity/)
+    })
+
+    it('should use getList method for querying', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('getList')
+    })
+
+    it('should handle loading state', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('loading')
+    })
+
+    it('should handle error state', () => {
+      const content = getActivityFeedContent()
+      expect(content).toContain('error')
+    })
+  })
+})
+
+describe('Active Eggs Card Component', () => {
+  describe('Component Structure', () => {
+    it('should have ActiveEggsCard component file', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toBeTruthy()
+      expect(content.length).toBeGreaterThan(0)
+    })
+
+    it('should export ActiveEggsCard component', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toContain('ActiveEggsCard')
+      expect(content).toMatch(/export.*ActiveEggsCard|function ActiveEggsCard/)
+    })
+
+    it('should accept egg count as props', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toMatch(/count|Count|total|Total|eggs|Eggs/)
+    })
+  })
+
+  describe('Egg Count Display', () => {
+    it('should display total egg count', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toMatch(/\d+.*egg|egg.*\d+|count|Count/)
+    })
+
+    it('should show egg preview avatars', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toContain('egg')
+      expect(content).toContain('avatar')
+    })
+
+    it('should use -space-x-2 for overlapping avatars per Jules design', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toContain('-space-x-2')
+    })
+
+    it('should use w-8 h-8 for avatar size per Jules design', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toContain('w-8')
+      expect(content).toContain('h-8')
+    })
+
+    it('should have rounded-full for avatars', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toContain('rounded-full')
+    })
+  })
+
+  describe('Overflow Indicator', () => {
+    it('should show +N overflow indicator', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toMatch(/\+\d|\+.*count|overflow/)
+    })
+
+    it('should show 3 egg previews maximum', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toMatch(/3|slice.*3|limit.*3/)
+    })
+  })
+
+  describe('Border Colors', () => {
+    it('should use primary-container border', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toContain('border-2')
+      expect(content).toContain('primary-container')
+    })
+
+    it('should use secondary-container border', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toContain('secondary-container')
+    })
+
+    it('should use tertiary-container border', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toContain('tertiary-container')
+    })
+  })
+
+  describe('Data Types', () => {
+    it('should define ActiveEggsCardProps interface', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toMatch(/interface.*ActiveEggsCardProps|type.*ActiveEggsCardProps/)
+    })
+
+    it('should define Egg interface or type', () => {
+      const content = getActiveEggsCardContent()
+      expect(content).toMatch(/interface.*Egg|type.*Egg/)
     })
   })
 })

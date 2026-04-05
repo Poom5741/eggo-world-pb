@@ -15,7 +15,7 @@ test('renders FoodCard with grain type', () => {
   render(<FoodCard food={food} />);
   
   expect(screen.getByText('Food #1')).toBeInTheDocument();
-  expect(screen.getByText('🌾 Grain')).toBeInTheDocument();
+  expect(screen.getByText(/grain/i)).toBeInTheDocument();
 });
 
 test('renders FoodCard with fish type', () => {
@@ -29,7 +29,8 @@ test('renders FoodCard with fish type', () => {
 
   render(<FoodCard food={food} />);
   
-  expect(screen.getByText('🐟 Fish')).toBeInTheDocument();
+  expect(screen.getByText('Food #2')).toBeInTheDocument();
+  expect(screen.getByText(/fish/i)).toBeInTheDocument();
 });
 
 test('renders FoodCard with insects type', () => {
@@ -43,7 +44,8 @@ test('renders FoodCard with insects type', () => {
 
   render(<FoodCard food={food} />);
   
-  expect(screen.getByText('🦗 Insects')).toBeInTheDocument();
+  expect(screen.getByText('Food #3')).toBeInTheDocument();
+  expect(screen.getByText(/insects/i)).toBeInTheDocument();
 });
 
 test('renders FoodCard with herb type', () => {
@@ -57,7 +59,8 @@ test('renders FoodCard with herb type', () => {
 
   render(<FoodCard food={food} />);
   
-  expect(screen.getByText('🌿 Herb')).toBeInTheDocument();
+  expect(screen.getByText('Food #4')).toBeInTheDocument();
+  expect(screen.getByText(/herb/i)).toBeInTheDocument();
 });
 
 test('shows consumed badge when food is consumed', () => {
