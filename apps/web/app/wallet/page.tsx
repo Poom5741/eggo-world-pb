@@ -22,7 +22,7 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true)
 
   // Get wallet balance with auto-polling
-  const { balance, loading: polling, error, refresh } = useWalletPoll(user?.wallet_address)
+  const { balance, loading: polling, error, refresh } = useWalletPoll(user?.wallet || '')
 
   useEffect(() => {
     const pb = createClient()

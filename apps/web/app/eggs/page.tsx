@@ -36,9 +36,10 @@ export default function Eggs() {
   
   // Get authenticated user (after hydration)
   const user = isHydrated ? pb.authStore.record : null
+  const walletAddress = user?.wallet || ''
   
    // Fetch eggs with auto-polling
-   const { eggs, loading, error, refresh, polling } = useEggPoll(user?.wallet_address, 30000)
+   const { eggs, loading, refresh, polling } = useEggPoll(walletAddress, 30000)
   
   // Auth guard - redirect to login if not authenticated
   useEffect(() => {
@@ -123,7 +124,7 @@ export default function Eggs() {
 
   // Check for wallet - ตรวจสอบว่ามี wallet หรือไม่
   // Handle no wallet case - จัดการกรณีไม่มี wallet
-  const hasWallet = user?.wallet_address
+  const hasWallet = user?.wallet || ''
   if (isHydrated && !hasWallet) {
     return (
       <LayoutWrapper>
