@@ -50,7 +50,7 @@ export default function DashboardPage() {
       router.push('/auth/login')
     }
 
-    pb.authStore.onChange(() => {
+    const unsubscribe = pb.authStore.onChange(() => {
       console.log('Dashboard authStore changed')
       const updatedUser = getUser()
       if (isAuthenticated() && updatedUser?.id) {
@@ -61,6 +61,10 @@ export default function DashboardPage() {
         router.push('/auth/login')
       }
     })
+    
+    return () => {
+      unsubscribe()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
 
@@ -135,7 +139,7 @@ export default function DashboardPage() {
 
   // Refresh function kept for future use (manual refresh button can be re-added)
   const _handleRefresh = async () => {
-    if (user) {
+    if (user?.id) {
       await Promise.all([
         refreshBalance(),
         fetchDashboardData(user)
