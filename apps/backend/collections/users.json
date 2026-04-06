@@ -98,13 +98,7 @@
         "id": "file376926767",
         "maxSelect": 1,
         "maxSize": 5242880,
-        "mimeTypes": [
-          "image/jpeg",
-          "image/png",
-          "image/svg+xml",
-          "image/gif",
-          "image/webp"
-        ],
+        "mimeTypes": ["image/jpeg", "image/png", "image/svg+xml", "image/gif", "image/webp"],
         "name": "avatar",
         "presentable": false,
         "protected": false,
@@ -367,10 +361,8 @@
       "enabled": true
     },
     "passwordAuth": {
-      "enabled": false,
-      "identityFields": [
-        "email"
-      ]
+      "enabled": true,
+      "identityFields": ["email"]
     },
     "mfa": {
       "enabled": false,
