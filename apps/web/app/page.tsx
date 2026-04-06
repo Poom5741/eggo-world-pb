@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import TopNav from '@/components/TopNav'
-import BottomNavMobile from '@/components/BottomNavMobile'
+import { AuthLink } from '@/components/auth/AuthLink'
 
 export default function Home() {
   return (
@@ -28,12 +28,12 @@ export default function Home() {
               Welcome to EggoWorld, where pixels meet clay. Collect food, feed your Eggos, and watch them evolve into legendary digital companions.
             </p>
             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start pt-4">
-              <Link href="/join" className="clay-btn bg-[var(--primary-container)] text-[var(--on-primary)]-container px-10 py-5 rounded-[2rem] font-headline font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl">
+              <AuthLink href="/join" className="clay-btn bg-[var(--primary-container)] text-[var(--on-primary)]-container px-10 py-5 rounded-[2rem] font-headline font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl">
                 Join the EggoWorld
-              </Link>
-              <Link href="/marketplace" className="px-10 py-5 rounded-[2rem] font-headline font-bold text-lg hover:bg-[var(--surface)]-container-low transition-colors">
+              </AuthLink>
+              <AuthLink href="/marketplace" className="px-10 py-5 rounded-[2rem] font-headline font-bold text-lg hover:bg-[var(--surface)]-container-low transition-colors">
                 View Marketplace
-              </Link>
+              </AuthLink>
             </div>
           </div>
 
@@ -262,8 +262,6 @@ export default function Home() {
           </div>
         </footer>
       </main>
-      
-      <BottomNavMobile />
     </>
   )
 }

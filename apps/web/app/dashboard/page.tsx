@@ -33,29 +33,29 @@ export default function DashboardPage() {
     const pb = createClient()
     
     console.log('=== Dashboard auth check ===')
-    console.log('isAuthenticated:', isAuthenticated())
-    console.log('getUser:', getUser())
-    console.log('authStore.isValid:', pb.authStore.isValid)
+    console.log('authStore.token exists:', !!pb.authStore.token)
     console.log('authStore.record:', pb.authStore.record)
-    console.log('authStore.token:', pb.authStore.token ? 'present' : 'missing')
+    const userRecord = getUser()
+    console.log('getUser():', userRecord)
+    console.log('authStore.isValid:', pb.authStore.isValid)
+    console.log('isAuthenticated():', isAuthenticated())
     
-    if (isAuthenticated()) {
-      const currentUser = getUser()
-      console.log('User authenticated:', currentUser?.id)
-      setUser(currentUser)
+    if (userRecord && userRecord.id) {
+      console.log('User authenticated:', userRecord.id)
+      setUser(userRecord)
       setAuthChecked(true)
-      if (currentUser?.id) {
-        fetchDashboardData(currentUser)
+      if (userRecord.id) {
+        fetchDashboardData(userRecord)
       }
     } else {
-      console.log('Not authenticated, setting auth checked flag')
+      console.log('No user record found, setting authChecked flag')
       setAuthChecked(true)
     }
 
     const unsubscribe = pb.authStore.onChange(() => {
-      console.log('Dashboard authStore changed')
+      console.log('Dashboard authStore changed, token exists:', !!pb.authStore.token)
       const updatedUser = getUser()
-      if (isAuthenticated() && updatedUser?.id) {
+      if (updatedUser && updatedUser.id) {
         setUser(updatedUser)
         setAuthChecked(true)
         fetchDashboardData(updatedUser)
@@ -86,6 +86,14 @@ export default function DashboardPage() {
     }
     
     const pb = createClient()
+    
+    // Check if we have valid auth token
+    if (!pb.authStore.token || !pb.authStore.isValid) {
+      console.warn('No valid auth token, skipping fetch')
+      setLoading(false)
+      return
+    }
+    
     try {
       const [profileData, eggsData, commissionsData] = await Promise.all([
         pb.collection('users').getOne(currentUser.id),
@@ -140,8 +148,12 @@ export default function DashboardPage() {
         setReferralLevels([1, 2, 3, 4].map(lvl => ({ level: lvl, count: 0, percentage: 0, commissionRate: lvl === 1 ? 0.20 : 0.10 })))
         return
       }
-      // Log other errors
-      console.error('Failed to fetch dashboard data:', err.message || err)
+      // Improve error logging to identify specific failures
+      console.error('Dashboard fetch error:', {
+        message: err.message,
+        status: err.status,
+        data: err.data
+      })
     } finally {
       setLoading(false)
     }

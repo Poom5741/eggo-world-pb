@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AuthLink } from '@/components/auth/AuthLink'
 
 // TopNav - Desktop top navigation bar component
 // Displays EggoWorld logo, navigation links, and wallet connect button
@@ -13,12 +14,12 @@ export default function TopNav() {
 
       {/* Desktop Links */}
       <div className="hidden md:flex items-center space-x-8 font-headline font-bold tracking-tight">
-        <Link href="/dashboard" className="text-[var(--on-surface-variant)] opacity-60 hover:scale-105 transition-transform active-nav-link">
+        <AuthLink href="/dashboard" className="text-[var(--on-surface-variant)] opacity-60 hover:scale-105 transition-transform active-nav-link">
           Dashboard
-        </Link>
-        <Link href="/marketplace" className="text-[var(--on-surface-variant)] opacity-60 hover:scale-105 transition-transform active-nav-link">
+        </AuthLink>
+        <AuthLink href="/marketplace" className="text-[var(--on-surface-variant)] opacity-60 hover:scale-105 transition-transform active-nav-link">
           Marketplace
-        </Link>
+        </AuthLink>
       </div>
 
       <div className="flex items-center gap-3">

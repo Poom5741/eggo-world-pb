@@ -47,21 +47,31 @@ export function useWalletPoll(
    */
   const fetchBalance = useCallback(async () => {
     if (!walletAddress) {
-      // No wallet address, skip fetch
+      // No wallet address, set zero balance
+      setBalance({ usdt: '0', native: '0' })
       return
     }
 
     setLoading(true)
     try {
       // Fetch from Wallet API endpoint
-      const res = await fetch(`/api/wallet/${walletAddress}/balance`)
+      const res = await fetch('http://localhost:3001/api/v1/wallet/balance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_address: walletAddress })
+      })
 
       if (!res.ok) {
         throw new Error(`Failed to fetch balance: ${res.status} ${res.statusText}`)
       }
 
       const data = await res.json()
-      setBalance(data)
+      if (data.success && data.data) {
+        setBalance({
+          usdt: data.data.usdt_balance || '0',
+          native: data.data.native_balance || '0'
+        })
+      }
       setError(null)
     } catch (err: any) {
       // Handle error

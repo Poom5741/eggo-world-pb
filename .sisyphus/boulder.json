@@ -1,45 +1,15 @@
 {
-  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/phase-11-marketplace.md",
-  "started_at": "2026-04-06T04:31:50.084Z",
+  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/referral-system-implementation.md",
+  "started_at": "2026-04-06T13:06:11.731Z",
   "session_ids": [
-    "ses_29efbbfe5ffeQYRBjpqmAX7c0J",
-    "ses_29eeef815ffe6ZkJJVqU8PgNy8",
-    "ses_29eeef808ffelAH5eQJJJMsGh2",
-    "ses_29eeef803ffeELp91jcr2UpZDy",
-    "ses_29eeef810ffe5tRkszNoY9H4JR",
-    "ses_29eeb5786ffeveoVzCwnn25w1q",
-    "ses_29eeb576bffeYyj9mauy8pPdYC",
-    "ses_29ed312b8ffen8dH0CWhld7NOH",
-    "ses_29ed312d6ffe46AIOIKrU2dEKW",
-    "ses_29ecf3f35ffei9ppxh8zKGq9u1",
-    "ses_29ecd2114ffeP6ixkv1WFa7X7g",
-    "ses_29ec72b8cffewKIsPlzpJIqy1x",
-    "ses_29ec148a7ffeW3zlPYBKms1hMb",
-    "ses_29eb648c1ffePyVKsfesHze0Dr",
-    "ses_29eb64893ffeqtr8iJqPTPmRSa",
-    "ses_29eb64869ffeoRJHtKOoAQ5M1L",
-    "ses_29eaaf67effeIJ1Ux2rTFglG7a",
-    "ses_29ea6cc86ffeSaSP4YsW4IuYei",
-    "ses_29e9c8de8ffeAtjwKvJryk7XpH",
-    "ses_29e9c8dcfffeYPSgXBI02P0eZ2",
-    "ses_29e954d1bffebOhKwBfjs6JlYA",
-    "ses_29e954d37ffei5N6fsbMtAHavD",
-    "ses_29e8d9274ffeZnZw0P8HgPiFvj",
-    "ses_29e7af780ffeUruzlskcm7L1vA",
-    "ses_29e6e6bf9ffewaTAhTKmy4RVlq",
-    "ses_29e6bff6effeQrC01rFDD8ca1p"
+    "ses_29d51c12bffeRTF0qB1HXpn3ap",
+    "ses_29d11c44cffedX3WORehp1899D",
+    "ses_29d11c486ffeLSjT8GG6aZeY3H",
+    "ses_29d0b3e0effefBGz7XTD1XFEGX"
   ],
-  "plan_name": "phase-11-marketplace",
+  "plan_name": "referral-system-implementation",
   "agent": "atlas",
-  "task_sessions": {
-    "todo:1": {
-      "task_key": "todo:1",
-      "task_label": "1",
-      "task_title": "Create marketplace page shell + route",
-      "session_id": "ses_29e7af780ffeUruzlskcm7L1vA",
-      "agent": "Sisyphus-Junior",
-      "category": "quick",
-      "updated_at": "2026-04-06T06:41:53.861Z"
-    }
-  }
+  "previous_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/fix-auth-redirects.md",
+  "switched_at": "2026-04-06T13:06:11.731Z",
+  "task_sessions": {}
 }

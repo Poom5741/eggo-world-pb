@@ -38,11 +38,43 @@ function LineLoginContent() {
 
           // PRIORITY: If we also have email+password, use authWithPassword
           // to get a valid PocketBase JWT (works for both local and production)
-          if (email && password) {
+            if (email && password) {
             console.log('Using authWithPassword with email+password')
             const pb = createClient()
             const authData = await pb.collection('users').authWithPassword(email, password)
             console.log('authWithPassword SUCCESS, user:', authData.record?.id)
+
+            // Apply referral code after successful authentication
+            const pendingReferralCode = sessionStorage.getItem('pending_referral_code')
+            if (pendingReferralCode && authData.record) {
+              try {
+                const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://localhost:8090'
+                const response = await fetch(`${pbUrl}/api/referrals/apply`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authData.token
+                  },
+                  body: JSON.stringify({
+                    referral_code: pendingReferralCode,
+                    user_id: authData.record.id
+                  })
+                })
+                
+                const result = await response.json()
+                console.log('Referral result:', result)
+                
+                if (result.success) {
+                  console.log('Referral applied successfully:', result.data?.referrer_name)
+                } else {
+                  console.log('Referral failed:', result.error?.message)
+                }
+              } catch (error) {
+                console.error('Failed to apply referral:', error)
+              } finally {
+                sessionStorage.removeItem('pending_referral_code')
+              }
+            }
 
             const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
             console.log('Redirecting to:', redirectTo)
@@ -127,7 +159,7 @@ function LineLoginContent() {
           // ALSO save to localStorage directly (client.ts onChange handler will sync cookie)
           localStorage.setItem('pocketbase_auth', JSON.stringify({
             token: realToken,
-            record: recordModel
+            model: recordModel
           }))
 
           // EXPLICITLY set the cookie to ensure middleware can read it
@@ -138,6 +170,38 @@ function LineLoginContent() {
           // Verify cookie was set
           const cookieValue = document.cookie.split(';').find(c => c.trim().startsWith('pb_auth='))
           console.log('Cookie verification:', !!cookieValue)
+
+          // Apply referral code after successful authentication
+          const pendingReferralCode = sessionStorage.getItem('pending_referral_code')
+          if (pendingReferralCode && backendUser?.id) {
+            try {
+              const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://localhost:8090'
+              const response = await fetch(`${pbUrl}/api/referrals/apply`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': realToken
+                },
+                body: JSON.stringify({
+                  referral_code: pendingReferralCode,
+                  user_id: backendUser.id
+                })
+              })
+              
+              const result = await response.json()
+              console.log('Referral result:', result)
+              
+              if (result.success) {
+                console.log('Referral applied successfully:', result.data?.referrer_name)
+              } else {
+                console.log('Referral failed:', result.error?.message)
+              }
+            } catch (error) {
+              console.error('Failed to apply referral:', error)
+            } finally {
+              sessionStorage.removeItem('pending_referral_code')
+            }
+          }
 
           const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
           console.log('Redirecting to:', redirectTo)

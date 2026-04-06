@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AuthLink } from '@/components/auth/AuthLink'
 
 // Type definition for navigation items
 export type NavItem = {
@@ -37,26 +38,26 @@ export default function SideNav() {
       
       <nav className="flex-grow space-y-2">
         {NAV_ITEMS.map((item) => (
-          <Link 
+          <AuthLink 
             key={item.href}
             href={item.href}
             className="flex items-center space-x-4 px-4 py-3 text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300 hover:translate-x-2 active-side-nav"
           >
             <span className="material-symbols-outlined">{item.icon}</span>
             <span className="font-medium font-headline">{item.label}</span>
-          </Link>
+          </AuthLink>
         ))}
       </nav>
 
       <div className="pt-4 border-t border-[var(--on-surface)]/5 space-y-2">
-        <Link href="#" className="flex items-center space-x-4 px-4 py-2 text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300">
+        <AuthLink href="/settings" className="flex items-center space-x-4 px-4 py-2 text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300">
           <span className="material-symbols-outlined text-sm">settings</span>
           <span className="text-sm font-medium">Settings</span>
-        </Link>
-        <Link href="#" className="flex items-center space-x-4 px-4 py-2 text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300">
+        </AuthLink>
+        <AuthLink href="/support" className="flex items-center space-x-4 px-4 py-2 text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300">
           <span className="material-symbols-outlined text-sm">help_outline</span>
           <span className="text-sm font-medium">Support</span>
-        </Link>
+        </AuthLink>
       </div>
 
       <button className="w-full py-4 bg-[var(--tertiary)] text-[var(--on-tertiary)] rounded-2xl font-bold clay-button hover:scale-[1.02] active:scale-95 transition-all font-headline">

@@ -504,6 +504,13 @@
     letter-spacing: -0.05em;
   }
   
+  .line-button {
+    background-color: #00C300;
+  }
+  .line-button:hover {
+    background-color: #00b000;
+  }
+  
   .pixel-text {
     font-family: 'Silkscreen', cursive;
   }

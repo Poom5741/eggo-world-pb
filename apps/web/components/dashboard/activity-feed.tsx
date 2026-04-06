@@ -102,6 +102,14 @@ export function ActivityFeed({ transactions: propTransactions, loading: propLoad
       try {
         const pb = createClient()
         
+        // Verify auth before query
+        if (!pb.authStore.token || !pb.authStore.isValid) {
+          console.warn('No auth token for transactions query')
+          setTransactions([])
+          setLoading(false)
+          return
+        }
+
         // Query transactions collection (last 10 records)
         // ดึงข้อมูลธุรกรรม 10 รายการล่าสุด
         const response = await pb.collection('transactions').getList(1, 10, {

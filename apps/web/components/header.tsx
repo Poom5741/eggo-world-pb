@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import AuthLink from '@/components/auth/AuthLink'
 import { getUser, isAuthenticated, createClient } from '@/lib/pocketbase/client'
 import LogoutButton from '@/components/logout-button'
 import { useEffect, useState, useRef } from 'react'
@@ -105,14 +106,14 @@ export function Header() {
             {navItems.map((item) => {
               const Icon = item.icon
               return (
-                <Link
+                <AuthLink
                   key={item.href}
                   href={item.href}
                   className="font-[var(--font-pixel)] text-[10px] text-foreground hover:text-primary px-3 py-2 border-2 border-transparent hover:border-primary/30 rounded transition-all flex items-center gap-1.5"
                 >
                   <Icon className="w-3.5 h-3.5" />
                   {item.label}
-                </Link>
+                </AuthLink>
               )
             })}
           </nav>
@@ -167,7 +168,7 @@ export function Header() {
                       {navItems.map((item) => {
                         const Icon = item.icon
                         return (
-                          <Link
+                          <AuthLink
                             key={item.href}
                             href={item.href}
                             className="flex items-center gap-2 px-3 py-2 text-[10px] font-[var(--font-pixel)] text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
@@ -175,7 +176,7 @@ export function Header() {
                           >
                             <Icon className="w-3.5 h-3.5" />
                             {item.label}
-                          </Link>
+                          </AuthLink>
                         )
                       })}
                       <div className="border-t-2 border-primary/10 mt-1 pt-1 px-3 pb-2">
@@ -251,14 +252,14 @@ export function Header() {
             {navItems.map((item) => {
               const Icon = item.icon
               return (
-                <Link
+                <AuthLink
                   key={item.href}
                   href={item.href}
                   className="flex items-center gap-3 px-3 py-3 font-[var(--font-pixel)] text-xs text-foreground hover:text-primary hover:bg-primary/5 rounded transition-all border-2 border-transparent hover:border-primary/30"
                 >
                   <Icon className="w-4 h-4" />
                   {item.label}
-                </Link>
+                </AuthLink>
               )
             })}
 

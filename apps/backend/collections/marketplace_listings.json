@@ -1,0 +1,157 @@
+{
+  "name": "marketplace_listings",
+  "type": "base",
+  "system": false,
+  "schema": [
+    {
+      "name": "nft_id",
+      "type": "text",
+      "required": true,
+      "unique": false,
+      "options": {
+        "pattern": ""
+      }
+    },
+    {
+      "name": "nft_type",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "Egg",
+          "Food",
+          "Animal"
+        ]
+      }
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "required": true,
+      "unique": false,
+      "options": {
+        "pattern": ""
+      }
+    },
+    {
+      "name": "description",
+      "type": "text",
+      "required": false,
+      "unique": false,
+      "options": {
+        "pattern": ""
+      }
+    },
+    {
+      "name": "rarity",
+      "type": "text",
+      "required": true,
+      "unique": false,
+      "options": {
+        "pattern": ""
+      }
+    },
+    {
+      "name": "price",
+      "type": "number",
+      "required": true,
+      "unique": false,
+      "options": {
+        "min": 0,
+        "max": null,
+        "noDecimal": false
+      }
+    },
+    {
+      "name": "price_symbol",
+      "type": "text",
+      "required": false,
+      "unique": false,
+      "options": {
+        "pattern": "",
+        "default": "USDT"
+      }
+    },
+    {
+      "name": "seller",
+      "type": "relation",
+      "required": true,
+      "unique": false,
+      "options": {
+        "collectionId": "_pb_users_auth_",
+        "cascadeDelete": true,
+        "minSelect": null,
+        "maxSelect": 1,
+        "displayFields": null
+      }
+    },
+    {
+      "name": "seller_name",
+      "type": "text",
+      "required": false,
+      "unique": false,
+      "options": {
+        "pattern": ""
+      }
+    },
+    {
+      "name": "buyer",
+      "type": "relation",
+      "required": false,
+      "unique": false,
+      "options": {
+        "collectionId": "_pb_users_auth_",
+        "cascadeDelete": false,
+        "minSelect": null,
+        "maxSelect": 1,
+        "displayFields": null
+      }
+    },
+    {
+      "name": "image_url",
+      "type": "text",
+      "required": false,
+      "unique": false,
+      "options": {
+        "pattern": ""
+      }
+    },
+    {
+      "name": "status",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "active",
+          "sold",
+          "cancelled"
+        ]
+      }
+    },
+    {
+      "name": "transaction_hash",
+      "type": "text",
+      "required": false,
+      "unique": false,
+      "options": {
+        "pattern": "^0x[a-fA-F0-9]{64}$"
+      }
+    }
+  ],
+  "indexes": [
+    "CREATE INDEX `idx_marketplace_listings_seller` ON `marketplace_listings` (`seller`)",
+    "CREATE INDEX `idx_marketplace_listings_buyer` ON `marketplace_listings` (`buyer`)",
+    "CREATE INDEX `idx_marketplace_listings_status` ON `marketplace_listings` (`status`)",
+    "CREATE INDEX `idx_marketplace_listings_nft_type` ON `marketplace_listings` (`nft_type`)"
+  ],
+  "listRule": "status = 'active'",
+  "viewRule": "status = 'active' || seller = @request.auth.id || buyer = @request.auth.id",
+  "createRule": "@request.auth.id != '' && seller = @request.auth.id",
+  "updateRule": "seller = @request.auth.id && status = 'active'",
+  "deleteRule": "seller = @request.auth.id",
+  "options": {}
+}

@@ -45,12 +45,14 @@ export function getAuthStore() {
 
 export function isAuthenticated(): boolean {
   const client = createClient()
-  return client.authStore.isValid
+  const hasToken = client.authStore.token
+  const hasModel = !!client.authStore.model?.id || !!client.authStore.record?.id
+  return hasToken && hasModel
 }
 
 export function getUser() {
   const client = createClient()
-  return client.authStore.record
+  return client.authStore.record || client.authStore.model
 }
 
 export function logout() {
