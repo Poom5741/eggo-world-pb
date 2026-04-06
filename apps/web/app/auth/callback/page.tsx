@@ -99,8 +99,9 @@ function CallbackContent() {
         sessionStorage.removeItem('referrer')
 
         setStatus('success')
-        // redirect ทันทีหลัง auth สำเร็จ ไม่ต้องรอ
-        router.push('/')
+        const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
+        sessionStorage.removeItem('redirectTo')
+        window.location.href = redirectTo
       } catch (err) {
         setStatus('error')
         setError(err instanceof Error ? err.message : 'Authentication failed')

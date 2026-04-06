@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  const publicPaths = ['/', '/auth/login', '/auth/sign-up', '/auth/sign-up-success', '/auth/error', '/auth/line', '/auth/callback']
+  const publicPaths = ['/', '/join', '/auth/login', '/auth/sign-up', '/auth/sign-up-success', '/auth/error', '/auth/line', '/auth/callback']
   const isPublicPath = publicPaths.includes(pathname)
 
   const pbAuth = request.cookies.get('pb_auth')
@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (isAuthenticated && (pathname === '/auth/login' || pathname === '/auth/sign-up' || pathname === '/')) {
+  if (isAuthenticated && (pathname === '/auth/login' || pathname === '/auth/sign-up')) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

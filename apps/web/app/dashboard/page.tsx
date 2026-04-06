@@ -22,6 +22,7 @@ export default function DashboardPage() {
   })
   const [referralLevels, setReferralLevels] = useState<Array<{ level: number; count: number; percentage: number; commissionRate: number }>>([])
   const [loading, setLoading] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
 
   // Auto-polling for wallet balance (per D-11: 30 seconds)
   const { balance, loading: balanceLoading, refresh: refreshBalance } = useWalletPoll(user?.wallet || '')
@@ -42,12 +43,13 @@ export default function DashboardPage() {
       const currentUser = getUser()
       console.log('User authenticated:', currentUser?.id)
       setUser(currentUser)
+      setAuthChecked(true)
       if (currentUser?.id) {
         fetchDashboardData(currentUser)
       }
     } else {
-      console.log('Not authenticated, redirecting to /auth/login')
-      router.push('/auth/login')
+      console.log('Not authenticated, setting auth checked flag')
+      setAuthChecked(true)
     }
 
     const unsubscribe = pb.authStore.onChange(() => {
@@ -55,10 +57,11 @@ export default function DashboardPage() {
       const updatedUser = getUser()
       if (isAuthenticated() && updatedUser?.id) {
         setUser(updatedUser)
+        setAuthChecked(true)
         fetchDashboardData(updatedUser)
       } else {
         setUser(null)
-        router.push('/auth/login')
+        setAuthChecked(true)
       }
     })
     
@@ -67,6 +70,13 @@ export default function DashboardPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
+
+  useEffect(() => {
+    if (isHydrated && authChecked && !user) {
+      console.log('Redirecting to /auth/login (auth checked, no user)')
+      router.push('/auth/login')
+    }
+  }, [isHydrated, authChecked, user, router])
 
   const fetchDashboardData = async (currentUser: any) => {
     if (!currentUser?.id) {
@@ -155,8 +165,20 @@ export default function DashboardPage() {
     )
   }
 
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="font-[var(--font-pixel)] text-foreground">LOADING DASHBOARD...</p>
+      </div>
+    )
+  }
+
   if (!user) {
-    return null
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="font-[var(--font-pixel)] text-foreground">REDIRECTING TO LOGIN...</p>
+      </div>
+    )
   }
 
   const usdtBalance = parseFloat(balance?.usdt || '0')

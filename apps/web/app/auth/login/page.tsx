@@ -16,15 +16,16 @@ function LoginContent() {
 
   useEffect(() => {
     if (isAuthenticated()) {
-      router.push('/')
+      router.push(redirectTo || '/dashboard')
     }
-  }, [router])
+  }, [router, redirectTo])
 
   const handleLineLogin = () => {
     console.log('=== LOGIN BUTTON CLICKED ===')
     console.log('redirectTo:', redirectTo)
-    // เรียก LINE OAuth โดยตรง — ไม่ต้อง navigate ไป /auth/line ก่อน (per D-01)
-    initiateLineLogin({ redirectTo: redirectTo ?? undefined })
+    const targetPath = redirectTo || '/dashboard'
+    sessionStorage.setItem('redirectTo', targetPath)
+    initiateLineLogin({ redirectTo: targetPath })
   }
 
   return (

@@ -168,7 +168,10 @@ function LineLoginContent() {
         const authData = await pb.collection('users').authWithPassword(email, password)
         console.log('authWithPassword SUCCESS, user:', authData.record?.id)
         document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
-
+        
+        // Wait for browser to commit cookie before navigation
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
         const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
         console.log('Redirecting to:', redirectTo)
         sessionStorage.removeItem('redirectTo')
