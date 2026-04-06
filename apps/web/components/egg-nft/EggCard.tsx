@@ -4,7 +4,16 @@ import { useState } from 'react'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Egg, Flame, Sparkles, Hash, Calendar } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Egg, Flame, Sparkles, Hash, Calendar, DollarSign, AlertCircle } from 'lucide-react'
 import { ReferralChainDisplay } from './ReferralChainDisplay'
 import { cn } from '@/lib/utils'
 
@@ -20,10 +29,34 @@ interface EggCardProps {
   }
   onHatch?: () => void
   showFeedButton?: boolean
+  isOwner?: boolean
 }
 
-export function EggCard({ egg, onHatch, showFeedButton }: EggCardProps) {
+export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCardProps) {
   const [showReferralChain, setShowReferralChain] = useState(false)
+  
+  const [showSellDialog, setShowSellDialog] = useState(false)
+  const [sellPrice, setSellPrice] = useState('')
+  const [priceError, setPriceError] = useState('')
+
+  const validatePrice = (price: string) => {
+    const numPrice = parseFloat(price)
+    if (isNaN(numPrice) || numPrice < 1) {
+      setPriceError('Minimum price is 1 USDT')
+      return false
+    }
+    setPriceError('')
+    return true
+  }
+
+  const handleSell = () => {
+    if (validatePrice(sellPrice)) {
+      console.log('Create listing for egg', egg.token_id, 'at price:', sellPrice, 'USDT')
+      setShowSellDialog(false)
+      setSellPrice('')
+      setPriceError('')
+    }
+  }
 
   const getRarityLabel = (seed: number) => {
     if (seed < 100) return { label: 'LEGENDARY', color: 'bg-yellow-500' }
@@ -162,6 +195,17 @@ export function EggCard({ egg, onHatch, showFeedButton }: EggCardProps) {
       </CardContent>
 
       <CardFooter className="flex gap-clay-md relative z-10">
+        {isOwner && (
+          <Button
+            variant="clay-secondary"
+            size="clay-md"
+            onClick={() => setShowSellDialog(true)}
+            className="flex-1 font-[var(--font-pixel)] text-sm"
+          >
+            <DollarSign className="w-4 h-4 mr-2 pixelated" />
+            SELL
+          </Button>
+        )}
         {!egg.is_hatched && (
           <>
             {showFeedButton && (
@@ -201,6 +245,71 @@ export function EggCard({ egg, onHatch, showFeedButton }: EggCardProps) {
           </Button>
         )}
       </CardFooter>
+
+      <Dialog open={showSellDialog} onOpenChange={setShowSellDialog}>
+        <DialogContent variant="clay" className="font-[var(--font-pixel)]">
+          <DialogHeader variant="clay">
+            <DialogTitle variant="clay">SELL EGG #{egg.token_id}</DialogTitle>
+            <DialogDescription variant="clay">
+              Set your asking price in USDT
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">
+                Asking Price (USDT)
+              </label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="1"
+                  placeholder="Enter price (min 1 USDT)"
+                  value={sellPrice}
+                  onChange={(e) => {
+                    setSellPrice(e.target.value)
+                    if (priceError) validatePrice(e.target.value)
+                  }}
+                  className={cn(
+                    'pl-10 font-[var(--font-pixel)]',
+                    priceError && 'border-red-500 focus:ring-red-500'
+                  )}
+                />
+              </div>
+              {priceError && (
+                <p className="text-sm text-red-500 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {priceError}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter variant="clay">
+            <Button
+              variant="clay-secondary"
+              onClick={() => {
+                setShowSellDialog(false)
+                setSellPrice('')
+                setPriceError('')
+              }}
+              className="font-[var(--font-pixel)]"
+            >
+              CANCEL
+            </Button>
+            <Button
+              variant="clay"
+              onClick={handleSell}
+              disabled={!sellPrice || !!priceError}
+              className="font-[var(--font-pixel)]"
+            >
+              CONFIRM LISTING
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   )
 }

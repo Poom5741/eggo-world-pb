@@ -1,0 +1,103 @@
+/// <reference path="../pb_data/types.d.ts" />
+migrate((app) => {
+  const collection = new Collection()
+
+  unmarshal({
+            {
+            "id": "7000000003",
+            "listRule": "@request.auth.id != \"\"",
+            "viewRule": "@request.auth.id != \"\"",
+            "createRule": null,
+            "updateRule": null,
+            "deleteRule": null,
+            "name": "wallet_configs",
+            "type": "base",
+            "fields": [
+                {
+                    "autogeneratePattern": "[a-z0-9]{15}",
+                    "hidden": false,
+                    "id": "text3208210256",
+                    "max": 15,
+                    "min": 15,
+                    "name": "id",
+                    "pattern": "^[a-z0-9]+$",
+                    "presentable": false,
+                    "primaryKey": true,
+                    "required": true,
+                    "system": true,
+                    "type": "text"
+                },
+                {
+                    "autogeneratePattern": "",
+                    "hidden": false,
+                    "id": "text_config_key",
+                    "max": 50,
+                    "min": 1,
+                    "name": "key",
+                    "pattern": "",
+                    "presentable": false,
+                    "primaryKey": false,
+                    "required": true,
+                    "system": false,
+                    "type": "text"
+                },
+                {
+                    "hidden": false,
+                    "id": "number_config_value",
+                    "max": null,
+                    "min": null,
+                    "name": "value",
+                    "onlyInt": false,
+                    "presentable": false,
+                    "required": true,
+                    "system": false,
+                    "type": "number"
+                },
+                {
+                    "autogeneratePattern": "",
+                    "hidden": false,
+                    "id": "text_config_description",
+                    "max": 255,
+                    "min": 0,
+                    "name": "description",
+                    "pattern": "",
+                    "presentable": false,
+                    "primaryKey": false,
+                    "required": false,
+                    "system": false,
+                    "type": "text"
+                },
+                {
+                    "hidden": false,
+                    "id": "autodate_config_created",
+                    "name": "created",
+                    "onCreate": true,
+                    "onUpdate": false,
+                    "presentable": false,
+                    "system": false,
+                    "type": "autodate"
+                },
+                {
+                    "hidden": false,
+                    "id": "autodate_config_updated",
+                    "name": "updated",
+                    "onCreate": true,
+                    "onUpdate": true,
+                    "presentable": false,
+                    "system": false,
+                    "type": "autodate"
+                }
+            ],
+            "indexes": [
+                "CREATE UNIQUE INDEX `idx_wallet_configs_key` ON `wallet_configs` (`key`)"
+            ],
+            "system": false
+        }
+  }, collection)
+
+  return app.createCollection(collection)
+}, (app) => {
+  const collection = app.findCollectionByNameOrId("wallet_configs")
+
+  return app.deleteCollection(collection)
+})

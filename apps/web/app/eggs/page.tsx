@@ -9,6 +9,7 @@ import { FeaturedEggHero } from '@/components/eggs/featured-egg-hero'
 import { EggCard } from '@/components/eggs/egg-card'
 import { HatchRevealModal } from '@/components/eggs/hatch-reveal-modal'
 import { FeedDialog } from '@/components/eggs/feed-dialog'
+import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog'
 import { createClient } from '@/lib/pocketbase/client'
 
 /**
@@ -34,26 +35,35 @@ export default function Eggs() {
   const [feedingEgg, setFeedingEgg] = useState<EggData | null>(null)
   const [feedDialogOpen, setFeedDialogOpen] = useState(false)
   
+  // State for selling egg - สถานะสำหรับขายไข่
+  const [sellingEgg, setSellingEgg] = useState<EggData | null>(null)
+  const [sellDialogOpen, setSellDialogOpen] = useState(false)
+  
   // Get authenticated user (after hydration)
   const user = isHydrated ? pb.authStore.record : null
-  const walletAddress = user?.wallet ?? ''
   
   // Fetch user profile to get wallet if not in auth record
-  const [userWallet, setUserWallet] = useState<string>('')
+  const [userWallet, setUserWallet] = useState<string | undefined>(undefined)
   
   useEffect(() => {
-    if (isHydrated && user?.id && !user?.wallet) {
+    if (isHydrated && user?.id) {
       // Fetch full user record to get wallet field
       pb.collection('users').getOne(user.id).then((userData: any) => {
-        setUserWallet(userData.wallet || '')
+        // Ensure wallet is a valid string, not null/undefined/"null"
+        const wallet = userData.wallet
+        if (wallet && typeof wallet === 'string' && wallet !== 'null') {
+          setUserWallet(wallet)
+        } else {
+          setUserWallet('')
+        }
       }).catch(console.error)
-    } else if (user?.wallet) {
-      setUserWallet(user.wallet)
     }
-  }, [isHydrated, user?.id, user?.wallet])
+  }, [isHydrated, user?.id])
   
-  // Use fetched wallet address
-  const effectiveWalletAddress = userWallet || walletAddress
+  // Only use wallet if it's defined and not "null"
+  const effectiveWalletAddress = userWallet !== undefined 
+    ? (userWallet && userWallet !== 'null' ? userWallet : '')
+    : (user?.wallet && user.wallet !== 'null' ? user.wallet : '')
   
   // Fetch eggs with auto-polling
   const { eggs, loading, refresh, polling } = useEggPoll(effectiveWalletAddress, 30000)
@@ -90,6 +100,12 @@ export default function Eggs() {
   const handleHatchEgg = (egg: EggData) => {
     setHatchingEgg(egg)
     setModalOpen(true)
+  }
+  
+  // Handle sell button click - จัดการการคลิกปุ่มขายไข่
+  const handleSellEgg = (egg: EggData) => {
+    setSellingEgg(egg)
+    setSellDialogOpen(true)
   }
   
   // Handle hatch success - จัดการฟักไข่สำเร็จ
@@ -260,6 +276,7 @@ export default function Eggs() {
               egg={egg}
               onManage={handleManageEgg}
               onHatch={handleHatchEgg}
+              onSell={handleSellEgg}
               polling={polling}
             />
           ))}
@@ -283,6 +300,18 @@ export default function Eggs() {
           open={feedDialogOpen}
           onOpenChange={setFeedDialogOpen}
           onSuccess={handleHatchSuccess} // Refresh eggs after feeding
+        />
+      )}
+      
+      {/* Create Listing Dialog - ไดอะล็อกขายไข่ */}
+      {sellingEgg && (
+        <CreateListingDialog
+          open={sellDialogOpen}
+          onOpenChange={setSellDialogOpen}
+          nftName={`Egg #${sellingEgg.egg_id}`}
+          nftType="Egg"
+          tokenId={sellingEgg.egg_id.toString()}
+          onSuccess={handleHatchSuccess}
         />
       )}
     </LayoutWrapper>

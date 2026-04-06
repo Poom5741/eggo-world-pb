@@ -14,6 +14,7 @@ export interface EggCardProps {
   egg: EggData
   onManage: (eggId: number) => void
   onHatch?: (egg: EggData) => void
+  onSell?: (egg: EggData) => void  // ฟังก์ชันขาย NFT
   polling?: boolean
 }
 
@@ -62,7 +63,7 @@ function getStatus(foodCount: number, isHatched: boolean): string {
  * Displays egg image, name, rarity badge, element type,
  * feeding progress bar (X/10), and "Manage Egg" button
  */
-export function EggCard({ egg, onManage, polling }: EggCardProps) {
+export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProps) {
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -120,6 +121,15 @@ export function EggCard({ egg, onManage, polling }: EggCardProps) {
       
       {/* Manage Button - ปุ่มจัดการ */}
       <div className="space-y-3">
+        {onSell && (
+          <button
+            onClick={() => onSell(egg)}
+            className="w-full py-3 bg-secondary text-on-secondary rounded-full font-black text-sm hover:bg-secondary/80 transition-colors"
+          >
+            Sell
+          </button>
+        )}
+        
         <button
           onClick={() => onManage(egg.egg_id)}
           className="w-full py-3 bg-surface-container-high rounded-full font-bold text-sm text-primary hover:bg-primary-container transition-colors"
