@@ -42,7 +42,9 @@ export default function DashboardPage() {
       const currentUser = getUser()
       console.log('User authenticated:', currentUser?.id)
       setUser(currentUser)
-      fetchDashboardData(currentUser)
+      if (currentUser?.id) {
+        fetchDashboardData(currentUser)
+      }
     } else {
       console.log('Not authenticated, redirecting to /auth/login')
       router.push('/auth/login')
@@ -50,16 +52,25 @@ export default function DashboardPage() {
 
     pb.authStore.onChange(() => {
       console.log('Dashboard authStore changed')
-      if (isAuthenticated()) {
-        setUser(getUser())
+      const updatedUser = getUser()
+      if (isAuthenticated() && updatedUser?.id) {
+        setUser(updatedUser)
+        fetchDashboardData(updatedUser)
       } else {
         setUser(null)
         router.push('/auth/login')
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
 
   const fetchDashboardData = async (currentUser: any) => {
+    if (!currentUser?.id) {
+      console.error('Cannot fetch dashboard data: user ID is missing')
+      setLoading(false)
+      return
+    }
+    
     const pb = createClient()
     try {
       const [profileData, eggsData, commissionsData] = await Promise.all([
