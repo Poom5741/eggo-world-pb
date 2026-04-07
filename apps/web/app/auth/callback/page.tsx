@@ -16,6 +16,9 @@ function CallbackContent() {
   useEffect(() => {
     const handleCallback = async () => {
       const code = searchParams.get('code')
+      const email = searchParams.get('email')
+      const password = searchParams.get('password')
+      const userParam = searchParams.get('user')
       const errorParam = searchParams.get('error')
 
       if (errorParam) {
@@ -24,9 +27,45 @@ function CallbackContent() {
         return
       }
 
+      // TEMPORARY: Support both old (email+password) and new (code) flows
+      // Old flow: Production pb.eggoworld.io still uses email+password redirect
+      // New flow: Standard OAuth2 code redirect (to be deployed)
+      
+      if (email && password) {
+        // OLD FLOW: Direct auth with email+password
+        console.log('Using legacy email+password auth flow')
+        try {
+          const pb = createClient()
+          const authData = await pb.collection('users').authWithPassword(email, password)
+          
+          // Save auth to PocketBase client
+          pb.authStore.save(authData.token, authData.record)
+          document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
+          
+          // Parse user param if available
+          if (userParam) {
+            try {
+              const userData = JSON.parse(decodeURIComponent(userParam))
+              console.log('User data from redirect:', userData)
+            } catch (e) {
+              console.warn('Failed to parse user param:', e)
+            }
+          }
+          
+          setStatus('success')
+          router.push('/')
+          return
+        } catch (error) {
+          console.error('Legacy auth failed:', error)
+          setStatus('error')
+          setError('Authentication failed: ' + (error as Error).message)
+          return
+        }
+      }
+
       if (!code) {
         setStatus('error')
-        setError('No authorization code received')
+        setError('No authorization credentials received')
         return
       }
 

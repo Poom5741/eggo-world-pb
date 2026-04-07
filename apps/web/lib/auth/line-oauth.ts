@@ -46,9 +46,9 @@ export function initiateLineLogin(options: LineLoginOptions = {}): void {
   
   const { referrer, redirectTo } = options
 
-  // returnUrl ต้องเป็น /auth/line เสมอ — line-callback.html อ่านค่านี้เพื่อ redirect กลับ
-  // ห้ามเปลี่ยน! ดู apps/backend/pb_public/line-callback.html บรรทัด 65
-  const returnUrl = `${window.location.origin}/auth/line`
+  // returnUrl ต้องเป็น /auth/callback — ใช้ PocketBase native auth-with-oauth2
+  // แก้ไขจาก /auth/line (เก่า - ใช้ custom endpoint ที่ทำให้ token ไม่ valid)
+  const returnUrl = `${window.location.origin}/auth/callback`
   console.log('Return URL:', returnUrl)
 
   const stateData = {

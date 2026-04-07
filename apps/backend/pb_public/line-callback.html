@@ -194,18 +194,15 @@
                     }
                 }
                 
-                // ถ้ามี returnUrl ใน state ให้ส่ง email+password กลับไปให้ frontend app เสมอ
-                // (ทั้ง production และ local dev)
+                // ถ้ามี returnUrl ใน state ให้ redirect กลับไป frontend ด้วย auth code
+                // Frontend จะใช้ code นี้เรียก PocketBase auth-with-oauth2 endpoint
                 if (returnUrl) {
-                    console.log("Redirecting back to frontend:", returnUrl);
-                                    
-                    // ส่ง email และ password เพื่อให้ frontend เรียก authWithPassword เอง
-                    const redirectWithAuth = `${returnUrl}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&user=${encodeURIComponent(JSON.stringify({
-                        id: user.id || user.userId,
-                        email: email,
-                        name: name
-                    }))}`;
-                    window.location.href = redirectWithAuth;
+                    console.log("Redirecting back to frontend with auth code:", returnUrl);
+                    
+                    // ส่ง auth code กลับไปให้ frontend เรียก auth-with-oauth2
+                    // แทนที่จะส่ง email+password (เก่า - ทำให้ token ไม่ valid)
+                    const redirectWithCode = `${returnUrl}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state || '')}`;
+                    window.location.href = redirectWithCode;
                     return;
                 }
                             
@@ -233,15 +230,11 @@
 
                 localStorage.setItem('pb_auth', JSON.stringify({ token: pb.authStore.token, model: user }));
                 
-                // ถ้ามี returnUrl ใน state ให้ redirect กลับไป frontend ด้วย email+password
+                // ถ้ามี returnUrl ใน state ให้ redirect กลับไป frontend ด้วย auth code (round 2 - after wallet creation)
                 if (returnUrl) {
-                    console.log("Redirecting back to frontend (post-wallet):", returnUrl);
-                    const redirectWithAuth = `${returnUrl}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&user=${encodeURIComponent(JSON.stringify({
-                        id: user.id,
-                        email: email,
-                        name: name
-                    }))}`;
-                    window.location.href = redirectWithAuth;
+                    console.log("Redirecting back to frontend with auth code (post-wallet):", returnUrl);
+                    const redirectWithCode = `${returnUrl}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state || '')}`;
+                    window.location.href = redirectWithCode;
                     return;
                 }
                 
