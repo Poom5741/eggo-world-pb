@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { initiateLineLogin } from '@/lib/auth/line-oauth'
 
 export default function Join() {
   const [referralCode, setReferralCode] = useState('')
@@ -11,7 +12,9 @@ export default function Join() {
       sessionStorage.setItem('pending_referral_code', referralCode.trim().toUpperCase())
       console.log('Saved referral code:', referralCode.trim().toUpperCase())
     }
-    window.location.href = '/auth/line'
+    const redirectTo = '/dashboard'
+    sessionStorage.setItem('redirectTo', redirectTo)
+    initiateLineLogin({ redirectTo })
   }
 
   return (
@@ -66,10 +69,10 @@ export default function Join() {
             <div className="space-y-6">
               <div className="flex justify-center">
                 <button 
-                  className="clay-btn line-button px-10 py-5 rounded-[2rem] font-headline font-black text-xl text-white flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-xl"
+                  className="bg-[#00C300] hover:bg-[#00b000] px-10 py-5 rounded-[2rem] font-headline font-black text-xl text-white flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-xl"
                   onClick={handleLINELogin}
                 >
-                  <svg className="w-8 h-8 fill-current" viewBox="0 0 24 24">
+                  <svg className="w-8 h-8 fill-white" viewBox="0 0 24 24">
                     <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738s-12 4.369-12 9.738c0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.121.303.079.778.039 1.085l-.171 1.027c-.052.311-.252 1.215 1.086.663 1.338-.553 7.214-4.248 9.843-7.271 1.83-2.023 2.11-3.704 2.11-5.704z"></path>
                   </svg>
                   Login with LINE
@@ -111,7 +114,7 @@ export default function Join() {
 
               <Link 
                 href="/dashboard" 
-                className="clay-btn flex items-center justify-center w-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-dim)] text-[var(--on-primary)] rounded-[2rem] px-10 py-5 font-headline font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl relative overflow-hidden group"
+                className="flex items-center justify-center w-full bg-gradient-to-br from-[#ffd709] to-[#efc900] text-white rounded-[2rem] px-10 py-5 font-headline font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl relative overflow-hidden group"
               >
                 <span className="relative z-10">Start Hatching</span>
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -149,7 +152,7 @@ export default function Join() {
 
       {/* Floating Badge for Help */}
       <button 
-        className="fixed bottom-8 right-8 w-16 h-16 bg-[var(--surface-container-highest)] rounded-full clay-btn flex items-center justify-center text-primary hover:scale-110 active:scale-95 transition-all shadow-xl z-50"
+        className="fixed bottom-8 right-8 w-16 h-16 bg-[#f3eb91] rounded-full flex items-center justify-center text-primary hover:scale-110 active:scale-95 transition-all shadow-xl z-50"
         aria-label="Help"
       >
         <span className="material-symbols-outlined text-3xl" aria-hidden="true">help_outline</span>

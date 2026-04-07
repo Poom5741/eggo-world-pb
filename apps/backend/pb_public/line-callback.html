@@ -194,15 +194,42 @@
                     }
                 }
                 
-                // ถ้ามี returnUrl ใน state ให้ redirect กลับไป frontend ด้วย auth code
-                // Frontend จะใช้ code นี้เรียก PocketBase auth-with-oauth2 endpoint
+                // After user is created/updated, authenticate with PocketBase to get token
+                // Call /api/auth/line-auth endpoint which internally calls authWithPassword
+                const generatedPassword = password; // Use the same random password from earlier
+                
+                console.log("Authenticating with PocketBase...");
+                const authResponse = await fetch(window.location.origin + '/api/auth/line-auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: email, 
+                        password: generatedPassword 
+                    })
+                });
+                
+                if (!authResponse.ok) {
+                    console.error("Auth endpoint failed:", authResponse.status);
+                    throw new Error("PocketBase auth failed: " + authResponse.statusText);
+                }
+                
+                const authData = await authResponse.json();
+                if (!authData.success) {
+                    throw new Error("Auth failed: " + (authData.error?.message || "unknown error"));
+                }
+                
+                console.log("✓ Auth successful, token received");
+                const pbToken = authData.token;
+                const userWithToken = authData.user;
+                
+                // ถ้ามี returnUrl ใน state ให้ redirect กลับไป frontend ด้วย auth token
+                // Frontend จะใช้ token นี้โดยตรง ไม่ต้องเรียก auth-with-oauth2
                 if (returnUrl) {
-                    console.log("Redirecting back to frontend with auth code:", returnUrl);
+                    console.log("Redirecting back to frontend with auth token:", returnUrl);
                     
-                    // ส่ง auth code กลับไปให้ frontend เรียก auth-with-oauth2
-                    // แทนที่จะส่ง email+password (เก่า - ทำให้ token ไม่ valid)
-                    const redirectWithCode = `${returnUrl}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state || '')}`;
-                    window.location.href = redirectWithCode;
+                    // ส่ง token และ user data กลับไปให้ frontend (ไม่ใช่ email+password แบบเก่า)
+                    const redirectWithToken = `${returnUrl}?token=${encodeURIComponent(pbToken)}&user=${encodeURIComponent(JSON.stringify(userWithToken))}&state=${encodeURIComponent(state || '')}`;
+                    window.location.href = redirectWithToken;
                     return;
                 }
                             
@@ -228,13 +255,13 @@
                     }
                 }
 
-                localStorage.setItem('pb_auth', JSON.stringify({ token: pb.authStore.token, model: user }));
+                localStorage.setItem('pb_auth', JSON.stringify({ token: pbToken, model: userWithToken }));
                 
-                // ถ้ามี returnUrl ใน state ให้ redirect กลับไป frontend ด้วย auth code (round 2 - after wallet creation)
+                // ถ้ามี returnUrl ใน state ให้ redirect กลับไป frontend ด้วย auth token (round 2 - after wallet creation)
                 if (returnUrl) {
-                    console.log("Redirecting back to frontend with auth code (post-wallet):", returnUrl);
-                    const redirectWithCode = `${returnUrl}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state || '')}`;
-                    window.location.href = redirectWithCode;
+                    console.log("Redirecting back to frontend with auth token (post-wallet):", returnUrl);
+                    const redirectWithToken = `${returnUrl}?token=${encodeURIComponent(pbToken)}&user=${encodeURIComponent(JSON.stringify(userWithToken))}&state=${encodeURIComponent(state || '')}`;
+                    window.location.href = redirectWithToken;
                     return;
                 }
                 

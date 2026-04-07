@@ -61,7 +61,18 @@ contracts-deploy-testnet:
 	cd contracts && forge script script/Deploy.s.sol --rpc-url bsc_testnet --broadcast
 
 contracts-deploy-mainnet:
-	cd contracts && forge script script/Deploy.s.sol --rpc-url bsc --broadcast
+	cd contracts && forge script script/Deploy.sol --rpc-url bsc --broadcast
+
+# Git Hooks (run without commit/push)
+pre-commit:
+	@echo "Running pre-commit hooks..."
+	@.husky/pre-commit
+	@echo "✅ Pre-commit checks passed"
+
+pre-push:
+	@echo "Running pre-push hooks..."
+	@.husky/pre-push
+	@echo "✅ Pre-push checks passed"
 
 # Help
 help:
@@ -76,6 +87,10 @@ help:
 	@echo "  make backend    Start local PocketBase (docker)"
 	@echo "  make backend-stop Stop local PocketBase"
 	@echo "  make clean      Clean build artifacts"
+	@echo ""
+	@echo "Git Hooks (run without commit/push):"
+	@echo "  make pre-commit Run pre-commit hooks (lint-staged)"
+	@echo "  make pre-push   Run pre-push hooks (tests)"
 	@echo ""
 	@echo "Contracts:"
 	@echo "  make contracts-test       Run contract tests"

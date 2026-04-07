@@ -7,7 +7,7 @@ let serverAvailable = false
 
 beforeAll(async () => {
   try {
-    const response = await fetch(`${API_BASE}/health`)
+    const response = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(2000) })
     serverAvailable = response.ok
   } catch {
     serverAvailable = false

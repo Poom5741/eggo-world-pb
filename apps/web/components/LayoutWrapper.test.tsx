@@ -20,14 +20,14 @@ describe("LayoutWrapper", () => {
 
   it("includes SideNav component", () => {
     render(<LayoutWrapper><div>Content</div></LayoutWrapper>)
-    // SideNav has placeholder text
-    expect(screen.getByText("SideNav placeholder")).toBeInTheDocument()
+    // SideNav renders "EggoBuddy" mascot name
+    expect(screen.getByText("EggoBuddy")).toBeInTheDocument()
   })
 
   it("includes BottomNavMobile component", () => {
     render(<LayoutWrapper><div>Content</div></LayoutWrapper>)
-    // BottomNavMobile has placeholder text
-    expect(screen.getByText("BottomNav placeholder")).toBeInTheDocument()
+    // BottomNavMobile renders navigation items including "Dashboard"
+    expect(screen.getAllByText("Dashboard").length).toBeGreaterThan(0)
   })
 
   it("main content has correct padding classes (pt-20, pb-32, lg:pb-8)", () => {

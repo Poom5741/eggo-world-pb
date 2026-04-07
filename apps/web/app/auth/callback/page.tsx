@@ -19,6 +19,8 @@ function CallbackContent() {
       const email = searchParams.get('email')
       const password = searchParams.get('password')
       const userParam = searchParams.get('user')
+      const token = searchParams.get('token')
+      const stateParam = searchParams.get('state')
       const errorParam = searchParams.get('error')
 
       if (errorParam) {
@@ -27,22 +29,56 @@ function CallbackContent() {
         return
       }
 
-      // TEMPORARY: Support both old (email+password) and new (code) flows
-      // Old flow: Production pb.eggoworld.io still uses email+password redirect
-      // New flow: Standard OAuth2 code redirect (to be deployed)
-      
+      // NEW FLOW: Accept token directly from line-callback.html (after auth)
+      if (token && userParam) {
+        console.log('Using new token-based auth flow')
+        try {
+          const pb = createClient()
+          
+          // Parse user data
+          const userData = JSON.parse(decodeURIComponent(userParam))
+          console.log('User data:', userData)
+          
+          // Save auth token directly (already authenticated by line-callback.html)
+          pb.authStore.save(token, userData)
+          document.cookie = `pb_auth=${token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
+          
+          // Handle state (referrer, redirectTo)
+          if (stateParam) {
+            try {
+              const state = JSON.parse(atob(decodeURIComponent(stateParam)))
+              if (state.redirectTo) {
+                sessionStorage.setItem('redirectTo', state.redirectTo)
+              }
+              if (state.referrer) {
+                sessionStorage.setItem('referrer', state.referrer)
+              }
+            } catch (e) {
+              console.warn('Failed to parse state:', e)
+            }
+          }
+          
+          setStatus('success')
+          router.push('/')
+          return
+        } catch (error) {
+          console.error('Token auth failed:', error)
+          setStatus('error')
+          setError('Authentication failed: ' + (error as Error).message)
+          return
+        }
+      }
+
+      // FALLBACK: Old email+password flow (legacy production)
       if (email && password) {
-        // OLD FLOW: Direct auth with email+password
         console.log('Using legacy email+password auth flow')
         try {
           const pb = createClient()
           const authData = await pb.collection('users').authWithPassword(email, password)
           
-          // Save auth to PocketBase client
           pb.authStore.save(authData.token, authData.record)
           document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
           
-          // Parse user param if available
           if (userParam) {
             try {
               const userData = JSON.parse(decodeURIComponent(userParam))
@@ -63,7 +99,14 @@ function CallbackContent() {
         }
       }
 
-      if (!code) {
+      // LAST RESORT: OAuth2 code flow (not used currently - PKCE not configured)
+      if (code) {
+        setStatus('error')
+        setError('OAuth2 code flow not configured. Please use token-based auth.')
+        return
+      }
+
+      if (!code && !token && !email) {
         setStatus('error')
         setError('No authorization credentials received')
         return

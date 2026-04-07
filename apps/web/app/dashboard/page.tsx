@@ -1,9 +1,11 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
+import { BalanceCard } from '@/components/dashboard/balance-card'
 import { QuickActions } from '@/components/dashboard/quick-actions'
 import { BuddyChain } from '@/components/dashboard/buddy-chain'
 import { ActivityFeed } from '@/components/dashboard/activity-feed'
@@ -12,7 +14,7 @@ import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 
 export default function DashboardPage() {
   const router = useRouter()
-  const [isHydrated, setIsHydrated] = useState(false)
+  const isHydrated = useIsHydrated()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [stats, setStats] = useState({
@@ -22,14 +24,15 @@ export default function DashboardPage() {
   })
   const [referralLevels, setReferralLevels] = useState<Array<{ level: number; count: number; percentage: number; commissionRate: number }>>([])
   const [loading, setLoading] = useState(true)
-  const [authChecked, setAuthChecked] = useState(false)
+  const [authReady, setAuthReady] = useState(false)
 
   // Auto-polling for wallet balance (per D-11: 30 seconds)
-  const { balance, loading: balanceLoading, refresh: refreshBalance } = useWalletPoll(user?.wallet || '')
+  const { balance, loading: balanceLoading, refresh: refreshBalance, error: balanceError } = useWalletPoll(user?.wallet || '')
 
+  // Effect: Wait for hydration then check auth state
   useEffect(() => {
-    setIsHydrated(true)
-    
+    if (!isHydrated) return
+
     const pb = createClient()
     
     console.log('=== Dashboard auth check ===')
@@ -40,43 +43,65 @@ export default function DashboardPage() {
     console.log('authStore.isValid:', pb.authStore.isValid)
     console.log('isAuthenticated():', isAuthenticated())
     
-    if (userRecord && userRecord.id) {
-      console.log('User authenticated:', userRecord.id)
-      setUser(userRecord)
-      setAuthChecked(true)
-      if (userRecord.id) {
-        fetchDashboardData(userRecord)
+    // Try immediate check
+    const checkAuth = () => {
+      if (pb.authStore.token && pb.authStore.isValid) {
+        if (userRecord?.id) {
+          console.log('User authenticated immediately:', userRecord.id)
+          setUser(userRecord)
+          setAuthReady(true)
+          setLoading(false)
+          fetchDashboardData(userRecord)
+          return true
+        }
       }
-    } else {
-      console.log('No user record found, setting authChecked flag')
-      setAuthChecked(true)
+      return false
     }
-
-    const unsubscribe = pb.authStore.onChange(() => {
-      console.log('Dashboard authStore changed, token exists:', !!pb.authStore.token)
-      const updatedUser = getUser()
-      if (updatedUser && updatedUser.id) {
-        setUser(updatedUser)
-        setAuthChecked(true)
-        fetchDashboardData(updatedUser)
-      } else {
-        setUser(null)
-        setAuthChecked(true)
-      }
-    })
     
-    return () => {
-      unsubscribe()
+    if (!checkAuth()) {
+      console.log('Auth not ready immediately, listening for changes...')
+      const unsubscribe = pb.authStore.onChange(() => {
+        console.log('Dashboard authStore changed, token exists:', !!pb.authStore.token)
+        const updatedUser = getUser()
+        if (updatedUser && updatedUser.id) {
+          console.log('Auth restored via onChange:', updatedUser.id)
+          setUser(updatedUser)
+          setAuthReady(true)
+          setLoading(false)
+          fetchDashboardData(updatedUser)
+          unsubscribe()
+        } else {
+          console.log('Auth cleared via onChange')
+          setUser(null)
+          setAuthReady(true)
+          setLoading(false)
+          unsubscribe()
+        }
+      })
+      
+      // Timeout fallback (2 seconds)
+      const timeout = setTimeout(() => {
+        if (!authReady) {
+          console.log('Auth check timeout, marking as ready (no auth)')
+          setAuthReady(true)
+          setLoading(false)
+        }
+      }, 2000)
+      
+      return () => {
+        clearTimeout(timeout)
+        unsubscribe?.()
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router])
+  }, [isHydrated])
 
   useEffect(() => {
-    if (isHydrated && authChecked && !user) {
-      console.log('Redirecting to /auth/login (auth checked, no user)')
+    if (isHydrated && authReady && !user) {
+      console.log('Redirecting to /auth/login (auth ready, no user)')
       router.push('/auth/login')
     }
-  }, [isHydrated, authChecked, user, router])
+  }, [isHydrated, authReady, user, router])
 
   const fetchDashboardData = async (currentUser: any) => {
     if (!currentUser?.id) {
@@ -148,11 +173,15 @@ export default function DashboardPage() {
         setReferralLevels([1, 2, 3, 4].map(lvl => ({ level: lvl, count: 0, percentage: 0, commissionRate: lvl === 1 ? 0.20 : 0.10 })))
         return
       }
-      // Improve error logging to identify specific failures
-      console.error('Dashboard fetch error:', {
-        message: err.message,
-        status: err.status,
-        data: err.data
+      console.error('Dashboard fetch error:')
+      console.error('Full error:', err)
+      console.error('Error status:', err?.status)
+      console.error('Error message:', err?.message)
+      console.error('Error data:', err?.data)
+      console.error('Auth state:', { 
+        token: pb.authStore.token ? `${pb.authStore.token.substring(0, 50)}...` : 'missing',
+        isValid: pb.authStore.isValid,
+        recordId: pb.authStore.record?.id
       })
     } finally {
       setLoading(false)
@@ -177,7 +206,7 @@ export default function DashboardPage() {
     )
   }
 
-  if (!authChecked) {
+  if (!authReady) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="font-[var(--font-pixel)] text-foreground">LOADING DASHBOARD...</p>
@@ -193,7 +222,6 @@ export default function DashboardPage() {
     )
   }
 
-  const usdtBalance = parseFloat(balance?.usdt || '0')
   const _usdtTotalEarned = parseFloat(profile?.usdt_total_earned || '0')
   const totalReferralEarnings = stats.totalCommissions
 
@@ -227,19 +255,12 @@ export default function DashboardPage() {
       {/* Top 3-Card Grid per Jules design */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Card 1: Balance */}
-        <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:rotate-12 transition-transform">
-            <span className="material-symbols-outlined text-5xl text-primary">payments</span>
-          </div>
-          <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">Balance</p>
-          <h3 className="pixel-font text-4xl text-primary">
-            {balanceLoading ? '...' : usdtBalance.toFixed(2)}
-          </h3>
-          <p className="text-xs font-bold text-tertiary flex items-center mt-2">
-            <span className="material-symbols-outlined text-sm mr-1">trending_up</span> 
-            {balanceLoading ? 'Updating...' : 'USDT'}
-          </p>
-        </div>
+        <BalanceCard 
+          balance={balance}
+          loading={balanceLoading}
+          error={balanceError}
+          refresh={refreshBalance}
+        />
 
         {/* Card 2: Active Eggs */}
         <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden border-t-8 border-primary-container">

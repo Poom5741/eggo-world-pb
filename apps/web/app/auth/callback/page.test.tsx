@@ -19,8 +19,8 @@ describe('Auth Callback Page', () => {
 
   it('redirects to dashboard on success', () => {
     const pageContent = fs.readFileSync('./app/auth/callback/page.tsx', 'utf-8')
-    expect(pageContent).toContain('router.push')
-    expect(pageContent).toContain("'/'")
+    expect(pageContent).toContain('window.location.href')
+    expect(pageContent).toContain('redirectTo')
   })
 
   it('redirects to /auth/error on failure', () => {
