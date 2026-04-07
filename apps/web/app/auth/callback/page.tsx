@@ -37,11 +37,32 @@ function CallbackContent() {
           
           // Parse user data
           const userData = JSON.parse(decodeURIComponent(userParam))
-          console.log('User data:', userData)
+          console.log('User data from redirect:', userData)
+          
+          // Construct proper PocketBase auth record with required fields
+          const authRecord = {
+            id: userData.id,
+            collectionId: '_pb_users_auth_',
+            collectionName: 'users',
+            email: userData.email,
+            name: userData.name,
+            ...(userData.wallet_address && { wallet_address: userData.wallet_address }),
+            // Include all fields from the user data
+            ...userData
+          }
+          console.log('Auth record:', authRecord)
           
           // Save auth token directly (already authenticated by line-callback.html)
-          pb.authStore.save(token, userData)
-          document.cookie = `pb_auth=${token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
+          pb.authStore.save(token, authRecord)
+          
+          // Force sync to localStorage
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('pocketbase_auth', JSON.stringify({ 
+              token, 
+              model: authRecord 
+            }))
+            document.cookie = `pb_auth=${token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
+          }
           
           // Handle state (referrer, redirectTo)
           if (stateParam) {
@@ -58,8 +79,13 @@ function CallbackContent() {
             }
           }
           
+          console.log('✓ Auth saved successfully, redirecting to dashboard')
           setStatus('success')
-          router.push('/')
+          
+          // Wait briefly to ensure localStorage/cookie are written, then force reload
+          setTimeout(() => {
+            window.location.href = '/'
+          }, 100)
           return
         } catch (error) {
           console.error('Token auth failed:', error)
