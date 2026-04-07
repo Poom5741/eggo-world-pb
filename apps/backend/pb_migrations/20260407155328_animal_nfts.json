@@ -1,0 +1,163 @@
+{
+  "name": "animal_nfts",
+  "type": "base",
+  "system": false,
+  "schema": [
+    {
+      "name": "animal_id",
+      "type": "number",
+      "required": false,
+      "unique": false,
+      "options": {
+        "min": 0,
+        "max": null
+      }
+    },
+    {
+      "name": "token_id",
+      "type": "number",
+      "required": true,
+      "unique": true,
+      "options": {
+        "min": 0,
+        "max": null
+      }
+    },
+    {
+      "name": "owner",
+      "type": "relation",
+      "required": true,
+      "unique": false,
+      "options": {
+        "collectionId": "_pb_users_auth_",
+        "cascadeDelete": true,
+        "minSelect": null,
+        "maxSelect": 1,
+        "displayFields": null
+      }
+    },
+    {
+      "name": "species",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "Chicken",
+          "Duck",
+          "Pig",
+          "Cow",
+          "Sheep",
+          "Dog",
+          "Cat",
+          "Rabbit"
+        ]
+      }
+    },
+    {
+      "name": "rarity",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "Common",
+          "Rare",
+          "Epic",
+          "Legendary"
+        ]
+      }
+    },
+    {
+      "name": "generation",
+      "type": "number",
+      "required": true,
+      "unique": false,
+      "options": {
+        "min": 0,
+        "max": null
+      }
+    },
+    {
+      "name": "parent_egg_id",
+      "type": "number",
+      "required": false,
+      "unique": false,
+      "options": {
+        "min": 0,
+        "max": null
+      }
+    },
+    {
+      "name": "parent1_animal_id",
+      "type": "number",
+      "required": false,
+      "unique": false,
+      "options": {
+        "min": 0,
+        "max": null
+      }
+    },
+    {
+      "name": "parent2_animal_id",
+      "type": "number",
+      "required": false,
+      "unique": false,
+      "options": {
+        "min": 0,
+        "max": null
+      }
+    },
+    {
+      "name": "food_type_distribution",
+      "type": "json",
+      "required": false,
+      "unique": false,
+      "options": {}
+    },
+    {
+      "name": "rarity_upgrade_count",
+      "type": "number",
+      "required": false,
+      "unique": false,
+      "options": {
+        "min": 0,
+        "max": 10
+      }
+    },
+    {
+      "name": "contract_address",
+      "type": "text",
+      "required": true,
+      "unique": false,
+      "options": {
+        "pattern": "^0x[a-fA-F0-9]{40}$"
+      }
+    },
+    {
+      "name": "tx_hash",
+      "type": "text",
+      "required": true,
+      "unique": true,
+      "options": {
+        "pattern": "^0x[a-fA-F0-9]{64}$"
+      }
+    },
+    {
+      "name": "minted_at",
+      "type": "date",
+      "required": true,
+      "unique": false,
+      "options": {}
+    }
+  ],
+  "indexes": [],
+  "listRule": null,
+  "viewRule": null,
+  "createRule": null,
+  "updateRule": null,
+  "deleteRule": null,
+  "options": {}
+}
