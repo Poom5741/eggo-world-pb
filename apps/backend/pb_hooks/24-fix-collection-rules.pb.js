@@ -129,8 +129,8 @@ routerAdd('POST', '/api/admin/fix-collection-rules', (e) => {
             }
         }
         
-        // Sync to database
-        $app.saveCollections(allCollections);
+        const allCollectionsAfter = $app.findAllCollections();
+        console.log(`Verified ${allCollectionsAfter.length} collections in database`);
         
         console.log("=== COLLECTION RULES FIX - COMPLETE ===");
         console.log(`✅ Success: ${successCount}`);
