@@ -46,7 +46,7 @@ function CallbackContent() {
             collectionName: 'users',
             email: userData.email,
             name: userData.name,
-            ...(userData.wallet_address && { wallet_address: userData.wallet_address }),
+            ...(userData.wallet && { wallet: userData.wallet }),
             // Include all fields from the user data
             ...userData
           }

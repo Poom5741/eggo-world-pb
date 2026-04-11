@@ -46,9 +46,11 @@ export function useWalletPoll(
    * ดึงข้อมูลยอดเงินจาก Wallet API
    */
   const fetchBalance = useCallback(async () => {
-    if (!walletAddress) {
+    // Guard against undefined, null, empty string, or literal "null" string
+    if (!walletAddress || walletAddress === 'null' || walletAddress === 'undefined' || walletAddress === '') {
       // No wallet address, set zero balance
       setBalance({ usdt: '0', native: '0' })
+      setError(null)
       return
     }
 

@@ -76,3 +76,5 @@ contracts/lib/
 .prettier-cache
 
 .qoder.flux/
+.qoder
+.flux

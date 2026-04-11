@@ -33,7 +33,7 @@ routerAdd('POST', '/api/auth/line-user', (c) => {
                 id: user.id + '',
                 email: user.get('email') + '',
                 name: user.get('name') + '',
-                wallet: user.get('wallet') + ''
+                wallet: user.get('wallet_address') || null
             }
         });
 
@@ -108,7 +108,7 @@ routerAdd('POST', '/api/auth/line-auth', (c) => {
                 id: user.id + '',
                 email: user.get('email') + '',
                 name: user.get('name') + '',
-                wallet: user.get('wallet') + ''
+                wallet: user.get('wallet_address') || null
             }
         });
 

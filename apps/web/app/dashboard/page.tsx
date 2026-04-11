@@ -27,7 +27,8 @@ export default function DashboardPage() {
   const [authReady, setAuthReady] = useState(false)
 
   // Auto-polling for wallet balance (per D-11: 30 seconds)
-  const { balance, loading: balanceLoading, refresh: refreshBalance, error: balanceError } = useWalletPoll(user?.wallet || '')
+  // user?.wallet_address or user?.wallet (support both field names for migration)
+  const { balance, loading: balanceLoading, refresh: refreshBalance, error: balanceError } = useWalletPoll(user?.wallet_address || user?.wallet || '')
 
   // Effect: Wait for hydration then check auth state
   useEffect(() => {
@@ -167,6 +168,15 @@ export default function DashboardPage() {
       }
       // Handle 404 errors gracefully - show empty state
       if (isNotFound(err)) {
+        // Set default empty state
+        setProfile(null)
+        setStats({ totalEggs: 0, totalFood: 0, totalCommissions: 0 })
+        setReferralLevels([1, 2, 3, 4].map(lvl => ({ level: lvl, count: 0, percentage: 0, commissionRate: lvl === 1 ? 0.20 : 0.10 })))
+        return
+      }
+      // Handle 403 errors gracefully - collection may not exist in production or has wrong API rules
+      if (err?.status === 403) {
+        console.warn('Dashboard collection access forbidden (collection may be missing fields or API rules in production):', err?.message)
         // Set default empty state
         setProfile(null)
         setStats({ totalEggs: 0, totalFood: 0, totalCommissions: 0 })

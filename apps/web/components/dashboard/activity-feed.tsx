@@ -151,6 +151,14 @@ export function ActivityFeed({ transactions: propTransactions, loading: propLoad
           setLoading(false)
           return
         }
+        // Handle 403 errors gracefully - collection may not exist in production or has wrong API rules
+        if (err?.status === 403) {
+          console.warn('Transaction collection access forbidden (collection may be missing fields or API rules in production):', err?.message)
+          setTransactions([])
+          setError(null)
+          setLoading(false)
+          return
+        }
         // Log other errors
         console.error('Failed to fetch transactions:', err.message || err)
         setError(err.message || 'Failed to load transactions')

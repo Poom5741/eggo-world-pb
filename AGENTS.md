@@ -139,3 +139,64 @@ make dev-local           # Frontend + local PB
 **Deployment:** Static export for Cloudflare Pages (`output: 'export'` in next.config.mjs)
 
 **References:** `resources/mvp-foodcourt/CLAUDE.md` has comprehensive hook examples
+
+<!-- FLUX:START -->
+## Flux Task Management
+
+You have access to Flux for task management via MCP or CLI.
+
+**Rules:**
+- All work MUST belong to exactly one project_id
+- Do NOT guess or invent a project_id
+- Track all work as tasks; update status as you progress
+- Close tasks immediately when complete
+
+**Startup:**
+1. List projects (`flux project list`)
+2. Select or create ONE project
+3. Confirm active project_id before any work
+
+**If context is lost:** Re-list projects/tasks. Ask user if ambiguous.
+
+### Using Flux with OMO (AI Agents)
+
+**MCP Integration:** Flux is configured in `.mcp.json` as the `flux` MCP server.
+
+**Agent Workflow:**
+```bash
+# 1. Get next ready task (unblocked, priority-sorted)
+flux ready
+
+# 2. Show task details
+flux show <task-id>
+
+# 3. Mark task as in progress
+flux task start <task-id>
+
+# 4. Work on the task...
+
+# 5. Mark task done with completion note
+flux task done <task-id> --note "Completed: [what you did]"
+```
+
+**Task Creation Pattern:**
+```bash
+# Create new task with priority
+flux task create "<task title>" -P 0  # P0=urgent, P1=normal, P2=low
+
+# Create task with dependency (blocks until dependency is done)
+flux task create "<task>" --depends-on <task-id>
+```
+
+**Current Project:** `Eggo NFT Platform (zsvm79i)` - located at `.flux/`
+
+**Commands:**
+- `flux project list` - List all projects
+- `flux ready` - Show unblocked tasks sorted by priority
+- `flux task list` - List all tasks
+- `flux show <id>` - Show task details
+- `flux task create "<title>" -P <0|1|2>` - Create new task
+- `flux task start <id>` - Mark as in_progress
+- `flux task done <id> --note "<note>"` - Mark complete
+- `flux update-status <id> --status <status>` - Update status
+<!-- FLUX:END -->
