@@ -75,4 +75,4 @@ contracts/lib/
 # Prettier
 .prettier-cache
 
-.qoder
+.qoder.flux/
