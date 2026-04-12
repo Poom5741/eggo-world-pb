@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { AuthLink } from '@/components/auth/AuthLink'
 
 // Type definition for navigation items
@@ -21,8 +20,9 @@ export const NAV_ITEMS: NavItem[] = [
 // Visible on desktop (≥1024px), hidden on mobile
 export default function SideNav() {
   return (
-    <aside className="hidden lg:flex flex-col w-72 p-6 space-y-8 bg-[var(--surface-container)] rounded-r-[3rem] h-[calc(100vh-6rem)] my-4 ml-4 shadow-[20px_0_40px_rgba(0,0,0,0.06)] sticky top-24">
-      <div className="flex items-center space-x-4 px-2">
+    <aside className="hidden lg:flex flex-col w-72 bg-[var(--surface-container)] rounded-r-[3rem] h-[calc(100vh-2rem)] mt-4 ml-4 mr-2 shadow-[20px_0_40px_rgba(0,0,0,0.06)] sticky top-4 overflow-hidden">
+      {/* Top Section: EggoBuddy Profile */}
+      <div className="flex items-center space-x-4 px-6 py-6 shrink-0">
         <div className="w-12 h-12 bg-[var(--primary-container)] rounded-2xl flex items-center justify-center clay-card overflow-hidden">
           <img 
             alt="Eggo Mascot" 
@@ -36,7 +36,8 @@ export default function SideNav() {
         </div>
       </div>
       
-      <nav className="flex-grow space-y-2">
+      {/* Middle Section: Navigation Links (scrollable) */}
+      <nav className="flex-grow overflow-y-auto px-6 space-y-2">
         {NAV_ITEMS.map((item) => (
           <AuthLink 
             key={item.href}
@@ -49,7 +50,8 @@ export default function SideNav() {
         ))}
       </nav>
 
-      <div className="pt-4 border-t border-[var(--on-surface)]/5 space-y-2">
+      {/* Bottom Section: Settings & Support (fixed) */}
+      <div className="pt-4 border-t border-[var(--on-surface)]/5 px-6 space-y-2 shrink-0">
         <AuthLink href="/settings" className="flex items-center space-x-4 px-4 py-2 text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300">
           <span className="material-symbols-outlined text-sm">settings</span>
           <span className="text-sm font-medium">Settings</span>
@@ -60,9 +62,12 @@ export default function SideNav() {
         </AuthLink>
       </div>
 
-      <button className="w-full py-4 bg-[var(--tertiary)] text-[var(--on-tertiary)] rounded-2xl font-bold clay-button hover:scale-[1.02] active:scale-95 transition-all font-headline">
-        Feed Eggo
-      </button>
+      {/* Bottom Section: Feed Eggo Button (fixed) */}
+      <div className="px-6 pb-6 pt-2 shrink-0">
+        <button className="w-full py-4 bg-[var(--tertiary)] text-[var(--on-tertiary)] rounded-2xl font-bold clay-button hover:scale-[1.02] active:scale-95 transition-all font-headline">
+          Feed Eggo
+        </button>
+      </div>
     </aside>
   )
 }

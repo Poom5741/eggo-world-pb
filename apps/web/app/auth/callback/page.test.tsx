@@ -1,6 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, spyOn, mock } from 'bun:test'
-import { render, screen, waitFor } from '@testing-library/react'
-import CallbackPage from './page'
+import { describe, it, expect } from 'bun:test'
 import * as fs from 'fs'
 
 describe('Auth Callback Page', () => {

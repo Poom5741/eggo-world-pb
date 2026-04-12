@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { EggData } from '@/hooks/use-egg-poll'
-import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -40,23 +39,6 @@ function getRarity(raritySeed?: number): { label: string; color: string } {
 }
 
 /**
- * Determine status based on food_count and is_hatched
- * ระบุสถานะตาม food_count และ is_hatched
- */
-function getStatus(foodCount: number, isHatched: boolean): string {
-  if (isHatched) {
-    return 'Hatched'
-  }
-  if (foodCount >= 10) {
-    return 'Ready' // Ready to hatch
-  }
-  if (foodCount > 0) {
-    return 'Feeding'
-  }
-  return 'Ready' // Can start feeding
-}
-
-/**
  * Egg NFT card component with claymorphism styling
  * การ์ดแสดง Egg NFT พร้อมสไตล์ claymorphism
  * 
@@ -69,9 +51,6 @@ export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProp
   
   // Get rarity info
   const rarity = getRarity(egg.rarity_seed)
-  
-  // Get status
-  const status = getStatus(egg.food_count, egg.is_hatched)
   
   return (
     <div className={cn(

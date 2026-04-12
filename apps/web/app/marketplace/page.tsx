@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import LayoutWrapper from '@/components/LayoutWrapper'
+import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { createClient } from '@/lib/pocketbase/client'
 import { type MarketplaceListing } from '@/lib/pocketbase/marketplace'
@@ -100,7 +100,7 @@ export default function Marketplace() {
   // Loading state - แสดงสถานะกำลังโหลด
   if (!isHydrated || loading) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           {/* Header Skeleton - โครงร่างส่วนหัว */}
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
@@ -128,7 +128,7 @@ export default function Marketplace() {
             ))}
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
 
@@ -140,7 +140,7 @@ export default function Marketplace() {
   // Error state - แสดงสถานะข้อผิดพลาด
   if (error) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
@@ -166,13 +166,13 @@ export default function Marketplace() {
             </button>
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
 
   // Main content - เนื้อหาหลัก
   return (
-    <LayoutWrapper>
+    <LayoutWithoutNav>
       <div className="max-w-6xl mx-auto">
         {/* Page Header - ส่วนหัวของหน้า */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
@@ -247,6 +247,6 @@ export default function Marketplace() {
           </div>
         )}
       </div>
-    </LayoutWrapper>
+    </LayoutWithoutNav>
   )
 }

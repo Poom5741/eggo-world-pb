@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import LayoutWrapper from '@/components/LayoutWrapper'
+import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { useAnimalPoll, AnimalData } from '@/hooks/use-animal-poll'
 import { AnimalCard } from '@/components/animal-nft/AnimalCard'
@@ -71,7 +71,7 @@ export default function Animals() {
 
   if (!isHydrated || loading || (!effectiveWalletAddress && user)) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div className="space-y-4">
@@ -92,7 +92,7 @@ export default function Animals() {
             ))}
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
 
@@ -103,7 +103,7 @@ export default function Animals() {
   const hasWallet = user?.wallet || ''
   if (isHydrated && !hasWallet) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
@@ -128,13 +128,13 @@ export default function Animals() {
             </button>
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
 
   if (animals.length === 0) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
@@ -168,12 +168,12 @@ export default function Animals() {
             </div>
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
 
   return (
-    <LayoutWrapper>
+    <LayoutWithoutNav>
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
           <div>
@@ -217,6 +217,6 @@ export default function Animals() {
           onSuccess={handleListingSuccess}
         />
       )}
-    </LayoutWrapper>
+    </LayoutWithoutNav>
   )
 }

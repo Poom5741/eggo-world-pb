@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button'
 import LayoutWrapper from '@/components/LayoutWrapper'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
 
 /**
  * Error props interface

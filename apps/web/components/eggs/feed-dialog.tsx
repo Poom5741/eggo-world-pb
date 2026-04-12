@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button'
 import { useEggFeed } from '@/hooks/use-egg-feed'
 import { EggData } from '@/hooks/use-egg-poll'
 import { createClient } from '@/lib/pocketbase/client'
-import { cn } from '@/lib/utils'
 
 /**
  * Props สำหรับ FeedDialog component

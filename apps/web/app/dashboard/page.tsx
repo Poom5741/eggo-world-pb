@@ -1,19 +1,17 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
-import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { createClient, getUser, isAuthenticated, restoreAuth } from '@/lib/pocketbase/client'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { BalanceCard } from '@/components/dashboard/balance-card'
 import { QuickActions } from '@/components/dashboard/quick-actions'
 import { BuddyChain } from '@/components/dashboard/buddy-chain'
 import { ActivityFeed } from '@/components/dashboard/activity-feed'
-import LayoutWrapper from '@/components/LayoutWrapper'
+import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 
 export default function DashboardPage() {
-  const router = useRouter()
   const isHydrated = useIsHydrated()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -36,73 +34,130 @@ export default function DashboardPage() {
 
     const pb = createClient()
     
-    console.log('=== Dashboard auth check ===')
-    console.log('authStore.token exists:', !!pb.authStore.token)
-    console.log('authStore.record:', pb.authStore.record)
+    console.warn('=== Dashboard auth check ===')
+    console.warn('authStore.token exists:', !!pb.authStore.token)
+    console.warn('authStore.record:', pb.authStore.record)
     const userRecord = getUser()
-    console.log('getUser():', userRecord)
-    console.log('authStore.isValid:', pb.authStore.isValid)
-    console.log('isAuthenticated():', isAuthenticated())
+    console.warn('getUser():', userRecord)
+    console.warn('authStore.isValid:', pb.authStore.isValid)
+    console.warn('isAuthenticated():', isAuthenticated())
     
-    // Try immediate check
-    const checkAuth = () => {
-      if (pb.authStore.token && pb.authStore.isValid) {
-        if (userRecord?.id) {
-          console.log('User authenticated immediately:', userRecord.id)
-          setUser(userRecord)
-          setAuthReady(true)
-          setLoading(false)
-          fetchDashboardData(userRecord)
-          return true
-        }
-      }
-      return false
+    // Check 1: Immediately authenticated?
+    if (pb.authStore.token && pb.authStore.record?.id) {
+      console.warn('✓ User authenticated immediately:', userRecord.id)
+      setUser(userRecord)
+      setAuthReady(true)
+      setLoading(false)
+      fetchDashboardData(userRecord)
+      return
     }
     
-    if (!checkAuth()) {
-      console.log('Auth not ready immediately, listening for changes...')
-      const unsubscribe = pb.authStore.onChange(() => {
-        console.log('Dashboard authStore changed, token exists:', !!pb.authStore.token)
-        const updatedUser = getUser()
-        if (updatedUser && updatedUser.id) {
-          console.log('Auth restored via onChange:', updatedUser.id)
-          setUser(updatedUser)
+    // Check 2: Has token but no record - restore auth from server
+    if (pb.authStore.token && !pb.authStore.record?.id) {
+      console.warn('Has token but no record, restoring auth from server...')
+      restoreAuth(pb)
+        .then((success) => {
+          if (success) {
+            const restoredUser = getUser()
+            console.warn('✓ Auth restored:', restoredUser?.id)
+            setUser(restoredUser)
+            setAuthReady(true)
+            setLoading(false)
+            fetchDashboardData(restoredUser)
+          } else {
+            console.warn('✗ Auth restore failed - not authenticated')
+            setAuthReady(true)
+            setLoading(false)
+            setUser(null)
+            // Will redirect via redirect effect
+          }
+        })
+        .catch((error) => {
+          console.error('Auth restore error:', error)
           setAuthReady(true)
           setLoading(false)
-          fetchDashboardData(updatedUser)
-          unsubscribe()
-        } else {
-          console.log('Auth cleared via onChange')
           setUser(null)
-          setAuthReady(true)
-          setLoading(false)
-          unsubscribe()
-        }
-      })
-      
-      // Timeout fallback (2 seconds)
-      const timeout = setTimeout(() => {
-        if (!authReady) {
-          console.log('Auth check timeout, marking as ready (no auth)')
-          setAuthReady(true)
-          setLoading(false)
-        }
-      }, 2000)
-      
-      return () => {
-        clearTimeout(timeout)
-        unsubscribe?.()
-      }
+          // Will redirect via redirect effect
+        })
+      return
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
+    // Check 3: No token at all - listen for auth changes (OAuth flow)
+    console.warn('No token, listening for auth changes...')
+    const unsubscribe = pb.authStore.onChange(() => {
+      console.warn('Dashboard authStore changed, token exists:', !!pb.authStore.token)
+      const updatedUser = getUser()
+      console.warn('getUser() in onChange:', updatedUser)
+      
+      if (updatedUser && updatedUser.id) {
+        console.warn('Auth restored via onChange:', updatedUser.id)
+        setUser(updatedUser)
+        setAuthReady(true)
+        setLoading(false)
+        fetchDashboardData(updatedUser)
+        unsubscribe()
+      } else if (!pb.authStore.token) {
+        // Token was cleared - user logged out
+        console.warn('Auth cleared via onChange - redirecting')
+        setUser(null)
+        setAuthReady(true)
+        setLoading(false)
+        unsubscribe()
+        // Force redirect
+        setTimeout(() => {
+          window.location.href = '/auth/login'
+        }, 100)
+      }
+      // If we have token but no user yet, keep waiting (don't unsubscribe)
+    })
+    
+    // Timeout fallback (5 seconds for OAuth flow)
+    const timeout = setTimeout(() => {
+      if (!authReady) {
+        console.warn('Auth check timeout - final state:', {
+          hasToken: !!pb.authStore.token,
+          hasRecord: !!pb.authStore.record?.id,
+          isValid: pb.authStore.isValid
+        })
+        // Final attempt: if token exists but no record, try restore one more time
+        if (pb.authStore.token && !pb.authStore.record?.id) {
+          console.warn('Timeout: trying restoreAuth as last resort...')
+          restoreAuth(pb)
+            .then((success) => {
+              if (success) {
+                const restoredUser = getUser()
+                setUser(restoredUser)
+              }
+              setAuthReady(true)
+              setLoading(false)
+            })
+            .catch(() => {
+              setAuthReady(true)
+              setLoading(false)
+            })
+        } else {
+          // No token - mark ready (will redirect)
+          setAuthReady(true)
+          setLoading(false)
+        }
+      }
+    }, 5000)
+    
+    return () => {
+      clearTimeout(timeout)
+      unsubscribe?.()
+    }
   }, [isHydrated])
 
+  // REDIRECT EFFECT - only fires if authReady && !user
   useEffect(() => {
     if (isHydrated && authReady && !user) {
-      console.log('Redirecting to /auth/login (auth ready, no user)')
-      router.push('/auth/login')
+      console.warn('Not authenticated, redirecting to login')
+      setTimeout(() => {
+        window.location.href = '/auth/login?redirectTo=/dashboard'
+      }, 100)
     }
-  }, [isHydrated, authReady, user, router])
+  }, [isHydrated, authReady, user])
 
   const fetchDashboardData = async (currentUser: any) => {
     if (!currentUser?.id) {
@@ -236,7 +291,7 @@ export default function DashboardPage() {
   const totalReferralEarnings = stats.totalCommissions
 
   return (
-    <LayoutWrapper>
+    <LayoutWithoutNav>
       {/* Header per Jules design */}
       <header className="flex justify-between items-center mb-10 px-2 lg:px-0">
         <div>
@@ -352,6 +407,6 @@ export default function DashboardPage() {
           <p className="pixel-font text-on-surface-variant">LOADING DASHBOARD...</p>
         </div>
       )}
-    </LayoutWrapper>
+    </LayoutWithoutNav>
   )
 }

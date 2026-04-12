@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import LayoutWrapper from '@/components/LayoutWrapper';
+import LayoutWithoutNav from '@/components/LayoutWithoutNav';
 import { useIsHydrated } from '@/hooks/use-is-hydrated';
 import { useFoodNft } from '@/hooks/use-food-nft';
 import { createClient } from '@/lib/pocketbase/client';
 import { FoodCard, FoodType } from '@/components/food-nft/FoodCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Flame, Tag } from 'lucide-react';
+import { Flame, Tag } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog';
 
@@ -77,7 +77,7 @@ export default function FoodInventoryPage() {
   // Loading state - แสดงสถานะกำลังโหลด
   if (!isHydrated || loading) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div className="space-y-4">
@@ -97,7 +97,7 @@ export default function FoodInventoryPage() {
             ))}
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     );
   }
   
@@ -109,7 +109,7 @@ export default function FoodInventoryPage() {
   // Empty state - กรณีไม่มี Food NFT
   if (foods.length === 0) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
@@ -142,7 +142,7 @@ export default function FoodInventoryPage() {
             </div>
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     );
   }
   
@@ -155,7 +155,7 @@ export default function FoodInventoryPage() {
   
   // Main content - เนื้อหาหลัก
   return (
-    <LayoutWrapper>
+    <LayoutWithoutNav>
       <div className="max-w-6xl mx-auto">
         {/* Page Header - ส่วนหัวของหน้า */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-6">
@@ -239,6 +239,6 @@ export default function FoodInventoryPage() {
           fetchFoods();
         }}
       />
-    </LayoutWrapper>
+    </LayoutWithoutNav>
   );
 }

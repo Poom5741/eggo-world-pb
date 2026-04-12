@@ -46,7 +46,7 @@ export function HatchRevealModal({
   onOpenChange,
   onSuccess,
 }: HatchRevealModalProps) {
-  const { hatchEggTransaction, loading, error } = useEggHatch()
+  const { hatchEggTransaction, loading } = useEggHatch()
   const [animating, setAnimating] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [animalData, setAnimalData] = useState<AnimalData | null>(null)
@@ -66,7 +66,7 @@ export function HatchRevealModal({
         setAnimating(false)
         onOpenChange(false)
       }
-    } catch (err: any) {
+    } catch {
       // Error handled by hook
       setAnimating(false)
       onOpenChange(false)

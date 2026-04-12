@@ -2,7 +2,6 @@
 
 import React from 'react'
 import { EggData } from '@/hooks/use-egg-poll'
-import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 
 /**

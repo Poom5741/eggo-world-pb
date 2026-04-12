@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import LayoutWrapper from '@/components/LayoutWrapper'
+import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { useEggPoll, EggData } from '@/hooks/use-egg-poll'
 import { FeaturedEggHero } from '@/components/eggs/featured-egg-hero'
@@ -117,7 +117,7 @@ export default function Eggs() {
   // Loading state - แสดงสถานะกำลังโหลด
   if (!isHydrated || loading || (!effectiveWalletAddress && user)) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           {/* Header Skeleton - โครงร่างส่วนหัว */}
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
@@ -146,7 +146,7 @@ export default function Eggs() {
             ))}
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
   
@@ -160,7 +160,7 @@ export default function Eggs() {
   const hasWallet = user?.wallet || ''
   if (isHydrated && !hasWallet) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
@@ -186,14 +186,14 @@ export default function Eggs() {
             </button>
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
   
   // Empty state - กรณีไม่มีไข่
   if (eggs.length === 0) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
             <div>
@@ -228,13 +228,13 @@ export default function Eggs() {
             </div>
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
   
   // Main content - เนื้อหาหลัก
   return (
-    <LayoutWrapper>
+    <LayoutWithoutNav>
       <div className="max-w-6xl mx-auto">
         {/* Page Header - ส่วนหัวของหน้า */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
@@ -314,6 +314,6 @@ export default function Eggs() {
           onSuccess={handleHatchSuccess}
         />
       )}
-    </LayoutWrapper>
+    </LayoutWithoutNav>
   )
 }

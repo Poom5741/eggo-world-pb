@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { Loader2, ArrowLeft, User, Tag, Calendar } from 'lucide-react'
-import LayoutWrapper from '@/components/LayoutWrapper'
+import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { useMarketplaceSync } from '@/hooks/use-marketplace-sync'
 import { CancelListingDialog } from '@/components/marketplace/CancelListingDialog'
 import { UpdatePriceDialog } from '@/components/marketplace/UpdatePriceDialog'
@@ -91,20 +91,20 @@ export default function ProductDetail({ params }: PageProps) {
 
   if (!isHydrated || loading) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
             <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
             <p className="text-on-surface-variant">กำลังโหลดข้อมูล...</p>
           </div>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
 
   if (error || !listing) {
     return (
-      <LayoutWrapper>
+      <LayoutWithoutNav>
         <div className="max-w-4xl mx-auto space-y-8">
           <Button
             variant="outline"
@@ -132,7 +132,7 @@ export default function ProductDetail({ params }: PageProps) {
             </CardContent>
           </Card>
         </div>
-      </LayoutWrapper>
+      </LayoutWithoutNav>
     )
   }
 
@@ -143,7 +143,7 @@ export default function ProductDetail({ params }: PageProps) {
   const canCancel = isOwnedByUser && !isSold && !isCancelled
 
   return (
-    <LayoutWrapper>
+    <LayoutWithoutNav>
       <div className="max-w-6xl mx-auto space-y-8">
         <div className="flex items-center gap-4">
           <Button
@@ -383,6 +383,6 @@ export default function ProductDetail({ params }: PageProps) {
           }}
         />
       </div>
-    </LayoutWrapper>
+    </LayoutWithoutNav>
   )
 }
