@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "pocketbase": {
+      "command": "node",
+      "args": ["/Users/poom-work/tokenine/pocketbase-mcp/dist/index.js"],
+      "env": {
+        "POCKETBASE_URL": "https://pb.eggoworld.io",
+        "POCKETBASE_ADMIN_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjb2xsZWN0aW9uSWQiOiJwYmNfMzE0MjYzNTgyMyIsImV4cCI6MTc3NTgwNTQ1MiwiaWQiOiIzYmI5NncxMmMzdzNrcXciLCJyZWZyZXNoYWJsZSI6ZmFsc2UsInR5cGUiOiJhdXRoIn0.spcD5355iEEb9v71ckRe5t6UMwIHCKosGGdAY7nuYCQ"
+      }
+    },
+    "vibe_kanban": {
+      "command": "npx",
+      "args": ["-y", "vibe-kanban@latest", "mcp"]
+    },
+    "flux": {
+      "command": "npx",
+      "args": ["-y", "flux-tasks@latest", "mcp"]
+    }
+  }
+}
