@@ -1,0 +1,91 @@
+[
+  {
+    "id": "ec_logs_01",
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": "",
+    "updateRule": "",
+    "deleteRule": "@request.auth.id != \"\"",
+    "name": "egg_consumption_logs",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "text_id",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "json_food_items",
+        "name": "food_items",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "hidden": false,
+        "id": "json_food_type_distribution",
+        "name": "food_type_distribution",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "json"
+      },
+      {
+        "hidden": false,
+        "id": "number_total_food_count",
+        "max": null,
+        "min": 0,
+        "name": "total_food_count",
+        "onlyInt": true,
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "date_fed_at",
+        "max": "",
+        "min": "",
+        "name": "fed_at",
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_created",
+        "name": "created",
+        "onCreate": true,
+        "onUpdate": false,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      },
+      {
+        "hidden": false,
+        "id": "autodate_updated",
+        "name": "updated",
+        "onCreate": true,
+        "onUpdate": true,
+        "presentable": false,
+        "system": false,
+        "type": "autodate"
+      }
+    ],
+    "indexes": [],
+    "system": false
+  }
+]
