@@ -41,6 +41,7 @@ Thumbs.db
 **/.env
 **/.env.*
 !**/.env.example
+!**/.env.production.example
 !**/.env.sample
 
 # Temporary files
@@ -77,4 +78,4 @@ contracts/lib/
 
 .qoder.flux/
 .qoder
-.flux
+.flux.env.production

@@ -1,70 +1,89 @@
-{
-  "name": "sync_state",
-  "type": "base",
-  "system": false,
-  "schema": [
-    {
-      "name": "id",
-      "type": "text",
-      "required": true,
-      "unique": true,
-      "options": {
-        "pattern": "^config$"
-      }
-    },
-    {
-      "name": "lastProcessedBlock",
-      "type": "number",
-      "required": true,
-      "unique": false,
-      "options": {
-        "min": 0,
+[
+  {
+    "id": "pbc_sync_state_collection",
+    "listRule": "@request.auth.id != \"\"",
+    "viewRule": "@request.auth.id != \"\"",
+    "createRule": "@request.auth.id != \"\"",
+    "updateRule": "@request.auth.id != \"\"",
+    "deleteRule": "@request.auth.id != \"\"",
+    "name": "sync_state",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "sync_state_id_field_001",
+        "max": 6,
+        "min": 6,
+        "name": "id",
+        "pattern": "^config$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "sync_state_block_field_002",
         "max": null,
-        "default": 0
-      }
-    },
-    {
-      "name": "lastSyncTimestamp",
-      "type": "date",
-      "required": false,
-      "unique": false,
-      "options": {}
-    },
-    {
-      "name": "status",
-      "type": "select",
-      "required": true,
-      "unique": false,
-      "options": {
-        "maxSelect": 1,
-        "values": ["syncing", "error", "idle"]
-      }
-    },
-    {
-      "name": "last_error",
-      "type": "text",
-      "required": false,
-      "unique": false,
-      "options": {
-        "pattern": ""
-      }
-    },
-    {
-      "name": "failed_block",
-      "type": "number",
-      "required": false,
-      "unique": false,
-      "options": {
         "min": 0,
-        "max": null
+        "name": "lastProcessedBlock",
+        "onlyInt": true,
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "sync_state_ts_field_003",
+        "max": "",
+        "min": "",
+        "name": "lastSyncTimestamp",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "date"
+      },
+      {
+        "hidden": false,
+        "id": "sync_state_status_field_004",
+        "name": "status",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "select",
+        "values": ["syncing", "error", "idle"],
+        "maxSelect": 1
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "sync_state_error_field_005",
+        "max": 0,
+        "min": 0,
+        "name": "last_error",
+        "pattern": "",
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "sync_state_failed_field_006",
+        "max": null,
+        "min": 0,
+        "name": "failed_block",
+        "onlyInt": true,
+        "presentable": false,
+        "required": false,
+        "system": false,
+        "type": "number"
       }
-    }
-  ],
-  "indexes": [],
-  "listRule": null,
-  "viewRule": null,
-  "createRule": null,
-  "updateRule": null,
-  "deleteRule": null,
-  "options": {}
-}
+    ],
+    "indexes": [],
+    "system": false
+  }
+]

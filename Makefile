@@ -1,7 +1,33 @@
-.PHONY: dev install build clean
+.PHONY: dev install build clean help
 
 # Default PocketBase URL (production)
 PB_URL ?= https://pb.eggoworld.io
+
+# Deployment targets
+.PHONY: deploy-prod
+deploy-prod: ## Deploy PocketBase to production
+	@echo "Deploying to production..."
+	@./scripts/deploy-phase02.sh --env=production
+
+.PHONY: deploy-prod-dry-run
+deploy-prod-dry-run: ## Simulate production deployment
+	@echo "Running dry-run deployment..."
+	@./scripts/deploy-phase02.sh --env=production --dry-run
+
+.PHONY: backup-prod
+backup-prod: ## Create production backup
+	@echo "Creating production backup..."
+	@./scripts/stages/30-backup.sh --env=production
+
+.PHONY: rollback-prod
+rollback-prod: ## Rollback production deployment
+	@echo "Rolling back production..."
+	@./scripts/stages/70-rollback.sh --env=production
+
+.PHONY: health-check-prod
+health-check-prod: ## Check production health
+	@echo "Checking production health..."
+	@./scripts/health-check.sh --remote
 
 # Development
 dev:
@@ -87,6 +113,13 @@ help:
 	@echo "  make backend    Start local PocketBase (docker)"
 	@echo "  make backend-stop Stop local PocketBase"
 	@echo "  make clean      Clean build artifacts"
+	@echo ""
+	@echo "Deployment:"
+	@echo "  make deploy-prod          Deploy PocketBase to production"
+	@echo "  make deploy-prod-dry-run  Simulate production deployment"
+	@echo "  make backup-prod          Create production backup"
+	@echo "  make rollback-prod        Rollback production deployment"
+	@echo "  make health-check-prod    Check production health"
 	@echo ""
 	@echo "Git Hooks (run without commit/push):"
 	@echo "  make pre-commit Run pre-commit hooks (lint-staged)"

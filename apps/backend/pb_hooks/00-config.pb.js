@@ -52,7 +52,7 @@ const CONFIG = {
   // Blockchain Configuration
   blockchain: {
     // RPC Configuration
-    rpcUrl: process.env.BSC_RPC_URL || "https://rpc.0xl3.com",
+    rpcUrl: process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org",
     rpcWssUrl: process.env.BSC_RPC_WSS_URL || "",
     chainId: parseInt(process.env.BSC_CHAIN_ID || "7117"),
     

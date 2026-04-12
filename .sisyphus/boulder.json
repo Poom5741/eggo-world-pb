@@ -1,15 +1,23 @@
 {
-  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/referral-system-implementation.md",
-  "started_at": "2026-04-06T13:06:11.731Z",
+  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/phase02-pocketbase-deploy.md",
+  "started_at": "2026-04-12T14:30:00.000Z",
   "session_ids": [
-    "ses_29d51c12bffeRTF0qB1HXpn3ap",
-    "ses_29d11c44cffedX3WORehp1899D",
-    "ses_29d11c486ffeLSjT8GG6aZeY3H",
-    "ses_29d0b3e0effefBGz7XTD1XFEGX"
+    "ses_27f702642ffeS0e7gHwG2ZLeRd",
+    "ses_27f63ac28ffeBE8Vyk3TB4qJVa",
+    "ses_27f63ac3dffeFsITeMh6CTLaCQ",
+    "ses_27f63ac55ffeI2AYp0RBKWbn9e",
+    "ses_27f5adf5dffeMf05R6WVkHHDdr",
+    "ses_27f5adf41ffeXQmC831b9g7vBU",
+    "ses_27f4dc4eaffeoa233sQPB3VaRx",
+    "ses_27f4dc4c3ffeDfVYez6uml7JJg",
+    "ses_27f4196a3ffesw5OoZuTV4rqOb",
+    "ses_27f4196c9ffeT9EuUQh0Awo3ay",
+    "ses_27f080937ffeLr7o7yFxf9xBs6",
+    "ses_27efb82c8ffeaJPuyatITDWFzG"
   ],
-  "plan_name": "referral-system-implementation",
+  "plan_name": "phase02-pocketbase-deploy",
   "agent": "atlas",
-  "previous_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/fix-auth-redirects.md",
-  "switched_at": "2026-04-06T13:06:11.731Z",
+  "previous_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/referral-system-implementation.md",
+  "switched_at": "2026-04-12T14:30:00.000Z",
   "task_sessions": {}
 }
