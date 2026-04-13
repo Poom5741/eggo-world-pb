@@ -1,21 +1,17 @@
 # Move Mint to Eggs Modal
 
 ## TL;DR
-
 Move mint functionality from `/mint` page to a modal on `/eggs` page. Add "Mint New Egg" button to eggs page header. Redesign to match present claymorphism style. Delete old `/mint` and `/mint/food` pages.
 
 ## Context
-
 Current `/mint` page is standalone. User wants integrated experience - mint new eggs directly from eggs inventory page via modal. Better UX, consistent with present design system.
 
 ## Work Objectives
 
 ### Core Objective
-
 Extract mint functionality into reusable modal component, integrate into `/eggs` page, delete old routes.
 
 ### Concrete Deliverables
-
 - `MintEggModal` component (claymorphism design)
 - Updated `/eggs/page.tsx` with button + modal integration
 - Deleted `/mint/` directory
@@ -23,7 +19,6 @@ Extract mint functionality into reusable modal component, integrate into `/eggs`
 - All references updated to remove `/mint` routes
 
 ### Definition of Done
-
 - [ ] Click "Mint New Egg" on eggs page opens modal
 - [ ] Modal matches claymorphism design (not pixel style)
 - [ ] Mint flow works end-to-end (payment → success → close modal)
@@ -32,7 +27,6 @@ Extract mint functionality into reusable modal component, integrate into `/eggs`
 - [ ] No broken references to old routes
 
 ### Must NOT Have
-
 - Pixel font styling in modal
 - Standalone `/mint` page remaining
 - `/mint/food` page remaining
@@ -43,13 +37,11 @@ Extract mint functionality into reusable modal component, integrate into `/eggs`
 ## Verification Strategy
 
 ### Test Decision
-
 - **Infrastructure exists**: YES
 - **Automated tests**: NO (manual QA via browser)
 - **Framework**: bun test available
 
 ### QA Policy
-
 Every task includes agent-executed QA scenarios. Evidence saved to `.sisyphus/evidence/`.
 
 ---
@@ -57,27 +49,23 @@ Every task includes agent-executed QA scenarios. Evidence saved to `.sisyphus/ev
 ## Execution Strategy
 
 ### Wave 1: Extract & Create (Foundation)
-
 1. Create MintEggModal component
 2. Copy mint logic from /mint/page.tsx
 3. Redesign to claymorphism style
 4. Add close/refresh callbacks
 
 ### Wave 2: Integrate (Frontend)
-
 5. Add "Mint New Egg" button to /eggs page header
 6. Integrate MintEggModal into /eggs page
 7. Wire up state management (modal open/close)
 
 ### Wave 3: Cleanup (Delete & Update)
-
 8. Delete /mint/page.tsx
 9. Delete /mint/food/page.tsx
 10. Update all /mint references in codebase
 11. Update quick-actions href (already done, verify)
 
 ### Wave 4: Verification
-
 12. Build check
 13. Type check
 14. Manual QA: Click mint button → complete flow → verify eggs refresh
@@ -126,7 +114,6 @@ Every task includes agent-executed QA scenarios. Evidence saved to `.sisyphus/ev
   - [ ] Props interface defined
 
   **QA Scenarios:**
-
   ```
   Scenario: Modal opens with claymorphism design
     Tool: Playwright
@@ -175,7 +162,6 @@ Every task includes agent-executed QA scenarios. Evidence saved to `.sisyphus/ev
   - [ ] Success callback refreshes eggs
 
   **QA Scenarios:**
-
   ```
   Scenario: Complete mint flow end-to-end
     Tool: Playwright
@@ -218,7 +204,6 @@ Every task includes agent-executed QA scenarios. Evidence saved to `.sisyphus/ev
   - [ ] /mint/food directory deleted
 
   **QA Scenarios:**
-
   ```
   Scenario: Old routes return 404
     Tool: Bash (curl)
@@ -262,7 +247,6 @@ Every task includes agent-executed QA scenarios. Evidence saved to `.sisyphus/ev
   - [ ] No references to /mint/food remain
 
   **QA Scenarios:**
-
   ```
   Scenario: No broken mint links
     Tool: grep
@@ -339,7 +323,6 @@ Every task includes agent-executed QA scenarios. Evidence saved to `.sisyphus/ev
 ## Success Criteria
 
 ### Verification Commands
-
 ```bash
 curl http://localhost:3000/eggs        # 200
 curl http://localhost:3000/mint        # 404
@@ -348,7 +331,6 @@ grep -r "'/mint'" apps/web/            # No results (except comments)
 ```
 
 ### Final Checklist
-
 - [ ] "Mint New Egg" button on /eggs page
 - [ ] Modal opens with claymorphism design
 - [ ] Mint flow works end-to-end
