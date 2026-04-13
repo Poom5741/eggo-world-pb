@@ -8,16 +8,32 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Wallet, Download, RefreshCw } from "lucide-react"
 import LayoutWithoutNav from "@/components/LayoutWithoutNav"
 import { QRCodeSVG } from 'qrcode.react'
-import { toast } from 'sonner'
+
+// Define interfaces for type safety
+interface User {
+  id: string
+  wallet: string
+}
+
+interface Deposit {
+  id: string
+  user: string
+  amount: number
+  tx_hash: string
+  from_address?: string
+  status: 'pending' | 'confirmed' | 'failed'
+  confirmed_at?: string
+  created: string
+}
 
 export default function DepositPage() {
   const isHydrated = useIsHydrated()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
   const [balance, setBalance] = useState(0)
-  const [deposits, setDeposits] = useState<any[]>([])
+  const [deposits, setDeposits] = useState<Deposit[]>([])
   const [pollingStatus, setPollingStatus] = useState("Waiting for deposit...")
   const [isPolling, setIsPolling] = useState(false)
 
@@ -52,9 +68,13 @@ export default function DepositPage() {
       return
     }
 
-    setUser(userRecord)
-    fetchInitialData(userRecord.wallet)
-    fetchDepositsFromCollection(userRecord.id)
+    const typedUser: User = {
+      id: userRecord.id,
+      wallet: userRecord.wallet
+    }
+    setUser(typedUser)
+    fetchInitialData(typedUser.wallet)
+    fetchDepositsFromCollection(typedUser.id)
   }, [isHydrated])
 
   useEffect(() => {
@@ -75,7 +95,7 @@ export default function DepositPage() {
 
         // Handle auth errors (401/403)
         if (response.status === 401 || response.status === 403) {
-          toast.error("Session expired. Please login again.")
+          setError("Session expired. Please login again.")
           window.location.href = "/auth/login"
           return
         }
@@ -87,9 +107,8 @@ export default function DepositPage() {
           setDeposits(pollDeposits)
           setBalance(data.data.new_balance || 0)
           
-          // Show toast for new deposits
           if (pollDeposits.length > prevCount) {
-            toast.success(`New deposit detected! (${pollDeposits.length - prevCount} new)`)
+            setPollingStatus("New deposit detected!")
           }
           
           setPollingStatus(pollDeposits.length > 0 ? "Deposit detected!" : "Waiting for deposit...")
@@ -235,7 +254,7 @@ export default function DepositPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {deposits.map((deposit: any, index: number) => (
+                    {deposits.map((deposit: Deposit, index: number) => (
                       <tr key={index} className="border-b last:border-0">
                         <td className="py-3 text-sm text-gray-500">
                           {deposit.created ? new Date(deposit.created).toLocaleString() : '-'}

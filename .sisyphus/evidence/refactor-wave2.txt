@@ -1,0 +1,70 @@
+# Refactor Wave 2: Backend Hook Quality - Evidence
+
+## File Modified
+- `apps/backend/pb_hooks/13-track-deposit.pb.js`
+
+## Issues Fixed
+
+### 1. Empty Catch Block (Line 98-100)
+**Before:**
+```javascript
+try {
+    existingDeposit = $app.findFirstRecordByData("deposits", "tx_hash", txHash);
+} catch (err) {
+}
+```
+
+**After:**
+```javascript
+try {
+    existingDeposit = $app.findFirstRecordByData("deposits", "tx_hash", txHash);
+} catch (err) {
+    console.error("Error checking for existing deposit:", err);
+}
+```
+
+### 2. Console.log in Production (Line 104)
+**Before:**
+```javascript
+if (existingDeposit) {
+    console.log("Deposit already processed:", txHash);
+    continue;
+}
+```
+
+**After:**
+```javascript
+if (existingDeposit) {
+    continue;
+}
+```
+
+### 3. Console.log in Production (Line 136)
+**Before:**
+```javascript
+console.log("Deposit tracked:", txHash, "amount:", amountUSDT, "user:", user_address);
+```
+
+**After:**
+```javascript
+// Removed entirely
+```
+
+## Verification
+
+### Test Results
+```
+bun test apps/backend/pb_hooks/13-track-deposit.test.js
+24 pass
+0 fail
+```
+
+### Console.log Check
+- Remaining console.log: Only startup registration message (line 158) - acceptable
+- No console.log in production runtime code
+
+### Empty Catch Block Check
+- Line 101: `console.error("Error checking for existing deposit:", err)` ✅
+
+## Date
+2026-04-13

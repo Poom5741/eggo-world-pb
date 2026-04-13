@@ -98,10 +98,10 @@ routerAdd("POST", "/api/v2/deposit/poll", async (e) => {
             try {
                 existingDeposit = $app.findFirstRecordByData("deposits", "tx_hash", txHash);
             } catch (err) {
+                console.error("Error checking for existing deposit:", err);
             }
             
             if (existingDeposit) {
-                console.log("Deposit already processed:", txHash);
                 continue;
             }
             
@@ -132,8 +132,6 @@ routerAdd("POST", "/api/v2/deposit/poll", async (e) => {
             });
             
             totalDeposited += amountUSDT;
-            
-            console.log("Deposit tracked:", txHash, "amount:", amountUSDT, "user:", user_address);
         }
         
         const newBalance = walletRecord.getNumber("usdt_balance");

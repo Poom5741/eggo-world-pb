@@ -1,0 +1,62 @@
+# Refactor Wave 1: Type Safety - Evidence
+
+## Task
+Fix TypeScript `useState<any>` anti-patterns in deposit page
+
+## Files Modified
+- `apps/web/app/dashboard/deposit/page.tsx`
+
+## Changes Made
+
+### 1. Added User Interface
+```typescript
+interface User {
+  id: string
+  wallet: string
+}
+```
+
+### 2. Added Deposit Interface
+```typescript
+interface Deposit {
+  id: string
+  user: string
+  amount: number
+  tx_hash: string
+  from_address?: string
+  status: 'pending' | 'confirmed' | 'failed'
+  confirmed_at?: string
+  created: string
+}
+```
+
+### 3. Fixed useState Types
+- Line 15: Changed `useState<any>(null)` to `useState<User | null>(null)`
+- Line 20: Changed `useState<any[]>([])` to `useState<Deposit[]>([])`
+- Line 254: Changed `deposit: any` to `deposit: Deposit`
+
+### 4. Fixed User Type Casting
+- Added explicit casting from PocketBase RecordModel to User interface at line 72-77
+
+## Verification Results
+
+### TypeScript Check
+```
+$ npx tsc --noEmit
+# No errors for deposit/page.tsx
+```
+
+### Test Results
+```
+$ bun test
+253 pass
+0 fail
+413 expect() calls
+Ran 253 tests across 22 files.
+```
+
+## Status
+✅ COMPLETE - All TypeScript errors resolved, all tests pass
+
+## Date
+2026-04-13

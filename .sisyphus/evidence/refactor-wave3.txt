@@ -1,0 +1,30 @@
+# Refactor Wave 3: Remove Toast Notifications - Evidence
+
+**Date:** 2026-04-13
+**File Modified:** `apps/web/app/dashboard/deposit/page.tsx`
+
+## Changes Made
+
+### 1. Removed toast import
+- Removed: `import { toast } from 'sonner'`
+
+### 2. Replaced toast.error with setError
+- Before: `toast.error("Session expired. Please login again.")`
+- After: `setError("Session expired. Please login again.")`
+- The Alert component (already present in the UI) displays the error state
+
+### 3. Replaced toast.success with setPollingStatus
+- Before: `toast.success(`New deposit detected! (${pollDeposits.length - prevCount} new)`)`
+- After: `setPollingStatus("New deposit detected!")`
+
+## Verification
+
+- Build passes: ✅
+- No toast references remaining: ✅
+- Error handling still works (Alert component displays errors): ✅
+- Status messages work (pollingStatus state updates displayed in UI): ✅
+
+## Guardrail Compliance
+
+- NO deposit notifications/toasts: ✅
+- Inline status messages used instead: ✅
