@@ -1,0 +1,16 @@
+Deposit page implementation completed.
+
+All 22 tests passed:
+- Page structure tests (3 pass) - use client directive, LayoutWithoutNav component
+- Wallet address display tests (3 pass) - useIsHydrated hook, getUser, wallet display
+- QR code component tests (2 pass) - QRCodeSVG import and rendering
+- Deposit polling tests (4 pass) - poll endpoint, POST method, 30s interval, auth token
+- Balance update tests (2 pass) - deposit response handling, balance state updates
+- Transaction history tests (2 pass) - table display, tx_hash/amount/timestamp
+- Error handling tests (2 pass) - try/catch, error display
+- Authentication tests (2 pass) - auth check, login redirect
+- Loading state tests (2 pass) - loading state, waiting for deposit status
+
+File created: apps/web/app/dashboard/deposit/page.tsx
+Test results: 22/22 PASS
+Tests run from: apps/web directory using bun test

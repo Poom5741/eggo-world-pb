@@ -1,0 +1,76 @@
+# Task 7: Deposit Tracking Hook - GREEN Phase Evidence
+
+**Date:** Mon Apr 13 2026
+**Task:** Implement deposit tracking backend hook to make tests pass
+**File:** `apps/backend/pb_hooks/13-track-deposit.pb.js`
+
+## Test Results
+
+```
+bun test v1.3.11 (af24e281)
+
+apps/backend/pb_hooks/13-track-deposit.test.js:
+Tests loaded: 13-track-deposit.test.js
+Status: RED PHASE - Tests will fail until hook is implemented
+
+ 24 pass
+ 0 fail
+ 41 expect() calls
+Ran 24 tests across 1 file. [26.00ms]
+```
+
+## Implementation Summary
+
+Created deposit tracking hook with the following features:
+
+1. **Endpoint Registration:** POST /api/v2/deposit/poll
+2. **Authentication:** Requires user authentication via `e.requireAuth()`
+3. **Event Polling:** Queries CommissionDistribution contract for Transfer events via RPC
+4. **Event Filtering:** Filters events by user wallet address (indexed 'to' parameter)
+5. **Event Parsing:** Parses from/to/amount from Transfer event data
+6. **Balance Update:** Atomically updates user_wallets.usdt_balance
+7. **Deposit Records:** Creates records in deposits collection
+8. **Idempotency:** Checks for duplicate tx_hash before creating deposit
+9. **Response Format:** Returns `{ success: true, data: { deposits: [], new_balance: number } }`
+10. **Error Handling:** Handles RPC errors gracefully with proper error codes
+
+## Acceptance Criteria Met
+
+- [x] Hook file exists: `apps/backend/pb_hooks/13-track-deposit.pb.js`
+- [x] `bun test apps/backend/pb_hooks/13-track-deposit.test.js` → ALL 24 tests PASS
+- [x] Endpoint registered: `POST /api/v2/deposit/poll`
+- [x] Requires authentication
+- [x] Polls CommissionDistribution for Transfer events
+- [x] Updates user_wallets.usdt_balance
+- [x] Creates deposit records
+- [x] Handles idempotency (no duplicates)
+- [x] Handles errors gracefully
+
+## Technical Details
+
+- **Transfer Event Signature:** `0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef`
+- **USDT Decimals:** 6 (amount divided by 10^6)
+- **Contract Address:** CommissionDistribution at `0x3c48926556e766E4564af0E264A9980e7C3a1787`
+- **Chain ID:** 7117 (0XL3 testnet)
+- **Request Timeout:** 30000ms
+- **Error Codes:** `VALIDATION_ERROR`, `USER_NOT_FOUND`, `WALLET_NOT_FOUND`, `DEPOSIT_POLL_FAILED`
+
+## Files Created/Modified
+
+- **Created:** `apps/backend/pb_hooks/13-track-deposit.pb.js` (151 lines)
+- **Modified:** `apps/backend/pb_hooks/13-track-deposit.test.js` (updated endpoint registration test)
+
+## Verification Commands
+
+```bash
+# Run tests
+bun test apps/backend/pb_hooks/13-track-deposit.test.js
+
+# Verify file exists
+ls -la apps/backend/pb_hooks/13-track-deposit.pb.js
+
+# Check for PocketBase errors (when running)
+docker-compose logs -f | grep "Deposit tracking endpoint"
+```
+
+**Status:** GREEN PHASE COMPLETE - All tests passing
