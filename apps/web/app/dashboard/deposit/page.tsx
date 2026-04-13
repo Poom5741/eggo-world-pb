@@ -92,8 +92,8 @@ export default function DepositPage() {
       try {
         const pb = createClient()
         
-        // Check if authenticated
-        if (!pb.authStore.token) {
+        // Check if client and authStore exist
+        if (!pb || !pb.authStore?.token) {
           setError("Not authenticated")
           window.location.href = "/auth/login"
           return
