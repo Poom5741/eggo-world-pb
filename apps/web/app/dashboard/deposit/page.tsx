@@ -81,6 +81,12 @@ export default function DepositPage() {
   useEffect(() => {
     if (!isHydrated || !user) return
     
+    // Check if user has wallet
+    if (!user.wallet) {
+      setError("Wallet not created. Please contact support.")
+      return
+    }
+    
     const pollDeposits = async () => {
       setIsPolling(true)
       try {
@@ -106,6 +112,13 @@ export default function DepositPage() {
         if (response.status === 401 || response.status === 403) {
           setError("Session expired. Please login again.")
           window.location.href = "/auth/login"
+          return
+        }
+
+        // Handle endpoint not found (backend not deployed)
+        if (response.status === 404) {
+          console.warn("Deposit polling endpoint not available")
+          pollingStatus("Polling unavailable (endpoint not deployed)")
           return
         }
 
