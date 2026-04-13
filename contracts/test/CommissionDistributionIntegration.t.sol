@@ -39,7 +39,7 @@ contract CommissionDistributionIntegrationTest is Test {
         coinStor = address(0x6);
         
         mockUSDT = new MockUSDT();
-        commissionDist = new CommissionDistribution(coinStor);
+        commissionDist = new CommissionDistribution(coinStor, address(mockUSDT));
         eggNFT = new EggNFT(address(commissionDist), address(mockUSDT));
         
         commissionDist.setEggNFTContract(address(eggNFT));

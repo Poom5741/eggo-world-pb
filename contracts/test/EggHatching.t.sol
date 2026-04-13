@@ -36,7 +36,7 @@ contract EggHatchingTest is Test {
         vm.startPrank(owner);
         
         usdtToken = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve);
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(usdtToken));
         eggNFT = new EggNFT(address(commissionDistribution), address(usdtToken));
         animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(address(commissionDistribution), address(usdtToken), address(eggNFT));

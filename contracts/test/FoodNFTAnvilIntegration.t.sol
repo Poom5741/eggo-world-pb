@@ -36,7 +36,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         coinStorReserve = address(0x4);
         
         mockUSDT = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve);
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT));
         eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT));
         animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(

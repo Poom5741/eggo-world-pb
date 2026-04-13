@@ -27,7 +27,7 @@ contract DeployEggNFT is Script {
             console.log("Using existing USDT at:", usdtAddress);
         }
         
-        CommissionDistribution commissionDistribution = new CommissionDistribution(coinStorReserve);
+        CommissionDistribution commissionDistribution = new CommissionDistribution(coinStorReserve, usdtAddress);
         console.log("CommissionDistribution deployed at:", address(commissionDistribution));
         
         AnimalNFT animalNFT = new AnimalNFT();

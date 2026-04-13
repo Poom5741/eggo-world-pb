@@ -1,9 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 contract CommissionDistribution {
+    using SafeERC20 for IERC20;
+    
     address public immutable owner;
     address public immutable coinStorReserve;
+    IERC20 public immutable usdtToken;
     address public eggNFTContract;
     address public foodNFTContract;
     
@@ -19,14 +25,17 @@ contract CommissionDistribution {
     
     event CommissionDistributed(address indexed buyer, address[4] referralChain, uint256 totalAmount);
     event CommissionClaimed(address indexed referrer, uint256 amount);
+    event CommissionClaimedUSDT(address indexed referrer, uint256 amount);
     event CoinStorDeposit(address indexed buyer, uint256 amount);
     event EggNFTContractSet(address indexed eggNFT);
     event FoodNFTContractSet(address indexed foodNFT);
     
-    constructor(address _coinStorReserve) {
+    constructor(address _coinStorReserve, address _usdtToken) {
         require(_coinStorReserve != address(0), "CoinStor address cannot be zero");
+        require(_usdtToken != address(0), "USDT address cannot be zero");
         owner = msg.sender;
         coinStorReserve = _coinStorReserve;
+        usdtToken = IERC20(_usdtToken);
     }
     
     function setEggNFTContract(address _eggNFT) external {
@@ -83,6 +92,17 @@ contract CommissionDistribution {
         require(success, "Claim failed");
         
         emit CommissionClaimed(msg.sender, balance);
+    }
+    
+    function claimCommissionUSDT() external {
+        uint256 balance = commissionBalances[msg.sender];
+        require(balance > 0, "No commission to claim");
+        
+        commissionBalances[msg.sender] = 0;
+        
+        usdtToken.safeTransfer(msg.sender, balance);
+        
+        emit CommissionClaimedUSDT(msg.sender, balance);
     }
     
     function getCommissionBalance(address referrer) external view returns (uint256) {

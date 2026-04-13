@@ -33,7 +33,7 @@ contract EggFeedingTest is Test {
         referrerG1 = address(0x3);
         
         mockUSDT = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(address(0x4));
+        commissionDistribution = new CommissionDistribution(address(0x4), address(mockUSDT));
         eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT));
         animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
