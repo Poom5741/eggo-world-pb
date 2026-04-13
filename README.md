@@ -93,3 +93,14 @@ See `docs/` for deployment guides:
 ## License
 
 MIT
+## Deployment Guide
+
+**IMPORTANT:** See [DEPLOYMENT_MISTAKES.md](DEPLOYMENT_MISTAKES.md) for critical lessons learned from production deployment mistakes.
+
+**Before deploying, read this file to avoid repeating our errors:**
+- Wrong project directories
+- PocketBase restart procedures
+- SSH configuration requirements
+- Hook loading verification
+- And more...
+
