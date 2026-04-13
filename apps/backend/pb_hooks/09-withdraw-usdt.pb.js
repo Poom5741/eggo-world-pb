@@ -1,14 +1,8 @@
-// ===== WITHDRAW USDT ENDPOINT =====
-// POST /api/v2/wallet/withdraw - Withdraw USDT with platform fee
-
-console.log("Setting up withdraw USDT endpoint...");
-
 routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
     const { users } = e.requireAuth();
     const body = e.parseBody();
-    const { user_address, amount } = body;
+    const { user_address, amount, external_wallet_address } = body;
     
-    // Validation
     if (!user_address || !amount || amount <= 0) {
         return e.json(400, { 
             success: false, 
@@ -16,8 +10,14 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
         });
     }
     
+    if (!external_wallet_address || !external_wallet_address.match(/^0x[a-fA-F0-9]{40}$/)) {
+        return e.json(400, { 
+            success: false, 
+            error: { message: "Valid external wallet address required", code: "VALIDATION_ERROR" } 
+        });
+    }
+    
     try {
-        // Find user by wallet address
         const userRecord = $app.findFirstRecordByData("users", "wallet", user_address);
         
         if (!userRecord) {
@@ -27,7 +27,6 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             });
         }
         
-        // Find user's wallet record
         const walletRecord = $app.findFirstRecordByData("user_wallets", "user_id", userRecord.id);
         
         if (!walletRecord) {
@@ -37,8 +36,7 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             });
         }
         
-        // Get withdrawal fee from config
-        let withdrawalFeeRate = 0.05; // Default 5%
+        let withdrawalFeeRate = 0.05;
         try {
             const configRecord = $app.findFirstRecordByData("wallet_configs", "key", "WITHDRAWAL_FEE");
             if (configRecord) {
@@ -59,17 +57,15 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             });
         }
         
-        // Update wallet
         walletRecord.set("usdt_balance", balance - totalRequired);
         walletRecord.set("total_withdrawn", (walletRecord.getNumber("total_withdrawn") || 0) + amount);
         walletRecord.set("last_transaction_at", new Date().toISOString());
         $app.save(walletRecord);
         
-        // Update user record
         userRecord.set("usdt_balance", walletRecord.getNumber("usdt_balance"));
         $app.save(userRecord);
         
-        console.log("Withdrawal successful:", user_address, "amount:", amount, "fee:", fee);
+        console.log("Withdrawal:", user_address, "amount:", amount, "fee:", fee, "to:", external_wallet_address);
         
         e.json(200, {
             success: true,
@@ -78,7 +74,8 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
                 fee: fee,
                 net_amount: amount,
                 new_balance: walletRecord.getNumber("usdt_balance"),
-                total_withdrawn: walletRecord.getNumber("total_withdrawn")
+                total_withdrawn: walletRecord.getNumber("total_withdrawn"),
+                external_wallet: external_wallet_address
             }
         });
     } catch (error) {
@@ -89,5 +86,3 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
         });
     }
 });
-
-console.log("Withdraw USDT endpoint registered");
