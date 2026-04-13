@@ -50,7 +50,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className={`${pressStart.variable} ${geist.variable} font-sans antialiased`}>
+      <body className={`${pressStart.variable} ${geist.variable} font-sans antialiased`} suppressHydrationWarning>
         {children}
         <Analytics />
       </body>

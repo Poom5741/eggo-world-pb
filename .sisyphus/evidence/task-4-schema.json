@@ -1,0 +1,44 @@
+{
+  "task": "Create deposits collection schema for tracking deposit transactions",
+  "created_file": "apps/backend/collections/deposits.json",
+  "schema": {
+    "id": "deposits",
+    "name": "deposits",
+    "type": "base",
+    "fields": [
+      {"name": "id", "type": "text", "primaryKey": true},
+      {"name": "user", "type": "relation", "required": true, "collectionId": "_pb_users_auth_", "cascadeDelete": true},
+      {"name": "amount", "type": "number", "required": true},
+      {"name": "tx_hash", "type": "text", "required": true, "unique": true},
+      {"name": "from_address", "type": "text", "required": true},
+      {"name": "status", "type": "select", "values": ["pending", "confirmed", "failed"], "default": "pending"},
+      {"name": "confirmed_at", "type": "date", "required": false},
+      {"name": "created", "type": "autodate", "onCreate": true},
+      {"name": "updated", "type": "autodate", "onCreate": true, "onUpdate": true}
+    ],
+    "indexes": [
+      "CREATE UNIQUE INDEX `idx_deposits_tx_hash` ON `deposits` (`tx_hash`)",
+      "CREATE INDEX `idx_deposits_user` ON `deposits` (`user`)",
+      "CREATE INDEX `idx_deposits_status` ON `deposits` (`status`)"
+    ],
+    "listRule": "@request.auth.id = user.id",
+    "viewRule": "@request.auth.id = user.id",
+    "createRule": null,
+    "updateRule": null,
+    "deleteRule": null
+  },
+  "verification": {
+    "file_exists": true,
+    "valid_json": true,
+    "has_user_relation": true,
+    "has_amount_number": true,
+    "has_tx_hash_unique": true,
+    "has_from_address": true,
+    "has_status_select": true,
+    "has_confirmed_at": true,
+    "has_autodate_created": true,
+    "has_autodate_updated": true,
+    "has_indexes": true,
+    "list_rule_secure": true
+  }
+}

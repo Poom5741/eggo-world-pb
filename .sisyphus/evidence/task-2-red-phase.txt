@@ -1,0 +1,73 @@
+# TDD Test File for Deposit Page - RED Phase Evidence
+
+## Task: Create TDD test file for Deposit Page - RED phase (failing tests first)
+
+## Execution Date: 2026-04-13
+
+### Test File Created
+- **File:** `apps/web/app/dashboard/deposit/page.test.tsx`
+
+### Test Results (RED Phase - Page Does Not Exist)
+```
+bun test apps/web/app/dashboard/deposit/page.test.tsx
+```
+
+**Result:** 0 pass, 22 fail
+
+All tests fail because the page file `apps/web/app/dashboard/deposit/page.tsx` does not exist yet.
+
+### Test Coverage (22 Tests)
+1. **Page Structure (3 tests)**
+   - should have deposit page file
+   - should use "use client" directive
+   - should use LayoutWithoutNav component
+
+2. **Wallet Address Display (3 tests)**
+   - should import and use useIsHydrated hook
+   - should get user wallet from getUser()
+   - should display wallet address in UI
+
+3. **QR Code Component (2 tests)**
+   - should import QRCodeSVG from qrcode.react
+   - should render QR code with wallet address value
+
+4. **Deposit Polling (4 tests)**
+   - should call /api/v2/deposit/poll endpoint
+   - should use POST method for polling
+   - should poll every 30 seconds (setInterval)
+   - should include auth token in request
+
+5. **Balance Update (2 tests)**
+   - should handle deposit poll response
+   - should update balance state when deposit detected
+
+6. **Transaction History (2 tests)**
+   - should display transaction history table
+   - should show deposit tx_hash, amount, timestamp
+
+7. **Error Handling (2 tests)**
+   - should handle API errors gracefully
+   - should show error message to user
+
+8. **Authentication (2 tests)**
+   - should check if user is authenticated
+   - should redirect to /auth/login if not authenticated
+
+9. **Loading State (2 tests)**
+   - should show loading state while fetching
+   - should display "Waiting for deposit" status initially
+
+### Reference Files Used
+- `apps/web/app/dashboard/withdraw/page.tsx` - Full page structure pattern
+- `apps/web/hooks/use-is-hydrated.ts` - Hydration check pattern
+- `apps/web/lib/pocketbase/client.ts` - PocketBase client pattern
+- `apps/web/components/LayoutWithoutNav.tsx` - Layout component
+- `apps/web/app/auth/callback/page.test.tsx` - Test file pattern
+
+### Test Pattern
+Uses file content assertions (matching existing project pattern) to verify page structure when created.
+
+### Next Phase
+When the deposit page is implemented:
+- Tests will pass once page contains all expected features
+- Page must include: QR code, polling, balance updates, transaction history

@@ -1,0 +1,46 @@
+TDD RED Phase - AccountModal Test Evidence
+==========================================
+Date: 2026-04-13
+
+TASK: Create TDD test file for Account Modal component - RED phase (failing tests first)
+
+FILE CREATED: 
+- apps/web/components/account-modal.test.tsx
+
+TESTS COVERED (8 test cases):
+1. Renders modal when isOpen=true
+2. Shows USDT balance formatted correctly
+3. Deposit button navigates to /dashboard/deposit
+4. Withdraw button navigates to /dashboard/withdraw
+5. Close button calls onClose callback
+6. Clicking outside modal calls onClose
+7. Copy button copies wallet address to clipboard
+8. Does not render when isOpen is false
+
+TEST RESULTS:
+- bun test apps/web/components/account-modal.test.tsx
+- Result: 0 pass, 8 fail
+- Reason: Cannot find module '@/components/account-modal'
+- Status: RED PHASE CONFIRMED ✓
+
+EXPECTED BEHAVIOR:
+- Tests FAIL because component doesn't exist yet ✓
+- When component is implemented, tests should pass
+- All mocks are in place for:
+  - next/navigation (router.push)
+  - @/lib/pocketbase/client (auth store)
+  - @/hooks/use-is-hydrated
+  - fetch for balance API
+  - navigator.clipboard
+
+ACCEPTANCE CRITERIA STATUS:
+[x] Test file exists: apps/web/components/account-modal.test.tsx
+[x] bun test shows tests running but failing
+[x] Tests cover all 6+ scenarios
+[x] Evidence saved to .sisyphus/evidence/task-1-red-phase.txt
+
+NOTES:
+- This is the RED phase of TDD
+- Component file (account-modal.tsx) does NOT exist yet
+- Tests fail with "Cannot find module" which is expected
+- Once component is implemented, tests should pass
