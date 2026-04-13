@@ -5,7 +5,7 @@ import { useIsHydrated } from "@/hooks/use-is-hydrated"
 import { getUser, createClient } from "@/lib/pocketbase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Wallet, Download, RefreshCw } from "lucide-react"
+import { Wallet, Download, RefreshCw, Copy } from "lucide-react"
 import LayoutWithoutNav from "@/components/LayoutWithoutNav"
 import { QRCodeSVG } from 'qrcode.react'
 
@@ -36,6 +36,7 @@ export default function DepositPage() {
   const [deposits, setDeposits] = useState<Deposit[]>([])
   const [pollingStatus, setPollingStatus] = useState("Waiting for deposit...")
   const [isPolling, setIsPolling] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   // Query deposits from collection
   const fetchDepositsFromCollection = async (userId: string) => {
@@ -159,6 +160,17 @@ export default function DepositPage() {
     }
   }
 
+  const copyToClipboard = async () => {
+    if (!user?.wallet) return
+    try {
+      await navigator.clipboard.writeText(user.wallet)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy:", err)
+    }
+  }
+
   if (!isHydrated || loading) {
     return (
       <LayoutWithoutNav>
@@ -220,9 +232,23 @@ export default function DepositPage() {
               />
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-gray-600 font-mono break-all text-center">
-                {user.wallet}
-              </p>
+              <div className="flex items-center gap-2 bg-surface-container-lowest p-3 rounded border border-primary/20">
+                <p className="flex-1 text-sm text-gray-600 font-mono break-all">
+                  {user.wallet}
+                </p>
+                <button
+                  onClick={copyToClipboard}
+                  className="p-2 hover:bg-primary/10 rounded transition-colors"
+                  title="Copy address"
+                >
+                  <Copy className="w-4 h-4 text-primary" />
+                </button>
+              </div>
+              {copied && (
+                <p className="text-xs text-green-600 text-center font-medium">
+                  Copied to clipboard!
+                </p>
+              )}
               <p className="text-xs text-gray-500 text-center">
                 Send USDT to this address. The system will automatically detect your deposit.
               </p>
