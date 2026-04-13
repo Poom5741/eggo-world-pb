@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { createClient, getUser, isAuthenticated, restoreAuth } from '@/lib/pocketbase/client'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
@@ -10,8 +11,10 @@ import { BuddyChain } from '@/components/dashboard/buddy-chain'
 import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
+import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 
 export default function DashboardPage() {
+  const router = useRouter()
   const isHydrated = useIsHydrated()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -298,12 +301,27 @@ export default function DashboardPage() {
           <h2 className="pixel-font text-3xl lg:text-4xl text-on-surface-variant">Dashboard</h2>
           <p className="text-on-surface-variant/60 font-medium">Welcome back, {user?.name || 'User'} #{user?.id?.substring(0, 8)}</p>
         </div>
-        <div className="flex items-center space-x-4">
-          <button className="hidden md:flex items-center space-x-2 px-6 py-3 bg-surface-container-high rounded-full font-bold text-primary hover:scale-105 transition-transform clay-card">
-            <span className="material-symbols-outlined">account_balance_wallet</span>
-            <span>{user?.wallet ? `${user.wallet.slice(0, 6)}...${user.wallet.slice(-4)}` : 'Connect Wallet'}</span>
+        <div className="flex items-center space-x-3">
+          {/* Deposit button */}
+          <button
+            onClick={() => router.push('/dashboard/deposit')}
+            className="hidden md:flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded hover:scale-105 transition-transform pixel-font"
+          >
+            <ArrowDownLeft className="w-4 h-4" />
+            <span>Deposit</span>
           </button>
-          <div className="w-12 h-12 rounded-full bg-secondary-container clay-card flex items-center justify-center overflow-hidden">
+          
+          {/* Withdraw button */}
+          <button
+            onClick={() => router.push('/dashboard/withdraw')}
+            className="hidden md:flex items-center space-x-2 px-4 py-2 bg-surface-container-high border-2 border-primary/30 rounded hover:scale-105 transition-transform pixel-font"
+          >
+            <ArrowUpRight className="w-4 h-4" />
+            <span>Withdraw</span>
+          </button>
+          
+          {/* User avatar */}
+          <div className="w-10 h-10 rounded-full bg-secondary-container overflow-hidden flex items-center justify-center">
             {user?.picture ? (
               <img 
                 className="w-full h-full object-cover" 

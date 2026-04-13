@@ -1,0 +1,68 @@
+# Evidence: LayoutWithoutNav Revert to Clean Layout
+
+## Task Completed
+Removed Account button, profile dropdown, and AccountModal from LayoutWithoutNav.
+
+## Verification Results
+
+### File Stats
+- Lines: 18 (target: <50) ✓
+- No AccountModal imports ✓
+- No profile dropdown ✓
+- No User import from lucide-react ✓
+- No LogoutButton import ✓
+- No Image import ✓
+- No truncateWallet function ✓
+
+### Build Status
+```
+✓ Build passed (Next.js static export)
+```
+
+### Test Status
+```
+253 pass
+0 fail
+413 expect() calls
+Ran 253 tests across 22 files
+```
+
+### Final Structure
+```typescript
+import React from 'react'
+import SideNav from './SideNav'
+import BottomNavMobile from './BottomNavMobile'
+
+export default function LayoutWithoutNav({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col min-h-screen">
+      <div className="flex flex-1 pt-2">
+        <SideNav />
+        <main className="flex-1 lg:ml-4 p-4 lg:p-8 pb-32 lg:pb-8 max-w-full overflow-hidden">
+          {children}
+        </main>
+      </div>
+      <BottomNavMobile />
+    </div>
+  )
+}
+```
+
+### What Was Removed
+1. AccountModal imports and component
+2. userDropdownOpen state
+3. Profile dropdown button (60-118)
+4. LogoutButton import
+5. Image import
+6. User import from lucide-react
+7. truncateWallet function
+8. getUser, isAuthenticated imports
+9. useIsHydrated, useState, useRef, useEffect imports
+
+### What Was Kept
+1. SideNav
+2. BottomNavMobile
+3. Basic layout wrapper structure
+
+---
+Completed: Mon Apr 13 2026

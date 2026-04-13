@@ -1,0 +1,76 @@
+# Dashboard Entry Points Evidence
+
+## Task
+Add functional Deposit and Withdraw buttons to Dashboard page header.
+
+## Changes Made
+
+### File Modified
+- `apps/web/app/dashboard/page.tsx`
+
+### Changes
+
+1. **Added imports:**
+   - `useRouter` from `next/navigation`
+   - `ArrowDownLeft`, `ArrowUpRight` from `lucide-react`
+
+2. **Added router to component:**
+   - `const router = useRouter()`
+
+3. **Replaced mock wallet button with:**
+   - Deposit button → navigates to `/dashboard/deposit`
+   - Withdraw button → navigates to `/dashboard/withdraw`  
+   - User avatar (kept existing implementation)
+
+### Code Changes
+
+**Before (lines 304-320):**
+```tsx
+<div className="flex items-center space-x-4">
+  <button className="hidden md:flex items-center space-x-2 px-6 py-3 bg-surface-container-high rounded-full font-bold text-primary hover:scale-105 transition-transform clay-card">
+    <span className="material-symbols-outlined">account_balance_wallet</span>
+    <span>{user?.wallet ? `${user.wallet.slice(0, 6)}...${user.wallet.slice(-4)}` : 'Connect Wallet'}</span>
+  </button>
+  <div className="w-12 h-12 rounded-full bg-secondary-container clay-card flex items-center justify-center overflow-hidden">
+    ...
+  </div>
+</div>
+```
+
+**After:**
+```tsx
+<div className="flex items-center space-x-3">
+  {/* Deposit button */}
+  <button
+    onClick={() => router.push('/dashboard/deposit')}
+    className="hidden md:flex items-center space-x-2 px-4 py-2 bg-primary text-primary-foreground rounded hover:scale-105 transition-transform pixel-font"
+  >
+    <ArrowDownLeft className="w-4 h-4" />
+    <span>Deposit</span>
+  </button>
+  
+  {/* Withdraw button */}
+  <button
+    onClick={() => router.push('/dashboard/withdraw')}
+    className="hidden md:flex items-center space-x-2 px-4 py-2 bg-surface-container-high border-2 border-primary/30 rounded hover:scale-105 transition-transform pixel-font"
+  >
+    <ArrowUpRight className="w-4 h-4" />
+    <span>Withdraw</span>
+  </button>
+  
+  {/* User avatar */}
+  <div className="w-10 h-10 rounded-full bg-secondary-container overflow-hidden flex items-center justify-center">
+    ...
+  </div>
+</div>
+```
+
+### Verification
+
+✅ Build passes - Next.js build completed successfully
+✅ Buttons are hidden on mobile (using `hidden md:flex`)
+✅ Pixel font styling maintained
+✅ Responsive design preserved
+
+### Note
+The `/dashboard/deposit` and `/dashboard/withdraw` pages may need to be created if they don't exist yet.
