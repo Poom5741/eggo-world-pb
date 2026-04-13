@@ -85,6 +85,14 @@ export default function DepositPage() {
       setIsPolling(true)
       try {
         const pb = createClient()
+        
+        // Check if authenticated
+        if (!pb.authStore.token) {
+          setError("Not authenticated")
+          window.location.href = "/auth/login"
+          return
+        }
+        
         const response = await fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/v2/deposit/poll`, {
           method: "POST",
           headers: {
@@ -103,12 +111,12 @@ export default function DepositPage() {
 
         const data = await response.json()
         if (data.success) {
-          const pollDeposits = data.data.deposits || []
+          const detectedDeposits = data.data.deposits || []
           const prevCount = deposits.length
-          setDeposits(pollDeposits)
+          setDeposits(detectedDeposits)
           setBalance(data.data.new_balance || 0)
           
-          if (pollDeposits.length > prevCount) {
+          if (detectedDeposits.length > prevCount) {
             setPollingStatus("New deposit detected!")
           }
           
