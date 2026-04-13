@@ -5,9 +5,10 @@ import { useIsHydrated } from "@/hooks/use-is-hydrated"
 import { getUser, createClient } from "@/lib/pocketbase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Wallet, Download } from "lucide-react"
+import { Wallet, Download, RefreshCw } from "lucide-react"
 import LayoutWithoutNav from "@/components/LayoutWithoutNav"
 import { QRCodeSVG } from 'qrcode.react'
+import { toast } from 'sonner'
 
 export default function DepositPage() {
   const isHydrated = useIsHydrated()
@@ -18,6 +19,29 @@ export default function DepositPage() {
   const [balance, setBalance] = useState(0)
   const [deposits, setDeposits] = useState<any[]>([])
   const [pollingStatus, setPollingStatus] = useState("Waiting for deposit...")
+  const [isPolling, setIsPolling] = useState(false)
+
+  // Query deposits from collection
+  const fetchDepositsFromCollection = async (userId: string) => {
+    try {
+      const pb = createClient()
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/deposits/records?filter=(user="${userId}")&sort=-created&per-page=50`,
+        {
+          headers: {
+            "Authorization": pb.authStore.token
+          }
+        }
+      )
+
+      const data = await response.json()
+      if (data.items) {
+        setDeposits(data.items)
+      }
+    } catch (err: any) {
+      console.error("Fetch deposits error:", err)
+    }
+  }
 
   useEffect(() => {
     if (!isHydrated) return
@@ -30,12 +54,14 @@ export default function DepositPage() {
 
     setUser(userRecord)
     fetchInitialData(userRecord.wallet)
+    fetchDepositsFromCollection(userRecord.id)
   }, [isHydrated])
 
   useEffect(() => {
     if (!isHydrated || !user) return
     
     const pollDeposits = async () => {
+      setIsPolling(true)
       try {
         const pb = createClient()
         const response = await fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/v2/deposit/poll`, {
@@ -47,15 +73,31 @@ export default function DepositPage() {
           body: JSON.stringify({ user_address: user.wallet })
         })
 
+        // Handle auth errors (401/403)
+        if (response.status === 401 || response.status === 403) {
+          toast.error("Session expired. Please login again.")
+          window.location.href = "/auth/login"
+          return
+        }
+
         const data = await response.json()
         if (data.success) {
-          setDeposits(data.data.deposits || [])
+          const pollDeposits = data.data.deposits || []
+          const prevCount = deposits.length
+          setDeposits(pollDeposits)
           setBalance(data.data.new_balance || 0)
-          setPollingStatus(data.data.deposits?.length > 0 ? "Deposit detected!" : "Waiting for deposit...")
+          
+          // Show toast for new deposits
+          if (pollDeposits.length > prevCount) {
+            toast.success(`New deposit detected! (${pollDeposits.length - prevCount} new)`)
+          }
+          
+          setPollingStatus(pollDeposits.length > 0 ? "Deposit detected!" : "Waiting for deposit...")
         }
       } catch (err: any) {
         console.error("Poll error:", err)
-        setError("Failed to check deposit status")
+      } finally {
+        setIsPolling(false)
       }
     }
     
@@ -66,6 +108,7 @@ export default function DepositPage() {
   }, [isHydrated, user])
 
   async function fetchInitialData(walletAddress: string) {
+    setIsPolling(true)
     try {
       const pb = createClient()
       const response = await fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/v2/deposit/poll`, {
@@ -77,16 +120,23 @@ export default function DepositPage() {
         body: JSON.stringify({ user_address: walletAddress })
       })
 
+      // Handle auth errors
+      if (response.status === 401 || response.status === 403) {
+        window.location.href = "/auth/login"
+        return
+      }
+
       const data = await response.json()
       if (data.success) {
-        setDeposits(data.data.deposits || [])
         setBalance(data.data.new_balance || 0)
+        setPollingStatus(data.data.deposits?.length > 0 ? "Deposit detected!" : "Checking for deposits...")
       }
     } catch (err: any) {
       console.error("Initial fetch error:", err)
       setError("Failed to load deposit data")
     } finally {
       setLoading(false)
+      setIsPolling(false)
     }
   }
 
@@ -121,8 +171,11 @@ export default function DepositPage() {
             <div className="text-3xl font-bold text-green-600">
               {balance.toLocaleString()} USDT
             </div>
-            <div className="text-sm text-gray-500 mt-2">
+            <div className="text-sm text-gray-500 mt-2 flex items-center gap-2">
               Status: {pollingStatus}
+              {isPolling && (
+                <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
+              )}
             </div>
           </CardContent>
         </Card>
@@ -175,17 +228,24 @@ export default function DepositPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-2 text-sm font-medium text-gray-600">Tx Hash</th>
+                      <th className="text-left py-2 text-sm font-medium text-gray-600">Date</th>
                       <th className="text-right py-2 text-sm font-medium text-gray-600">Amount</th>
-                      <th className="text-right py-2 text-sm font-medium text-gray-600">Time</th>
+                      <th className="text-left py-2 text-sm font-medium text-gray-600">Tx Hash</th>
+                      <th className="text-center py-2 text-sm font-medium text-gray-600">Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {deposits.map((deposit: any, index: number) => (
                       <tr key={index} className="border-b last:border-0">
+                        <td className="py-3 text-sm text-gray-500">
+                          {deposit.created ? new Date(deposit.created).toLocaleString() : '-'}
+                        </td>
+                        <td className="text-right py-3 text-sm font-medium text-green-600">
+                          {deposit.amount?.toLocaleString()} USDT
+                        </td>
                         <td className="py-3 text-sm font-mono text-gray-700">
                           <a 
-                            href={`https://bscscan.com/tx/${deposit.tx_hash}`}
+                            href={`https://0xl3.testnet.eggoworld.io/tx/${deposit.tx_hash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline"
@@ -193,13 +253,14 @@ export default function DepositPage() {
                             {deposit.tx_hash?.slice(0, 6)}...{deposit.tx_hash?.slice(-4)}
                           </a>
                         </td>
-                        <td className="text-right py-3 text-sm font-medium text-green-600">
-                          {deposit.amount?.toLocaleString()} USDT
-                        </td>
-                        <td className="text-right py-3 text-sm text-gray-500">
-                          {deposit.timestamp 
-                            ? new Date(deposit.timestamp).toLocaleString()
-                            : 'Pending'}
+                        <td className="py-3 text-center">
+                          <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                            deposit.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                            deposit.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {deposit.status || 'pending'}
+                          </span>
                         </td>
                       </tr>
                     ))}

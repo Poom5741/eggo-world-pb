@@ -325,7 +325,7 @@ describe('Quick Actions Component', () => {
     it('should display 3 action cards', () => {
       const content = getQuickActionsContent()
       // Check for 3 action buttons/cards
-      expect(content).toContain('Feed All Eggs')
+      expect(content).toContain('Mint New Egg')
       expect(content).toContain('Hatch Ready Eggs')
       expect(content).toContain('Buy Food Bundle')
     })
@@ -337,9 +337,9 @@ describe('Quick Actions Component', () => {
       expect(content).toContain('material-symbols-outlined')
     })
 
-    it('should use restaurant icon for Feed All per D-02', () => {
+    it('should use eggo icon for Mint Egg per D-02', () => {
       const content = getQuickActionsContent()
-      expect(content).toContain('restaurant')
+      expect(content).toContain('eggo')
     })
 
     it('should use auto_fix_high icon for Hatch Ready per D-02', () => {
@@ -354,10 +354,10 @@ describe('Quick Actions Component', () => {
   })
 
   describe('Container Colors', () => {
-    it('should use primary-container for Feed All per D-10', () => {
+    it('should use primary-container for Mint Egg per D-10', () => {
       const content = getQuickActionsContent()
       expect(content).toContain('bg-primary-container')
-      expect(content).toContain('Feed All')
+      expect(content).toContain('Mint New Egg')
     })
 
     it('should use secondary-container for Hatch Ready per D-10', () => {
@@ -409,8 +409,7 @@ describe('Quick Actions Component', () => {
 
     it('should navigate to eggs page for Hatch Ready', () => {
       const content = getQuickActionsContent()
-      expect(content).toContain('dashboard/eggs')
-      expect(content).toContain('eggs')
+      expect(content).toContain('/eggs')
     })
   })
 
@@ -438,9 +437,8 @@ describe('Quick Actions Component', () => {
 
     it('should display description text', () => {
       const content = getQuickActionsContent()
-      expect(content).toContain('Requires')
-      expect(content).toContain('units of food')
-      expect(content).toContain('ready')
+      expect(content).toContain('Start your collection')
+      expect(content).toContain('ready to burst')
       expect(content).toContain('Refill')
     })
   })

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient, getUser } from '@/lib/pocketbase/client'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { useRouter } from 'next/navigation'
-import { Copy, Wallet, ArrowDownLeft, ArrowUpRight, X } from 'lucide-react'
+import { Copy, Wallet, ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import {
   Dialog,
   DialogContent,

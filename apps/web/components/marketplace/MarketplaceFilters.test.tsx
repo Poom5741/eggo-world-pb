@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MarketplaceFilters } from './MarketplaceFilters'
 import type { FilterState } from './MarketplaceFilters'
 
@@ -38,51 +37,47 @@ describe('MarketplaceFilters', () => {
     expect(screen.getByText('Newest')).toBeInTheDocument()
   })
 
-  it('shows clear filters button only when filters are active', async () => {
-    const user = userEvent.setup()
+  it('shows clear filters button only when filters are active', () => {
     render(<MarketplaceFilters />)
     
     expect(screen.queryByText('Clear all')).not.toBeInTheDocument()
     
-    await user.click(screen.getByLabelText(/egg/i))
+    fireEvent.click(screen.getByLabelText(/egg/i))
     
     expect(screen.getByText('Clear all')).toBeInTheDocument()
   })
 
-  it('clears all filters when clicking clear button', async () => {
-    const user = userEvent.setup()
+  it('clears all filters when clicking clear button', () => {
     const handleChange = (..._args: unknown[]) => {}
     
     render(<MarketplaceFilters onChange={handleChange} />)
     
-    await user.click(screen.getByLabelText(/egg/i))
-    await user.click(screen.getByLabelText(/rare/i))
+    fireEvent.click(screen.getByLabelText(/egg/i))
+    fireEvent.click(screen.getByLabelText(/rare/i))
     
-    await user.click(screen.getByText('Clear all'))
+    fireEvent.click(screen.getByText('Clear all'))
     
     // Just verify no errors occurred during execution
     expect(true).toBe(true)
   })
 
-  it('calls onChange when type filter changes', async () => {
-    const user = userEvent.setup()
+  it('calls onChange when type filter changes', () => {
     const handleChange = (..._args: unknown[]) => {}
     
     render(<MarketplaceFilters onChange={handleChange} />)
     
-    await user.click(screen.getByLabelText(/egg/i))
+    fireEvent.click(screen.getByLabelText(/egg/i))
     
     // Just verify the component handles click without errors
     expect(true).toBe(true)
   })
 
-  it('calls onChange when rarity filter changes', async () => {
-    const user = userEvent.setup()
+  it('calls onChange when rarity filter changes', () => {
     const handleChange = (..._args: unknown[]) => {}
     
     render(<MarketplaceFilters onChange={handleChange} />)
     
-    await user.click(screen.getByLabelText(/rare/i))
+    fireEvent.click(screen.getByLabelText(/rare/i))
     
     // Just verify the component handles click without errors
     expect(true).toBe(true)
