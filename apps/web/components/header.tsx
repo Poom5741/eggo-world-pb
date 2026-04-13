@@ -10,7 +10,7 @@ import { Menu, X, User, Egg, ShoppingCart, Wallet, TrendingUp, LayoutDashboard }
 
 const navItems = [
   { href: '/dashboard', label: 'DASHBOARD', icon: LayoutDashboard },
-  { href: '/dashboard/eggs', label: 'MY EGGS', icon: Egg },
+  { href: '/eggs', label: 'MY EGGS', icon: Egg },
   { href: '/marketplace/food', label: 'MARKETPLACE', icon: ShoppingCart },
   { href: '/dashboard/commissions', label: 'COMMISSIONS', icon: TrendingUp },
   { href: '/wallet', label: 'WALLET', icon: Wallet },

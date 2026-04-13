@@ -9,8 +9,10 @@ import { FeaturedEggHero } from '@/components/eggs/featured-egg-hero'
 import { EggCard } from '@/components/eggs/egg-card'
 import { HatchRevealModal } from '@/components/eggs/hatch-reveal-modal'
 import { FeedDialog } from '@/components/eggs/feed-dialog'
+import { MintEggModal } from '@/components/mint/MintEggModal'
 import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog'
 import { createClient } from '@/lib/pocketbase/client'
+import { Egg } from 'lucide-react'
 
 /**
  * My Eggs page - displays user's Egg NFT inventory
@@ -39,11 +41,14 @@ export default function Eggs() {
   const [sellingEgg, setSellingEgg] = useState<EggData | null>(null)
   const [sellDialogOpen, setSellDialogOpen] = useState(false)
   
+  // State for mint modal - สถานะสำหรับ mint modal
+  const [isMintModalOpen, setIsMintModalOpen] = useState(false)
+  
   // Get authenticated user (after hydration)
   const user = isHydrated ? pb.authStore.record : null
   
   // Fetch user profile to get wallet if not in auth record
-  const [userWallet, setUserWallet] = useState<string | undefined>(undefined)
+  const [_userWallet, _setUserWallet] = useState<string | undefined>(undefined)
   
   useEffect(() => {
     if (isHydrated && user?.id) {
@@ -52,21 +57,16 @@ export default function Eggs() {
         // Ensure wallet is a valid string, not null/undefined/"null"
         const wallet = userData.wallet
         if (wallet && typeof wallet === 'string' && wallet !== 'null') {
-          setUserWallet(wallet)
+          _setUserWallet(wallet)
         } else {
-          setUserWallet('')
+          _setUserWallet('')
         }
       }).catch(console.error)
     }
   }, [isHydrated, user?.id])
   
-  // Only use wallet if it's defined and not "null"
-  const effectiveWalletAddress = userWallet !== undefined 
-    ? (userWallet && userWallet !== 'null' ? userWallet : '')
-    : (user?.wallet && user.wallet !== 'null' ? user.wallet : '')
-  
-  // Fetch eggs with auto-polling
-  const { eggs, loading, refresh, polling } = useEggPoll(effectiveWalletAddress, 30000)
+  // Fetch eggs with auto-polling (uses user ID since owner is relation to users)
+  const { eggs, loading, refresh, polling } = useEggPoll(user?.id, 30000)
   
   // Auth guard - redirect to login if not authenticated
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function Eggs() {
   }
   
   // Loading state - แสดงสถานะกำลังโหลด
-  if (!isHydrated || loading || (!effectiveWalletAddress && user)) {
+  if (!isHydrated || loading) {
     return (
       <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
@@ -154,41 +154,6 @@ export default function Eggs() {
   if (!user) {
     return null
   }
-
-  // Check for wallet - ตรวจสอบว่ามี wallet หรือไม่
-  // Handle no wallet case - จัดการกรณีไม่มี wallet
-  const hasWallet = user?.wallet || ''
-  if (isHydrated && !hasWallet) {
-    return (
-      <LayoutWithoutNav>
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-            <div>
-              <h1 className="text-5xl font-pixel-style text-primary mb-2">My Egg Inventory</h1>
-              <p className="text-on-surface-variant max-w-md">
-                Manage your digital companions, keep them fed, and watch them hatch into legendary creatures.
-              </p>
-            </div>
-          </div>
-          
-          {/* No Wallet State - สถานะไม่มี wallet */}
-          <div className="bg-surface-container-low rounded-xl p-12 clay-card text-center">
-            <span className="material-symbols-outlined text-6xl text-primary mb-4">account_balance_wallet</span>
-            <h2 className="text-2xl font-pixel-style text-primary mb-2">Wallet Not Connected</h2>
-            <p className="text-on-surface-variant mb-6">
-              Please connect your wallet to view your eggs
-            </p>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
-            >
-              Go to Dashboard
-            </button>
-          </div>
-        </div>
-      </LayoutWithoutNav>
-    )
-  }
   
   // Empty state - กรณีไม่มีไข่
   if (eggs.length === 0) {
@@ -212,7 +177,7 @@ export default function Eggs() {
             </p>
             <div className="flex gap-4 justify-center">
               <button
-                onClick={() => router.push('/mint')}
+                onClick={() => router.push('/eggs')}
                 className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
               >
                 Get Your First Egg
@@ -245,6 +210,13 @@ export default function Eggs() {
             </p>
           </div>
           <div className="flex gap-4">
+            <button
+              onClick={() => setIsMintModalOpen(true)}
+              className="clay-button bg-[var(--primary-container)] text-[var(--on-primary-container)] py-4 px-6 rounded-2xl font-black text-base flex items-center gap-2 shadow-clay-md"
+            >
+              <Egg className="w-5 h-5" />
+              Mint New Egg
+            </button>
             <div className="clay-card bg-surface-container-lowest px-6 py-4 rounded-lg flex items-center gap-4">
               <span className="material-symbols-outlined text-primary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>
                 token
@@ -314,6 +286,16 @@ export default function Eggs() {
           onSuccess={handleHatchSuccess}
         />
       )}
+      
+      {/* Mint Egg Modal - โมดัล mint ไข่ */}
+      <MintEggModal
+        isOpen={isMintModalOpen}
+        onClose={() => setIsMintModalOpen(false)}
+        onSuccess={() => {
+          refresh()
+          setIsMintModalOpen(false)
+        }}
+      />
     </LayoutWithoutNav>
   )
 }

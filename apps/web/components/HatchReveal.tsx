@@ -143,7 +143,7 @@ export function HatchReveal({ animal, onClaim }: HatchRevealProps) {
       <CardFooter className="flex gap-4">
         <Button
           variant="outline"
-          onClick={() => window.location.href = '/dashboard/eggs'}
+          onClick={() => window.location.href = '/eggs'}
           className="flex-1 font-[var(--font-pixel)] text-sm h-12 border-2 border-primary/50"
         >
           <Egg className="mr-2 h-4 w-4" />

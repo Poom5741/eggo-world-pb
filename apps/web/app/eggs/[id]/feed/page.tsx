@@ -152,11 +152,11 @@ export default function FeedEggPage() {
                 )}
 
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => router.push('/dashboard/eggs')}>
+                  <Button variant="outline" onClick={() => router.push('/eggs')}>
                     Back to Eggs
                   </Button>
                   {readyToHatch && (
-                    <Button onClick={() => router.push(`/dashboard/eggs/${egg.token_id}/hatch`)}>
+                    <Button onClick={() => router.push(`/eggs/${egg.token_id}/hatch`)}>
                       Hatch Egg
                     </Button>
                   )}

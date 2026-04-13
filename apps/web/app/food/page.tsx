@@ -128,7 +128,7 @@ export default function FoodInventoryPage() {
             </p>
             <div className="flex gap-4 justify-center">
               <button
-                onClick={() => router.push('/mint/food')}
+                onClick={() => router.push('/eggs')}
                 className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
               >
                 Buy Food NFTs

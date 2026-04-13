@@ -34,17 +34,17 @@ interface UseEggPollReturn {
  * Auto-polling hook for egg NFTs
  * Hook สำหรับดึงข้อมูล Egg NFT อัตโนมัติทุก 30 วินาที
  * 
- * @param walletAddress - Wallet address to query eggs for
+ * @param userId - User ID to query eggs for (PocketBase user ID, not wallet address)
  * @param intervalMs - Polling interval in milliseconds (default: 30000 = 30 seconds)
  * @returns Object with eggs array, loading state, error, and refresh function
  * 
  * @example
  * ```typescript
- * const { eggs, loading, error, refresh } = useEggPoll(user?.wallet, 30000)
+ * const { eggs, loading, error, refresh } = useEggPoll(user?.id, 30000)
  * ```
  */
 export function useEggPoll(
-  walletAddress: string | undefined,
+  userId: string | undefined,
   intervalMs: number = 30000 // 30 seconds per D-16
 ): UseEggPollReturn {
   const [eggs, setEggs] = useState<EggData[]>([])
@@ -59,8 +59,8 @@ export function useEggPoll(
    * ดึงข้อมูล Egg NFT จาก PocketBase
    */
   const fetchEggs = useCallback(async () => {
-    // No wallet address, empty string, or "null" string - skip fetch
-    if (!walletAddress || walletAddress === '' || walletAddress === 'null') {
+    // No user ID, empty string, or "null" string - skip fetch
+    if (!userId || userId === '' || userId === 'null') {
       return
     }
 
@@ -72,7 +72,7 @@ export function useEggPoll(
       // Fetch from egg_nfts collection with filter and sort
       // กรองตามเจ้าของและเรียงตาม food_count (มากไปน้อย)
       const records = await pb.collection('egg_nfts').getList(1, 100, {
-        filter: `owner = "${walletAddress}" && is_hatched = false`,
+        filter: `owner = "${userId}" && is_hatched = false`,
         sort: '-food_count', // Sort by food_count descending (eggs closest to hatching first)
       })
 
@@ -94,7 +94,7 @@ export function useEggPoll(
     } finally {
       setLoading(false)
     }
-  }, [walletAddress, errorCount, intervalMs])
+  }, [userId, errorCount, intervalMs])
 
   useEffect(() => {
     // Initial fetch on mount

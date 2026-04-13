@@ -9,7 +9,7 @@ interface AuthLinkProps extends Omit<LinkProps, 'ref'> {
   children: React.ReactNode
 }
 
-function AuthLink({ href, className, ...props }: AuthLinkProps & { className?: string }) {
+function AuthLink({ href, className, children, ...props }: AuthLinkProps & { className?: string }) {
   const { getRedirectPath } = useAuthRedirect()
   
   const actualHref = getRedirectPath(href)

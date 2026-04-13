@@ -69,7 +69,7 @@ export default function Animals() {
     setIsCreatingListing(false)
   }
 
-  if (!isHydrated || loading || (!effectiveWalletAddress && user)) {
+  if (!isHydrated || loading) {
     return (
       <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
@@ -99,39 +99,12 @@ export default function Animals() {
   if (!user) {
     return null
   }
-
-  const hasWallet = user?.wallet || ''
-  if (isHydrated && !hasWallet) {
-    return (
-      <LayoutWithoutNav>
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-            <div>
-              <h1 className="text-5xl font-pixel-style text-primary mb-2">My Animals</h1>
-              <p className="text-on-surface-variant max-w-md">
-                View and manage your Animal NFTs
-              </p>
-            </div>
-          </div>
-          
-          <div className="bg-surface-container-low rounded-xl p-12 clay-card text-center">
-            <span className="material-symbols-outlined text-6xl text-primary mb-4">account_balance_wallet</span>
-            <h2 className="text-2xl font-pixel-style text-primary mb-2">Wallet Not Connected</h2>
-            <p className="text-on-surface-variant mb-6">
-              Please connect your wallet to view your animals
-            </p>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
-            >
-              Go to Dashboard
-            </button>
-          </div>
-        </div>
-      </LayoutWithoutNav>
-    )
+  // Not authenticated
+  if (!user) {
+    return null
   }
-
+  
+  // Empty state
   if (animals.length === 0) {
     return (
       <LayoutWithoutNav>

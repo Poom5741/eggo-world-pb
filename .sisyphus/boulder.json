@@ -1,23 +1,13 @@
 {
-  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/phase02-pocketbase-deploy.md",
-  "started_at": "2026-04-12T14:30:00.000Z",
+  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/move-mint-to-eggs-modal.md",
+  "started_at": "2026-04-12T20:27:49.438Z",
   "session_ids": [
-    "ses_27f702642ffeS0e7gHwG2ZLeRd",
-    "ses_27f63ac28ffeBE8Vyk3TB4qJVa",
-    "ses_27f63ac3dffeFsITeMh6CTLaCQ",
-    "ses_27f63ac55ffeI2AYp0RBKWbn9e",
-    "ses_27f5adf5dffeMf05R6WVkHHDdr",
-    "ses_27f5adf41ffeXQmC831b9g7vBU",
-    "ses_27f4dc4eaffeoa233sQPB3VaRx",
-    "ses_27f4dc4c3ffeDfVYez6uml7JJg",
-    "ses_27f4196a3ffesw5OoZuTV4rqOb",
-    "ses_27f4196c9ffeT9EuUQh0Awo3ay",
-    "ses_27f080937ffeLr7o7yFxf9xBs6",
-    "ses_27efb82c8ffeaJPuyatITDWFzG"
+    "ses_27cb9b14affeohICQkDWPdhfuA",
+    "ses_27c9d1ba0ffefpIo3unX7b1aRJ",
+    "ses_27c982965ffegwqfj6L11PMy10",
+    "ses_27c907b64ffel8i6H7f6UmSXtX"
   ],
-  "plan_name": "phase02-pocketbase-deploy",
+  "plan_name": "move-mint-to-eggs-modal",
   "agent": "atlas",
-  "previous_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/referral-system-implementation.md",
-  "switched_at": "2026-04-12T14:30:00.000Z",
   "task_sessions": {}
 }

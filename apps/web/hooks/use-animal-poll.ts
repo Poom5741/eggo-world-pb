@@ -40,12 +40,12 @@ interface UseAnimalPollReturn {
  * Auto-polling hook for animal NFTs
  * Hook สำหรับดึงข้อมูล Animal NFT อัตโนมัติทุก 30 วินาที
  * 
- * @param walletAddress - Wallet address to query animals for
+ * @param userId - User ID to query animals for (PocketBase user ID)
  * @param intervalMs - Polling interval in milliseconds (default: 30000 = 30 seconds)
  * @returns Object with animals array, loading state, error, and refresh function
  */
 export function useAnimalPoll(
-  walletAddress: string | undefined,
+  userId: string | undefined,
   intervalMs: number = 30000
 ): UseAnimalPollReturn {
   const [animals, setAnimals] = useState<AnimalData[]>([])
@@ -55,7 +55,7 @@ export function useAnimalPoll(
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const fetchAnimals = useCallback(async () => {
-    if (!walletAddress || walletAddress === 'null' || walletAddress === '') {
+    if (!userId || userId === 'null' || userId === '') {
       setAnimals([])
       setLoading(false)
       return
@@ -64,19 +64,6 @@ export function useAnimalPoll(
     try {
       const pb = createClient()
       
-      // Get user ID from wallet address
-      const users = await pb.collection('users').getList(1, 1, {
-        filter: `wallet = "${walletAddress}"`,
-      })
-      
-      if (users.items.length === 0) {
-        setAnimals([])
-        setLoading(false)
-        return
-      }
-
-      const userId = users.items[0].id
-
       // Fetch animal NFTs owned by user
       const records = await pb.collection('animal_nfts').getList(1, 100, {
         filter: `owner = "${userId}"`,
@@ -108,7 +95,7 @@ export function useAnimalPoll(
     } finally {
       setLoading(false)
     }
-  }, [walletAddress])
+  }, [userId])
 
   // Initial fetch and set up polling
   useEffect(() => {

@@ -199,7 +199,7 @@ export default function HatchEggPage() {
             {/* Back Button */}
             <Button
               variant="outline"
-              onClick={() => router.push(`/dashboard/eggs/${params.id}`)}
+              onClick={() => router.push(`/eggs/${params.id}`)}
               className="gap-2"
             >
               <ArrowLeft className="h-4 w-4" />

@@ -212,7 +212,7 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
               <Button
                 variant="clay-secondary"
                 size="clay-md"
-                onClick={() => window.location.href = `/dashboard/eggs/${egg.token_id}/feed`}
+                onClick={() => window.location.href = `/eggs/${egg.token_id}/feed`}
                 className="flex-1 font-[var(--font-pixel)] text-sm"
               >
                 <Sparkles className="w-4 h-4 mr-2 pixelated" />

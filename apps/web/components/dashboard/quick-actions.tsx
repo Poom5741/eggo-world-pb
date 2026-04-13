@@ -30,11 +30,11 @@ interface QuickActionsProps {
  */
 const DEFAULT_ACTIONS: QuickAction[] = [
   {
-    id: 'feed-all',
-    title: 'Feed All Eggs',
-    description: 'Requires 12 units of food',
-    icon: 'restaurant',
-    href: '/mint',
+    id: 'mint-egg',
+    title: 'Mint New Egg',
+    description: 'Start your collection',
+    icon: 'eggo',
+    href: '/eggs',
     color: 'primary'
   },
   {
@@ -42,7 +42,7 @@ const DEFAULT_ACTIONS: QuickAction[] = [
     title: 'Hatch Ready Eggs',
     description: '3 eggs are ready to burst!',
     icon: 'auto_fix_high',
-    href: '/dashboard/eggs',
+    href: '/eggs',
     color: 'secondary'
   },
   {
@@ -50,7 +50,7 @@ const DEFAULT_ACTIONS: QuickAction[] = [
     title: 'Buy Food Bundle',
     description: 'Refill your supplies',
     icon: 'shopping_basket',
-    href: '/mint/food',
+    href: '/eggs',
     color: 'tertiary'
   }
 ]

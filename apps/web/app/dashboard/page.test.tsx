@@ -394,7 +394,7 @@ describe('Quick Actions Component', () => {
     it('should have navigation paths defined', () => {
       const content = getQuickActionsContent()
       expect(content).toContain('href')
-      expect(content).toContain('/mint')
+      expect(content).toContain('/eggs')
     })
 
     it('should use router.push for navigation', () => {
@@ -402,9 +402,9 @@ describe('Quick Actions Component', () => {
       expect(content).toContain('router.push')
     })
 
-    it('should navigate to mint/food for Buy Food', () => {
+    it('should navigate to /eggs for Buy Food', () => {
       const content = getQuickActionsContent()
-      expect(content).toContain('mint/food')
+      expect(content).toContain('/eggs')
     })
 
     it('should navigate to eggs page for Hatch Ready', () => {
