@@ -284,3 +284,149 @@ flux task create "<task>" --depends-on <task-id>
 - `flux task done <id> --note "<note>"` - Mark complete
 - `flux update-status <id> --status <status>` - Update status
 <!-- FLUX:END -->
+
+---
+
+## PRODUCTION DEPLOYMENT GUIDE
+
+**CRITICAL:** Read this section BEFORE deploying to production to avoid costly mistakes.
+
+### Common Deployment Mistakes
+
+**1. Wrong Directory**
+- Production is at `/root/eggo-world-pb` NOT `/root/eggo-pocketbase`
+- Verify: `ssh root@host "find /root -name 'pb_hooks' -type d"`
+
+**2. PocketBase Runs as Process, NOT Docker**
+- Production uses binary: `./pocketbase serve` (not Docker)
+- Check: `ps aux | grep 'pocketbase serve'`
+- Don't: Try `docker-compose restart pocketbase` (doesn't exist)
+
+**3. Hook Loading Location**
+- PocketBase loads `pb_hooks/` from CURRENT WORKING DIRECTORY
+- MUST `cd /root/eggo-world-pb/apps/backend` before starting
+- NOT from `/root` or project root!
+
+**4. SSH Configuration**
+- Set BEFORE deployment:
+```bash
+export SSH_USER="root"
+export SSH_KEY="~/.ssh/id_rsa"
+export REGISTRY="ghcr.io"
+export SSH_HOST="204.168.144.14"
+```
+
+**5. Hook Loading Verification**
+- After restart, check: `tail -50 /tmp/pocketbase.log | grep 'endpoint registered'`
+- Should see "Hot wallet balance endpoint registered" etc.
+
+**6. Endpoint Testing**
+- 400/401/403 errors are NORMAL for unauthenticated requests
+- Test with auth: `curl -H "Authorization: Bearer $TOKEN" ...`
+
+---
+
+### Production Deployment Checklist
+
+#### Pre-Deployment
+- [ ] Verify directory: `ssh root@204.168.144.14 "find /root -name 'pb_hooks'"`
+- [ ] Check running process: `ssh root@host "ps aux | grep pocketbase"`
+- [ ] Set SSH environment variables
+- [ ] Backup: `ssh root@host "cp -r pb_hooks pb_hooks.backup"`
+
+#### Upload Files
+```bash
+# Upload new hooks
+scp -o StrictHostKeyChecking=no apps/backend/pb_hooks/NN-*.pb.js \
+  root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/
+
+# Upload new collections
+scp -o StrictHostKeyChecking=no apps/backend/collections/*.json \
+  root@204.168.144.14:/root/eggo-world-pb/apps/backend/collections/
+
+# Verify uploaded
+ssh root@host "ls -la /root/eggo-world-pb/apps/backend/pb_hooks/"
+ssh root@host "head -5 /root/eggo-world-pb/apps/backend/pb_hooks/12-*.pb.js"
+```
+
+#### Restart PocketBase
+```bash
+# Kill existing
+ssh root@204.168.144.14 "pkill -f 'pocketbase serve'"
+
+# Start from correct directory
+ssh root@204.168.144.14 "
+  sleep 3 &&
+  cd /root/eggo-world-pb/apps/backend &&
+  ./pocketbase serve --http=0.0.0.0:8090 > /tmp/pocketbase.log 2>&1 &
+"
+```
+
+#### Verify
+```bash
+# Health check
+curl -s https://pb.eggoworld.io/api/health
+
+# Check logs for hook loading
+ssh root@host "tail -50 /tmp/pocketbase.log | grep -E 'endpoint|hook|registered'"
+
+# Test endpoint with auth
+TOKEN="your-auth-token"
+curl -X POST https://pb.eggoworld.io/api/v2/hot-wallet/balance \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"user_address":"0x..."}'
+```
+
+---
+
+### Quick Reference
+
+**SSH Access**
+```bash
+ssh -o StrictHostKeyChecking=no root@204.168.144.14
+```
+
+**Upload Hook**
+```bash
+scp -o StrictHostKeyChecking=no apps/backend/pb_hooks/12-*.pb.js \
+  root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/
+```
+
+**Restart PocketBase**
+```bash
+ssh root@204.168.144.14 "
+  pkill -f 'pocketbase serve' &&
+  sleep 3 &&
+  cd /root/eggo-world-pb/apps/backend &&
+  ./pocketbase serve --http=0.0.0.0:8090 > /tmp/pocketbase.log 2>&1 &
+"
+```
+
+**Check Logs**
+```bash
+ssh root@204.168.144.14 "tail -50 /tmp/pocketbase.log | grep -E 'endpoint|hook'"
+```
+
+---
+
+### Common Errors & Solutions
+
+**Error:** `address already in use`
+**Fix:** `pkill -f 'pocketbase serve'` then restart
+
+**Error:** `No such container`
+**Cause:** Using Docker when binary runs directly
+**Fix:** Use `ps aux | grep pocketbase` instead
+
+**Error:** `pb_hooks: No such file`
+**Cause:** Wrong path
+**Fix:** `find /root -name 'pb_hooks' -type d`
+
+**Error:** Hooks not loading
+**Cause:** Wrong working directory
+**Fix:** `cd apps/backend` before starting PocketBase
+
+**Error:** 400/401/403 on endpoint
+**Cause:** Missing auth
+**Fix:** Add `Authorization: Bearer <token>` header
