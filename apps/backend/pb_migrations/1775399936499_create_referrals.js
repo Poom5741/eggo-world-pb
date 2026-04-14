@@ -3,102 +3,39 @@ migrate((app) => {
   const collection = new Collection()
 
   unmarshal({
-            {
-            "id": "7000000001",
-            "listRule": "@request.auth.id != \"\" && (referrer_id = @request.auth.id || referee_id = @request.auth.id)",
-            "viewRule": "@request.auth.id != \"\" && (referrer_id = @request.auth.id || referee_id = @request.auth.id)",
-            "createRule": "",
-            "updateRule": null,
-            "deleteRule": null,
-            "name": "referrals",
-            "type": "base",
-            "fields": [
-                {
-                    "autogeneratePattern": "[a-z0-9]{15}",
-                    "hidden": false,
-                    "id": "text3208210256",
-                    "max": 15,
-                    "min": 15,
-                    "name": "id",
-                    "pattern": "^[a-z0-9]+$",
-                    "presentable": false,
-                    "primaryKey": true,
-                    "required": true,
-                    "system": true,
-                    "type": "text"
-                },
-                {
-                    "cascadeDelete": true,
-                    "collectionId": "_pb_users_auth_",
-                    "hidden": false,
-                    "id": "relation_referrer_id",
-                    "maxSelect": 1,
-                    "minSelect": null,
-                    "name": "referrer_id",
-                    "presentable": false,
-                    "required": true,
-                    "system": false,
-                    "type": "relation"
-                },
-                {
-                    "cascadeDelete": true,
-                    "collectionId": "_pb_users_auth_",
-                    "hidden": false,
-                    "id": "relation_referee_id",
-                    "maxSelect": 1,
-                    "minSelect": null,
-                    "name": "referee_id",
-                    "presentable": false,
-                    "required": true,
-                    "system": false,
-                    "type": "relation"
-                },
-                {
-                    "hidden": false,
-                    "id": "number_referral_level",
-                    "max": 4,
-                    "min": 1,
-                    "name": "level",
-                    "onlyInt": true,
-                    "presentable": false,
-                    "required": true,
-                    "system": false,
-                    "type": "number"
-                },
-                {
-                    "hidden": false,
-                    "id": "autodate_referral_created",
-                    "name": "created",
-                    "onCreate": true,
-                    "onUpdate": false,
-                    "presentable": false,
-                    "system": false,
-                    "type": "autodate"
-                },
-                {
-                    "hidden": false,
-                    "id": "autodate_referral_updated",
-                    "name": "updated",
-                    "onCreate": true,
-                    "onUpdate": true,
-                    "presentable": false,
-                    "system": false,
-                    "type": "autodate"
-                }
-            ],
-            "indexes": [
-                "CREATE INDEX `idx_referrals_referrer_id` ON `referrals` (`referrer_id`)",
-                "CREATE INDEX `idx_referrals_referee_id` ON `referrals` (`referee_id`)",
-                "CREATE INDEX `idx_referrals_level` ON `referrals` (`level`)",
-                "CREATE UNIQUE INDEX `idx_referrals_unique_pair` ON `referrals` (`referrer_id`, `referee_id`, `level`)"
-            ],
-            "system": false
-        }
+    "id": "7000000001",
+    "listRule": "@request.auth.id != \"\" && (referrer_id = @request.auth.id || referee_id = @request.auth.id)",
+    "viewRule": "@request.auth.id != \"\" && (referrer_id = @request.auth.id || referee_id = @request.auth.id)",
+    "createRule": "",
+    "updateRule": null,
+    "deleteRule": null,
+    "name": "referrals",
+    "type": "base",
+    "fields": [
+      {
+        "autogeneratePattern": "[a-z0-9]{15}",
+        "hidden": false,
+        "id": "text3208210256",
+        "max": 15,
+        "min": 15,
+        "name": "id",
+        "pattern": "^[a-z0-9]+$",
+        "presentable": false,
+        "primaryKey": true,
+        "required": true,
+        "system": true,
+        "type": "text"
+      }
+    ]
   }, collection)
 
-  return app.createCollection(collection)
+  return app.save(collection)
 }, (app) => {
-  const collection = app.findCollectionByNameOrId("referrals")
+  const collection = new Collection()
 
-  return app.deleteCollection(collection)
+  unmarshal({
+    "id": "7000000001"
+  }, collection)
+
+  return app.delete(collection)
 })
