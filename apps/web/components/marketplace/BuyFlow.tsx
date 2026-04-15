@@ -77,14 +77,13 @@ export function BuyFlow({
    * Calls PocketBase /api/v2/buy-nft endpoint
    */
   const handlePurchase = useCallback(async () => {
-    if (!nftType) {
-      setError('NFT type is required')
-      return
-    }
-    
     try {
       setIsPurchasing(true)
       setError(null)
+      
+      if (!nftType || !listingId || !user) {
+        throw new Error('Missing required purchase data')
+      }
       
       toast({
         title: 'Processing Purchase...',
@@ -93,15 +92,15 @@ export function BuyFlow({
       
       // เรียก PocketBase API
       const pb = createClient()
-      const response = await fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/v2/buy-nft`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/v2/marketplace/buy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': pb.authStore.token
         },
         body: JSON.stringify({
-          nft_id: listingId,
-          nft_type: nftType
+          listing_id: listingId,
+          buyer_address: user.wallet
         })
       })
       
@@ -134,7 +133,7 @@ export function BuyFlow({
         variant: 'destructive',
       })
     }
-  }, [listingId, nftType, nftName, toast, router])
+  }, [listingId, nftType, nftName, user, toast, router])
 
   /**
    * ปิด dialog
