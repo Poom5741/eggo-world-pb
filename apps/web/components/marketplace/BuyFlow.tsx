@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import { getUser, createClient } from '@/lib/pocketbase/client'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
+import { createPortal } from 'react-dom'
 
 /**
  * ข้อมูลสำหรับ BuyFlow component
@@ -53,6 +54,13 @@ export function BuyFlow({
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isPurchasing, setIsPurchasing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // ป้องกัน hydration mismatch
+  React.useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
 
   /**
    * เปิด confirmation dialog
@@ -155,13 +163,14 @@ export function BuyFlow({
         {isPurchasing ? 'Purchasing...' : `Buy for ${price.toFixed(2)} USDT`}
       </button>
 
-      {/* Purchase Confirmation Dialog */}
-      <dialog 
-        open={isDialogOpen}
-        className="fixed inset-0 z-[9999] flex items-center justify-center bg-transparent"
-      >
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsDialogOpen(false)} />
-        <div className="relative bg-surface-container-low rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl clay-card z-10">
+      {/* Purchase Confirmation Dialog - ใช้ Portal เพื่อป้องกัน layout collapse */}
+      {mounted && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setIsDialogOpen(false)}
+          />
+          <div className="relative bg-surface-container-low rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl clay-card z-10">
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
               <span className="material-symbols-outlined text-3xl text-primary">shopping_cart</span>
@@ -221,8 +230,10 @@ export function BuyFlow({
             </button>
           </div>
         </div>
-      </dialog>
-    </>
+      </div>,
+      document.body
+    )}
+  </>
   )
 }
 
