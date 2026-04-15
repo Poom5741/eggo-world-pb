@@ -66,7 +66,20 @@ export function BuyFlow({
    * เปิด confirmation dialog
    */
   const handleBuyClick = useCallback(() => {
-    if (!isHydrated || !user) {
+    console.log('[BuyFlow] Buy button clicked', { isHydrated, user, userWallet: user?.wallet })
+    
+    if (!isHydrated) {
+      console.error('[BuyFlow] Not hydrated yet')
+      toast({
+        title: 'Loading...',
+        description: 'Please wait for the page to load',
+        variant: 'destructive',
+      })
+      return
+    }
+    
+    if (!user) {
+      console.error('[BuyFlow] User not authenticated')
       toast({
         title: 'Authentication Required',
         description: 'Please login to purchase NFTs',
@@ -75,6 +88,17 @@ export function BuyFlow({
       router.push('/auth/login')
       return
     }
+    
+    if (!user.wallet) {
+      console.error('[BuyFlow] User has no wallet', user)
+      toast({
+        title: 'Wallet Not Found',
+        description: 'Your wallet is not set up. Please contact support.',
+        variant: 'destructive',
+      })
+      return
+    }
+    
     setError(null)
     setIsDialogOpen(true)
   }, [isHydrated, user, toast, router])
@@ -231,18 +255,29 @@ export function BuyFlow({
             )}
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-3 mt-6">
             <button
-              onClick={() => setIsDialogOpen(false)}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                console.log('[BuyFlow] Cancel button clicked')
+                setIsDialogOpen(false)
+              }}
               disabled={isPurchasing}
-              className="flex-1 clay-button bg-surface-container-high text-on-surface py-4 px-6 rounded-xl font-black text-lg"
+              className="flex-1 clay-button bg-surface-container-high text-on-surface py-4 px-6 rounded-xl font-black text-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
-              onClick={handlePurchase}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handlePurchase()
+              }}
               disabled={isPurchasing}
-              className="flex-1 clay-button bg-primary text-on-primary py-4 px-6 rounded-xl font-black text-lg flex items-center justify-center gap-2"
+              className="flex-1 clay-button bg-primary text-on-primary py-4 px-6 rounded-xl font-black text-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined">thumb_up</span>
               {isPurchasing ? 'Processing...' : 'Confirm Purchase'}
