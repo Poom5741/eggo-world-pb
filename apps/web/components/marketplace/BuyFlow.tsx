@@ -52,8 +52,7 @@ export function BuyFlow({
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isPurchasing, setIsPurchasing] = useState(false)
-  
-  const [_error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   /**
    * เปิด confirmation dialog
