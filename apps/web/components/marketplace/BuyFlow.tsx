@@ -139,13 +139,20 @@ export function BuyFlow({
         throw new Error('Listing ID is required')
       }
       
-      // Check for wallet field - try multiple possible field names
-      const walletAddress = user.wallet || user.wallet_address || user.daccPublickey
-      
-      if (!walletAddress) {
-        console.error('[BuyFlow] No wallet found. User fields:', Object.keys(user))
-        throw new Error('Wallet not found in user record. Fields: ' + Object.keys(user).join(', '))
-      }
+    // Check for wallet field - try multiple possible field names
+    const walletAddress = user.wallet || user.wallet_address || user.daccPublickey
+    
+    console.log('[BuyFlow] Wallet check:', {
+      wallet_field: user.wallet,
+      wallet_address_field: user.wallet_address,
+      daccPublickey_field: user.daccPublickey,
+      final_wallet: walletAddress
+    })
+    
+    if (!walletAddress) {
+      console.error('[BuyFlow] No wallet found. User fields:', Object.keys(user))
+      throw new Error('Wallet not found in user record. Please check console for available fields.')
+    }
       
       console.log('[BuyFlow] Using wallet address:', walletAddress)
       
