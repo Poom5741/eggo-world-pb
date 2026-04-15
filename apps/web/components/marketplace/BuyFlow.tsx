@@ -3,16 +3,8 @@
 import React, { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
-import { getSigner } from '@/lib/contracts/eggNft'
-import { 
-  checkAllowance, 
-  approveUSDT,
-} from '@/lib/contracts/usdt'
-import { 
-  buyNFT,
-  MARKETPLACE_ADDRESS 
-} from '@/lib/contracts/marketplace'
-import { ApprovalDialog } from '@/components/marketplace/ApprovalDialog'
+import { getUser, createClient } from '@/lib/pocketbase/client'
+import { useIsHydrated } from '@/hooks/use-is-hydrated'
 
 /**
  * ข้อมูลสำหรับ BuyFlow component
@@ -23,10 +15,12 @@ export interface BuyFlowProps {
   listingId: string
   /** ราคาใน USDT (หน่วยปกติ เช่น 100 ไม่ใช่ wei) */
   price: number
-  /** ราคาในหน่วย wei */
-  priceWei: bigint
+  /** ราคาในหน่วย wei (ไม่ใช้แล้ว - เก็บไว้สำหรับ backward compat) */
+  _priceWei: bigint
   /** ชื่อ NFT */
   nftName: string
+  /** ประเภท NFT (egg, food, animal) */
+  nftType: 'egg' | 'food' | 'animal'
   /** รูป NFT (ไม่ได้ใช้แต่มีไว้สำหรับอนาคต) */
   _nftImage: string
 }
@@ -34,131 +28,88 @@ export interface BuyFlowProps {
 /**
  * Component สำหรับจัดการกระบวนการซื้อ NFT (Purchase flow component)
  * 
- * Handles:
- * - ตรวจสอบ USDT allowance
- * - แสดง approval dialog
- * - ดำเนินการซื้อ NFT
- * - แสดง progress indicators
- * - Toast notifications
- * - Redirect ไป inventory หลังสำเร็จ
- * 
- * Two-step flow:
- * 1. Approve USDT ( allowance + approve transaction)
- * 2. Buy NFT ( buyNFT transaction )
- * 
- * @example
- * ```tsx
- * <BuyFlow
- *   listingId="123"
- *   price={100}
- *   priceWei={parseUnits("100", 18)}
- *   nftName="Golden Chicken #42"
- *   nftImage="/images/nft/chicken.png"
- * />
- * ```
+ * ใช้ PocketBase usdt_balance แทน MetaMask approval
+ * Flow：
+ * 1. เปิด dialog ยืนยันการซื้อ
+ * 2. เรียก API /api/v2/buy-nft ของ PocketBase
+ * 3. ตัดเงิน buyer, ให้เงิน seller (หัก fee 4%)
+ * 4. โอน NFT ให้ buyer
+ * 5. Redirect ไป inventory
  */
 export function BuyFlow({ 
   listingId, 
   price, 
-  priceWei, 
+  _priceWei,
   nftName,
+  nftType,
   _nftImage 
 }: BuyFlowProps) {
   const router = useRouter()
+  const isHydrated = useIsHydrated()
   const { toast } = useToast()
+  const user = getUser()
   
   // Dialog state
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [isApproving, setIsApproving] = useState(false)
-  const [approvalComplete, setApprovalComplete] = useState(false)
   const [isPurchasing, setIsPurchasing] = useState(false)
   
-  // Error state (ไม่ได้ใช้แต่เก็บไว้สำหรับอนาคต)
   const [_error, setError] = useState<string | null>(null)
 
   /**
-   * ตรวจสอบ USDT allowance ก่อน purchase
-   * Check USDT allowance before purchase
+   * เปิด confirmation dialog
    */
-  const checkAllowanceAndShowDialog = useCallback(async () => {
-    try {
-      setError(null)
-      setIsDialogOpen(true)
-      setIsApproving(true)
-      setApprovalComplete(false)
-      
-      const signer = await getSigner()
-      const userAddress = await signer.getAddress()
-      
-      // ตรวจสอบ allowance ปัจจุบัน
-      const allowance = await checkAllowance(signer, userAddress, MARKETPLACE_ADDRESS)
-      
-      // ถ้า allowance ไม่พอ ต้อง approve ใหม่
-      if (allowance < priceWei) {
-        // ต้อง approve
-        setIsApproving(true)
-        setApprovalComplete(false)
-      } else {
-        // มี allowance พอแล้ว ข้ามไป purchase เลย
-        setApprovalComplete(true)
-        setIsApproving(false)
-      }
-    } catch (err: unknown) {
-      console.error('Allowance check error:', err)
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      setError(message)
-      setIsApproving(false)
-    }
-  }, [priceWei])
-
-  /**
-   * ดำเนินการ approve USDT
-   * Execute USDT approval
-   */
-  const handleApprove = useCallback(async () => {
-    try {
-      setIsApproving(true)
-      setError(null)
-      
-      const signer = await getSigner()
-      
-      // Approve USDT
-      await approveUSDT(signer, MARKETPLACE_ADDRESS, priceWei)
-      
-      // Approval successful
-      setApprovalComplete(true)
-      setIsApproving(false)
-      
+  const handleBuyClick = useCallback(() => {
+    if (!isHydrated || !user) {
       toast({
-        title: 'Approval Successful',
-        description: 'USDT ถูกอนุมัติเรียบร้อยแล้ว',
-        variant: 'default',
+        title: 'Authentication Required',
+        description: 'Please login to purchase NFTs',
+        variant: 'destructive',
       })
-    } catch (err: unknown) {
-      console.error('Approval error:', err)
-      setIsApproving(false)
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      throw new Error(message) // ให้ ApprovalDialog จัดการ error display
+      router.push('/auth/login')
+      return
     }
-  }, [priceWei, toast])
+    setError(null)
+    setIsDialogOpen(true)
+  }, [isHydrated, user, toast, router])
 
   /**
-   * ไปสู่ขั้นตอน purchase
-   * Proceed to purchase step
+   * ดำเนินการซื้อ NFT ผ่าน PocketBase API
+   * Calls PocketBase /api/v2/buy-nft endpoint
    */
-  const handleNext = useCallback(async () => {
+  const handlePurchase = useCallback(async () => {
+    if (!nftType) {
+      setError('NFT type is required')
+      return
+    }
+    
     try {
       setIsPurchasing(true)
-      
-      const signer = await getSigner()
+      setError(null)
       
       toast({
-        title: 'Purchasing...',
-        description: 'Step 2/2: Purchasing NFT...',
+        title: 'Processing Purchase...',
+        description: 'กรุณารอสักครู่',
       })
       
-      // ซื้อ NFT
-      await buyNFT(signer, listingId, priceWei)
+      // เรียก PocketBase API
+      const pb = createClient()
+      const response = await fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/v2/buy-nft`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': pb.authStore.token
+        },
+        body: JSON.stringify({
+          nft_id: listingId,
+          nft_type: nftType
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.error?.message || 'Purchase failed')
+      }
       
       // Purchase successful
       toast({
@@ -167,7 +118,6 @@ export function BuyFlow({
         variant: 'default',
       })
       
-      // ปิด dialog
       setIsDialogOpen(false)
       setIsPurchasing(false)
       
@@ -184,7 +134,7 @@ export function BuyFlow({
         variant: 'destructive',
       })
     }
-  }, [listingId, priceWei, nftName, toast, router])
+  }, [listingId, nftType, nftName, toast, router])
 
   /**
    * ปิด dialog
@@ -199,7 +149,7 @@ export function BuyFlow({
     <>
       {/* ปุ่มซื้อ NFT */}
       <button
-        onClick={checkAllowanceAndShowDialog}
+        onClick={handleBuyClick}
         disabled={isPurchasing}
         className="w-full clay-button bg-primary text-on-primary py-4 px-6 rounded-xl font-black text-lg flex items-center justify-center gap-2 hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
       >
@@ -207,17 +157,73 @@ export function BuyFlow({
         {isPurchasing ? 'Purchasing...' : `Buy for ${price.toFixed(2)} USDT`}
       </button>
 
-      {/* Approval Dialog */}
-      <ApprovalDialog
-        isOpen={isDialogOpen}
-        amount={price}
-        spenderName={MARKETPLACE_ADDRESS || 'Marketplace Contract'}
-        isApproving={isApproving}
-        approvalComplete={approvalComplete}
-        onClose={handleClose}
-        onApprove={handleApprove}
-        onNext={handleNext}
-      />
+      {/* Purchase Confirmation Dialog */}
+      <dialog 
+        open={isDialogOpen}
+        className="fixed inset-0 z-[9999] flex items-center justify-center bg-transparent"
+      >
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsDialogOpen(false)} />
+        <div className="relative bg-surface-container-low rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl clay-card z-10">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+              <span className="material-symbols-outlined text-3xl text-primary">shopping_cart</span>
+            </div>
+            <h2 className="text-2xl font-pixel-style text-on-surface mb-2">Confirm Purchase</h2>
+            <p className="text-on-surface-variant text-sm">ยืนยันการซื้อ NFT</p>
+          </div>
+
+          <div className="space-y-4 mb-6">
+            <div className="bg-surface-container p-4 rounded-xl">
+              <div className="text-sm text-on-surface-variant mb-1">Item</div>
+              <div className="text-on-surface font-bold">{nftName}</div>
+            </div>
+
+            <div className="bg-surface-container p-4 rounded-xl">
+              <div className="text-sm text-on-surface-variant mb-1">Price</div>
+              <div className="text-2xl font-black text-primary">
+                {price.toFixed(2)} USDT
+              </div>
+            </div>
+
+            <div className="bg-surface-container-lowest p-4 rounded-xl border border-surface-container-high">
+              <div className="flex items-start gap-3">
+                <span className="material-symbols-outlined text-primary text-base mt-0.5">info</span>
+                <div className="text-xs text-on-surface-variant">
+                  <p className="font-bold mb-1">Platform Fee (4%)</p>
+                  <p>4% will be deducted as platform fee. Seller receives {(price * 0.96).toFixed(2)} USDT.</p>
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-error-container p-4 rounded-xl border border-error">
+                <div className="flex items-start gap-3">
+                  <span className="material-symbols-outlined text-error text-base mt-0.5">error</span>
+                  <div className="text-sm text-error">{error}</div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsDialogOpen(false)}
+              disabled={isPurchasing}
+              className="flex-1 clay-button bg-surface-container-high text-on-surface py-4 px-6 rounded-xl font-black text-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handlePurchase}
+              disabled={isPurchasing}
+              className="flex-1 clay-button bg-primary text-on-primary py-4 px-6 rounded-xl font-black text-lg flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined">thumb_up</span>
+              {isPurchasing ? 'Processing...' : 'Confirm Purchase'}
+            </button>
+          </div>
+        </div>
+      </dialog>
     </>
   )
 }
