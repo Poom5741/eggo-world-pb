@@ -10,6 +10,7 @@ export const MARKETPLACE_ABI = [
   'function getListedNFT(uint256 listingId) external view returns (tuple(address seller, uint256 price, bool active))',
   'function getListing(uint256 listingId) external view returns (tuple(address seller, uint256 price, bool active))',
   'function createListing(uint256 nftId, uint256 nftType, uint256 price) external',
+  'function cancelListing(uint256 listingId) external',
   'function approveNFT(address to, uint256 tokenId) external',
   'function setApprovalForAll(address operator, bool approved) external',
   'function isApprovedForAll(address owner, address operator) external view returns (bool)',
