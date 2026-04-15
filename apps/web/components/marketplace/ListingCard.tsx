@@ -9,21 +9,14 @@ import { cn } from '@/lib/utils'
  * Marketplace NFT listing data
  */
 export interface ListingCardProps {
+  id: string
   image: string
   name: string
   rarity: 'Common' | 'Rare' | 'Epic' | 'Legendary'
   price: number
   seller: string
   polling?: boolean
-}
-
-export interface ListingCardProps {
-  image: string
-  name: string
-  rarity: 'Common' | 'Rare' | 'Epic' | 'Legendary'
-  price: number
-  seller: string
-  polling?: boolean
+  onClick?: () => void
 }
 
 function getRarityInfo(rarity: string): { color: string; variant: 'default' | 'secondary' | 'outline' } {
@@ -45,15 +38,18 @@ function formatPrice(price: number): string {
   return price.toFixed(2)
 }
 
-export function ListingCard({ image, name, rarity, price, seller, polling = false }: ListingCardProps) {
+export function ListingCard({ id, image, name, rarity, price, seller, polling = false, onClick }: ListingCardProps) {
   const rarityInfo = getRarityInfo(rarity)
 
   return (
-    <div className={cn(
-      "bg-surface-container-low p-5 rounded-xl clay-card",
-      "hover:-translate-y-2 transition-all duration-300",
-      "group cursor-pointer"
-    )}>
+    <div 
+      className={cn(
+        "bg-surface-container-low p-5 rounded-xl clay-card",
+        "hover:-translate-y-2 transition-all duration-300",
+        "group cursor-pointer"
+      )}
+      onClick={onClick}
+    >
       <div className="relative rounded-lg overflow-hidden h-48 mb-4 clay-inset bg-white/50">
         <div className="absolute top-3 right-3 flex gap-2">
           <Badge variant={rarityInfo.variant} className={cn(

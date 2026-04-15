@@ -247,12 +247,14 @@ export default function Marketplace() {
             {filteredListings.map((listing) => (
               <ListingCard
                 key={listing.id}
+                id={listing.id}
                 image={listing.image_url || '/placeholder-egg.png'}
                 name={listing.name}
                 rarity={listing.rarity as any}
                 price={listing.price}
                 seller={listing.seller_name || listing.seller}
                 polling={syncing}
+                onClick={() => router.push(`/marketplace/${listing.id}`)}
               />
             ))}
           </div>

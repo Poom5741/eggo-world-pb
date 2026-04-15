@@ -10,7 +10,8 @@
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:seed-listings": "bun run scripts/create-test-listings.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
