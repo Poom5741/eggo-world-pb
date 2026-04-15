@@ -238,7 +238,7 @@ export function BuyFlow({
       </button>
 
       {/* Purchase Confirmation Dialog - ใช้ Portal เพื่อป้องกัน layout collapse */}
-      {mounted && createPortal(
+      {mounted && isDialogOpen && createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center">
           <div 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
