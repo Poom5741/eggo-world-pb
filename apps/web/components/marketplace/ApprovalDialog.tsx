@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 
 interface ApprovalDialogProps {
   /** เปิด/ปิด dialog */
@@ -44,8 +45,15 @@ export function ApprovalDialog({
   onNext,
 }: ApprovalDialogProps) {
   const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
 
-  if (!isOpen) return null
+  // ป้องกัน hydration mismatch
+  React.useEffect(() => {
+    setMounted(true)
+    return () => setMounted(false)
+  }, [])
+
+  if (!isOpen || !mounted) return null
 
   /**
    * Handle approve click
@@ -61,8 +69,9 @@ export function ApprovalDialog({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  // ใช้ Portal เพื่อ render dialog ที่ root level ป้องกัน layout collapse
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
       {/* Backdrop - พื้นหลังโปร่งใส */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -70,7 +79,7 @@ export function ApprovalDialog({
       />
       
       {/* Dialog Container - กล่อง dialog */}
-      <div className="relative bg-surface-container-low rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl clay-card">
+      <div className="relative bg-surface-container-low rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl clay-card z-10">
         {/* Header - ส่วนหัว */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
@@ -190,6 +199,7 @@ export function ApprovalDialog({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
