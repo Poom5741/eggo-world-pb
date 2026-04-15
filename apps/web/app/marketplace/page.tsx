@@ -194,15 +194,25 @@ export default function Marketplace() {
               </p>
             )}
           </div>
-          <div className="clay-card bg-surface-container-lowest px-6 py-4 rounded-lg flex items-center gap-4">
-            <span className="material-symbols-outlined text-primary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>
-              storefront
-            </span>
-            <div>
-              <div className="text-xs font-bold text-on-surface-variant uppercase">Total Listings</div>
-              <div className="text-xl font-black text-primary">{listings.length}</div>
-            </div>
-          </div>
+              <div className="clay-card bg-surface-container-lowest px-6 py-4 rounded-lg flex items-center gap-4">
+                <span className="material-symbols-outlined text-primary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  storefront
+                </span>
+                <div>
+                  <div className="text-xs font-bold text-on-surface-variant uppercase">Total Listings</div>
+                  <div className="text-xl font-black text-primary">{listings.length}</div>
+                </div>
+                <button
+                  onClick={refresh}
+                  disabled={syncing}
+                  className="ml-4 p-3 rounded-full bg-surface-container hover:bg-surface-container-high clay-button disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Refresh listings"
+                >
+                  <span className={`material-symbols-outlined text-primary ${syncing ? 'animate-spin' : ''}`}>
+                    refresh
+                  </span>
+                </button>
+              </div>
         </div>
         
         {/* Filters Section - ส่วนกรองข้อมูล */}
@@ -242,6 +252,7 @@ export default function Marketplace() {
                 rarity={listing.rarity as any}
                 price={listing.price}
                 seller={listing.seller_name || listing.seller}
+                polling={syncing}
               />
             ))}
           </div>
