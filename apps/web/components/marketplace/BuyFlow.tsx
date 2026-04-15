@@ -66,7 +66,13 @@ export function BuyFlow({
    * เปิด confirmation dialog
    */
   const handleBuyClick = useCallback(() => {
-    console.log('[BuyFlow] Buy button clicked', { isHydrated, user, userWallet: user?.wallet })
+    console.log('[BuyFlow] Buy button clicked', { 
+      isHydrated, 
+      user, 
+      userWallet: user?.wallet,
+      userKeys: user ? Object.keys(user) : [],
+      allUserFields: user ? JSON.stringify(user, null, 2) : 'no user'
+    })
     
     if (!isHydrated) {
       console.error('[BuyFlow] Not hydrated yet')
@@ -89,8 +95,11 @@ export function BuyFlow({
       return
     }
     
-    if (!user.wallet) {
-      console.error('[BuyFlow] User has no wallet', user)
+    // Check for wallet field - try multiple possible field names
+    const walletAddress = user.wallet || user.wallet_address || user.daccPublickey
+    
+    if (!walletAddress) {
+      console.error('[BuyFlow] User has no wallet. Available fields:', Object.keys(user))
       toast({
         title: 'Wallet Not Found',
         description: 'Your wallet is not set up. Please contact support.',
@@ -115,7 +124,7 @@ export function BuyFlow({
       console.log('Purchase attempt:', { nftType, listingId, user, nftName })
       
       if (!isHydrated) {
-        throw new Error('Not hydrated yet')
+        throw new Error('Not hydrated yet - please wait')
       }
       
       if (!user) {
@@ -130,9 +139,15 @@ export function BuyFlow({
         throw new Error('Listing ID is required')
       }
       
-      if (!user.wallet) {
-        throw new Error('Wallet not found - please contact support')
+      // Check for wallet field - try multiple possible field names
+      const walletAddress = user.wallet || user.wallet_address || user.daccPublickey
+      
+      if (!walletAddress) {
+        console.error('[BuyFlow] No wallet found. User fields:', Object.keys(user))
+        throw new Error('Wallet not found in user record. Fields: ' + Object.keys(user).join(', '))
       }
+      
+      console.log('[BuyFlow] Using wallet address:', walletAddress)
       
       toast({
         title: 'Processing Purchase...',
@@ -149,7 +164,7 @@ export function BuyFlow({
         },
         body: JSON.stringify({
           listing_id: listingId,
-          buyer_address: user.wallet
+          buyer_address: walletAddress
         })
       })
       
