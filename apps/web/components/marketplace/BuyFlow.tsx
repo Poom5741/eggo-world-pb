@@ -112,22 +112,32 @@ export function BuyFlow({
     setIsDialogOpen(true)
   }, [isHydrated, user, toast, router])
 
-  /**
-   * ดำเนินการซื้อ NFT ผ่าน PocketBase API
-   * Calls PocketBase /api/v2/marketplace/buy endpoint
-   */
+/**
+ * ดำเนินการซื้อ NFT ผ่าน PocketBase API
+ * Calls PocketBase /api/v2/marketplace/buy endpoint
+ */
   const handlePurchase = useCallback(async () => {
     try {
       setIsPurchasing(true)
       setError(null)
       
-      console.log('Purchase attempt:', { nftType, listingId, user, nftName })
+      // Get fresh user data at time of purchase
+      const currentUser = getUser()
+      const pb = createClient()
+      
+      console.log('Purchase attempt:', { 
+        nftType, 
+        listingId, 
+        currentUser,
+        hasToken: !!pb.authStore.token,
+        nftName 
+      })
       
       if (!isHydrated) {
         throw new Error('Not hydrated yet - please wait')
       }
       
-      if (!user) {
+      if (!currentUser) {
         throw new Error('Not authenticated - please login')
       }
       
@@ -139,20 +149,20 @@ export function BuyFlow({
         throw new Error('Listing ID is required')
       }
       
-    // Check for wallet field - try multiple possible field names
-    const walletAddress = user.wallet || user.wallet_address || user.daccPublickey
-    
-    console.log('[BuyFlow] Wallet check:', {
-      wallet_field: user.wallet,
-      wallet_address_field: user.wallet_address,
-      daccPublickey_field: user.daccPublickey,
-      final_wallet: walletAddress
-    })
-    
-    if (!walletAddress) {
-      console.error('[BuyFlow] No wallet found. User fields:', Object.keys(user))
-      throw new Error('Wallet not found in user record. Please check console for available fields.')
-    }
+      // Check for wallet field - try multiple possible field names
+      const walletAddress = currentUser.wallet || currentUser.wallet_address || currentUser.daccPublickey
+      
+      console.log('[BuyFlow] Wallet check:', {
+        wallet_field: currentUser.wallet,
+        wallet_address_field: currentUser.wallet_address,
+        daccPublickey_field: currentUser.daccPublickey,
+        final_wallet: walletAddress
+      })
+      
+      if (!walletAddress) {
+        console.error('[BuyFlow] No wallet found. User fields:', Object.keys(currentUser))
+        throw new Error('Wallet not found in user record. Please contact support.')
+      }
       
       console.log('[BuyFlow] Using wallet address:', walletAddress)
       
@@ -162,7 +172,6 @@ export function BuyFlow({
       })
       
       // เรียก PocketBase API
-      const pb = createClient()
       const response = await fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/v2/marketplace/buy`, {
         method: 'POST',
         headers: {
@@ -205,7 +214,7 @@ export function BuyFlow({
         variant: 'destructive',
       })
     }
-  }, [listingId, nftType, nftName, user, isHydrated, toast, router])
+  }, [listingId, nftType, nftName, isHydrated, toast, router])
 
   /**
    * ปิด dialog
