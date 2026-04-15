@@ -81,15 +81,33 @@ export function BuyFlow({
 
   /**
    * ดำเนินการซื้อ NFT ผ่าน PocketBase API
-   * Calls PocketBase /api/v2/buy-nft endpoint
+   * Calls PocketBase /api/v2/marketplace/buy endpoint
    */
   const handlePurchase = useCallback(async () => {
     try {
       setIsPurchasing(true)
       setError(null)
       
-      if (!nftType || !listingId || !user) {
-        throw new Error('Missing required purchase data')
+      console.log('Purchase attempt:', { nftType, listingId, user, nftName })
+      
+      if (!isHydrated) {
+        throw new Error('Not hydrated yet')
+      }
+      
+      if (!user) {
+        throw new Error('Not authenticated - please login')
+      }
+      
+      if (!nftType) {
+        throw new Error('NFT type is required')
+      }
+      
+      if (!listingId) {
+        throw new Error('Listing ID is required')
+      }
+      
+      if (!user.wallet) {
+        throw new Error('Wallet not found - please contact support')
       }
       
       toast({
@@ -133,6 +151,7 @@ export function BuyFlow({
       console.error('Purchase error:', err)
       setIsPurchasing(false)
       const message = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการซื้อ NFT'
+      setError(message)
       
       toast({
         title: 'Purchase Failed',
@@ -140,7 +159,7 @@ export function BuyFlow({
         variant: 'destructive',
       })
     }
-  }, [listingId, nftType, nftName, user, toast, router])
+  }, [listingId, nftType, nftName, user, isHydrated, toast, router])
 
   /**
    * ปิด dialog
