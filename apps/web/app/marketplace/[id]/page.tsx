@@ -243,6 +243,7 @@ export default function ProductDetail({ params }: PageProps) {
                   </>
                 ) : (
                   <BuyFlow
+                    nftType={(listing.nft_type || "Egg").toLowerCase() as "egg" | "food" | "animal"}
                     listingId={listing.id}
                     price={listing.price}
                     priceWei={parseUnits(listing.price.toString(), 18)}
