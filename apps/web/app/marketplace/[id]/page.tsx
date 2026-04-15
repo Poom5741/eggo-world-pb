@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
@@ -23,7 +23,8 @@ interface PageProps {
 export default function ProductDetail({ params }: PageProps) {
   const router = useRouter()
   const isHydrated = useIsHydrated()
-  const listingId = params.id
+  const unwrappedParams = use(params)
+  const listingId = unwrappedParams.id
 
   // Use marketplace sync hook for single listing - ใช้ hook สำหรับ listing เดียว
   const { 
