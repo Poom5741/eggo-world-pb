@@ -101,9 +101,12 @@
 4. Sell flow creates marketplace listing with escrow and sets asking price
 5. Commission breakdown displays 4-level referral distribution (G1 20%, G2-G4 10% each)
 6. Transaction confirmation updates UI state after blockchain sync completes
-   **Plans:** TBD
+   **Plans:** 3 plans
    **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
-   **UI hint:** yes
+   **Plans:**
+   - [ ] 11-01-PLAN.md — Buy flow TDD: USDT approval → marketplace purchase
+   - [ ] 11-02-PLAN.md — Sell flow TDD + commission breakdown visualization
+   - [ ] 11-03-PLAN.md — Marketplace filters + polling + error handling
 
 ### Phase 12: Mobile & Polish
 
