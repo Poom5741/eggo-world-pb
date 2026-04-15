@@ -153,6 +153,6 @@ routerAdd("POST", "/api/v2/deposit/poll", async (e) => {
             error: { message: error.message, code: "DEPOSIT_POLL_FAILED" }
         });
     }
-}, { "requestTimeout": 30000 });
+});
 
 console.log("Deposit tracking endpoint registered: POST /api/v2/deposit/poll");

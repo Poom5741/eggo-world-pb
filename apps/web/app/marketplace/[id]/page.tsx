@@ -13,6 +13,8 @@ import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { useMarketplaceSync } from '@/hooks/use-marketplace-sync'
 import { CancelListingDialog } from '@/components/marketplace/CancelListingDialog'
 import { UpdatePriceDialog } from '@/components/marketplace/UpdatePriceDialog'
+import { BuyFlow } from '@/components/marketplace/BuyFlow'
+import { parseUnits } from 'ethers'
 
 interface PageProps {
   params: { id: string }
@@ -225,21 +227,27 @@ export default function ProductDetail({ params }: PageProps) {
                 </p>
               </CardHeader>
               <CardContent>
-                <Button
-                  disabled={isSold}
-                  className="w-full py-6 text-lg font-bold"
-                  size="lg"
-                >
-                  {isSold ? (
-                    'ขายแล้ว | SOLD'
-                  ) : (
-                    'ซื้อเลย | Buy Now'
-                  )}
-                </Button>
-                {isSold && (
-                  <p className="text-sm text-center text-muted-foreground mt-2">
-                    สินค้านี้ขายแล้ว | This item has been sold
-                  </p>
+                {isSold ? (
+                  <>
+                    <Button
+                      disabled
+                      className="w-full py-6 text-lg font-bold"
+                      size="lg"
+                    >
+                      ขายแล้ว | SOLD
+                    </Button>
+                    <p className="text-sm text-center text-muted-foreground mt-2">
+                      สินค้านี้ขายแล้ว | This item has been sold
+                    </p>
+                  </>
+                ) : (
+                  <BuyFlow
+                    listingId={listing.id}
+                    price={listing.price}
+                    priceWei={parseUnits(listing.price.toString(), 18)}
+                    nftName={listing.name}
+                    _nftImage={listing.image_url || ''}
+                  />
                 )}
               </CardContent>
             </Card>

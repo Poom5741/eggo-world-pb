@@ -1,6 +1,7 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-04-02
+**Analysis Date:** 2026-04-15 (Updated)
+**Original Analysis:** 2026-04-02
 
 ## Security Concerns
 
@@ -469,4 +470,255 @@ const log = (level, ...args) => {
 
 ---
 
-*Concerns audit: 2026-04-02*
+## Additional Concerns (2026-04-15 Analysis)
+
+### CRITICAL: Backup Files Committed to Repository
+
+**Issue:** Multiple `.bak` and `.backup` files committed in `apps/backend/pb_hooks/` directory.
+
+**Files:**
+- `apps/backend/pb_hooks/15-mint-food-nft.pb.js.bak`
+- `apps/backend/pb_hooks/16-feed-egg.pb.js.bak`
+- `apps/backend/pb_hooks/17-upgrade-egg-rarity.pb.js.bak`
+- `apps/backend/pb_hooks/18-breed-animals.pb.js.bak`
+- `apps/backend/pb_hooks/19-hatch-egg.pb.js.bak`
+- `apps/backend/pb_hooks/20-buy-nft.pb.js.bak`
+- `apps/backend/pb_hooks/21-sync-events.pb.js.backup`
+- `apps/backend/pb_hooks/24-fix-collection-rules.pb.js.bak`
+
+**Impact:** 
+- Repository bloat (~100KB of unnecessary files)
+- Confusion about which files are active
+- Potential for deploying wrong backup files
+- Git history confusion
+
+**Fix approach:**
+1. Add `*.bak` and `*.backup` to `.gitignore`
+2. Remove all existing backup files: `git rm apps/backend/pb_hooks/*.bak apps/backend/pb_hooks/*.backup`
+3. Document proper version control workflow in AGENTS.md
+4. Use git branches/tags instead of backup files
+
+---
+
+### HIGH: Incomplete Feature Implementation in Production
+
+**Issue:** Multiple TODO comments in production code indicate incomplete features.
+
+**Files:**
+- `apps/web/app/eggs/page.tsx:89` - `// TODO: Implement feed flow`
+- `apps/web/app/eggs/page.tsx:95` - `// TODO: Implement play interaction`
+
+**Code:**
+```typescript
+// Line 89
+const handleFeedEgg = (eggId: number) => {
+  // TODO: Implement feed flow
+  console.log('Feed egg:', eggId)
+}
+
+// Line 95
+const handlePlayEgg = (eggId: number) => {
+  // TODO: Implement play interaction
+  console.log('Play with egg:', eggId)
+}
+```
+
+**Impact:**
+- Feed and play interactions are stubbed out
+- Users see non-functional buttons
+- Broken user experience
+- Core game mechanic incomplete
+
+**Fix approach:**
+1. Implement feed flow backend hook (参考 `resources/mvp-foodcourt/16-feed-egg.pb.js`)
+2. Add frontend dialog/component for feed interaction
+3. Implement play interaction (define game mechanic first)
+4. Add tests for both flows
+5. Remove TODO comments when complete
+
+---
+
+### HIGH: Wallet API Uses XOR Encryption (Confirmed)
+
+**Issue:** Cross-referencing with existing security concerns - wallet API encryption is still using XOR despite being documented as insecure.
+
+**Files:**
+- `wallet-api/server.js:208-228` - `encryptPrivateKey()` function
+
+**Code:**
+```javascript
+// Line 208-228
+async function encryptPrivateKey(privateKey, key) {
+    // Simple XOR encryption for demo
+    // In production, use proper AES encryption
+    const keyHash = ethers.id(key);
+    const keyHex = keyHash.slice(2, 66); // 32 bytes
+    
+    const privateHex = privateKey.slice(2); // Remove 0x
+    
+    let encrypted = '';
+    for (let i = 0; i < privateHex.length; i++) {
+        const keyChar = keyHex[i % keyHex.length];
+        const encryptedChar = (parseInt(privateHex[i], 16) ^ parseInt(keyChar, 16))
+            .toString(16).padStart(2, '0');
+        encrypted += encryptedChar;
+    }
+```
+
+**Impact:** This is a CRITICAL issue that persists despite being documented in the 2026-04-02 analysis. Private keys are encrypted with trivially breakable XOR encryption.
+
+**Fix approach:** See existing "Weak Encryption for Private Keys" concern above. Immediate migration to AES-256-GCM or Web3 Secret Storage v3 required.
+
+---
+
+### MEDIUM: No Error Boundaries in React Application
+
+**Issue:** Missing React error boundaries to catch runtime errors gracefully.
+
+**Files:**
+- `apps/web/app/` - No `error.tsx` files detected in critical routes
+
+**Impact:**
+- Uncaught errors crash entire app
+- Poor user experience during failures
+- No error reporting mechanism
+- No graceful degradation
+
+**Fix approach:**
+1. Add `error.tsx` to `apps/web/app/` for global error boundary
+2. Add `error.tsx` to feature directories (`eggs/`, `dashboard/`, `marketplace/`)
+3. Implement error reporting (Sentry or similar)
+4. Add retry mechanism for recoverable errors
+
+---
+
+### MEDIUM: Inconsistent Test Coverage
+
+**Issue:** Test files exist but coverage is inconsistent across critical areas.
+
+**Files:**
+- `apps/web/app/` - 12 test files (mostly auth and pages)
+- `wallet-api/` - Only `health.test.js` and `wallet.test.ts`
+- `apps/backend/pb_hooks/` - Only `13-track-deposit.test.js` (1 test)
+
+**Impact:**
+- Critical blockchain flows lack test coverage
+- Wallet encryption untested
+- NFT minting untested
+- Commission distribution untested
+
+**Fix approach:**
+1. Add tests for wallet creation flow (`01-create-wallet.pb.js`)
+2. Add tests for OAuth flow (`05-auth-token.pb.js`)
+3. Add integration tests for NFT minting
+4. Add mock blockchain RPC for deterministic tests
+
+---
+
+### LOW: Inconsistent API Error Response Format
+
+**Issue:** Different endpoints use different error response structures.
+
+**Files:**
+- `wallet-api/server.js` - Uses both `{ error: string }` and `{ error: { message, code, details } }`
+
+**Code:**
+```javascript
+// Line 24-29 - Detailed error format
+return res.status(400).json({ 
+    success: false, 
+    error: {
+        message: 'User ID is required',
+        code: 'MISSING_USER_ID'
+    }
+});
+
+// Line 241 - Simple string error
+return res.status(400).json({ 
+    success: false, 
+    error: 'Invalid parameters' 
+});
+```
+
+**Impact:**
+- Frontend error handling complexity
+- Inconsistent API documentation
+- Integration issues
+
+**Fix approach:**
+1. Standardize on detailed error format across all endpoints
+2. Define error code constants
+3. Update all existing endpoints
+4. Document in API specification
+
+---
+
+### LOW: Health Check Doesn't Verify Dependencies
+
+**Issue:** Wallet API health endpoint doesn't check backend service availability.
+
+**Files:**
+- `wallet-api/server.js:14-16`
+
+**Code:**
+```javascript
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', service: 'eggo-wallet-api' });
+});
+```
+
+**Impact:**
+- Health check passes even if PocketBase is down
+- No visibility into service dependencies
+- Deployment may succeed with broken dependencies
+
+**Fix approach:**
+```javascript
+app.get('/health', async (req, res) => {
+    const checks = {
+        pocketbase: await checkPocketBase(),
+        rpc: await checkRPC()
+    };
+    const status = Object.values(checks).every(c => c.ok) ? 'ok' : 'degraded';
+    res.json({ status, service: 'eggo-wallet-api', checks });
+});
+```
+
+---
+
+## Summary of New Concerns
+
+| Severity | Count | Priority Focus |
+|----------|-------|----------------|
+| Critical | 1 | Repository hygiene (backups) |
+| High | 3 | Missing features, encryption |
+| Medium | 2 | Error handling, testing |
+| Low | 2 | API consistency, health checks |
+
+---
+
+## Updated Action Plan
+
+**Phase 1 (Immediate - P0):**
+~~**Already documented:**~~ Fix hardcoded secrets, rotate credentials
+- **New:** Remove backup files from repository
+- **New:** Implement AES encryption for wallet private keys (was P1, now P0)
+
+**Phase 2 (Short-term - P1):**
+- **New:** Complete TODO features (feed, play) in eggs page
+- **New:** Add input validation to all wallet endpoints
+- **New:** Add error boundaries to React app
+- ~~**Already documented:**~~ Fix Math.random() usage
+
+**Phase 3 (Medium-term - P2):**
+- **New:** Standardize API error responses
+- **New:** Implement dependency health checks
+- ~~**Already documented:**~~ Add comprehensive test coverage
+
+**Phase 4 (Long-term - P3):**
+~~**Already documented:**~~ Create API documentation, production runbook
+
+---
+
+*Concerns audit: 2026-04-15*
+*Original: 2026-04-02*

@@ -1,131 +1,149 @@
 # Technology Stack
 
-**Analysis Date:** 2026-04-02
+**Analysis Date:** 2026-04-15
 
 ## Languages
 
 **Primary:**
-- TypeScript 5.7.3 - Frontend application (`apps/web/`)
-- JavaScript (ESM) - PocketBase hooks (`apps/backend/pb_hooks/`)
-- Solidity 0.8.24 - Smart contracts (`contracts/src/`)
+- **TypeScript** 5.7.3 - Frontend application (`apps/web/`), Wallet API (`wallet-api/`)
+- **JavaScript** (ES Modules) - PocketBase hooks (`apps/backend/pb_hooks/`)
+- **Solidity** 0.8.24 - Smart contracts (`contracts/src/`)
 
 **Secondary:**
-- Go - PocketBase runtime (via Docker)
+- **HTML/CSS** - UI templates and styling
 
 ## Runtime
 
 **Environment:**
-- Bun 1.x - Frontend runtime and test runner
-- Node.js 20.x - Wallet service runtime (via bun-types)
-- Docker 20.10+ - Container runtime for backend services
+- **Bun** - Primary runtime for frontend and wallet API (configured via `bunfig.toml`)
+- **Node.js** - Compatible runtime (fallback for wallet-api)
+- **PocketBase** v0.25.2+ - Backend server with embedded Go runtime
 
 **Package Manager:**
-- Bun - Frontend package management (`apps/web/`)
-- npm-compatible - Backend services
+- **Bun** - Used for `apps/web`, `wallet-api`, and backend tests
+- Lockfile: `bun.lock` present in `apps/backend/`
 
 ## Frameworks
 
 **Core:**
-- Next.js 16.1.6 - React framework (`apps/web/`)
-- React 19.2.4 - UI library
-- PocketBase 0.26.8 - Backend-as-a-Service (`apps/backend/`)
-- Express.js 4.18.2 - Wallet API server (`wallet-srv/`)
-
-**UI/Styling:**
-- shadcn/ui - Component library (New York style)
-- Tailwind CSS 4.2.0 - Utility-first CSS
-- Radix UI primitives - Accessible components
-- Lucide React 0.564.0 - Icon library
-
-**Blockchain:**
-- Foundry - Smart contract development toolkit
-- ethers.js 6.9.0 - Ethereum library (wallet-api legacy)
-- viem 2.47.6 - Modern Ethereum library (`wallet-srv/`)
-- dacc-js 0.0.5 - DACC wallet SDK (`wallet-srv/`)
+- **Next.js** 16.1.6 - Frontend framework with App Router (`apps/web/`)
+- **React** 19.2.4 - UI library
+- **PocketBase** - Backend-as-a-Service with real-time subscriptions
+- **Express.js** 4.18.2 - Wallet API server (`wallet-api/src/index.ts`)
+- **Foundry** - Smart contract development framework (`contracts/`)
 
 **Testing:**
-- Bun test - Test runner (native)
-- @testing-library/react 16.3.2 - React testing utilities
-- @testing-library/jest-dom 6.9.1 - DOM matchers
-- @testing-library/user-event 14.6.1 - User interaction testing
+- **Bun Test** - Native test runner (`bun test`)
+- **Testing Library** 16.3.2 - React component testing
+- **Happy DOM** 20.8.9 - DOM simulation for tests
+- **JSDOM** 29.0.1 - Alternative DOM environment
 
 **Build/Dev:**
-- TypeScript 5.7.3 - Type checking
-- PostCSS 8.5 - CSS processing
-- Autoprefixer 10.4.20 - CSS vendor prefixes
-- next-themes 0.4.6 - Dark mode support
+- **Next.js Compiler** - Production builds (`next build`)
+- **TypeScript** 5.7.3 - Type checking
+- **ESLint** 10.1.0 - Code linting
+- **Prettier** 3.8.1 - Code formatting
+- **Husky** 9.1.7 - Git hooks
+- **lint-staged** 16.4.0 - Pre-commit linting
 
 ## Key Dependencies
 
-**Critical:**
-- pocketbase 0.25.2 (frontend SDK) / 0.26.8 (backend dev) - Database and auth
-- zod 3.24.1 - Schema validation
-- react-hook-form 7.54.1 - Form handling
-- @hookform/resolvers 3.9.1 - Zod integration
+**Frontend (`apps/web/package.json`):**
+- **shadcn/ui** - Component library (Radix UI primitives)
+  - `@radix-ui/react-*` - 20+ UI components (dialog, dropdown, modal, etc.)
+  - `class-variance-authority` 0.7.1 - Component variants
+  - `tailwind-merge` 3.3.1 - Tailwind class merging
+- **Tailwind CSS** 4.2.0 - Utility-first styling
+- **Lucide React** 0.564.0 - Icon library
+- **ethers** 6.16.0 - Blockchain interactions
+- **PocketBase SDK** 0.25.2 - Backend client
+- **react-hook-form** 7.54.1 - Form management
+- **@hookform/resolvers** 3.9.1 - Form validation
+- **zod** 3.24.1 - Schema validation
+- **next-themes** 0.4.6 - Dark/light mode
+- **sonner** 1.7.1 - Toast notifications
+- **recharts** 2.15.0 - Data visualization
+- **date-fns** 4.1.0 - Date utilities
+- **qrcode.react** 4.2.0 - QR code generation
+- **@marsidev/react-turnstile** 0.3.0 - CAPTCHA integration
+- **@vercel/analytics** 1.6.1 - Analytics
 
-**State Management:**
-- React Context - Application state
-- no external state library detected
+**Wallet API (`wallet-api/package.json`):**
+- **dacc-js** 0.0.5 - DACC blockchain SDK
+- **ethers** 6.9.0 - EVM interactions
+- **helmet** 7.1.0 - Security headers
+- **cors** 2.8.5 - CORS handling
+- **dotenv** 16.3.1 - Environment variables
+- **zod** 4.3.6 - Runtime validation
 
-**Infrastructure:**
-- @vercel/analytics 1.6.1 - Analytics integration
-- helmet 7.1.0 - Security headers (wallet-srv)
-- cors 2.8.5 - CORS middleware
-- dotenv 16.3.1 - Environment variables
+**Backend (`apps/backend/package.json`):**
+- **PocketBase SDK** 0.26.8 - Testing and migrations
 
-**NFT/Gaming:**
-- OpenZeppelin Contracts 5.x - ERC721, ERC20, ReentrancyGuard, Ownable
-- Custom NFT contracts: EggNFT, AnimalNFT, FoodNFT, CommissionDistribution
+**Smart Contracts (`contracts/`):**
+- **OpenZeppelin Contracts** 5.6.1 - Secure contract templates
+  - ERC721, ERC1155, ERC20 implementations
+  - Access control, ownable patterns
+- **forge-std** - Foundry standard library
+- **ds-test** - Testing framework
 
 ## Configuration
 
 **Environment:**
-- `.env` files per service (not committed)
-- LINE_CHANNEL_ID, LINE_CHANNEL_SECRET - OAuth
-- WALLET_MASTER_KEY - Wallet encryption (32+ chars)
-- NODE_ENV, APP_URL, PORT - Runtime config
+- `.env.example` - Development template
+- `.env.production.example` - Production template
+- `.env.local` - Local overrides (not committed)
+- Environment variables loaded via `dotenv` in wallet-api
 
 **Build:**
-- `next.config.mjs` - Next.js configuration (static export)
-- `tsconfig.json` - TypeScript paths (`@/*` alias)
-- `foundry.toml` - Solidity compiler config (via_ir enabled)
-- `docker-compose.yml` - Service orchestration
+- `next.config.mjs` - Next.js configuration (static export mode)
+- `tsconfig.json` - TypeScript paths (`@/*` → `./`)
+- `foundry.toml` - Solidity compiler settings
+- `bunfig.toml` - Bun runtime configuration
+- `.prettierrc.json` - Code formatting rules
+- `lint-staged.config.json` - Pre-commit checks
 
-**TypeScript:**
-- strict: true
-- moduleResolution: bundler
-- jsx: react-jsx
-- noEmit: true (Next.js handles compilation)
+**PocketBase:**
+- `pb_migrations/` - Database schema migrations
+- `pb_hooks/` - Server-side JavaScript hooks (numbered `NN-*.pb.js`)
+- `collections/` - Collection JSON definitions
+- `pb_data/` - Runtime data (Docker volume)
 
 ## Platform Requirements
 
 **Development:**
-- Docker Desktop or Docker Engine
-- Bun runtime (frontend)
-- Node.js 20+ (wallet services)
-- Foundry (contracts)
-- Make (optional, for convenience commands)
+- **Bun** (latest) - Install via `curl -fsSL https://bun.sh/install | bash`
+- **Docker** + **Docker Compose** - PocketBase, wallet-api, nginx
+- **Foundry** - Smart contract tooling (`curl -L https://foundry.paradigm.xyz | bash`)
+- **Node.js** 20+ (optional, Bun-compatible)
 
 **Production:**
-- Docker Compose deployment
-- Nginx reverse proxy (SSL termination, rate limiting)
-- Cloudflare DNS/CDN (configured in nginx)
-- BSC network access (testnet: 97, mainnet: 56)
+- **Linux** server (tested on Ubuntu/Debian)
+- **2GB RAM minimum** (PocketBase + wallet-api ~500MB)
+- **Docker** 20.10+ for containerized deployment
+- **SSL certificates** (Let's Encrypt via nginx)
 
-## Tooling
+**Smart Contracts:**
+- **Solidity** 0.8.24+ (configured via Foundry)
+- **Forge** for testing and deployment
+- RPC access to:
+  - BSC Mainnet (`https://bsc-dataseed.binance.org`)
+  - BSC Testnet (`https://data-seed-prebsc-1-s1.binance.org:8545`)
+  - 0xL3 Chain (`https://rpc.0xl3.com`)
 
-**Linting:**
-- ESLint - Code quality (`bun run lint`)
+## Platform Targets
 
-**Contract Development:**
-- Forge - Build, test, deploy
-- solc 0.8.24 - Solidity compiler
-- optimizer: true, runs: 200
+**Hosting:**
+- **Frontend**: Static export for Cloudflare Pages, Vercel, or nginx
+- **Backend**: Self-hosted PocketBase (Docker or binary)
+- **Wallet API**: Docker container or standalone Bun process
+- **Smart Contracts**: Deployed to BSC (56) or BSC Testnet (97)
 
-**Database:**
-- SQLite (embedded in PocketBase)
-- pb_migrations/ - Schema migrations
+**Deployment:**
+- Frontend: `next build` → static assets
+- Backend: PocketBase binary or Docker image
+- Wallet API: `bun build` → dist/ or Docker
+- Contracts: `forge script` → on-chain deployment
 
 ---
 
-*Stack analysis: 2026-04-02*
+*Stack analysis: 2026-04-15*

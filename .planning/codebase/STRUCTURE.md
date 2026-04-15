@@ -1,112 +1,149 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-04-02
+**Analysis Date:** 2026-04-15
 
 ## Directory Layout
 
 ```
 eggo-pocketbase/
 ├── apps/
-│   ├── web/                    # Next.js 16 frontend (Bun runtime)
+│   ├── web/                    # Next.js 16 frontend (Bun runtime, React 19)
+│   │   ├── app/                # App Router pages + layouts
+│   │   ├── components/         # React components + shadcn/ui primitives
+│   │   ├── hooks/              # Custom React hooks
+│   │   ├── lib/                # Utilities + PocketBase client
+│   │   └── middleware.ts       # Edge auth middleware
 │   └── backend/                # PocketBase backend (LINE OAuth, hooks)
-├── wallet-api/                 # Express.js wallet generation (legacy)
-├── wallet-srv/                 # Express.js wallet service (dacc-js, TypeScript)
+│       ├── pb_hooks/           # JavaScript event handlers (00-99 numbered)
+│       ├── collections/        # Collection schemas (JSON)
+│       └── pb_migrations/      # Database migrations (timestamped)
+├── wallet-api/                 # Express.js wallet generation (ethers v6)
+│   ├── server.js               # Main Express server + routes
+│   └── .env                    # Master encryption key
 ├── contracts/                  # Foundry smart contracts (Solidity 0.8.24)
+│   ├── src/                    # Contract implementations
+│   ├── test/                   # Foundry tests (*.t.sol)
+│   └── script/                 # Deployment scripts (*.s.sol)
 ├── nginx/                      # Nginx reverse proxy configuration
 ├── resources/mvp-foodcourt/    # Reference implementation (Thai language)
-├── docs/                       # Documentation files
-├── .planning/                  # AI planning and codebase analysis
-├── docker-compose.yml          # Docker orchestration
-├── Makefile                    # Make commands for common tasks
-└── package.json                # Root package (workspace config)
+├── .planning/                  # AI planning + codebase analysis docs
+├── docs/                       # Documentation (deployment, LINE OAuth setup)
+├── docker-compose.yml          # Docker orchestration (PocketBase, wallet-api)
+├── Makefile                    # Make commands for dev/deploy
+└── package.json                # Root workspace config
 ```
 
 ## Directory Purposes
 
 **apps/web/:**
-- Purpose: User-facing web application
-- Contains: Next.js pages, React components, hooks, utilities
-- Key files: `app/page.tsx`, `middleware.ts`, `lib/pocketbase/client.ts`
+- Purpose: User-facing web application with Next.js App Router
+- Contains: React 19 components, shadcn/ui primitives, authentication flows, dashboard pages
+- Key files: `app/page.tsx` (landing), `middleware.ts` (auth), `lib/pocketbase/client.ts` (SDK wrapper)
+- Build: `bun run build` → static export to `out/` for Cloudflare Pages
 
 **apps/backend/:**
-- Purpose: Backend API and database
-- Contains: PocketBase binary config, hooks, migrations, collections
-- Key files: `pb_hooks/01-create-wallet.pb.js`, `collections/users.json`
-
-**wallet-srv/:**
-- Purpose: EVM wallet generation and blockchain operations
-- Contains: TypeScript Express server with dacc-js integration
-- Key files: `src/index.ts`, `src/routes/createWallet.ts`
+- Purpose: Backend API, authentication, business logic via PocketBase hooks
+- Contains: PocketBase configuration, 20+ JavaScript hooks, SQLite database schemas
+- Key files: `pb_hooks/01-create-wallet.pb.js` (auto-wallet), `pb_hooks/05-auth-token.pb.js` (LINE OAuth), `collections/users.json` (user schema)
+- Runtime: Docker container with PocketBase binary on port 8090
 
 **wallet-api/:**
-- Purpose: Legacy wallet service (ethers v6, JavaScript)
-- Contains: Simple wallet generation endpoint
-- Key files: `server.js`
+- Purpose: EVM wallet generation service using ethers v6
+- Contains: Express.js server with wallet creation endpoint, simple XOR encryption (demo)
+- Key files: `server.js` (main entry point, POST `/api/wallet/create`)
+- Integration: Called by PocketBase hook `01-create-wallet.pb.js` on user signup
 
 **contracts/:**
-- Purpose: Smart contracts for NFT game mechanics
-- Contains: Solidity sources, Foundry tests, deployment scripts
-- Key files: `src/EggNFT.sol`, `test/EggNFT.t.sol`, `script/DeployEggNFT.s.sol`
+- Purpose: Blockchain smart contracts for NFT game mechanics
+- Contains: Solidity 0.8.24 contracts, Foundry tests, deployment scripts
+- Key files: `src/EggNFT.sol` (main game contract), `test/EggNFT.t.sol` (unit tests), `script/DeployEggNFT.s.sol` (deployment)
+- Deployment: `forge script` to BSC testnet/mainnet with verification
 
 **nginx/:**
-- Purpose: Reverse proxy and SSL configuration
-- Contains: Nginx config files, SSL certificate paths
-- Key files: `nginx.conf`, `conf.d/pocketbase.conf`
+- Purpose: Reverse proxy configuration for production deployment
+- Contains: Nginx configuration files, SSL certificate paths, rate limiting rules
+- Key files: `nginx.conf` (main config), `conf.d/pocketbase.conf` (PocketBase upstream)
+- Usage: Deployed on production server to route traffic to PocketBase + wallet-api
 
 **resources/mvp-foodcourt/:**
-- Purpose: Reference implementation for patterns
-- Contains: Complete MVP with 20+ hook examples
-- Key files: `pb_hooks/`, `app/`, `CLAUDE.md`
+- Purpose: Reference implementation with comprehensive examples
+- Contains: Complete MVP with 20+ PocketBase hooks, frontend pages, Thai language comments
+- Key files: `pb_hooks/` (hook examples), `CLAUDE.md` (comprehensive documentation)
+- Use Case: Template for new hook development, pattern reference
+
+**.planning/:**
+- Purpose: AI-generated planning documents and codebase analysis
+- Contains: Architecture docs, structure guides, phase plans, codebase mappings
+- Key files: `codebase/ARCHITECTURE.md`, `codebase/STRUCTURE.md`, `phases/` (feature plans)
+- Generated By: `/gsd-map-codebase`, `/gsd-plan-phase` commands
 
 ## Key File Locations
 
 **Entry Points:**
-- `apps/web/app/page.tsx`: Landing page and auth state check
-- `apps/web/middleware.ts`: Edge auth middleware for route protection
-- `wallet-srv/src/index.ts`: Wallet service Express server
-- `contracts/script/DeployEggNFT.s.sol`: Contract deployment script
+- `apps/web/app/page.tsx`: Landing page with auth state check, pixel-art design showcase
+- `apps/web/middleware.ts`: Edge middleware for route protection (redirects unauthenticated users to `/auth/login`)
+- `apps/backend/pb_hooks/00-config.pb.js`: First-loaded hook, sets global config for LINE OAuth + blockchain
+- `wallet-api/server.js`: Express server entry point, listens on port 3001
+- `contracts/script/DeployEggNFT.s.sol`: Forge deployment script for all contracts
 
-**Configuration:**
-- `apps/web/next.config.mjs`: Next.js build config (static export)
-- `apps/web/tsconfig.json`: TypeScript config with path aliases
-- `apps/backend/.env`: LINE OAuth credentials, wallet API URL
-- `wallet-srv/.env`: Master encryption key, CORS config
-- `contracts/foundry.toml`: Foundry config, RPC endpoints
-- `nginx/nginx.conf`: Nginx main config, rate limiting zones
+**Configuration Files:**
+- `apps/web/next.config.mjs`: Next.js build config (static export, images config for external URLs)
+- `apps/web/tsconfig.json`: TypeScript with path alias `@/*` → `apps/web/*`
+- `apps/backend/.env`: LINE_CHANNEL_ID, LINE_CHANNEL_SECRET, WALLET_SRV_URL, WALLET_MASTER_KEY
+- `wallet-api/.env`: WALLET_MASTER_KEY (encryption), PORT (3001), CORS_ORIGIN
+- `contracts/foundry.toml`: Foundry config with RPC endpoints (BSC testnet/mainnet), optimizer settings
+- `nginx/nginx.conf`: Main Nginx config with rate limiting zones, upstream definitions
 
 **Core Logic:**
-- `apps/backend/pb_hooks/01-create-wallet.pb.js`: Auto-wallet on signup
-- `apps/backend/pb_hooks/05-auth-token.pb.js`: LINE OAuth token exchange
-- `apps/backend/pb_hooks/13-mint-egg-nft.pb.js`: Egg NFT minting
-- `wallet-srv/src/routes/createWallet.ts`: Wallet generation endpoint
-- `contracts/src/EggNFT.sol`: Egg NFT contract with breeding logic
+- `apps/backend/pb_hooks/01-create-wallet.pb.js`: Auto-creates EVM wallet when user signs up via LINE OAuth
+- `apps/backend/pb_hooks/05-auth-token.pb.js`: Exchanges LINE OAuth code for tokens, creates/updates user record
+- `apps/backend/pb_hooks/13-mint-egg-nft.pb.js`: Validates user balance, mints Egg NFT with referral chain
+- `apps/backend/pb_hooks/14-claim-commission.pb.js`: Claims accumulated commissions from distribution contract
+- `apps/backend/pb_hooks/19-hatch-egg.pb.js`: Hatches egg into Animal NFT after feeding requirements met
+- `wallet-api/server.js`: Generates wallet via `ethers.Wallet.createRandom()`, encrypts private key
+- `contracts/src/EggNFT.sol`: Main game contract with mint, hatch, feed, upgrade, breeding functions
+- `contracts/src/CommissionDistribution.sol`: Multi-level referral commission splitting logic
 
 **Testing:**
-- `apps/web/*.test.tsx`: Colocated component tests (Bun test)
-- `apps/backend/wallet.test.js`: Hook integration tests
-- `wallet-api/health.test.js`: Health check tests
-- `contracts/test/*.t.sol`: Foundry contract tests
+- `apps/web/app/**/*.test.tsx`: Colocated component tests (Bun test, testing-library/react)
+- `apps/web/lib/pocketbase/client.test.ts`: PocketBase client tests
+- `apps/backend/wallet.test.js`: Wallet creation hook integration tests
+- `wallet-api/health.test.js`: Health check endpoint test
+- `wallet-api/wallet.test.ts`: Wallet generation + encryption tests
+- `contracts/test/EggNFT.t.sol`: EggNFT unit tests (mint, hatch, feed, upgrade)
+- `contracts/test/EggHatching.t.sol`: Hatching logic + rarity calculation tests
+- `contracts/test/AnimalBreeding.t.sol`: Breeding mechanics + inheritance tests
 
 ## Naming Conventions
 
 **Files:**
-- React components: PascalCase (`Dashboard.tsx`, `EggNftCard.tsx`)
-- Hooks: `use*` prefix (`use-mobile.ts`, `use-toast.ts`)
-- Pages: `page.tsx` in directory matching route
-- PocketBase hooks: `NN-feature.pb.js` (NN = execution order 00-99)
-- Contract tests: `*.t.sol` (`EggNFT.t.sol`)
-- Deployment scripts: `Deploy*.s.sol` (`DeployEggNFT.s.sol`)
+- React components: PascalCase (`Dashboard.tsx`, `EggNftCard.tsx`, `HatchReveal.tsx`)
+- Pages: `page.tsx` (App Router convention in each route directory)
+- Layouts: `layout.tsx` (nested layouts for route groups)
+- React hooks: `use*` prefix (`use-mobile.ts`, `use-toast.ts`, `use-client-state.ts`)
+- PocketBase hooks: `NN-feature.pb.js` where NN = execution order (00-99)
+- Contract source: PascalCase (`EggNFT.sol`, `CommissionDistribution.sol`)
+- Contract tests: `*.t.sol` (`EggNFT.t.sol`, `EggFeeding.t.sol`)
+- Deployment scripts: `Deploy*.s.sol` (`DeployEggNFT.s.sol`, `DeployToAnvil.s.sol`)
+- Collections: snake_case JSON files (`users.json`, `egg_nfts.json`, `commission_records.json`)
 
 **Directories:**
-- kebab-case for routes (`auth/sign-up/`, `dashboard/eggs/`)
-- PascalCase for component types (`components/ui/`)
-- snake_case for backend migrations (`1774772600_updated_users.js`)
+- App Router routes: kebab-case (`auth/sign-up/`, `dashboard/eggs/`, `marketplace/listings/`)
+- Component folders: kebab-case (`components/egg-nft/`, `components/food-nft/`, `components/marketplace/`)
+- Backend migrations: timestamp prefix (`1774280543_updated_users.js`)
+- Contract folders: lowercase (`src/`, `test/`, `script/`)
+
+**Variables + Functions:**
+- TypeScript/JavaScript: camelCase (`const isHydrated = ...`, `function createWallet()`)
+- Solidity: camelCase for variables, PascalCase for contracts (`uint256 private _nextTokenId`)
+- Environment variables: UPPERCASE with underscores (`NEXT_PUBLIC_POCKETBASE_URL`, `LINE_CHANNEL_SECRET`)
+- Database fields: snake_case (`usdt_balance`, `wallet_address`, `external_id`)
 
 ## Import/Export Patterns
 
-**Frontend Imports:**
+**Frontend Imports (TypeScript):**
 ```typescript
-// Path aliases
+// Path aliases (@/* → apps/web/*)
 import { createClient } from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
@@ -114,219 +151,406 @@ import { useToast } from '@/hooks/use-toast'
 // External packages
 import PocketBase from 'pocketbase'
 import { useRouter } from 'next/navigation'
-
-// React
 import { useEffect, useState } from 'react'
+
+// Component imports (named exports)
+import { Header } from '@/components/header'
+import { Dashboard } from '@/components/dashboard'
 ```
 
-**Backend Hook Pattern:**
+**PocketBase Hook Pattern (JavaScript):**
 ```javascript
-// onRecordCreate hook
+// onRecordCreate hook (executes before record is saved)
 onRecordCreate("users", (e) => {
   const record = e.record
-  // Logic here
-  e.next()
-})
+  
+  // Call wallet API
+  const response = $http.send({
+    url: "http://wallet-api:3001/api/wallet/create",
+    method: "POST",
+    body: JSON.stringify({ userId: record.id })
+  })
+  
+  // Set fields on record
+  const walletData = JSON.parse(response.body)
+  record.set("wallet", walletData.address)
+  record.set("daccPublickey", walletData.publicKey)
+  
+  e.next() // Continue with record save
+}, "users")
 
-// routerAdd endpoint
-routerAdd("POST", "/api/v2/endpoint", (e) => {
-  const { users } = e.requireAuth()
+// routerAdd endpoint (custom API route)
+routerAdd("POST", "/api/v2/mint-egg", (e) => {
+  const { users } = e.requireAuth() // Auth required
   const body = e.parseBody()
-  e.json(200, { success: true, data: result })
-})
+  
+  try {
+    // Validate
+    if (!body.eggType) {
+      return e.json(400, { 
+        success: false, 
+        error: { message: "eggType required", code: "VALIDATION_ERROR" } 
+      })
+    }
+    
+    // Logic here
+    const result = await mintEgg(users, body)
+    
+    e.json(200, { success: true, data: result })
+  } catch (error) {
+    e.json(500, { 
+      success: false, 
+      error: { message: error.message, code: "OPERATION_FAILED" } 
+    })
+  }
+}, { "requestTimeout": 30000 })
 ```
 
-**Contract Imports:**
+**Contract Import Pattern (Solidity):**
 ```solidity
 // OpenZeppelin
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 // Local contracts
 import {CommissionDistribution} from "./CommissionDistribution.sol";
 import {FoodNFT, FoodType} from "./FoodNFT.sol";
+import {AnimalNFT, Rarity, Species} from "./AnimalNFT.sol";
+
+// Contract definition
+contract EggNFT is ERC721, ReentrancyGuard, Ownable {
+    using SafeERC20 for IERC20;
+    
+    // Immutable addresses
+    address public immutable commissionDistribution;
+    IERC20 public immutable usdtToken;
+    
+    // State variables
+    uint256 public constant MINT_PRICE = 25 * 10**18;
+    FoodNFT public foodNFTContract;
+    AnimalNFT public animalNFTContract;
+    
+    // Structs
+    struct EggProperties {
+        uint256 egg_id;
+        address owner;
+        uint256 food_count;
+        bool is_hatched;
+    }
+    
+    // Mappings
+    mapping(uint256 => EggProperties) private _eggProperties;
+    
+    // Constructor
+    constructor(
+        address _commissionDistribution,
+        address _usdtToken
+    ) ERC721("EggNFT", "EGG") Ownable(msg.sender) {
+        commissionDistribution = _commissionDistribution;
+        usdtToken = IERC20(_usdtToken);
+    }
+    
+    // Functions
+    function mintWithReferrer(address referrer) external payable nonReentrant {
+        // ...
+    }
+}
 ```
 
 ## Code Ownership Boundaries
 
 **Frontend Team:**
-- `apps/web/app/` - All pages and layouts
-- `apps/web/components/` - React components
-- `apps/web/hooks/` - Custom React hooks
-- `apps/web/lib/` - Client utilities
-- `apps/web/styles/` - Global styles
+- `apps/web/app/` - All pages (landing, auth flows, dashboard, marketplace)
+- `apps/web/components/` - React components (UI primitives, feature components)
+- `apps/web/hooks/` - Custom React hooks (toast, mobile detection, NFT state)
+- `apps/web/lib/` - Client utilities (PocketBase client, helpers)
+- `apps/web/styles/` - Global styles (Tailwind config, CSS variables)
 
 **Backend Team:**
-- `apps/backend/pb_hooks/` - Business logic hooks
-- `apps/backend/collections/` - Database schemas
-- `apps/backend/pb_migrations/` - Schema migrations
+- `apps/backend/pb_hooks/` - Business logic hooks (auth, wallet, NFT operations)
+- `apps/backend/collections/` - Database schemas (users, NFTs, referrals, commissions)
+- `apps/backend/pb_migrations/` - Schema migrations (field additions, collection changes)
+- `apps/backend/docker-compose.yml` - PocketBase container configuration
 
 **Blockchain Team:**
-- `contracts/src/` - Smart contract implementation
-- `contracts/test/` - Foundry tests
-- `contracts/script/` - Deployment scripts
+- `contracts/src/` - Smart contract implementations (EggNFT, AnimalNFT, FoodNFT, CommissionDistribution)
+- `contracts/test/` - Foundry unit tests + integration tests
+- `contracts/script/` - Deployment scripts, verification on BSCScan
+- `contracts/foundry.toml` - Foundry configuration, RPC endpoints
 
 **Infrastructure Team:**
-- `nginx/` - Reverse proxy configuration
-- `docker-compose.yml` - Service orchestration
-- `wallet-srv/` - Wallet generation service
+- `nginx/` - Reverse proxy configuration, SSL certs, rate limiting
+- `docker-compose.yml` - Root orchestration (PocketBase, wallet-api services)
+- `wallet-api/` - Wallet generation service (Express.js + ethers)
 
 ## Where to Add New Code
 
-**New Feature Page:**
-- Primary code: `apps/web/app/{feature}/page.tsx`
-- Components: `apps/web/components/{feature}/`
-- Hooks: `apps/web/hooks/use-{feature}.ts`
+**New Feature Page (e.g., Leaderboard):**
+```
+apps/web/app/leaderboard/
+├── page.tsx           # Main leaderboard page
+├── layout.tsx         # Optional nested layout
+└── loading.tsx        # Loading state
+```
 
-**New API Endpoint:**
-- Implementation: `apps/backend/pb_hooks/NN-{feature}.pb.js`
-- Next sequence number after existing hooks
-- Use `routerAdd()` with `$apis.requireAuth(e)`
+**New React Component:**
+```
+apps/web/components/
+├── leaderboard/
+│   ├── LeaderboardTable.tsx       # Main table component
+│   ├── LeaderboardRow.tsx         # Individual row
+│   └── leaderboard.test.tsx       # Colocated tests
+```
 
-**New Blockchain Operation:**
-- Contract change: `contracts/src/{Contract}.sol`
-- Test: `contracts/test/{Contract}.t.sol`
-- Wallet service route: `wallet-srv/src/routes/{feature}.ts`
+**New Custom Hook:**
+```
+apps/web/hooks/use-leaderboard.ts  # Leaderboard data fetching + state
+```
+
+**New PocketBase Hook (e.g., Reset Game State):**
+```
+apps/backend/pb_hooks/20-reset-game-state.pb.js  # Next available sequence number
+```
 
 **New Database Collection:**
-- Schema: `apps/backend/collections/{name}.json`
-- Migration: `apps/backend/pb_migrations/{timestamp}_{action}_{name}.js`
-- Hook integration: `apps/backend/pb_hooks/`
+```
+apps/backend/collections/leaderboards.json  # Collection schema (JSON)
+apps/backend/pb_migrations/1774800000_create_leaderboards.js  # Migration
+```
 
-**New Utility/Hook:**
-- Frontend utility: `apps/web/lib/{name}.ts`
-- React hook: `apps/web/hooks/use-{name}.ts`
-- Shared constants: Add to `apps/backend/pb_hooks/00-config.pb.js`
+**New Smart Contract (e.g., Staking Contract):**
+```
+contracts/src/Staking.sol           # Contract implementation
+contracts/test/Staking.t.sol        # Unit tests
+contracts/script/DeployStaking.s.sol # Deployment script
+```
+
+**New API Endpoint (PocketBase):**
+```
+apps/backend/pb_hooks/NN-feature.pb.js  # Use routerAdd() pattern
+# Example: routerAdd("POST", "/api/v2/leaderboard/update", (e) => { ... })
+```
+
+**New Wallet API Route:**
+```
+wallet-api/server.js  # Add route: app.post("/api/v2/staking/stake", ...)
+```
 
 ## Special Directories
 
 **apps/web/.next/:**
-- Purpose: Next.js build output
-- Generated: Yes (by `next build`)
-- Committed: No (should be in .gitignore but currently present)
+- Purpose: Next.js build artifacts (dev server cache, production build output)
+- Generated: Yes (by `next dev` or `next build`)
+- Committed: No (should be in .gitignore but currently present in repo)
+- Size: ~100-500MB depending on build
 
 **apps/backend/pb_data/:**
-- Purpose: PocketBase runtime data (SQLite, uploads)
-- Generated: Yes (by PocketBase)
-- Committed: No (gitignored)
+- Purpose: PocketBase runtime data (SQLite database `data.db`, uploaded files, logs)
+- Generated: Yes (by PocketBase server)
+- Committed: No (gitignored, backup via separate process)
+- Critical: Contains all user data, NFT metadata, referral relationships
 
 **contracts/cache/:**
-- Purpose: Foundry build cache
+- Purpose: Foundry build cache (compiled artifacts, ABI cache)
 - Generated: Yes (by `forge build`)
 - Committed: No (gitignored)
+- Clean: `forge clean` to remove cache
 
 **contracts/out/:**
-- Purpose: Compiled contract artifacts
-- Generated: Yes (by Foundry)
+- Purpose: Compiled contract output (bytecode, ABI JSON files)
+- Generated: Yes (by `forge build`)
 - Committed: No (gitignored)
+- Used By: Deployment scripts, frontend ABI imports
 
-**resources/mvp-foodcourt/:**
-- Purpose: Reference implementation for patterns
-- Generated: No (submodule or reference code)
-- Committed: Yes (as documentation)
-- Note: Contains 20+ hook examples in Thai language
-
-**wallet-srv/node_modules/:**
-- Purpose: TypeScript/Express dependencies
+**wallet-api/node_modules/:**
+- Purpose: npm dependencies (ethers, express, cors, dotenv)
 - Generated: Yes (by `bun install`)
 - Committed: No (gitignored)
+- Size: ~50MB
 
-## File Structure Reference
+**resources/mvp-foodcourt/:**
+- Purpose: Reference implementation for pattern copying
+- Generated: No (manual reference code, not built/deployed)
+- Committed: Yes (as documentation + learning resource)
+- Contains: 20+ PocketBase hooks in Thai language, complete frontend pages
+
+**.planning/phases/:**
+- Purpose: Feature development plans (SPEC.md, tasks.md)
+- Generated: Yes (by `/gsd-plan-phase` command)
+- Committed: Yes (as project documentation)
+- Structure: `001-feature-name/PLAN.md`, `002-feature-name/PLAN.md`
+
+## Complete File Tree Reference
 
 ```
 apps/web/
 ├── app/
-│   ├── page.tsx                    # Landing page
-│   ├── layout.tsx                  # Root layout with fonts
-│   ├── globals.css                 # Tailwind 4 styles
+│   ├── page.tsx                    # Landing page (pixel art showcase)
+│   ├── layout.tsx                  # Root layout (fonts, metadata)
+│   ├── globals.css                 # Tailwind 4 + custom styles
+│   ├── globals.css.test.ts         # CSS tests
+│   ├── layout.test.tsx             # Layout tests
 │   ├── auth/
-│   │   ├── login/page.tsx          # Login form
-│   │   ├── sign-up/page.tsx        # Signup form
-│   │   ├── callback/page.tsx       # OAuth callback handler
-│   │   ├── line/page.tsx           # LINE OAuth redirect
-│   │   └── error/page.tsx          # Error display
-│   └── dashboard/
-│       ├── eggs/                   # Egg NFT management
-│       └── commissions/            # Commission tracking
+│   │   ├── login/page.tsx          # Email/password login
+│   │   ├── sign-up/page.tsx        # Email registration
+│   │   ├── callback/page.tsx       # LINE OAuth callback handler
+│   │   ├── line/page.tsx           # LINE OAuth redirect initiation
+│   │   └── error/page.tsx          # Error display page
+│   ├── dashboard/
+│   │   ├── page.tsx                # Main dashboard (stats overview)
+│   │   ├── eggs/
+│   │   │   └── page.tsx            # Egg NFT management
+│   │   └── commissions/
+│   │       └── page.tsx            # Commission tracking + claims
+│   ├── marketplace/
+│   │   └── page.tsx                # NFT marketplace listings
+│   ├── join/
+│   │   └── page.tsx                # Referral signup page
+│   ├── settings/
+│   │   └── page.tsx                # User settings (profile, wallet)
+│   └── wallet/
+│       └── page.tsx                # Wallet management modal
 ├── components/
 │   ├── dashboard.tsx               # Main dashboard component
-│   ├── header.tsx                  # Navigation header
-│   ├── logout-button.tsx           # Auth logout
-│   ├── wallet-modal.tsx            # Wallet connection UI
-│   ├── theme-provider.tsx          # Dark/light mode
-│   ├── ui/                         # shadcn/ui primitives
+│   ├── header.tsx                  # Top navigation header
+│   ├── TopNav.tsx                  # Top nav (desktop)
+│   ├── SideNav.tsx                 # Side nav (desktop)
+│   ├── BottomNavMobile.tsx         # Bottom nav (mobile)
+│   ├── LayoutWrapper.tsx           # Auth layout wrapper
+│   ├── LayoutWithoutNav.tsx        # Layout without navigation
+│   ├── logout-button.tsx           # Auth logout button
+│   ├── account-modal.tsx           # Account modal + wallet display
+│   ├── account-modal.test.tsx      # Modal tests
+│   ├── HatchReveal.tsx             # Egg hatching animation
+│   ├── TransactionHistory.tsx      # Transaction history table
+│   ├── WithdrawForm.tsx            # Withdrawal form
+│   ├── EarningsBreakdown.tsx       # Commission breakdown
+│   ├── DownlineTable.tsx           # Downline referral table
+│   ├── ListForSaleModal.tsx        # Marketplace listing modal
+│   ├── ui/                         # shadcn/ui primitives (40+ components)
 │   │   ├── button.tsx
 │   │   ├── card.tsx
-│   │   └── ... (40+ components)
+│   │   ├── dialog.tsx
+│   │   └── ... (40+ more)
+│   ├── animal-nft/                 # Animal NFT components
 │   ├── egg-nft/                    # Egg NFT components
-│   └── food-nft/                   # Food NFT components
+│   ├── food-nft/                   # Food NFT components
+│   ├── marketplace/                # Marketplace components
+│   └── buy-egg/                    # Egg purchase flow components
 ├── hooks/
-│   ├── use-mobile.ts               # Mobile detection
+│   ├── use-mobile.ts               # Mobile viewport detection
 │   ├── use-toast.ts                # Toast notifications
-│   ├── use-egg-nft.ts              # Egg NFT state/operations
-│   └── use-food-nft.ts             # Food NFT state/operations
+│   ├── use-client-state.ts         # Client-only state (hydration-safe)
+│   ├── use-egg-nft.ts              # Egg NFT state + operations (TODO)
+│   └── use-food-nft.ts             # Food NFT state + operations (TODO)
 ├── lib/
-│   ├── utils.ts                    # General utilities
-│   └── pocketbase/
-│       └── client.ts               # PocketBase SDK wrapper
+│   ├── pocketbase/
+│   │   └── client.ts               # PocketBase SDK wrapper + auth sync
+│   └── utils.ts                    # General utilities (cn helper)
 ├── middleware.ts                   # Edge auth middleware
-├── next.config.mjs                 # Next.js configuration
-├── tsconfig.json                   # TypeScript with path aliases
-└── package.json                    # Dependencies (Bun)
+├── next.config.mjs                 # Next.js config (static export)
+├── tsconfig.json                   # TypeScript with @/* path alias
+├── package.json                    # Dependencies (Bun)
+└── README.md                       # Frontend documentation
 
 apps/backend/
 ├── pb_hooks/
-│   ├── 00-config.pb.js             # Global configuration
+│   ├── 00-config.pb.js             # Global config (LINE OAuth, blockchain RPC)
 │   ├── 01-create-wallet.pb.js      # Auto-wallet on user signup
+│   ├── 03-wallet-api-endpoint.pb.js # Wallet API endpoint registration
+│   ├── 04-debug-request.pb.js      # Request debugging helper
 │   ├── 05-auth-token.pb.js         # LINE OAuth token exchange
-│   ├── 06-referral-chain.pb.js     # Referral tracking
-│   ├── 13-mint-egg-nft.pb.js       # Egg NFT minting
-│   ├── 14-claim-commission.pb.js   # Commission claims
+│   ├── 06-referral-chain.pb.js     # Referral chain building
+│   ├── 07-register-user.pb.js      # User registration validation
+│   ├── 08-wallet-balance.pb.js     # Wallet balance queries
+│   ├── 09-withdraw-usdt.pb.js      # USDT withdrawal requests
+│   ├── 10-spend-usdt.pb.js         # USDT spending logic
+│   ├── 11-transfer-usdt.pb.js      # USDT P2P transfers
+│   ├── 12-hot-wallet-balance.pb.js # Hot wallet balance check
+│   ├── 12-update-tier.pb.js        # Tier update logic
+│   ├── 13-mint-egg-nft.pb.js       # Egg NFT minting + referral commission
+│   ├── 13-track-deposit.pb.js      # Deposit tracking + tests
+│   ├── 13-track-deposit.test.js    # Deposit tracking tests
+│   ├── 14-claim-commission.pb.js   # Commission claiming
 │   ├── 15-mint-food-nft.pb.js      # Food NFT minting
 │   ├── 16-feed-egg.pb.js           # Egg feeding mechanic
-│   ├── 17-upgrade-egg-rarity.pb.js # Rarity upgrades
-│   ├── 18-breed-animals.pb.js      # Animal breeding
-│   ├── 19-hatch-egg.pb.js          # Egg hatching
-│   └── 99-debug.pb.js              # Debug utilities
+│   ├── 17-upgrade-egg-rarity.pb.js # Egg rarity upgrades
+│   ├── 18-breed-animals.pb.js      # Animal breeding logic
+│   ├── 19-hatch-egg.pb.js          # Egg hatching into Animal NFT
+│   └── 99-debug.pb.js              # Debug utilities (deprecated pattern)
 ├── collections/
-│   ├── users.json                  # User schema
-│   ├── user_wallets.json           # Wallet metadata
-│   ├── referrals.json              # Referral relationships
-│   ├── egg_nfts.json               # Egg NFT tracking
-│   ├── food_nfts.json              # Food NFT tracking
-│   ├── animal_nfts.json            # Animal NFT tracking
-│   ├── commission_records.json     # Commission distribution
-│   └── wallet_configs.json         # Wallet configuration
+│   ├── users.json                  # User schema (auth collection)
+│   ├── user_wallets.json           # Wallet metadata (addresses, balances)
+│   ├── referrals.json              # Referral relationships (upline_id)
+│   ├── egg_nfts.json               # Egg NFT tracking (tokenId, foodCount, hatched)
+│   ├── food_nfts.json              # Food NFT tracking (foodType, quantity)
+│   ├── animal_nfts.json            # Animal NFT tracking (rarity, species, generation)
+│   ├── commission_records.json     # Commission distribution records
+│   ├── withdrawals.json            # Withdrawal requests + status
+│   ├── deposits.json               # Deposit tracking (txHash, amount)
+│   ├── transactions.json           # Transaction history log
+│   ├── marketplace_listings.json   # NFT marketplace listings
+│   ├── egg_consumption_logs.json   # Egg consumption tracking
+│   ├── wallet_configs.json         # Wallet configuration per user
+│   ├── sync_state.json             # Blockchain sync state
+│   ├── full-collection.json        # Full user collection (reference)
+│   └── full-collection-user.json   # Full user view (reference)
 ├── pb_migrations/
-│   ├── 1774280543_updated_users.js
-│   ├── 1774772600_updated_users.js
-│   ├── 1774772601_create_user_wallets.js
+│   ├── 1774280543_updated_users.js         # Early user schema update
+│   ├── 1774772600_updated_users.js         # User fields addition
+│   ├── 1774772601_create_user_wallets.js   # Wallets collection creation
 │   └── ... (timestamped migrations)
-└── docker-compose.yml              # PocketBase container config
+├── pb_public/                      # Static files served by PocketBase
+├── docker-compose.yml              # PocketBase container config
+├── Dockerfile                      # Container build instructions
+├── .env                            # LINE credentials, wallet API URLs
+├── .env.example                    # Template for .env
+└── README.md                       # Backend documentation
+
+wallet-api/
+├── server.js                       # Express server + all routes
+├── health.test.js                  # Health check test
+├── wallet.test.ts                  # Wallet generation tests
+├── package.json                    # Dependencies (ethers, express, cors)
+├── .env                            # Master encryption key
+├── .env.example                    # Template
+├── tsconfig.json                   # TypeScript config
+└── README.md                       # Wallet API documentation
 
 contracts/
 ├── src/
-│   ├── EggNFT.sol                  # Main Egg NFT contract
-│   ├── AnimalNFT.sol               # Animal NFT (hatched from eggs)
-│   ├── FoodNFT.sol                 # Food NFT (for feeding)
-│   ├── CommissionDistribution.sol  # Referral commission logic
-│   └── Counter.sol                 # Simple counter (example)
+│   ├── EggNFT.sol                  # Main game contract (mint, hatch, feed, upgrade)
+│   ├── AnimalNFT.sol               # Animal NFT (hatched eggs, breeding)
+│   ├── FoodNFT.sol                 # Food NFT (mint with USDT, burn on feed)
+│   ├── CommissionDistribution.sol  # Referral commission split logic
+│   └── Counter.sol                 # Simple counter (example/deprecated)
 ├── test/
-│   ├── EggNFT.t.sol                # EggNFT tests
-│   ├── AnimalNFT.t.sol             # AnimalNFT tests
-│   ├── FoodNFT.t.sol               # FoodNFT tests
+│   ├── EggNFT.t.sol                # EggNFT unit tests
+│   ├── AnimalNFT.t.sol             # AnimalNFT unit tests
+│   ├── FoodNFT.t.sol               # FoodNFT unit tests
 │   ├── EggHatching.t.sol           # Hatching logic tests
-│   ├── EggFeeding.t.sol            # Feeding logic tests
+│   ├── EggFeeding.t.sol            # Feeding mechanic tests
 │   ├── EggUpgrading.t.sol          # Rarity upgrade tests
-│   ├── AnimalBreeding.t.sol        # Breeding tests
-│   └── MockUSDT.sol                # Mock USDT for testing
+│   ├── AnimalBreeding.t.sol        # Breeding mechanics tests
+│   ├── CommissionDistribution.t.sol # Commission split tests
+│   ├── CommissionDistributionUSDT.t.sol # USDT commission tests
+│   ├── MockUSDT.sol                # Mock USDT token for testing
+│   └── ... (integration tests)
 ├── script/
-│   ├── DeployEggNFT.s.sol          # Deployment script
-│   └── TestEggHatching.s.sol       # Hatching test script
-├── foundry.toml                    # Foundry configuration
-└── remappings.txt                  # Solidity import remappings
+│   ├── DeployEggNFT.s.sol          # Main deployment script
+│   ├── DeployToAnvil.s.sol         # Local Anvil deployment
+│   ├── TestEggHatching.s.sol       # Hatching test script
+│   ├── TestIntegration.s.sol       # Integration test script
+│   └── Counter.s.sol               # Counter deployment (example)
+├── lib/                            # Foundry dependencies (OpenZeppelin, forge-std)
+├── foundry.toml                    # Foundry config (optimizer, RPC endpoints)
+├── remappings.txt                  # Solidity import remappings
+└── README.md                       # Contracts documentation
 ```
 
 ---
 
-*Structure analysis: 2026-04-02*
+*Structure analysis: 2026-04-15*

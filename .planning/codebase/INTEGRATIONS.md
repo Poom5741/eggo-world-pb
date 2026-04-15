@@ -1,221 +1,204 @@
 # External Integrations
 
-**Analysis Date:** 2026-04-02
+**Analysis Date:** 2026-04-15
 
 ## APIs & External Services
 
 **LINE OAuth:**
-- LINE Login Channel - User authentication
-  - Config: `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET` in `apps/backend/.env`
-  - Flow: Redirect to `/auth/line` → LINE consent → callback → token exchange
-  - Hook: `apps/backend/pb_hooks/05-auth-token.pb.js` handles token exchange
+- **LINE Login** - Social authentication
+  - SDK/Client: Custom implementation in `apps/backend/pb_hooks/05-auth-token.pb.js`
+  - Auth: `LINE_CHANNEL_ID`, `LINE_CHANNEL_SECRET` (env vars)
+  - Callback: `/api/oauth2-redirect` (configurable via `LINE_CALLBACK_URL`)
+  - Flow: OAuth 2.0 authorization code exchange
 
-**Blockchain RPC:**
-- BSC Testnet: `https://data-seed-prebsc-1-s1.binance.org:8545` (Chain ID: 97)
-- BSC Mainnet: `https://bsc-dataseed.binance.org` (Chain ID: 56)
-- Config: `contracts/foundry.toml`
-- Client: viem 2.47.6 in `wallet-srv/`
+**Blockchain RPC Endpoints:**
+- **BSC Mainnet**: `https://bsc-dataseed.binance.org`
+- **BSC Testnet**: `https://data-seed-prebsc-1-s1.binance.org:8545`
+- **0xL3 Chain**: `https://rpc.0xl3.com`
+  - Configured in `contracts/foundry.toml`
+  - Used by ethers.js in `apps/web/` and `wallet-api/`
 
-**BSCScan API:**
-- Testnet: `https://api-testnet.bscscan.com/api`
-- Mainnet: `https://api.bscscan.com/api`
-- Used for: Contract verification, transaction lookup
-- Config: `BSCSCAN_API_KEY` environment variable
+**Block Explorers (for contract verification):**
+- **BSCScan**: `https://api.bscscan.com/api` (key: `BSCSCAN_API_KEY`)
+- **0xL3 Blockscout**: `https://exp.0xl3.com/api` (key: `BLOCKSCOUT_API_KEY`)
+
+**Cloudflare:**
+- **Turnstile** - CAPTCHA/anti-bot protection
+  - SDK: `@marsidev/react-turnstile` 0.3.0
+  - Integration: `apps/web/` forms (login, signup)
+- **Real IP** - nginx configured with Cloudflare IP ranges
+
+**Vercel Analytics:**
+- **@vercel/analytics** 1.6.1
+- Integration: `apps/web/` layout
+- Purpose: Usage tracking, performance metrics
 
 ## Data Storage
 
-**Database:**
-- PocketBase (SQLite embedded)
-  - Connection: Local file in `apps/backend/pb_data/`
-  - Client: PocketBase SDK 0.25.2 (`apps/web/lib/pocketbase/client.ts`)
-  - Collections: users, user_wallets, referrals, egg_nfts, animal_nfts, food_nfts, commission_records, wallet_configs, egg_consumption_logs
+**Databases:**
+- **PocketBase** - SQLite-based backend
+  - Location: `apps/backend/pb_data/` (mounted Docker volume)
+  - Client: PocketBase JS SDK 0.25.2
+  - Collections: `users`, `user_wallets`, `deposits`, `transactions`, `egg_nfts`, `animal_nfts`, `food_nfts`, `marketplace_listings`, etc.
+  - Migrations: `apps/backend/pb_migrations/` (auto-applied)
+  - Hooks: `apps/backend/pb_hooks/` (40+ server-side functions)
 
 **File Storage:**
-- Local filesystem via PocketBase
+- **Local filesystem** - NFT metadata, static assets
   - Location: `apps/backend/pb_public/`
-  - Used for: NFT metadata, images
+  - Served via PocketBase `/api/files/` endpoint
+- **Next.js static export** - Frontend assets in `apps/web/.next/`
 
 **Caching:**
-- None detected - Direct database queries
+- **Browser cache** - Static assets via nginx gzip + cache headers
+- **No external caching layer** (Redis/Memcached not used)
 
 ## Authentication & Identity
 
 **Auth Provider:**
-- LINE Login (OAuth 2.0)
-  - Implementation: Custom PocketBase hooks
-  - Hook: `05-auth-token.pb.js` - Token exchange and user lookup
-  - Endpoint: `POST /api/auth/line-auth`
-  - Session: PocketBase authStore (cookie-based)
+- **LINE Login** - Primary OAuth provider
+  - Implementation: `apps/backend/pb_hooks/05-auth-token.pb.js`
+  - Token exchange: POST to LINE token endpoint
+  - User info: Fetch from LINE profile API
+  - PocketBase session: Create/Update user record
 
-**User Model:**
-- PocketBase `users` collection with auth
-- Fields: email, wallet, daccPublickey, pin (encrypted), referral_chain
-- Auto-created wallet on signup via hook `01-create-wallet.pb.js`
+**Session Management:**
+- **PocketBase authStore** - Client-side token storage
+  - Frontend: `pb.authStore.record` (React hydration-safe)
+  - Backend: JWT tokens (PocketBase native)
+  - Middleware: `apps/web/middleware.ts` (Edge auth check)
 
-## Blockchain Integration
-
-**Smart Contracts:**
-- EggNFT.sol - Main NFT contract (minting, breeding, feeding, upgrades)
-- AnimalNFT.sol - Animal NFT management with rarity system
-- FoodNFT.sol - Food item NFTs
-- CommissionDistribution.sol - Referral commission logic
-
-**Contract Addresses:**
-- Deployed via Forge scripts in `contracts/script/`
-- Target: BSC testnet/mainnet
-- Config: `contracts/foundry.toml`
-
-**Wallet Service:**
-- `wallet-srv/` - Express.js service for wallet creation
-  - Endpoint: `POST /api/v1/wallet/create`
-  - Uses: dacc-js SDK for EVM wallet generation
-  - Encryption: WALLET_MASTER_KEY encrypts private keys
-  - Fields: address, daccPublickey, pin
-
-**EIP-7702 Support:**
-- Fields: `eip7702_enabled`, `eip7702_hash` in user_wallets
-- Endpoint: `/api/v2/eip7702/*` in wallet-srv
-
-## PocketBase Collections
-
-**Core Collections:**
-| Collection | File | Purpose |
-|------------|------|---------|
-| users | `users.json` | User accounts with LINE OAuth |
-| user_wallets | `user_wallets.json` | EVM wallet addresses and keys |
-| referrals | `referrals.json` | Referral relationship tracking |
-| egg_nfts | `egg_nfts.json` | Egg NFT metadata and state |
-| animal_nfts | `animal_nfts.json` | Animal NFTs (hatched from eggs) |
-| food_nfts | `food_nfts.json` | Food items for feeding eggs |
-| commission_records | `commission_records.json` | Referral commission tracking |
-| wallet_configs | `wallet_configs.json` | Wallet configuration |
-| egg_consumption_logs | `egg_consumption_logs.json` | Egg usage history |
-
-## API Endpoints Between Services
-
-**PocketBase Custom Endpoints (`apps/backend/pb_hooks/`):**
-```
-POST /api/auth/line-user    - Get user by email
-POST /api/auth/line-auth    - LINE OAuth authentication
-POST /api/wallet/create     - Create wallet (proxy to wallet-srv)
-POST /api/wallet/balance    - Get wallet balance
-POST /api/wallet/withdraw   - Withdraw USDT
-POST /api/wallet/spend      - Spend USDT (NFT mint)
-POST /api/wallet/transfer   - Transfer USDT
-POST /api/nft/egg/mint      - Mint Egg NFT
-POST /api/nft/egg/feed      - Feed egg
-POST /api/nft/egg/upgrade   - Upgrade egg rarity
-POST /api/nft/egg/breed     - Breed animals
-POST /api/nft/egg/hatch     - Hatch egg to animal
-POST /api/commission/claim  - Claim referral commission
-```
-
-**Wallet Service (`wallet-srv/`):**
-```
-GET  /health                - Health check
-POST /api/v1/wallet/create  - Create new EVM wallet
-GET  /api/v1/chain/*        - Chain info endpoints
-POST /api/v2/eip7702/*      - EIP-7702 operations
-```
-
-**Frontend → Backend:**
-- PocketBase SDK calls from `apps/web/lib/pocketbase/client.ts`
-- Direct API calls to PocketBase custom endpoints
+**DACC Blockchain Wallets:**
+- **dacc-js** 0.0.5 - Wallet generation
+  - Integration: `wallet-api/` service
+  - Storage: Encrypted in `user_wallets` collection
+  - Encryption: `WALLET_MASTER_KEY` (AES-256)
 
 ## Monitoring & Observability
 
 **Error Tracking:**
-- None configured
+- **Console logging** - Development (`console.log/error`)
+- **PocketBase logs** - Backend errors (`tail -50 /tmp/pocketbase.log`)
+- **Docker logs** - `docker-compose logs -f`
 
 **Logs:**
-- Console.log in PocketBase hooks (visible in Docker logs)
-- `docker-compose logs -f` for live logs
-- Nginx access logs: `/var/log/nginx/access.log`
+- **nginx access/error logs**: `/var/log/nginx/`
+- **PocketBase**: stdout → Docker logs
+- **Wallet API**: stdout → Docker logs
 
-**Analytics:**
-- @vercel/analytics 1.6.1 - Frontend analytics
+**Health Checks:**
+- **PocketBase**: `GET /api/health` (Docker healthcheck)
+- **Wallet API**: `GET /health` (Express endpoint)
+- **nginx**: Implicit via request routing
 
 ## CI/CD & Deployment
 
-**Hosting:**
-- Docker Compose deployment
-- Nginx reverse proxy (ports 80, 443)
-- Cloudflare CDN (configured in nginx.conf)
+**Version Control:**
+- **GitHub** - Source code hosting
+- **GitHub Actions** - CI workflows (`.github/workflows/`)
 
-**CI Pipeline:**
-- None detected in repository
+**Docker:**
+- **PocketBase container**: `apps/backend/Dockerfile`
+- **Wallet API container**: `wallet-api/Dockerfile`
+- **nginx container**: Official `nginx:alpine`
+- **Compose**: `docker-compose.yml`, `docker-compose.wallet-api.yml`
 
-**Container Services:**
-- `pocketbase` (eggo-pb) - port 8090
-- `wallet-srv` (eggo-wallet-srv) - port 3001 (external)
-- `nginx` (eggo-nginx) - ports 80, 443
+**Deployment Scripts:**
+- `deploy-wallet-api.sh` - Wallet API deployment
+- `Makefile` targets: `dev`, `backend`, `deploy`
+- `nginx/setup-ssl.sh` - SSL certificate setup
 
-## Environment Configuration
+## Smart Contract Integrations
 
-**Required env vars:**
-```bash
-# LINE OAuth
-LINE_CHANNEL_ID=<channel_id>
-LINE_CHANNEL_SECRET=<channel_secret>
+**Deployed Contracts:**
+- **EggNFT.sol** - Main NFT contract (ERC721)
+- **AnimalNFT.sol** - Breeding NFTs (ERC721)
+- **FoodNFT.sol** - Consumable items (ERC1155)
+- **CommissionDistribution.sol** - Revenue sharing
 
-# Wallet Encryption (CRITICAL)
-WALLET_MASTER_KEY=<32+ character key>
+**Contract Addresses:**
+- Location: `contracts/deployment-addresses.json`
+- Networks: BSC Testnet (97), BSC Mainnet (56), 0xL3
 
-# Service URLs
-WALLET_SRV_URL=http://wallet-srv:3000
-APP_URL=http://localhost:8090
-
-# Runtime
-NODE_ENV=development|production
-PORT=3000
-```
-
-**Secrets location:**
-- `apps/backend/.env` - LINE OAuth, wallet encryption
-- `wallet-srv/.env` - Service configuration
-- Never committed to git
+**Interaction Methods:**
+- **ethers.js** 6.x - Frontend contract calls
+- **PocketBase hooks** - Backend contract events (via wallet-api)
 
 ## Webhooks & Callbacks
 
-**Incoming:**
-- LINE OAuth callback: `/auth/line/callback` (handled by frontend)
-- PocketBase record hooks: `onRecordCreate`, `onRecordUpdate` in pb_hooks/
+**Incoming Webhooks:**
+- **LINE OAuth callback**: `/api/oauth2-redirect` (handled by `05-auth-token.pb.js`)
+- **PocketBase API endpoints**: Custom routes via hooks
+  - `/api/v2/hot-wallet/balance` (`12-hot-wallet-balance.pb.js`)
+  - `/api/v2/withdraw` (`09-withdraw-usdt.pb.js`)
+  - `/api/v2/spend` (`10-spend-usdt.pb.js`)
+  - `/api/v2/transfer` (`11-transfer-usdt.pb.js`)
 
-**Outgoing:**
-- None detected - No external webhook notifications
+**Outgoing Webhooks:**
+- **LINE Token Exchange**: POST to `https://api.line.me/v2/oauth/accessToken`
+- **LINE Profile Fetch**: GET to `https://api.line.me/v2/profile`
+- **Blockchain RPC**: POST to BSC/0xL3 endpoints
 
-## Rate Limiting
+## Environment Configuration
 
-**Nginx Configuration:**
-- API zone: 10 requests/second (burst: 20)
-- Login zone: 5 requests/minute (burst: 5)
-- Health endpoint: No rate limiting
+**Required env vars (Production):**
 
-**Cloudflare:**
-- Real IP passthrough configured
-- DDoS protection via Cloudflare network
+```bash
+# LINE OAuth
+LINE_CHANNEL_ID
+LINE_CHANNEL_SECRET
+LINE_CALLBACK_URL
 
-## Network Architecture
+# Wallet Encryption (CRITICAL)
+WALLET_MASTER_KEY           # 32+ chars, hex
+DACC_MNEMONIC               # BIP39 12-24 words
 
+# PocketBase Admin
+POCKETBASE_ADMIN_EMAIL
+POCKETBASE_ADMIN_PASSWORD
+
+# CORS
+CORS_ORIGIN                 # Comma-separated domains
+
+# Blockchain
+BSC_MAINNET_RPC
+BSC_TESTNET_RPC
+BSCSCAN_API_KEY
+
+# Deployment
+DEPLOYER_PRIVATE_KEY        # NEVER commit
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
-│   Client    │────▶│    Nginx     │────▶│   PocketBase    │
-│  (Browser)  │     │ (443/80)     │     │    (8090)       │
-└─────────────┘     └──────────────┘     └─────────────────┘
-                           │                      │
-                           │                      ▼
-                    ┌──────────────┐     ┌─────────────────┐
-                    │ Cloudflare   │     │   wallet-srv    │
-                    │     CDN      │     │     (3000)      │
-                    └──────────────┘     └─────────────────┘
-                                                  │
-                                                  ▼
-                                         ┌─────────────────┐
-                                         │   BSC Network   │
-                                         │  (via viem)     │
-                                         └─────────────────┘
-```
+
+**Development defaults:**
+- `POCKETBASE_URL=http://localhost:8090`
+- `WALLET_API_URL=http://localhost:3001`
+- `CORS_ORIGIN=http://localhost:3000`
+
+**Secrets location:**
+- **Development**: `.env.local` (gitignored)
+- **Production**: GitHub Secrets, password manager, or secure vault
+- **NEVER committed**: Private keys, mnemonics, channel secrets
+
+## Security Integrations
+
+**Helmet.js** (`wallet-api/`):
+- Security headers: X-Frame-Options, CSP, HSTS
+- Configured in `wallet-api/src/index.ts`
+
+**CORS:**
+- Configurable via `CORS_ORIGIN`
+- Credentials: true (for auth cookies)
+- Rate limiting: nginx `limit_req_zone`
+
+**Input Validation:**
+- **zod** - Schema validation (frontend + wallet-api)
+- **react-hook-form** - Form validation
+- **PocketBase validators** - Built-in schema rules
+
+**Encryption:**
+- **AES-256** - Wallet private keys (encrypted at rest)
+- Key derivation: PBKDF2 from `WALLET_MASTER_KEY`
 
 ---
 
-*Integration audit: 2026-04-02*
+*Integration audit: 2026-04-15*
