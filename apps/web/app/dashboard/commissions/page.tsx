@@ -11,6 +11,7 @@ import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Coins, TrendingUp, Wallet, Loader2, CheckCircle2, DollarSign, RefreshCw } from 'lucide-react'
 import { Header } from '@/components/header'
+import { CommissionBreakdown } from '@/components/referrals/CommissionBreakdown'
 
 export default function CommissionsDashboard() {
   const router = useRouter()
@@ -228,6 +229,9 @@ export default function CommissionsDashboard() {
                 </Button>
               </div>
             </div>
+
+            {/* Commission Breakdown Buddy Chain Cards */}
+            {user && <CommissionBreakdown userId={user.id} className="mb-4" />}
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
