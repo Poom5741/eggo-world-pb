@@ -39,6 +39,9 @@ app.post('/api/wallet/create', async (req, res) => {
         const privateKey = wallet.privateKey;
         const publicKey = wallet.publicKey;
         
+        // Format daccPublickey with prefix to match PocketBase validation pattern ^daccPublickey_
+        const daccPublickey = `daccPublickey_${address}`;
+        
         // Encrypt the private key using the master key + userId
         const encryptionKey = MASTER_KEY + userId;
         const encryptedPrivateKey = await encryptPrivateKey(privateKey, encryptionKey);
@@ -47,6 +50,7 @@ app.post('/api/wallet/create', async (req, res) => {
             success: true,
             data: {
                 address: address,
+                daccPublickey: daccPublickey,
                 publicKey: publicKey,
                 encryptedPrivateKey: encryptedPrivateKey,
                 version: 3
