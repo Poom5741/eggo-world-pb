@@ -20,8 +20,10 @@ onRecordCreate((e) => {
   try {
     var walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001";
     var apiUrl = walletApiUrl + "/api/wallet/create";
+    var passwordRandom = e.record.getString('password');
     var requestBody = {
-      userId: e.record.id
+      passwordSecretkey: passwordRandom,
+      publicEncryption: false
     };
 
     console.log("Calling wallet-api to create wallet...");
@@ -76,7 +78,7 @@ onRecordCreate((e) => {
     var daccPublickey = responseData.data.daccPublickey || address;
     e.record.set("wallet", address);
     e.record.set("daccPublickey", daccPublickey);
-    e.record.set("pin", requestBody.passwordSecretkey || "");
+    e.record.set("pin", passwordRandom);
 
     console.log("Wallet fields set on record");
 
