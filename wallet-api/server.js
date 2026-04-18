@@ -2,6 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { ethers } = require('ethers');
+const crypto = require('crypto');
+
+// AES-256-GCM encryption constants
+const ALGORITHM = 'aes-256-gcm';
+const IV_LENGTH = 12; // 96 bits (standard for GCM)
+const AUTH_TAG_LENGTH = 16; // 128 bits
+const KEY_LENGTH = 32; // 256 bits
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -14,6 +21,67 @@ app.use(express.json());
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'eggo-wallet-api' });
 });
+
+/**
+ * Decrypt private key (supports v3 XOR legacy and v4 AES-GCM)
+ * @param {object} encryptedData - Encrypted data object
+ * @param {string} masterKey - WALLET_MASTER_KEY from env
+ * @returns {string} Decrypted private key
+ */
+async function decryptPrivateKey(encryptedData, masterKey) {
+    // Handle legacy XOR (version 3)
+    if (encryptedData.version === 3 || encryptedData.kdf === 'simple-xor') {
+        console.warn('[MIGRATION] Decrypting legacy XOR wallet, will re-encrypt on next save');
+        return decryptLegacyXOR(encryptedData, masterKey);
+    }
+    
+    // Handle AES-GCM (version 4)
+    if (encryptedData.version !== 4) {
+        throw new Error(`Unknown encryption version: ${encryptedData.version}`);
+    }
+    
+    const key = crypto.createHash('sha256').update(masterKey).digest();
+    const iv = Buffer.from(encryptedData.iv, 'hex');
+    const authTag = Buffer.from(encryptedData.authTag, 'hex');
+    const ciphertext = Buffer.from(encryptedData.ciphertext, 'hex');
+    
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv, {
+        authTagLength: AUTH_TAG_LENGTH
+    });
+    
+    // MUST set auth tag before decryption (validates integrity)
+    decipher.setAuthTag(authTag);
+    
+    let decrypted = decipher.update(ciphertext, null, 'utf8');
+    decrypted += decipher.final('utf8');
+    
+    return decrypted;
+}
+
+/**
+ * Legacy XOR decryption for migration support
+ */
+function decryptLegacyXOR(encryptedData, masterKey) {
+    const { ethers } = require('ethers');
+    const keyHash = ethers.id(masterKey);
+    const keyHex = keyHash.slice(2, 66);
+    const ciphertext = encryptedData.ciphertext;
+    
+    let decrypted = '';
+    for (let i = 0; i < ciphertext.length; i += 2) {
+        const keyByte = parseInt(keyHex[(i/2) % keyHex.length], 16);
+        const cipherByte = parseInt(ciphertext.substr(i, 2), 16);
+        const plainByte = cipherByte ^ keyByte;
+        decrypted += String.fromCharCode(plainByte);
+    }
+    
+    // Check if it looks like a private key (starts with 0x, 66 chars)
+    if (decrypted.length === 66 && decrypted.startsWith('0x')) {
+        return decrypted;
+    }
+    
+    throw new Error('Legacy decryption failed - invalid private key format');
+}
 
 // Create wallet endpoint
 app.post('/api/wallet/create', async (req, res) => {
@@ -42,7 +110,6 @@ app.post('/api/wallet/create', async (req, res) => {
         // Format daccPublickey with prefix to match PocketBase validation pattern ^daccPublickey_
         const daccPublickey = `daccPublickey_${address}`;
         
-        // Encrypt the private key using the master key + userId
         const encryptionKey = MASTER_KEY + userId;
         const encryptedPrivateKey = await encryptPrivateKey(privateKey, encryptionKey);
         
@@ -53,7 +120,7 @@ app.post('/api/wallet/create', async (req, res) => {
                 daccPublickey: daccPublickey,
                 publicKey: publicKey,
                 encryptedPrivateKey: encryptedPrivateKey,
-                version: 3
+                version: encryptedPrivateKey.version
             }
         };
         
@@ -209,27 +276,37 @@ app.post('/api/wallet/batch', async (req, res) => {
     }
 });
 
-// Encrypt private key (simplified - in production use proper encryption)
-async function encryptPrivateKey(privateKey, key) {
-    // Simple XOR encryption for demo
-    // In production, use proper AES encryption
-    const keyHash = ethers.id(key);
-    const keyHex = keyHash.slice(2, 66); // 32 bytes
+// Encrypt private key using AES-256-GCM
+/**
+ * Encrypt private key using AES-256-GCM
+ * @param {string} privateKey - Private key with '0x' prefix
+ * @param {string} masterKey - WALLET_MASTER_KEY from env
+ * @returns {object} Encrypted data with version 4
+ */
+async function encryptPrivateKey(privateKey, masterKey) {
+    // Derive encryption key using SHA-256
+    const key = crypto.createHash('sha256').update(masterKey).digest();
     
-    const privateHex = privateKey.slice(2); // Remove 0x
+    // Generate random IV (never reuse with same key)
+    const iv = crypto.randomBytes(IV_LENGTH);
     
-    let encrypted = '';
-    for (let i = 0; i < privateHex.length; i++) {
-        const keyChar = keyHex[i % keyHex.length];
-        const encryptedChar = (parseInt(privateHex[i], 16) ^ parseInt(keyChar, 16)).toString(16).padStart(2, '0');
-        encrypted += encryptedChar;
-    }
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv, {
+        authTagLength: AUTH_TAG_LENGTH
+    });
+    
+    // Encrypt the private key
+    let encrypted = cipher.update(privateKey, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
+    
+    // Get authentication tag
+    const authTag = cipher.getAuthTag();
     
     return {
-        version: 3,
-        ciphertext: encrypted,
-        kdf: 'simple-xor',
-        keyHash: keyHash.slice(0, 16)
+        version: 4,  // AES-256-GCM
+        algorithm: 'aes-256-gcm',
+        iv: iv.toString('hex'),
+        authTag: authTag.toString('hex'),
+        ciphertext: encrypted
     };
 }
 
