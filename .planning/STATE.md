@@ -25,8 +25,8 @@
 ## Current Position
 
 **Phase:** 12 — Wallet-API Contract Integration  
-**Plan:** Not started  
-**Status:** Not started
+**Plan:** Context captured, ready for planning  
+**Status:** Context gathered (2026-04-18)
 
 ```
 Progress: [----------] 0/5 phases complete
@@ -35,10 +35,18 @@ Progress: [----------] 0/5 phases complete
 
 **Active Phase Goals:**
 
-- Replace 4 mock blockchain endpoints with real ethers.js contract calls
-- Implement private key decryption flow (AES-256-GCM)
-- Add gas estimation with 20% buffer
-- Return real transaction hashes with block explorer links
+- Replace 4 mock blockchain endpoints with real ethers.js/dacc-js contract calls
+- Implement private key decryption via dacc-js (passwordSecretkey pattern)
+- Add gas sponsorship via USDT (meta-transaction flow)
+- Auto-retry transient errors (3x, nonce bump, exponential backoff)
+- Deploy to 0xl3 testnet (Chain ID: 7117, https://0xl3.com/)
+
+**Key Decisions:**
+
+- Private key: dacc-js with passwordSecretkey (reference pattern)
+- Gas strategy: platform sponsors via USDT payment flow
+- Deployment: 0xl3 testnet first (free gas for testing)
+- ALL designs follow `/resources/pkbase-wallet` reference
 
 **Next Action:** Run `/gsd-plan-phase 12` to decompose phase into executable plans
 
@@ -137,20 +145,28 @@ Progress: [----------] 0/5 phases complete
 
 ## Session Continuity
 
-**Last Session:** 2026-04-18 — v0.0.6 shipped, v0.0.7 roadmap created
+**Last Session:** 2026-04-18 — Phase 12 context gathered
+
+**Session Notes:**
+
+- Phase 12 CONTEXT.md created with 17 implementation decisions
+- Key decisions: dacc-js decryption, USDT gas sponsorship, 0xl3 testnet (7117), auto-retry errors
+- ALL designs follow `/resources/pkbase-wallet` reference implementation
+- Context committed: `.planning/phases/12-wallet-api-contract-integration/12-CONTEXT.md`
 
 **Files to Preserve:**
 
 - `.planning/ROADMAP.md` — Phase structure with success criteria
 - `.planning/STATE.md` — This file (project memory)
 - `.planning/REQUIREMENTS.md` — 16 requirements with traceability
+- `.planning/phases/12-*/12-CONTEXT.md` — Phase 12 implementation decisions
 - `.planning/research/SUMMARY.md` — Research synthesis
 
 **Next Session Actions:**
 
-1. Run `/gsd-plan-phase 12` — Decompose Wallet-API integration into plans
-2. Verify contract addresses are deployed and available
-3. Confirm BSC RPC URL and rate limits
+1. Run `/gsd-plan-phase 12` — Decompose Wallet-API integration into executable plans
+2. Verify 0xl3 testnet RPC access (https://rpc.0xl3.com, Chain ID: 7117)
+3. Check contract deployment prerequisites (Foundry, deployer wallet)
 
 **Context Handoff:**
 
@@ -158,6 +174,7 @@ Progress: [----------] 0/5 phases complete
 - Phase 12 blocks Phases 15 and 16 (contract infrastructure)
 - Phase 14 can run in parallel (mobile polish is independent)
 - P0 security issues (SEC-01 to SEC-08) must be fixed before launch
+- Reference implementation at `/resources/pkbase-wallet` is canonical source
 
 ---
 
@@ -174,7 +191,8 @@ Progress: [----------] 0/5 phases complete
 - PocketBase: `http://localhost:8090` (Docker)
 - Frontend: `http://localhost:3000` (Bun)
 - Wallet API: `http://localhost:3001` (Bun)
-- Network: BSC testnet (Chain ID: 97)
+- Network: 0xl3 testnet (Chain ID: 7117, https://rpc.0xl3.com) ← Phase 12 deployment target
+- Network: BSC testnet (Chain ID: 97) ← Legacy, use 0xl3 for Phase 12
 
 **SSH Access:**
 
