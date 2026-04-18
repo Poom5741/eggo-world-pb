@@ -199,6 +199,19 @@
         "type": "number"
       },
       {
+        "hidden": true,
+        "id": "text_encrypted_private_key",
+        "max": 1024,
+        "min": 0,
+        "name": "encrypted_private_key",
+        "pattern": "",
+        "presentable": false,
+        "primaryKey": false,
+        "required": false,
+        "system": false,
+        "type": "text"
+      },
+      {
         "hidden": false,
         "id": "number_usdt_balance",
         "max": 999999999,
