@@ -14,6 +14,54 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const MASTER_KEY = process.env.WALLET_MASTER_KEY || 'change-this-master-key-in-production';
 
+// Blockchain configuration
+const RPC_URL = process.env.RPC_URL || 'https://rpc.0xl3.com';
+const CHAIN_ID = parseInt(process.env.CHAIN_ID || '7117');
+const CONFIRMATIONS = 12; // Wait for 12 confirmations
+const GAS_BUFFER_PERCENT = 20; // 20% gas buffer
+
+// PocketBase admin credentials for fetching user wallet data
+const PB_URL = process.env.POCKETBASE_URL || 'https://pb.eggoworld.io';
+const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL || '';
+const PB_ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD || '';
+
+// Load contract addresses from JSON file
+const fs = require('fs');
+const path = require('path');
+let CONTRACT_ADDRESSES = {};
+try {
+  const addressesPath = path.join(__dirname, '../contracts/contract-addresses.json');
+  CONTRACT_ADDRESSES = JSON.parse(fs.readFileSync(addressesPath, 'utf8'));
+  console.log('Loaded contract addresses:', JSON.stringify(CONTRACT_ADDRESSES[CHAIN_ID], null, 2));
+} catch (error) {
+  console.error('Failed to load contract addresses:', error.message);
+}
+
+// Minimal ABI for EggNFT (mintEgg function)
+const EGG_NFT_ABI = [
+  "function mintEgg(uint256 eggId) external payable returns (uint256)",
+  "function mintPrice() external view returns (uint256)",
+  "function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256)",
+  "function ownerOf(uint256 tokenId) external view returns (address)",
+  "function setFoodNFTContract(address _foodNft) external",
+  "function setAnimalNFTContract(address _animalNft) external"
+];
+
+// Minimal ABI for FoodNFT (mint function)
+const FOOD_NFT_ABI = [
+  "function mint(address to, uint256 foodType, uint256 quantity) external payable returns (uint256[] memory)",
+  "function mintPrice() external view returns (uint256)",
+  "function setEggNFTContract(address _eggNft) external"
+];
+
+// Minimal ABI for CommissionDistribution
+const COMMISSION_ABI = [
+  "function claimCommission() external returns (uint256)",
+  "function getCommissionBalance(address user) external view returns (uint256)",
+  "function setEggNFTContract(address _eggNft) external",
+  "function setFoodNFTContract(address _foodNft) external"
+];
+
 app.use(cors());
 app.use(express.json());
 
