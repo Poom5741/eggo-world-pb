@@ -116,38 +116,16 @@ SELL / HOLD / BREED on Marketplace
 
 ---
 
-## Next Milestone: v0.0.7 Security & Quality
+## Current Milestone: v0.0.7 Security & Quality
 
 **Goal:** Address technical debt, improve security, and complete mobile polish
 
-### Focus Areas
+**Target features:**
 
-1. **Security (P0)**
-   - Replace 4 mock blockchain endpoints in wallet-api with real ethers.js calls
-   - Implement proper private key decryption and contract interaction
-
-2. **Quality (P1)**
-   - Fix vi.mock test setup issues (9 pre-existing failures)
-   - Improve test coverage from 70% to 80%+
-   - Implement track-deposit hook (USDT Transfer event polling)
-
-3. **Mobile Polish (P2)**
-   - Responsive breakpoints (320px, 768px, 1024px, 1440px)
-   - Touch interactions (tap, swipe-to-refresh)
-   - Wire Feed/Play buttons in eggs page
-
-4. **Features (P2)**
-   - Complete remaining marketplace features
-   - Implement Feed feature (currently TODO button)
-   - Decide on Play feature (game design pending)
-
-### Next Steps
-
-**Phase 14-15 planning** will begin with `/gsd-new-milestone` workflow:
-
-- Requirements definition (questioning → research)
-- Phase breakdown (14 plans expected)
-- Roadmap creation
+- **Security (P0):** Replace 4 mock blockchain endpoints in wallet-api with real ethers.js contract calls
+- **Quality (P1):** Fix 9 vi.mock test failures, implement track-deposit hook (USDT polling)
+- **Mobile Polish (P2):** Responsive breakpoints (320px-1440px), touch interactions, wire Feed/Play buttons
+- **Features (P2):** Complete remaining marketplace features, implement Feed feature
 
 ---
 
@@ -163,7 +141,7 @@ SELL / HOLD / BREED on Marketplace
 
 ### Active (v0.0.7)
 
-TBD — Requirements will be defined during v0.0.7 planning
+Requirements being defined — see REQUIREMENTS.md
 
 ### Out of Scope
 
@@ -220,4 +198,4 @@ TBD — Requirements will be defined during v0.0.7 planning
 
 ---
 
-_Last updated: 2026-04-18 after v0.0.6 completion_
+_Last updated: 2026-04-18 — Milestone v0.0.7 Security & Quality started_
