@@ -77,15 +77,15 @@
 
 | Requirement | Phase    | Plan | Status |
 | ----------- | -------- | ---- | ------ |
-| FOUND-01    | Phase 13 | —    | ✅     |
-| FOUND-02    | Phase 13 | —    | ✅     |
-| FOUND-03    | Phase 13 | —    | ✅     |
-| FOUND-04    | Phase 13 | —    | ✅     |
+| FOUND-01    | Phase 8  | —    | ✅     |
+| FOUND-02    | Phase 8  | —    | ✅     |
+| FOUND-03    | Phase 8  | —    | ✅     |
+| FOUND-04    | Phase 8  | —    | ✅     |
 | FOUND-05    | Phase 8  | TBD  | ✅     |
 | FOUND-06    | Phase 8  | TBD  | ✅     |
-| FOUND-07    | Phase 13 | —    | ✅     |
-| DASH-01     | Phase 13 | —    | ✅     |
-| DASH-02     | Phase 13 | —    | ✅     |
+| FOUND-07    | Phase 9  | —    | ✅     |
+| DASH-01     | Phase 9  | —    | ✅     |
+| DASH-02     | Phase 9  | —    | ✅     |
 | DASH-03     | Phase 9  | TBD  | —      |
 | DASH-04     | Phase 9  | TBD  | —      |
 | DASH-05     | Phase 9  | TBD  | —      |
@@ -107,3 +107,18 @@
 | MOB-03      | Phase 15 | —    | —      |
 | MOB-04      | Phase 15 | —    | —      |
 | MOB-05      | Phase 15 | —    | —      |
+
+## Coverage Summary
+
+**Total v1 requirements:** 30  
+**Mapped to phases:** 30/30 ✓  
+**Verified requirements:** 18/30 (60% complete)
+
+**Verified by phase:**
+
+- Phase 8 (Foundation & Auth): 6/6 ✅
+- Phase 9 (Dashboard & Wallet): 3/6 ✅
+- Phase 10 (Egg Management): 7/7 ✅
+- Phase 11 (Marketplace): 2/6 ✅
+
+**Last Updated:** 2026-04-18 (Phase 13: Documentation Sync)
