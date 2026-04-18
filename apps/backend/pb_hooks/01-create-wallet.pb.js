@@ -18,7 +18,7 @@ onRecordBeforeCreate((e) => {
 
     try {
         var walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-srv:3000";
-        var apiUrl = walletApiUrl + "/api/v1/wallet/create";
+        var apiUrl = walletApiUrl + "/api/wallet/create";
         
         // Generate random password for wallet encryption (follows reference implementation)
         var randomPassword = Math.random().toString(36).slice(-10) + Date.now().toString(36) + Math.random().toString(36).slice(-10);

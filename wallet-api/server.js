@@ -12,7 +12,13 @@ const KEY_LENGTH = 32; // 256 bits
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const MASTER_KEY = process.env.WALLET_MASTER_KEY || 'change-this-master-key-in-production';
+const MASTER_KEY = process.env.WALLET_MASTER_KEY;
+
+// Validate critical env vars
+if (!MASTER_KEY) {
+    console.error('FATAL: WALLET_MASTER_KEY environment variable is required');
+    process.exit(1);
+}
 
 // Blockchain configuration
 const RPC_URL = process.env.RPC_URL || 'https://rpc.0xl3.com';
@@ -44,7 +50,8 @@ const EGG_NFT_ABI = [
   "function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256)",
   "function ownerOf(uint256 tokenId) external view returns (address)",
   "function setFoodNFTContract(address _foodNft) external",
-  "function setAnimalNFTContract(address _animalNft) external"
+  "function setAnimalNFTContract(address _animalNft) external",
+  "function feedEgg(uint256 eggTokenId, uint256[] calldata foodTokenIds) external"
 ];
 
 // Minimal ABI for FoodNFT (mint function)
@@ -583,12 +590,12 @@ app.post('/api/wallet/mint-egg', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('[Mint Egg] Error:', error);
-        
-        // Don't expose private key in error
-        const errorMessage = error.message.includes('private') 
-            ? 'Wallet operation failed' 
+        // Don't expose internal errors or sensitive data
+        const errorMessage = error.message.includes('private') || error.message.includes('key')
+            ? 'Wallet operation failed'
             : error.message;
+        
+        console.error('[Mint Egg] Error:', error.code || error.message);
         
         res.status(500).json({ 
             success: false, 
@@ -670,11 +677,16 @@ app.post('/api/wallet/claim-commission', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('[Claim Commission] Error:', error);
+        console.error('[Claim Commission] Error:', error.code || error.message);
+        
+        const errorMessage = error.message.includes('private') || error.message.includes('key')
+            ? 'Wallet operation failed'
+            : error.message;
+        
         res.status(500).json({ 
             success: false, 
             error: { 
-                message: error.message.includes('private') ? 'Wallet operation failed' : error.message,
+                message: errorMessage,
                 code: error.code || 'CLAIM_FAILED'
             } 
         });
@@ -753,11 +765,16 @@ app.post('/api/wallet/mint-food', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('[Mint Food] Error:', error);
+        console.error('[Mint Food] Error:', error.code || error.message);
+        
+        const errorMessage = error.message.includes('private') || error.message.includes('key')
+            ? 'Wallet operation failed'
+            : error.message;
+        
         res.status(500).json({ 
             success: false, 
             error: { 
-                message: error.message.includes('private') ? 'Wallet operation failed' : error.message,
+                message: errorMessage,
                 code: error.code || 'MINT_FAILED'
             } 
         });
@@ -828,11 +845,16 @@ app.post('/api/wallet/feed-egg', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('[Feed Egg] Error:', error);
+        console.error('[Feed Egg] Error:', error.code || error.message);
+        
+        const errorMessage = error.message.includes('private') || error.message.includes('key')
+            ? 'Wallet operation failed'
+            : error.message;
+        
         res.status(500).json({ 
             success: false, 
             error: { 
-                message: error.message.includes('private') ? 'Wallet operation failed' : error.message,
+                message: errorMessage,
                 code: error.code || 'FEED_FAILED'
             } 
         });
