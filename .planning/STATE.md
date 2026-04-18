@@ -77,8 +77,9 @@ _Decisions Log:_
 **Dec 11-01-D1:** Use existing BuyFlow component implementation (already in codebase)  
 **Dec 11-01-D2:** Add cancelListing to ABI for feature completeness  
 **Dec 11-01-D3:** Create 6 focused UI behavior tests for BuyFlow  
-**Dec 11-01-D4:** Integrate with parseUnits from ethers v6 for price conversion
+**Dec 11-01-D4:** Integrate with parseUnits from ethers v6 for price conversion  
+**Dec 0.0.6-SUMMARY:** Generate MILESTONE_SUMMARY-v0.0.6.md for team onboarding (2026-04-18)
 
 ---
 
-_Updated: 2026-04-15 — Phase 11 Plan 01: Buy flow complete with tests_
+_Updated: 2026-04-18 — Milestone v0.0.6 summary generated (4/5 phases complete, 80% done)_
