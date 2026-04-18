@@ -1,0 +1,23 @@
+{
+  "7117": {
+    "usdt": "DEPLOY_ME_FIRST",
+    "commission": "DEPLOY_ME_FIRST",
+    "animalNft": "DEPLOY_ME_FIRST",
+    "eggNft": "DEPLOY_ME_FIRST",
+    "foodNft": "DEPLOY_ME_FIRST"
+  },
+  "56": {
+    "usdt": "USDT_BSC_MAINNET_ADDRESS",
+    "commission": "TO_BE_DEPLOYED",
+    "animalNft": "TO_BE_DEPLOYED",
+    "eggNft": "TO_BE_DEPLOYED",
+    "foodNft": "TO_BE_DEPLOYED"
+  },
+  "97": {
+    "usdt": "USDT_BSC_TESTNET_ADDRESS",
+    "commission": "LEGACY_TESTNET",
+    "animalNft": "LEGACY_TESTNET",
+    "eggNft": "LEGACY_TESTNET",
+    "foodNft": "LEGACY_TESTNET"
+  }
+}
