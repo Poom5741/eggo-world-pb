@@ -1,5 +1,22 @@
 # Milestones
 
+## v2.0 Contract Interactions & Game Features (Planned)
+
+**Status:** Planning
+
+**Priority Issues:**
+
+- **P0:** Mock contract interactions (4 wallet-api endpoints)
+- **P1:** RED PHASE test (track-deposit hook)
+- **P2:** Feed feature (UI + backend + wallet-api)
+- **P2:** Play feature (game design needed)
+
+**Phases:** 5 planned (see .planning/milestones/v2.0/ROADMAP.md)
+
+**Dependencies:** Contract deployment must complete before wallet-api implementation
+
+---
+
 ## v0.0.5 Claymorphism UI Launch (Shipped: 2026-04-05)
 
 **Phases completed:** 7 phases, 26 plans, 40 tasks
