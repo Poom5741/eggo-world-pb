@@ -1,5 +1,27 @@
 # Milestones
 
+## v0.0.6 Frontend Migration & Integration (Shipped: 2026-04-18)
+
+**Phases completed:** 7 phases, 14 plans, 25 tasks
+
+**Key accomplishments:**
+
+- None
+- Total: 16 tests passing across 3 components
+- Landing page, Join page, and OAuth callback handler with claymorphism design, Material Symbols icons, and full TDD test coverage (18 tests)
+- Completed:
+- None
+- Purpose:
+- FeaturedEggHero Component (`apps/web/components/eggs/featured-egg-hero.tsx`):
+- Phase 10 Plan 03: Hatch Flow Implementation
+- Part A - HatchRevealModal (`apps/web/components/eggs/hatch-reveal-modal.tsx`):
+- One-liner:
+- None
+- One-liner:
+- Completed:
+
+---
+
 ## v2.0 Contract Interactions & Game Features (Planned)
 
 **Status:** Planning
