@@ -485,9 +485,16 @@ app.post('/api/v1/wallet/transfer', async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('[Transfer] Error:', error.code || error.message);
+        
+        // Sanitize error message (never expose sensitive data)
+        const errorMessage = error.message.includes('private') || error.message.includes('key')
+            ? 'Transfer operation failed'
+            : error.message;
+        
         res.status(500).json({ 
             success: false, 
-            error: error.message 
+            error: errorMessage 
         });
     }
 });
@@ -516,9 +523,16 @@ app.post('/api/v1/wallet/balance', async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('[Balance] Error:', error.code || error.message);
+        
+        // Sanitize error message (never expose sensitive data)
+        const errorMessage = error.message.includes('private') || error.message.includes('key')
+            ? 'Balance query failed'
+            : error.message;
+        
         res.status(500).json({ 
             success: false, 
-            error: error.message 
+            error: errorMessage 
         });
     }
 });
