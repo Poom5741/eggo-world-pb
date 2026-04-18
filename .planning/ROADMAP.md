@@ -32,8 +32,13 @@
 2. User can claim referral commission and see real blockchain transaction in wallet
 3. User can mint Food NFT with real USDT deduction from wallet
 4. User can feed Egg NFT with real blockchain transaction updating food_count
-   **Plans**: TBD
+   **Plans**: 3 plans (8 tasks total)
    **UI hint**: no
+
+   Plans:
+   - [ ] 12-01-PLAN.md — Deploy contracts to 0xl3 testnet, create address registry
+   - [ ] 12-02-PLAN.md — Replace mint-egg and mint-food mocks with real contract calls
+   - [ ] 12-03-PLAN.md — Replace claim-commission and feed-egg mocks, add gas sponsorship
 
 ---
 
