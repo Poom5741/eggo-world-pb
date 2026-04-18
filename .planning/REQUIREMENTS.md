@@ -30,12 +30,12 @@
 
 ## Marketplace Integration
 
-- [ ] **MKT-01**: Marketplace page lists all available NFTs from PocketBase
-- [ ] **MKT-02**: Product detail page shows NFT metadata and price
-- [ ] **MKT-03**: Buy flow approves USDT then executes marketplace purchase
-- [ ] **MKT-04**: Sell flow creates marketplace listing with escrow
-- [ ] **MKT-05**: Commission breakdown displays 4-level referral distribution
-- [ ] **MKT-06**: Transaction confirmation updates UI after blockchain sync
+- [x] **MKT-01**: Marketplace page lists all available NFTs from PocketBase
+- [x] **MKT-02**: Product detail page shows NFT metadata and price
+- [x] **MKT-03**: Buy flow approves USDT then executes marketplace purchase
+- [x] **MKT-04**: Sell flow creates marketplace listing with escrow
+- [x] **MKT-05**: Commission breakdown displays 4-level referral distribution
+- [x] **MKT-06**: Transaction confirmation updates UI after blockchain sync
 
 ## Mobile & Polish
 
@@ -96,12 +96,12 @@
 | EGG-05      | Phase 10 | 03   | ✅     |
 | EGG-06      | Phase 10 | 03   | ✅     |
 | EGG-07      | Phase 10 | 03   | ✅     |
-| MKT-01      | Phase 11 | TBD  | —      |
-| MKT-02      | Phase 11 | TBD  | —      |
-| MKT-03      | Phase 11 | TBD  | —      |
-| MKT-04      | Phase 11 | TBD  | —      |
-| MKT-05      | Phase 11 | TBD  | —      |
-| MKT-06      | Phase 11 | TBD  | —      |
+| MKT-01      | Phase 11 | 03   | ✅     |
+| MKT-02      | Phase 11 | 01   | ✅     |
+| MKT-03      | Phase 11 | 01   | ✅     |
+| MKT-04      | Phase 11 | 02   | ✅     |
+| MKT-05      | Phase 11 | 02   | ✅     |
+| MKT-06      | Phase 11 | 03   | ✅     |
 | MOB-01      | Phase 12 | TBD  | —      |
 | MOB-02      | Phase 12 | TBD  | —      |
 | MOB-03      | Phase 12 | TBD  | —      |
