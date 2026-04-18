@@ -14,6 +14,9 @@
 - [x] **Phase 10: Egg Management** - Egg listing, feeding flow, hatching mechanics (completed 2026-04-05)
 - [ ] **Phase 11: Marketplace** - NFT listings, buy/sell flows, commission display
 - [ ] **Phase 12: Mobile & Polish** - Responsive breakpoints, touch interactions, test coverage
+- [ ] **Phase 13: Documentation Sync** - Update REQUIREMENTS.md for verified Phase 8-9 requirements
+- [ ] **Phase 14: Complete Marketplace** - Finish Phase 11 Plans 02-03 and create VERIFICATION.md
+- [ ] **Phase 15: Mobile & Polish** - Responsive design, touch interactions, test coverage
 
 ---
 
@@ -123,17 +126,81 @@
    **Plans:** TBD
    **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
 
+### Phase 13: Documentation Sync
+
+**Goal**: Update REQUIREMENTS.md to reflect verified requirements from Phases 8-9  
+**Depends on:** Nothing (administrative task)  
+**Requirements:** FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-07, DASH-01, DASH-02  
+**Success Criteria** (what must be TRUE):
+
+1. REQUIREMENTS.md checkboxes updated for FOUND-01/02/03/04 (Phase 8 verified)
+2. REQUIREMENTS.md checkboxes updated for FOUND-07, DASH-01/02 (Phase 9 verified)
+3. Traceability table updated with correct phase mappings
+4. Coverage count updated to reflect 19/30 verified requirements
+   **Plans:** 1 plan
+   **Tasks:** 1 task
+   - [ ] Update REQUIREMENTS.md checkboxes and traceability table
+         **Status:** Pending
+         **Gap Closure:** Closes documentation gaps from audit
+
+### Phase 14: Complete Marketplace
+
+**Goal**: Complete Phase 11 implementation with sell flow, filters, and verification  
+**Depends on:** Phase 8 (auth), Phase 9 (wallet integration)  
+**Requirements:** MKT-01, MKT-04, MKT-05, MKT-06  
+**Success Criteria** (what must be TRUE):
+
+1. Marketplace page lists NFTs with filters (MKT-01)
+2. Sell flow creates marketplace listing with escrow (MKT-04)
+3. Commission breakdown displays 4-level referral distribution (MKT-05)
+4. Transaction confirmation updates UI after blockchain sync (MKT-06)
+5. 11-VERIFICATION.md created and all MKT requirements verified
+   **Plans:** 2 plans (completing existing Phase 11)
+   **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
+   **Tasks:** 3 tasks
+   - [ ] Complete Plan 02: Sell flow + commission UI
+   - [ ] Complete Plan 03: Marketplace filters + polling
+   - [ ] Create 11-VERIFICATION.md artifact
+         **Status:** Pending
+         **Gap Closure:** Closes integration gap (Phase 11 blocks MKT requirements), buy/sell flow gap
+
+### Phase 15: Mobile & Polish
+
+**Goal**: Application is fully responsive with touch support and complete test coverage  
+**Depends on:** Phases 8-14 (all features implemented and verified)  
+**Requirements:** MOB-01, MOB-02, MOB-03, MOB-04, MOB-05  
+**Success Criteria** (what must be TRUE):
+
+1. BottomNav toggles visibility correctly at mobile breakpoints (MOB-01)
+2. All pages responsive at 320px, 768px, 1024px, 1440px (MOB-02)
+3. Touch interactions work correctly (tap, swipe) (MOB-03)
+4. All 63+ tests pass (MOB-04)
+5. Build passes with zero errors and warnings (MOB-05)
+   **Plans:** TBD
+   **TDD Workflow:** Red (test specs) → Green (implement) → Refactor (optimize) commits per feature
+   **Tasks:** 5 tasks
+   - [ ] Implement responsive breakpoints for all pages
+   - [ ] Add touch interaction support (swipe-to-refresh)
+   - [ ] Verify all tests pass
+   - [ ] Verify build passes with zero errors
+   - [ ] Create 12-VERIFICATION.md artifact
+         **Status:** Pending
+         **Gap Closure:** Closes integration gap (Phase 12 blocks MOB requirements), mobile responsive flow gap
+
 ---
 
 ## Progress
 
-| Phase                  | Requirements | Success Criteria | Plans Complete | Status      | Completed  |
-| ---------------------- | ------------ | ---------------- | -------------- | ----------- | ---------- |
-| 8 - Foundation & Auth  | 6            | 6                | 3/3            | Complete    | 2026-04-05 |
-| 9 - Dashboard & Wallet | 6            | 6                | 3/3            | Complete    | 2026-04-05 |
-| 10 - Egg Management    | 7            | 7                | 4/4            | Complete    | 2026-04-05 |
-| 11 - Marketplace       | 6            | 6                | 1/3            | In progress | -          |
-| 12 - Mobile & Polish   | 5            | 5                | 0/0            | Not started | -          |
+| Phase                     | Requirements | Success Criteria | Plans Complete | Status      | Completed  |
+| ------------------------- | ------------ | ---------------- | -------------- | ----------- | ---------- |
+| 8 - Foundation & Auth     | 6            | 6                | 3/3            | Complete    | 2026-04-05 |
+| 9 - Dashboard & Wallet    | 6            | 6                | 3/3            | Complete    | 2026-04-05 |
+| 10 - Egg Management       | 7            | 7                | 4/4            | Complete    | 2026-04-05 |
+| 11 - Marketplace          | 6            | 6                | 1/3            | In progress | -          |
+| 12 - Mobile & Polish      | 5            | 5                | 0/0            | Not started | -          |
+| 13 - Documentation Sync   | 7            | 4                | 0/1            | Not started | -          |
+| 14 - Complete Marketplace | 4            | 4                | 0/2            | Not started | -          |
+| 15 - Mobile & Polish      | 5            | 5                | 0/1            | Not started | -          |
 
 ---
 
