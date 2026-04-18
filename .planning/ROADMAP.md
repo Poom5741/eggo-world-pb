@@ -1,82 +1,172 @@
-# Roadmap: EggoWorld NFT Platform
+# Roadmap — v0.0.7 Security & Quality
 
-**Current Milestone:** ✅ v0.0.6 Complete (2026-04-18)
-
----
-
-## Milestones
-
-- ✅ **v0.0.5 Claymorphism UI Launch** — Phases 1-7 (shipped 2026-04-05)
-- ✅ **v0.0.6 Frontend Migration & Integration** — Phases 8-11, 13 (shipped 2026-04-18)
-- 📋 **v0.0.7 Security & Quality** — Phases 14-15 (planned)
+**Milestone:** Security & Quality  
+**Created:** 2026-04-18  
+**Status:** Not started  
+**Phases:** 5 (12-16)  
+**Granularity:** Standard (from config: 2-week timeline, solo developer)  
+**Coverage:** 16/16 requirements mapped ✓
 
 ---
 
 ## Phases
 
-### ✅ v0.0.6 Frontend Migration & Integration (SHIPPED 2026-04-18)
-
-**Summary:** Complete frontend migration with TDD workflow, real-time wallet integration, NFT marketplace, and documentation sync.
-
-<details>
-<summary>Phase details (click to expand)</summary>
-
-- [x] **Phase 8:** Foundation & Auth (3/3 plans) — Landing page, LINE OAuth, navigation ✅
-- [x] **Phase 9:** Dashboard & Wallet (3/3 plans) — Balance tracking, referrals ✅
-- [x] **Phase 10:** Egg Management (4/4 plans) — Feed/hatch flows ✅
-- [x] **Phase 11:** Marketplace (3/3 plans) — Buy/sell flows, commission display ✅
-- [x] **Phase 13:** Documentation Sync (1/1 plan) — REQUIREMENTS.md traceability ✅
-
-**Requirements:** 25/25 satisfied (100%)
-**Integration:** All E2E flows verified ✅
-
-</details>
+- [ ] **Phase 12: Wallet-API Contract Integration** — Replace 4 mock blockchain endpoints with real ethers.js contract calls
+- [ ] **Phase 13: USDT Deposit Tracking** — Implement event polling service with 12-block confirmation wait
+- [ ] **Phase 14: Mobile Responsive Polish** — Bottom tab bar, touch targets, responsive breakpoints (320px-1440px)
+- [ ] **Phase 15: Feed Feature** — Wire Feed button, food picker UI, progress tracking, hatch animation
+- [ ] **Phase 16: Play Feature + Test Infrastructure** — Daily check-in reward system, fix vi.mock failures, increase test coverage
 
 ---
 
-### 📋 v0.0.7 Security & Quality (PLANNED)
+## Phase Details
 
-**Goal:** Address technical debt, improve security, and complete mobile polish
+### Phase 12: Wallet-API Contract Integration
 
-<details>
-<summary>Planned phases (click to expand)</summary>
+**Goal:** Users can execute real blockchain transactions for minting and claiming (no mock data)  
+**Depends on:** Nothing (foundation phase)  
+**Requirements:** SEC-01, SEC-02, SEC-03, SEC-04  
+**Success Criteria** (what must be TRUE):
 
-- [ ] **Phase 14:** Complete Marketplace — Finish remaining marketplace features
-- [ ] **Phase 15:** Mobile & Polish — Responsive design, touch interactions, test coverage
-
-**Requirements:** TBD (will be defined in v0.0.7 planning)
-
-</details>
-
----
-
-## Progress
-
-| Phase                     | Milestone | Plans Complete | Status      | Completed  |
-| ------------------------- | --------- | -------------- | ----------- | ---------- |
-| 8 - Foundation & Auth     | v0.0.6    | 3/3            | ✅ Complete | 2026-04-05 |
-| 9 - Dashboard & Wallet    | v0.0.6    | 3/3            | ✅ Complete | 2026-04-05 |
-| 10 - Egg Management       | v0.0.6    | 4/4            | ✅ Complete | 2026-04-05 |
-| 11 - Marketplace          | v0.0.6    | 3/3            | ✅ Complete | 2026-04-18 |
-| 13 - Documentation Sync   | v0.0.6    | 1/1            | ✅ Complete | 2026-04-18 |
-| 14 - Complete Marketplace | v0.0.7    | 0/2            | 📋 Planned  | -          |
-| 15 - Mobile & Polish      | v0.0.7    | 0/1            | 📋 Planned  | -          |
-
-**Total:** 14/14 plans complete in v0.0.6 (100%)
+1. User can mint Egg NFT and receive real transaction hash with 12+ block confirmations
+2. User can claim referral commission and see real blockchain transaction in wallet
+3. User can mint Food NFT with real USDT deduction from wallet
+4. User can feed Egg NFT with real blockchain transaction updating food_count
+   **Plans**: TBD
+   **UI hint**: no
 
 ---
 
-## Next Milestone Goals (v0.0.7)
+### Phase 13: USDT Deposit Tracking
 
-**Focus Areas:**
+**Goal:** Users see USDT deposits automatically tracked and confirmed after 12 blocks  
+**Depends on:** Phase 12 (contract infrastructure)  
+**Requirements:** SEC-05, SEC-06, SEC-07, SEC-08  
+**Success Criteria** (what must be TRUE):
 
-1. **Security:** Replace mock blockchain calls with real contract interactions
-2. **Quality:** Fix test setup issues, improve test coverage to 80%+
-3. **Mobile:** Responsive breakpoints, touch interactions
-4. **Features:** Complete remaining marketplace and egg management features
-
-**Requirements Definition:** Will be created via `/gsd-new-milestone` workflow
+1. System polls USDT Transfer events every 30 seconds and detects deposits within 60 seconds
+2. Deposit shows "pending" state until 12 block confirmations, then transitions to "confirmed"
+3. Duplicate deposit attempts (same tx_hash) are rejected with existing record returned
+4. User receives in-app notification when deposit is confirmed with updated balance
+   **Plans**: TBD
 
 ---
 
-_Updated: 2026-04-18 after v0.0.6 completion_
+### Phase 14: Mobile Responsive Polish
+
+**Goal:** Users on mobile devices (< 640px) have optimized navigation and touch interactions  
+**Depends on:** Nothing (can run parallel)  
+**Requirements:** QUAL-03, QUAL-04, QUAL-05, QUAL-06  
+**Success Criteria** (what must be TRUE):
+
+1. Mobile users see bottom tab bar with 4-5 navigation items (replaces hamburger menu)
+2. All buttons, links, and inputs meet 44×44px minimum touch target (WCAG 2.2 compliant)
+3. Layout renders correctly at all 5 breakpoints (320px, 375px, 768px, 1024px, 1440px) without horizontal scroll
+4. iOS devices don't zoom when focusing input fields (16px minimum font-size)
+   **Plans**: TBD
+   **UI hint**: yes
+
+---
+
+### Phase 15: Feed Feature
+
+**Goal:** Users can feed Eggs with Food NFTs and watch progress toward hatching  
+**Depends on:** Phase 12 (wallet-api contract calls)  
+**Requirements:** FEAT-01, FEAT-02, FEAT-03, FEAT-04  
+**Success Criteria** (what must be TRUE):
+
+1. User can tap Feed button on eggs page and see food NFT picker modal open
+2. User can select up to 10 food NFTs with counter showing "X/10 food selected"
+3. Egg card displays progress bar showing food_count / 10 and visual indicator when ready to hatch
+4. Consumed food NFTs are marked as "used" in database and hidden from future picker
+   **Plans**: TBD
+   **UI hint**: yes
+
+---
+
+### Phase 16: Play Feature + Test Infrastructure
+
+**Goal:** Users can claim daily check-in rewards and test suite has no setup failures with 80%+ coverage  
+**Depends on:** Phase 12 (contract infrastructure for test coverage)  
+**Requirements:** QUAL-01, QUAL-02, FEAT-05, FEAT-06, FEAT-07, FEAT-08, FEAT-09  
+**Success Criteria** (what must be TRUE):
+
+1. Test suite runs without vi.mock setup errors (all 9 failures fixed)
+2. Test coverage increases from 70% to 80%+ with tests for new features
+3. User can tap Play button and see daily check-in interface with countdown timer
+4. User can claim daily reward (1 Food NFT) and see streak counter increment
+5. USDT balance auto-refreshes every 30 seconds with exponential backoff
+6. User can tap balance to see detailed breakdown with transaction history
+   **Plans**: TBD
+   **UI hint**: yes
+
+---
+
+## Progress Table
+
+| Phase                                  | Plans Complete | Status      | Completed |
+| -------------------------------------- | -------------- | ----------- | --------- |
+| 12. Wallet-API Contract Integration    | 0/4            | Not started | -         |
+| 13. USDT Deposit Tracking              | 0/4            | Not started | -         |
+| 14. Mobile Responsive Polish           | 0/4            | Not started | -         |
+| 15. Feed Feature                       | 0/4            | Not started | -         |
+| 16. Play Feature + Test Infrastructure | 0/7            | Not started | -         |
+
+---
+
+## Requirement Coverage
+
+**Total:** 16/16 v1 requirements mapped ✓
+
+| Phase | Requirements                                                  | Count |
+| ----- | ------------------------------------------------------------- | ----- |
+| 12    | SEC-01, SEC-02, SEC-03, SEC-04                                | 4     |
+| 13    | SEC-05, SEC-06, SEC-07, SEC-08                                | 4     |
+| 14    | QUAL-03, QUAL-04, QUAL-05, QUAL-06                            | 4     |
+| 15    | FEAT-01, FEAT-02, FEAT-03, FEAT-04                            | 4     |
+| 16    | QUAL-01, QUAL-02, FEAT-05, FEAT-06, FEAT-07, FEAT-08, FEAT-09 | 7     |
+
+**Verification:**
+
+- No orphaned requirements ✓
+- No duplicate mappings ✓
+- All P0 (SEC) requirements in Phases 12-13 ✓
+- All P1 (QUAL, FEAT) requirements in Phases 14-16 ✓
+
+---
+
+## Dependencies
+
+```
+Phase 12 (Wallet-API Contract) → Foundation for Phases 15, 16
+       ↓
+Phase 13 (USDT Deposit) → Standalone, parallel with 14
+       ↓
+Phase 15 (Feed Feature) → Depends on Phase 12
+       ↓
+Phase 16 (Play + Tests) → Depends on Phase 12
+
+Phase 14 (Mobile Polish) → Independent, can run parallel
+```
+
+---
+
+## Notes
+
+**Phase numbering:** Continuing from v0.0.6 (ended at Phase 11)
+
+**UI Phases detected:** 14, 15, 16 (will suggest `/gsd-ui-phase` during planning)
+
+**Research flags:**
+
+- Phase 12: ❌ No research needed (standard ethers.js patterns)
+- Phase 13: ⚠️ Maybe (BSC reorg behavior validation during planning)
+- Phase 14: ❌ No research needed (standard responsive patterns)
+- Phase 15: ❌ No research needed (standard database ACID)
+- Phase 16: ❌ No research needed (existing test infrastructure)
+
+**Critical path:** Phase 12 → Phase 15 → Phase 16
+
+---
+
+_Last updated: 2026-04-18 — Roadmap created by gsd-roadmapper_

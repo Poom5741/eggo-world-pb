@@ -1,62 +1,199 @@
----
-gsd_state_version: 1.0
-milestone: v0.0.7
-milestone_name: Security & Quality
-status: defining_requirements
-last_updated: "2026-04-18T00:00:00.000Z"
-progress:
-  total_phases: 0
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
----
+# STATE.md — Project Memory
 
-# Project State
-
+**Project:** Egg × Food × Animal NFT Marketplace  
 **Milestone:** v0.0.7 Security & Quality  
-**Status:** Defining requirements  
-**Last Updated:** 2026-04-18 — Milestone v0.0.7 started
+**Network:** BNB SmartChain (BSC)  
+**Token:** USDT (BEP-20)
+
+---
+
+## Project Reference
+
+**Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
+
+**Current Focus:** Phase 12 — Wallet-API Contract Integration (P0 security-critical foundation)
+
+**Constraints:**
+
+- 2-week timeline (urgent)
+- Solo developer
+- Static export for Cloudflare Pages
+- LINE OAuth only (no email/password)
+
+---
 
 ## Current Position
 
-Phase: Not started (defining requirements)  
-Plan: —  
-Status: Defining requirements  
-Last activity: 2026-04-18 — Milestone v0.0.7 started
+**Phase:** 12 — Wallet-API Contract Integration  
+**Plan:** Not started  
+**Status:** Not started
 
-## Accumulated Context (from v0.0.6)
+```
+Progress: [----------] 0/5 phases complete
+          Phase 12 → Next
+```
 
-**Completed Phases:** 11 phases verified and shipped
+**Active Phase Goals:**
 
-| Phase    | Status      | Evidence                 | Verification       |
-| -------- | ----------- | ------------------------ | ------------------ |
-| Phase 01 | ✅ Complete | Smart contracts deployed | 01-VERIFICATION.md |
-| Phase 02 | ✅ Complete | Backend integrated       | 02-VERIFICATION.md |
-| Phase 03 | ✅ Complete | Frontend marketplace     | 03-VERIFICATION.md |
-| Phase 04 | ✅ Complete | LINE wallet integration  | 04-VERIFICATION.md |
-| Phase 05 | ✅ Complete | Testing launch           | 05-VERIFICATION.md |
-| Phase 06 | ✅ Complete | Auth flow revamp         | 06-VERIFICATION.md |
-| Phase 07 | ✅ Complete | Claymorphism redesign    | 07-VERIFICATION.md |
-| Phase 08 | ✅ Complete | Foundation & auth        | 08-VERIFICATION.md |
-| Phase 09 | ✅ Complete | Dashboard wallet         | 09-VERIFICATION.md |
-| Phase 10 | ✅ Complete | Egg management           | 10-VERIFICATION.md |
-| Phase 11 | ✅ Complete | Marketplace buy flow     | 11-01-SUMMARY.md   |
+- Replace 4 mock blockchain endpoints with real ethers.js contract calls
+- Implement private key decryption flow (AES-256-GCM)
+- Add gas estimation with 20% buffer
+- Return real transaction hashes with block explorer links
 
-**Codebase State:**
-
-- LOC: ~60K TypeScript/JavaScript
-- Tests: 268/277 passing (9 pre-existing setup issues)
-- Build: 2.5s (Bun)
-- Deployment: Static export for Cloudflare Pages
+**Next Action:** Run `/gsd-plan-phase 12` to decompose phase into executable plans
 
 ---
 
-## Next Steps
+## Performance Metrics
 
-1. Define requirements for v0.0.7
-2. Spawn roadmapper to create phased roadmap
-3. Begin Phase 1 execution
+| Metric                     | Value           | Target |
+| -------------------------- | --------------- | ------ |
+| **Phases Complete**        | 0/5             | 5/5    |
+| **Requirements Satisfied** | 0/16            | 16/16  |
+| **Test Coverage**          | 70%             | 80%+   |
+| **Test Failures**          | 9 vi.mock       | 0      |
+| **Build Time**             | 2.5s (Bun)      | < 5s   |
+| **LOC**                    | ~60K TypeScript | -      |
 
 ---
 
-_Last updated: 2026-04-18 — Milestone v0.0.7 Security & Quality started_
+## Accumulated Context
+
+### v0.0.6 Completed (2026-04-18)
+
+**Milestone:** Frontend Migration & Integration  
+**Duration:** 13 days (2026-04-05 → 2026-04-18)  
+**Phases:** 5 phases (14 plans, 25 tasks)  
+**Requirements:** 25/25 satisfied ✓
+
+**Accomplishments:**
+
+- Claymorphism UI migration with Material Symbols icons
+- Real-time wallet with exponential backoff polling (30s→5min)
+- Buddy Chain referral visualization (G1 20%, G2-G4 10%)
+- Egg management with feed/hatch flows and 12-second animation
+- NFT marketplace with complete buy/sell flows
+- 268/277 tests passing (9 pre-existing vi.mock failures)
+
+**Key Learnings:**
+
+1. **Don't use user's password for wallet encryption** — PocketBase hashes passwords; generate random password, store in `pin` field
+2. **`e.next()` is MANDATORY** — Without it, PocketBase never commits records
+3. **Use `onRecordBeforeCreate`** — Set fields BEFORE commit, not after
+4. **Use environment variables** — Don't hardcode API URLs (`WALLET_SRV_URL`)
+5. **Always check reference implementations FIRST** — `/resources/` has working examples
+6. **Production infrastructure ≠ local** — Test end-to-end on production, not just localhost
+
+**Critical Files:**
+
+- Hook fix: `apps/backend/pb_hooks/01-create-wallet.pb.js`
+- Reference: `resources/pkbase-wallet/pkbase/pb_hooks/01-create-wallet-hook.pb.js`
+- Wallet API: `wallet-api/server.js`
+
+---
+
+### Known Issues (v0.0.7 Scope)
+
+1. **Mock blockchain calls** — 4 wallet-api endpoints return fake transaction hashes (SEC-01 to SEC-04)
+2. **Test setup** — 9 vi.mock failures (pre-existing, QUAL-01)
+3. **Feed/Play buttons** — TODO in UI, need real implementation (FEAT-01 to FEAT-07)
+4. **Track deposit hook** — Not implemented, tests in RED PHASE (SEC-05 to SEC-08)
+
+---
+
+### Technical Debt
+
+**Security (P0 — Blocks Launch):**
+
+- wallet-api/server.js lines 388, 422, 457, 493 return mock data
+- Must replace with real ethers.js contract calls before production
+
+**Quality (P1):**
+
+- 9 test files with vi.mock setup failures
+- Test coverage at 70%, target 80%+
+- Track-deposit hook (13-track-deposit.pb.js) not implemented
+
+**Mobile (P2):**
+
+- Bottom tab bar needed for mobile (< 640px)
+- Touch targets need 44×44px minimum (WCAG 2.2)
+- Breakpoints need testing: 320px, 375px, 768px, 1024px, 1440px
+
+---
+
+### Decisions Log
+
+| Decision                             | Phase | Rationale                                                 | Status    |
+| ------------------------------------ | ----- | --------------------------------------------------------- | --------- |
+| Use ethers.js v6 (not web3.js)       | 12    | Already installed, smaller bundle, better docs            | ✅ Active |
+| Polling (not WebSocket) for deposits | 13    | Matches PocketBase architecture, simpler state management | ✅ Active |
+| @use-gesture/react for touch         | 14    | 6KB bundle, unified touch/mouse API, React hooks pattern  | ✅ Active |
+| Hardcode minimal ABI in server.js    | 12    | Avoid file I/O, keep deployment simple                    | ✅ Active |
+| 12-block confirmation wait           | 13    | Standard for BSC, balance security vs UX                  | ✅ Active |
+| Daily check-in (off-chain)           | 16    | Skip complex mini-games for MVP, database only            | ✅ Active |
+
+---
+
+## Session Continuity
+
+**Last Session:** 2026-04-18 — v0.0.6 shipped, v0.0.7 roadmap created
+
+**Files to Preserve:**
+
+- `.planning/ROADMAP.md` — Phase structure with success criteria
+- `.planning/STATE.md` — This file (project memory)
+- `.planning/REQUIREMENTS.md` — 16 requirements with traceability
+- `.planning/research/SUMMARY.md` — Research synthesis
+
+**Next Session Actions:**
+
+1. Run `/gsd-plan-phase 12` — Decompose Wallet-API integration into plans
+2. Verify contract addresses are deployed and available
+3. Confirm BSC RPC URL and rate limits
+
+**Context Handoff:**
+
+- Roadmap has 5 phases (12-16) with 100% requirement coverage
+- Phase 12 blocks Phases 15 and 16 (contract infrastructure)
+- Phase 14 can run in parallel (mobile polish is independent)
+- P0 security issues (SEC-01 to SEC-08) must be fixed before launch
+
+---
+
+## Environment
+
+**Production:**
+
+- PocketBase: `https://pb.eggoworld.io`
+- Frontend: Cloudflare Pages (static export)
+- Network: BSC mainnet (Chain ID: 56)
+
+**Development:**
+
+- PocketBase: `http://localhost:8090` (Docker)
+- Frontend: `http://localhost:3000` (Bun)
+- Wallet API: `http://localhost:3001` (Bun)
+- Network: BSC testnet (Chain ID: 97)
+
+**SSH Access:**
+
+- Host: `root@204.168.144.14`
+- Production path: `/root/eggo-world-pb`
+
+---
+
+## Antipatterns (NEVER DO)
+
+- ❌ Use user's password for wallet encryption (it's hashed)
+- ❌ Skip reading reference implementations (`/resources/`)
+- ❌ Commit `.env` files with real secrets
+- ❌ Hardcode wallet API URLs — use `$os.getenv("WALLET_SRV_URL")`
+- ❌ Use `onRecordCreate` without `e.next()` — record won't commit
+- ❌ Commit `.next/` build artifacts or PocketBase binary
+- ❌ Access `window`, `localStorage` in initial render (hydration mismatch)
+- ❌ Access `pb.authStore.record` during SSR (use `useIsHydrated()` hook)
+
+---
+
+_Last updated: 2026-04-18 — Roadmap created by gsd-roadmapper_

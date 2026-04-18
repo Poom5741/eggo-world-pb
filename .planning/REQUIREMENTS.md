@@ -191,7 +191,45 @@
 
 ## Traceability
 
-**To Roadmap:** _Populated by roadmapper agent after phase creation_
+### Phase Mapping
+
+| Phase | Requirements                                                  | Status      |
+| ----- | ------------------------------------------------------------- | ----------- |
+| 12    | SEC-01, SEC-02, SEC-03, SEC-04                                | Not started |
+| 13    | SEC-05, SEC-06, SEC-07, SEC-08                                | Not started |
+| 14    | QUAL-03, QUAL-04, QUAL-05, QUAL-06                            | Not started |
+| 15    | FEAT-01, FEAT-02, FEAT-03, FEAT-04                            | Not started |
+| 16    | QUAL-01, QUAL-02, FEAT-05, FEAT-06, FEAT-07, FEAT-08, FEAT-09 | Not started |
+
+**Coverage:** 16/16 requirements mapped ✓
+
+### Requirement Detail
+
+| Req ID  | Phase | Category | Priority | Status      |
+| ------- | ----- | -------- | -------- | ----------- |
+| SEC-01  | 12    | Security | P0       | Not started |
+| SEC-02  | 12    | Security | P0       | Not started |
+| SEC-03  | 12    | Security | P0       | Not started |
+| SEC-04  | 12    | Security | P0       | Not started |
+| SEC-05  | 13    | Security | P0       | Not started |
+| SEC-06  | 13    | Security | P0       | Not started |
+| SEC-07  | 13    | Security | P0       | Not started |
+| SEC-08  | 13    | Security | P0       | Not started |
+| QUAL-01 | 16    | Quality  | P1       | Not started |
+| QUAL-02 | 16    | Quality  | P1       | Not started |
+| QUAL-03 | 14    | Quality  | P1       | Not started |
+| QUAL-04 | 14    | Quality  | P1       | Not started |
+| QUAL-05 | 14    | Quality  | P1       | Not started |
+| QUAL-06 | 14    | Quality  | P1       | Not started |
+| FEAT-01 | 15    | Features | P1       | Not started |
+| FEAT-02 | 15    | Features | P1       | Not started |
+| FEAT-03 | 15    | Features | P1       | Not started |
+| FEAT-04 | 15    | Features | P1       | Not started |
+| FEAT-05 | 16    | Features | P2       | Not started |
+| FEAT-06 | 16    | Features | P2       | Not started |
+| FEAT-07 | 16    | Features | P2       | Not started |
+| FEAT-08 | 16    | Features | P2       | Not started |
+| FEAT-09 | 16    | Features | P2       | Not started |
 
 **To MILESTONES.md:** _Populated by gsd-complete-milestone_
 
