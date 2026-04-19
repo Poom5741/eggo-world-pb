@@ -7,13 +7,21 @@ export type NavItem = {
   href: string
 }
 
-// Navigation items shared between SideNav and BottomNavMobile
+// Navigation items for desktop SideNav (5 items)
 export const NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
   { icon: 'egg', label: 'Eggs', href: '/eggs' },
   { icon: 'pets', label: 'Animals', href: '/animals' },
   { icon: 'storefront', label: 'Marketplace', href: '/marketplace' },
   { icon: 'group_add', label: 'Referrals', href: '/referrals' },
+]
+
+// Navigation items for mobile BottomNavMobile (4 items - excludes Referrals)
+export const MOBILE_NAV_ITEMS: NavItem[] = [
+  { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
+  { icon: 'egg', label: 'Eggs', href: '/eggs' },
+  { icon: 'pets', label: 'Animals', href: '/animals' },
+  { icon: 'storefront', label: 'Marketplace', href: '/marketplace' },
 ]
 
 // SideNav - Desktop side navigation component
@@ -42,7 +50,7 @@ export default function SideNav() {
           <AuthLink 
             key={item.href}
             href={item.href}
-            className="flex items-center space-x-4 px-4 py-3 text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300 hover:translate-x-2 active-side-nav"
+            className="flex items-center space-x-4 px-4 py-3 min-h-[44px] text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300 hover:translate-x-2 active-side-nav"
           >
             <span className="material-symbols-outlined">{item.icon}</span>
             <span className="font-medium font-headline">{item.label}</span>
