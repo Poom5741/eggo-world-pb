@@ -15,6 +15,7 @@ export interface EggCardProps {
   onManage: (eggId: number) => void
   onHatch?: (egg: EggData) => void
   onSell?: (egg: EggData) => void  // ฟังก์ชันขาย NFT
+  onPlay?: (egg: EggData) => void  // ฟังก์ชัน Play button
   polling?: boolean
 }
 
@@ -46,7 +47,7 @@ function getRarity(raritySeed?: number): { label: string; color: string } {
  * Displays egg image, name, rarity badge, element type,
  * feeding progress bar (X/10), and "Manage Egg" button
  */
-export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProps) {
+export function EggCard({ egg, onManage, onHatch, onSell, onPlay, polling }: EggCardProps) {
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -113,6 +114,17 @@ export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProp
           </span>
         </div>
       </div>
+      
+      {/* Play Button - ปุ่มเล่น (shows for all eggs) */}
+      {onPlay && (
+        <button
+          onClick={() => onPlay(egg)}
+          className="w-full py-3 bg-tertiary text-on-tertiary rounded-full font-bold text-sm hover:bg-tertiary-container transition-colors flex items-center justify-center gap-2"
+        >
+          <span className="material-symbols-outlined">sports_esports</span>
+          {egg.is_hatched ? 'Daily Check-In' : 'Play'}
+        </button>
+      )}
       
       {/* Manage Button - ปุ่มจัดการ */}
       <div className="space-y-3">
