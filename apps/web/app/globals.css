@@ -811,3 +811,80 @@
     font-size: 16px !important;
   }
 }
+
+/* ============================================
+   RESPONSIVE BREAKPOINT ENFORCEMENT
+   5 breakpoints: 320px, 375px, 768px, 1024px, 1440px
+   No horizontal scroll at any breakpoint
+   ============================================ */
+
+/* Prevent horizontal scroll globally */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Ensure images scale correctly at all breakpoints */
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Container width constraints */
+.container-responsive {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Breakpoint-specific adjustments */
+@media (max-width: 320px) {
+  /* Smallest mobile (iPhone SE) */
+  body {
+    font-size: 14px;
+  }
+  .container-responsive {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+@media (max-width: 375px) {
+  /* Standard mobile (iPhone Mini/Pro) */
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Tablet (iPad portrait) */
+  /* Mobile shadow reduction already implemented lines 743-753 */
+}
+
+@media (min-width: 1024px) {
+  /* Desktop boundary — SideNav visible, BottomNavMobile hidden */
+  /* SideNav uses lg:flex (line 23), BottomNavMobile uses lg:hidden (line 10) */
+}
+
+@media (min-width: 1440px) {
+  /* Large desktop */
+  .container-responsive {
+    max-width: 1440px;
+  }
+}
+
+/* Mobile-specific bottom padding for BottomNavMobile */
+@media (max-width: 1023px) {
+  main {
+    padding-bottom: 6rem; /* 96px BottomNavMobile + 1rem spacing */
+  }
+}
+
+@media (min-width: 1024px) {
+  main {
+    padding-bottom: 0;
+  }
+}
