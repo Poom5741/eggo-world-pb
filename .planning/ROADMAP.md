@@ -82,8 +82,12 @@
 2. All buttons, links, and inputs meet 44×44px minimum touch target (WCAG 2.2 compliant)
 3. Layout renders correctly at all 5 breakpoints (320px, 375px, 768px, 1024px, 1440px) without horizontal scroll
 4. iOS devices don't zoom when focusing input fields (16px minimum font-size)
-   **Plans**: TBD
+   **Plans**: 1 plan
    **UI hint**: yes
+
+Plans:
+
+- [ ] 14-01-PLAN.md — Reduce BottomNavMobile to 4 items, fix touch targets, iOS zoom prevention, responsive breakpoints
 
 ---
 
