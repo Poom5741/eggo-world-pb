@@ -23,6 +23,8 @@ interface Deposit {
   from_address?: string
   status: 'pending' | 'confirmed' | 'failed'
   confirmed_at?: string
+  block_number?: number
+  confirmations?: number
   created: string
 }
 
@@ -37,6 +39,7 @@ export default function DepositPage() {
   const [pollingStatus, setPollingStatus] = useState("Waiting for deposit...")
   const [isPolling, setIsPolling] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [confirmedDeposits, setConfirmedDeposits] = useState<string[]>([])
 
   // Query deposits from collection
   const fetchDepositsFromCollection = async (userId: string) => {
@@ -118,22 +121,27 @@ export default function DepositPage() {
         // Handle endpoint not found (backend not deployed)
         if (response.status === 404) {
           console.warn("Deposit polling endpoint not available")
-          pollingStatus("Polling unavailable (endpoint not deployed)")
+          setPollingStatus("Polling unavailable (endpoint not deployed)")
           return
         }
 
         const data = await response.json()
         if (data.success) {
-          const detectedDeposits = data.data.deposits || []
-          const prevCount = deposits.length
-          setDeposits(detectedDeposits)
+          // Refresh deposits from collection to get latest state
+          fetchDepositsFromCollection(user.id)
           setBalance(data.data.new_balance || 0)
           
-          if (detectedDeposits.length > prevCount) {
-            setPollingStatus("New deposit detected!")
+          // Detect newly confirmed deposits for notification
+          const prevPending = deposits.filter(d => d.status === 'pending')
+          const newlyConfirmed = (data.data.deposits || []).filter(
+            (d: Deposit) => d.status === 'confirmed' && !prevPending.some(p => p.tx_hash === d.tx_hash)
+          )
+          if (newlyConfirmed.length > 0) {
+            setConfirmedDeposits(newlyConfirmed.map((d: Deposit) => d.tx_hash))
+            setTimeout(() => setConfirmedDeposits([]), 5000)
           }
           
-          setPollingStatus(pollDeposits.length > 0 ? "Deposit detected!" : "Waiting for deposit...")
+          setPollingStatus(data.data.deposits?.length > 0 ? "Deposit detected!" : "Waiting for deposit...")
         }
       } catch (err: any) {
         console.error("Poll error:", err)
@@ -213,6 +221,14 @@ export default function DepositPage() {
           <Wallet className="w-6 h-6" />
           <h1 className="text-2xl font-bold">Deposit USDT</h1>
         </div>
+
+        {confirmedDeposits.length > 0 && (
+          <Alert className="mb-4 border-green-500 bg-green-50">
+            <AlertDescription className="text-green-800">
+              ✅ {confirmedDeposits.length} deposit(s) confirmed! Your balance has been updated.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Card className="mb-6">
           <CardHeader>
@@ -319,15 +335,40 @@ export default function DepositPage() {
                             {deposit.tx_hash?.slice(0, 6)}...{deposit.tx_hash?.slice(-4)}
                           </a>
                         </td>
-                        <td className="py-3 text-center">
-                          <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                            deposit.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                            deposit.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {deposit.status || 'pending'}
-                          </span>
-                        </td>
+                        {deposit.status === 'pending' && (
+                          <td className="py-3 text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-yellow-500 transition-all" 
+                                  style={{ width: `${Math.min((deposit.confirmations || 0) / 12 * 100, 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-gray-600">{deposit.confirmations || 0}/12</span>
+                            </div>
+                          </td>
+                        )}
+                        {deposit.status !== 'pending' && (
+                          <td className="py-3 text-center">
+                            <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                              deposit.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                              'bg-red-100 text-red-800'
+                            }`} title={deposit.status === 'failed' ? 'Deposit failed — chain reorg detected. Contact support if this persists.' : ''}>
+                              {deposit.status === 'confirmed' ? (
+                                <span>Confirmed</span>
+                              ) : (
+                                <span>Failed</span>
+                              )}
+                            </span>
+                          </td>
+                        )}
+                        {deposit.status === 'pending' && (
+                          <td className="py-3 text-center">
+                            <span className="inline-block px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
+                              Pending ({deposit.confirmations || 0}/12)
+                            </span>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
