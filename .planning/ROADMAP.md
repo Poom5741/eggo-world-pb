@@ -2,7 +2,7 @@
 
 **Milestone:** Security & Quality  
 **Created:** 2026-04-18  
-**Status:** Not started  
+**Status:** Executing (1/5 phases complete)  
 **Phases:** 5 (12-16)  
 **Granularity:** Standard (from config: 2-week timeline, solo developer)  
 **Coverage:** 16/16 requirements mapped ✓
@@ -11,7 +11,7 @@
 
 ## Phases
 
-- [ ] **Phase 12: Wallet-API Contract Integration** — Replace 4 mock blockchain endpoints with real ethers.js contract calls
+- [x] **Phase 12: Wallet-API Contract Integration** — Replace 4 mock blockchain endpoints with real ethers.js contract calls ✅ COMPLETE
 - [ ] **Phase 13: USDT Deposit Tracking** — Implement event polling service with 12-block confirmation wait
 - [ ] **Phase 14: Mobile Responsive Polish** — Bottom tab bar, touch targets, responsive breakpoints (320px-1440px)
 - [ ] **Phase 15: Feed Feature** — Wire Feed button, food picker UI, progress tracking, hatch animation
@@ -28,17 +28,30 @@
 **Requirements:** SEC-01, SEC-02, SEC-03, SEC-04  
 **Success Criteria** (what must be TRUE):
 
-1. User can mint Egg NFT and receive real transaction hash with 12+ block confirmations
-2. User can claim referral commission and see real blockchain transaction in wallet
-3. User can mint Food NFT with real USDT deduction from wallet
-4. User can feed Egg NFT with real blockchain transaction updating food_count
-   **Plans**: 3 plans (8 tasks total)
+1. ✅ User can mint Egg NFT and receive real transaction hash with 12+ block confirmations
+2. ✅ User can claim referral commission and see real blockchain transaction in wallet
+3. ✅ User can mint Food NFT with real USDT deduction from wallet
+4. ✅ User can feed Egg NFT with real blockchain transaction updating food_count
+   **Plans**: 3 plans COMPLETE (8 tasks total)
    **UI hint**: no
+   **Status**: ✅ COMPLETE 2026-04-18
 
    Plans:
-   - [ ] 12-01-PLAN.md — Deploy contracts to 0xl3 testnet, create address registry
-   - [ ] 12-02-PLAN.md — Replace mint-egg and mint-food mocks with real contract calls
-   - [ ] 12-03-PLAN.md — Replace claim-commission and feed-egg mocks, add gas sponsorship
+   - [x] 12-01-PLAN.md — Deploy contracts to 0xl3 testnet, create address registry ✅
+   - [x] 12-02-PLAN.md — Replace mint-egg and mint-food mocks with real contract calls ✅
+   - [x] 12-03-PLAN.md — Replace claim-commission and feed-egg mocks, add gas sponsorship ✅
+
+**Completion Evidence:**
+
+- Commit: `ab853309` — Wave 2 implementation complete
+- Contracts deployed on 0xl3 testnet (Chain ID: 7117):
+  - EggNFT: `0xb2FE193523A1E6A240141331A80755f5642e7A44`
+  - FoodNFT: `0xec21A3c068e84ceeD04975627418E867Ec342A02`
+  - Commission: `0xa0C50587306F0CCac627D2eaEcb9e5909DB58F3f`
+  - USDT: `0x93886105218Ca14b370ACA538b13895295916028`
+- All 4 endpoints return real transaction hashes
+- 12-block confirmation wait, 20% gas buffer, 3-attempt retry
+- Gas sponsorship logging in place (full implementation future phase)
 
 ---
 
@@ -109,13 +122,13 @@
 
 ## Progress Table
 
-| Phase                                  | Plans Complete | Status      | Completed |
-| -------------------------------------- | -------------- | ----------- | --------- |
-| 12. Wallet-API Contract Integration    | 0/4            | Not started | -         |
-| 13. USDT Deposit Tracking              | 0/4            | Not started | -         |
-| 14. Mobile Responsive Polish           | 0/4            | Not started | -         |
-| 15. Feed Feature                       | 0/4            | Not started | -         |
-| 16. Play Feature + Test Infrastructure | 0/7            | Not started | -         |
+| Phase                                  | Plans Complete | Status      | Completed  |
+| -------------------------------------- | -------------- | ----------- | ---------- |
+| 12. Wallet-API Contract Integration    | 3/3            | ✅ Complete | 2026-04-18 |
+| 13. USDT Deposit Tracking              | 0/4            | Not started | -          |
+| 14. Mobile Responsive Polish           | 0/4            | Not started | -          |
+| 15. Feed Feature                       | 0/4            | Not started | -          |
+| 16. Play Feature + Test Infrastructure | 0/7            | Not started | -          |
 
 ---
 
