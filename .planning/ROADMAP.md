@@ -67,7 +67,11 @@
 2. Deposit shows "pending" state until 12 block confirmations, then transitions to "confirmed"
 3. Duplicate deposit attempts (same tx_hash) are rejected with existing record returned
 4. User receives in-app notification when deposit is confirmed with updated balance
-   **Plans**: TBD
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 13-01-PLAN.md — Fix deposit tracking: block tracking, 12-block confirmation, duplicate detection, UI notifications
 
 ---
 
@@ -145,8 +149,16 @@ Plans:
 4. User can claim daily reward (1 Food NFT) and see streak counter increment
 5. USDT balance auto-refreshes every 30 seconds with exponential backoff
 6. User can tap balance to see detailed breakdown with transaction history
-   **Plans**: TBD
+   **Plans**: 5 plans
    **UI hint**: yes
+
+Plans:
+
+- [ ] 16-01-PLAN.md — Fix 9 vi.mock test failures (QUAL-01)
+- [ ] 16-02-PLAN.md — Play button on egg cards, check-in modal, streak counter (FEAT-05, FEAT-06, FEAT-07)
+- [ ] 16-03-PLAN.md — PocketBase hook for daily check-in with cooldown and NFT minting (FEAT-06, FEAT-07)
+- [ ] 16-04-PLAN.md — Balance detail modal with transaction history (FEAT-08, FEAT-09)
+- [ ] 16-05-PLAN.md — Test coverage increase to 80%+ for Phase 16 features (QUAL-02)
 
 ---
 
@@ -155,10 +167,10 @@ Plans:
 | Phase                                  | Plans Complete | Status      | Completed  |
 | -------------------------------------- | -------------- | ----------- | ---------- |
 | 12. Wallet-API Contract Integration    | 4/4            | ✅ Complete | 2026-04-18 |
-| 13. USDT Deposit Tracking              | 0/4            | Not started | -          |
+| 13. USDT Deposit Tracking              | 0/1            | Not started | -          |
 | 14. Mobile Responsive Polish           | 1/1            | ✅ Complete | 2026-04-19 |
 | 15. Feed Feature                       | 1/1            | ✅ Complete | 2026-04-19 |
-| 16. Play Feature + Test Infrastructure | 0/7            | Not started | -          |
+| 16. Play Feature + Test Infrastructure | 0/5            | Not started | -          |
 
 ---
 
