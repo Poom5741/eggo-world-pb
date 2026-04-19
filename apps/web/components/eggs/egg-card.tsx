@@ -3,6 +3,7 @@
 import React from 'react'
 import { EggData } from '@/hooks/use-egg-poll'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 
 /**
@@ -55,7 +56,8 @@ export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProp
   return (
     <div className={cn(
       "bg-surface-container-lowest p-6 rounded-xl clay-card",
-      "hover:-translate-y-2 transition-transform duration-300"
+      "hover:-translate-y-2 transition-transform duration-300",
+      egg.food_count >= 10 && !egg.is_hatched && "animate-pulse-glow ring-2 ring-warning"
     )}>
       {/* Egg Image Section - ส่วนแสดงรูปภาพไข่ */}
       <div className="bg-surface-container h-48 rounded-lg mb-6 flex items-center justify-center inner-dip overflow-hidden relative">
@@ -84,8 +86,18 @@ export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProp
           </p>
         </div>
         {/* Food count badge - แสดงจำนวนอาหาร */}
-        <div className="w-10 h-10 bg-surface-container rounded-full flex items-center justify-center text-primary font-black">
-          {egg.food_count}
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 bg-surface-container rounded-full flex items-center justify-center text-primary font-black">
+            {egg.food_count}
+          </div>
+          {egg.food_count >= 10 && !egg.is_hatched && (
+            <span
+              className="material-symbols-outlined text-warning text-xl animate-pulse-glow"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              sparkle
+            </span>
+          )}
         </div>
       </div>
       
@@ -94,7 +106,11 @@ export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProp
         <Progress value={progressPercent} className="h-2" />
         <div className="flex justify-between text-[10px] font-bold text-on-surface-variant">
           <span>FEEDING PROGRESS</span>
-          <span>{egg.food_count}/10 food items</span>
+          <span>
+            {egg.food_count >= 10 && !egg.is_hatched
+              ? "Ready to hatch! 🎉"
+              : `${egg.food_count}/10 food — ${10 - egg.food_count} more to hatch`}
+          </span>
         </div>
       </div>
       
