@@ -815,6 +815,22 @@ app.post('/api/wallet/feed-egg', async (req, res) => {
             });
         }
         
+        // Check current food count - prevent feeding hatched eggs (max 10 food items)
+        const currentFoodCount = await eggContract.foodCount(egg_token_id);
+        const newFoodCount = Number(currentFoodCount) + food_ids.length;
+        
+        console.log(`[FEED] User ${walletAddress} attempted to feed egg ${egg_token_id} with ${food_ids.length} food items. Current: ${currentFoodCount}`);
+        
+        if (newFoodCount > 10) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: `Egg has already hatched. Current food: ${currentFoodCount}, Max: 10`,
+                    code: 'EGG_HATCHED'
+                }
+            });
+        }
+        
         // Estimate gas
         const gasEstimate = await eggContract.feedEgg.estimateGas(egg_token_id, food_ids);
         const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
