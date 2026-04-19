@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -10,9 +10,10 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { useEggFeed } from '@/hooks/use-egg-feed'
-import { EggData } from '@/hooks/use-egg-poll'
+import { FoodCard, FoodType } from '@/components/food-nft/FoodCard'
+import { useFoodNft } from '@/hooks/use-food-nft'
 import { createClient } from '@/lib/pocketbase/client'
+import { EggData } from '@/hooks/use-egg-poll'
 
 /**
  * Props สำหรับ FeedDialog component
@@ -31,176 +32,135 @@ interface FeedDialogProps {
 /**
  * FeedDialog component - Dialog สำหรับให้อาหารไข่ NFT
  * 
- * Quick-fill auto-select: คลิก "FEED ME" → auto-select 10 food items → confirm → submit
- * ตาม D-07, D-08, D-09, D-10
+ * Manual food selection grid: แสดง food NFTs ใน grid 2 คอลัมน์
+ * ผู้ใช้สามารถเลือก 1-10 รายการพร้อม counter แสดง "X/10 food selected"
  */
 export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogProps) {
-  const { feedEgg, loading } = useEggFeed()
-  const [confirmed, setConfirmed] = useState(false)
+  const { feedEgg, loading, getUserFoodNfts } = useFoodNft()
   const [selectedFoodIds, setSelectedFoodIds] = useState<number[]>([])
-  const [fetchingFood, setFetchingFood] = useState(false)
+  const [foodItems, setFoodItems] = useState<any[]>([])
+  const [fetching, setFetching] = useState(false)
 
   /**
-   * Quick-fill: Auto-select 10 food items จาก inventory ของผู้ใช้
-   * ตาม D-08: ไม่แสดง manual selection UI, ระบบเลือกให้อัตโนมัติ
+   * Fetch available food เมื่อ dialog เปิด
+   * getUserFoodNfts จะ filter is_consumed = false โดยอัตโนมัติ
    */
-  const handleQuickFill = async () => {
-    setFetchingFood(true)
-    try {
+  useEffect(() => {
+    if (!open) return
+    const loadFood = async () => {
+      setFetching(true)
       const pb = createClient()
-      const token = pb.authStore.token
-      
-      // ดึง food NFTs ของผู้ใช้จาก PocketBase
-      const records = await pb.collection('food_nfts').getList(1, 10, {
-        filter: `owner = "${pb.authStore.record?.id}"`,
-        sort: '+created',
-        headers: {
-          'Authorization': token
-        }
-      })
-      
-      if (records.items.length < 10) {
-        throw new Error(`ไม่พออาหาร: มี ${records.items.length}/10 ชิ้น`)
+      const user = pb.authStore.record
+      if (user) {
+        const foods = await getUserFoodNfts(user.id)
+        setFoodItems(foods)
       }
-      
-      // เลือก 10 ชิ้นแรก (auto-select ตาม D-08)
-      const foodIds = records.items.slice(0, 10).map((item: any) => item.id)
-      setSelectedFoodIds(foodIds)
-      setConfirmed(true) // แสดง confirmation dialog
-    } catch (err: any) {
-      console.error('Failed to fetch food items:', err)
-      // ไม่ต้องแสดง error toast ที่นี่ ให้แสดงตอน submit แทน
-    } finally {
-      setFetchingFood(false)
+      setFetching(false)
     }
-  }
+    loadFood()
+  }, [open, getUserFoodNfts])
 
   /**
-   * Submit feed transaction
-   * เรียก useEggFeed.feedEgg() และรอ confirmation
+   * Reset state เมื่อ dialog ปิด
    */
-  const handleSubmit = async () => {
-    if (selectedFoodIds.length !== 10) {
-      console.error('Invalid food count:', selectedFoodIds.length)
-      return
-    }
-    
-    const success = await feedEgg(egg.egg_id, selectedFoodIds)
-    
-    if (success) {
-      // สำเร็จ: เรียก onSuccess และปิด dialog
-      onSuccess()
-      onOpenChange(false)
-      setConfirmed(false)
-      setSelectedFoodIds([])
-    }
-    // ถ้าล้มเหลว useEggFeed จะแสดง error toast แล้ว
-  }
-
-  /**
-   * ยกเลิกการยืนยัน กลับไปสู่หน้าแรก
-   */
-  const handleCancel = () => {
-    setConfirmed(false)
-    setSelectedFoodIds([])
-  }
-
-  // Reset state เมื่อ dialog ปิด
   useEffect(() => {
     if (!open) {
-      setConfirmed(false)
       setSelectedFoodIds([])
+      setFoodItems([])
     }
   }, [open])
 
+  /**
+   * Toggle food selection (สูงสุด 10 รายการ)
+   */
+  const handleSelectFood = (foodId: number) => {
+    setSelectedFoodIds(
+      (prev) =>
+        prev.includes(foodId)
+          ? prev.filter((id) => id !== foodId)
+          : prev.length < 10
+            ? [...prev, foodId]
+            : prev // ป้องกันการเลือกเกิน 10 รายการ
+    )
+  }
+
+  /**
+   * Submit feed transaction ใช้ egg.token_id (blockchain token ID)
+   */
+  const handleFeed = async () => {
+    if (selectedFoodIds.length === 0) return
+    const result = await feedEgg(parseInt(egg.token_id, 10), selectedFoodIds)
+    if (result) {
+      onSuccess()
+      onOpenChange(false)
+    }
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent variant="clay" className="max-w-md">
+      <DialogContent variant="clay" className="max-w-md max-h-[90vh] flex flex-col">
         <DialogHeader variant="clay">
-          <DialogTitle variant="clay">
-            Feed Egg #{egg.egg_id}
-          </DialogTitle>
+          <DialogTitle variant="clay">Feed Egg #{egg.egg_id}</DialogTitle>
           <DialogDescription variant="clay">
-            ให้อาหารไข่ของคุณด้วยอาหาร 10 ชิ้น
+            Select 1-10 food items to feed your egg
           </DialogDescription>
         </DialogHeader>
 
-        {!confirmed ? (
-          // ขั้นตอนที่ 1: Quick-fill selection
-          <div className="py-6 space-y-4">
-            <div className="text-center space-y-2">
-              <p className="text-foreground/80">
-                จะให้อาหาร <strong className="text-primary">Egg #{egg.egg_id}</strong> ด้วยอาหาร 10 ชิ้นจาก inventory
-              </p>
-              <p className="text-sm text-muted-foreground">
-                ระบบจะเลือกอาหาร 10 ชิ้นแรกอัตโนมัติ
-              </p>
+        {/* Scrollable grid area */}
+        <div className="flex-1 overflow-y-auto">
+          {fetching ? (
+            <div className="py-8 text-center">
+              <span className="material-symbols-outlined animate-spin text-4xl text-primary">
+                sync
+              </span>
+              <p className="text-sm text-muted-foreground mt-2">Loading food inventory...</p>
             </div>
-            
-            <Button
-              onClick={handleQuickFill}
-              disabled={fetchingFood || loading}
-              className="w-full py-6 text-lg font-bold clay"
-              size="clay-lg"
-            >
-              {fetchingFood ? (
-                <span className="flex items-center gap-2">
-                  <span className="animate-spin">⏳</span>
-                  Fetching food...
-                </span>
-              ) : (
-                'FEED ME'
-              )}
-            </Button>
-          </div>
-        ) : (
-          // ขั้นตอนที่ 2: Confirmation
-          <div className="py-6 space-y-4">
-            <div className="text-center space-y-2">
-              <p className="text-lg font-bold text-primary">
-                ยืนยันการให้อาหาร?
-              </p>
-              <p className="text-foreground/80">
-                Feed <strong>Egg #{egg.egg_id}</strong> with{' '}
-                <strong className="text-secondary">10 food items</strong>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                ธุรกรรมจะถูกส่งไปยัง blockchain
-              </p>
+          ) : foodItems.length === 0 ? (
+            <div className="py-8 text-center">
+              <span className="material-symbols-outlined text-4xl text-muted-foreground">
+                restaurant
+              </span>
+              <p className="text-sm text-muted-foreground mt-2">No food available</p>
             </div>
-            
-            <div className="flex gap-3">
-              <Button
-                onClick={handleCancel}
-                disabled={loading}
-                variant="clay-outline"
-                className="flex-1"
-                size="clay-md"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={loading}
-                variant="clay"
-                className="flex-1"
-                size="clay-md"
-              >
-                {loading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="animate-spin">⏳</span>
-                    Submitting...
-                  </span>
-                ) : (
-                  'Confirm'
-                )}
-              </Button>
+          ) : (
+            <div className="grid grid-cols-2 gap-clay-lg max-h-[60vh] overflow-y-auto p-2">
+              {foodItems.map((food) => (
+                <FoodCard
+                  key={food.food_id}
+                  food={{
+                    food_id: food.food_id,
+                    token_id: food.token_id,
+                    food_type: food.food_type as FoodType,
+                    is_consumed: food.is_consumed,
+                    minted_at: food.minted_at,
+                  }}
+                  selected={selectedFoodIds.includes(food.food_id)}
+                  onSelect={handleSelectFood}
+                />
+              ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        <DialogFooter variant="clay">
-          {/* Footer ว่างสำหรับ spacing */}
+        {/* Sticky footer with counter and button */}
+        <DialogFooter variant="clay" className="flex-col gap-3">
+          <p className="text-sm font-bold text-center">{selectedFoodIds.length}/10 food selected</p>
+          <Button
+            onClick={handleFeed}
+            disabled={loading || selectedFoodIds.length === 0}
+            variant="clay"
+            size="clay-lg"
+            className="w-full min-h-[44px]"
+          >
+            {loading ? (
+              <>
+                <span className="material-symbols-outlined animate-spin">sync</span>
+                Feeding...
+              </>
+            ) : (
+              `Feed ${selectedFoodIds.length} item${selectedFoodIds.length !== 1 ? 's' : ''}`
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
