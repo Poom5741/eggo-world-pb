@@ -129,29 +129,55 @@ global.fetch = async (url, options) => {
         const fromBlock = params.fromBlock ? parseInt(params.fromBlock, 16) : 0;
         const toBlock = params.toBlock ? parseInt(params.toBlock, 16) : testState.currentBlock;
         
-        // Filter events within block range
-        const events = [];
+        console.log('[Mock] eth_getLogs called:', { fromBlock, toBlock });
         
-        // Simulate deposit event at block 1050 (only if range includes it)
-        if (fromBlock <= 1050 && toBlock >= 1050) {
-            events.push(createMockTransferEvent(
-                '0x1111111111111111111111111111111111111111',  // sender
-                MOCK_USER.wallet,  // recipient
-                1000,  // 1000 USDT
-                1050,
-                0
-            ));
+        // Validate topics filter (CRITICAL: real hook uses topics for filtering)
+        if (params.topics && params.topics[0] !== TRANSFER_EVENT_SIG) {
+            return {
+                ok: true,
+                json: async () => ({ jsonrpc: '2.0', id: 1, result: [] })
+            };
         }
         
-        // Simulate second deposit at block 1055 (only if range includes it)
+        // Filter events within block range AND by user address (topics[2])
+        const events = [];
+        const userTopic = params.topics && params.topics[2] ? params.topics[2] : null;
+        
+        console.log('[Mock] Checking block 1050:', { 
+            fromBlock: fromBlock <= 1050, 
+            toBlock: toBlock >= 1050,
+            userTopic: userTopic?.slice(0, 20)
+        });
+        
+        // Simulate deposit event at block 1050 (only if range includes it and user matches)
+        if (fromBlock <= 1050 && toBlock >= 1050) {
+            // Construct padded address correctly (64 hex chars without 0x prefix, then add 0x)
+            const addressNoPrefix = MOCK_USER.wallet.slice(2);  // Remove 0x
+            const eventToAddress = '0x' + addressNoPrefix.padStart(64, '0');
+            if (!userTopic || userTopic === eventToAddress) {
+                events.push(createMockTransferEvent(
+                    '0x1111111111111111111111111111111111111111',  // sender
+                    MOCK_USER.wallet,  // recipient
+                    1000,  // 1000 USDT
+                    1050,
+                    0
+                ));
+            }
+        }
+        
+        // Simulate second deposit at block 1055 (only if range includes it and user matches)
         if (fromBlock <= 1055 && toBlock >= 1055) {
-            events.push(createMockTransferEvent(
-                '0x2222222222222222222222222222222222222222',
-                MOCK_USER.wallet,
-                500,
-                1055,
-                0
-            ));
+            const addressNoPrefix = MOCK_USER.wallet.slice(2);
+            const eventToAddress = '0x' + addressNoPrefix.padStart(64, '0');
+            if (!userTopic || userTopic === eventToAddress) {
+                events.push(createMockTransferEvent(
+                    '0x2222222222222222222222222222222222222222',
+                    MOCK_USER.wallet,
+                    500,
+                    1055,
+                    0
+                ));
+            }
         }
         
         return {
@@ -175,7 +201,7 @@ global.fetch = async (url, options) => {
                 result: {
                     hash: '0xblock' + blockNum.toString(16).padStart(64, '0'),
                     number: '0x' + blockNum.toString(16),
-                    timestamp: '0x' + Math.floor(Date.now() / 1000).toString(16)
+                    timestamp: '0x65f00000'  // Fixed timestamp for deterministic tests
                 }
             })
         };
@@ -244,6 +270,8 @@ globalThis.$app = {
     },
     
     create: (collection, data) => {
+        // Mirror real hook: use new Record() + $app.save() pattern
+        // For testing, we simulate this by creating the record directly
         const record = {
             id: collection + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
             ...data
@@ -274,18 +302,20 @@ async function simulateDepositPoll(userAddress) {
             new_balance: 0,
             pending_count: 0,
             confirmed_count: 0,
-            events_processed: 0
+            events_processed: 0,
+            newly_confirmed: []
         }
     };
     
     try {
-        // 1. Find user wallet
+        // 1. Find user wallet (matches real hook L90-106)
+        const userRecord = globalThis.$app.findFirstRecordByData('users', 'wallet', userAddress);
         const walletRecord = globalThis.$app.findFirstRecordByData('user_wallets', 'user_id', MOCK_USER.id);
         
-        // 2. Get block tracking info
-        const lastPolledBlock = walletRecord.last_polled_block || 0;
+        // 2. Check pending deposit confirmations BEFORE polling (matches real hook L108-109)
+        const pendingDeposits = testState.deposits.filter(d => d.status === 'pending' && d.user === MOCK_USER.id);
         
-        // 3. Get current block number
+        // Fetch current block number for confirmation check
         const blockResponse = await fetch(MOCK_CONFIG.blockchain.rpcUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -299,86 +329,7 @@ async function simulateDepositPoll(userAddress) {
         const blockData = await blockResponse.json();
         const currentBlock = parseInt(blockData.result, 16);
         
-        // 4. Calculate fromBlock
-        let fromBlock;
-        if (lastPolledBlock === 0) {
-            fromBlock = Math.max(0, currentBlock - 100);  // First poll: look back 100 blocks
-        } else {
-            fromBlock = lastPolledBlock + 1;
-        }
-        
-        // 5. Poll for Transfer events
-        const toTopic = '0x' + userAddress.slice(2).padStart(64, '0');
-        const logsResponse = await fetch(MOCK_CONFIG.blockchain.rpcUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                method: 'eth_getLogs',
-                params: [{
-                    address: MOCK_CONFIG.blockchain.contracts.CommissionDistribution,
-                    fromBlock: fromBlock.toString(16),
-                    toBlock: currentBlock.toString(16),
-                    topics: [TRANSFER_EVENT_SIG, null, toTopic]
-                }],
-                id: 1
-            })
-        });
-        const logsData = await logsResponse.json();
-        const events = logsData.result || [];
-        
-        // 6. Process each event
-        for (const eventLog of events) {
-            const txHash = eventLog.transactionHash;
-            const blockNumber = parseInt(eventLog.blockNumber, 16);
-            const blockHash = eventLog.blockHash;
-            const logIndex = parseInt(eventLog.logIndex, 16);
-            
-            // Parse amount (USDT 6 decimals)
-            const amountRaw = parseInt(eventLog.data, 16);
-            const amount = amountRaw / 10**6;
-            
-            // Skip if already exists (check before trying to create)
-            const exists = testState.deposits.find(d => d.tx_hash === txHash);
-            if (exists) {
-                console.log('Duplicate deposit skipped:', txHash);
-                continue;
-            }
-            
-            // Check for duplicate (via constraint)
-            try {
-                const deposit = globalThis.$app.create('deposits', {
-                    user: MOCK_USER.id,
-                    amount: amount,
-                    tx_hash: txHash,
-                    from_address: '0x' + eventLog.topics[1].slice(26),
-                    status: 'pending',
-                    block_number: blockNumber,
-                    block_hash: blockHash,
-                    confirmations: 0,
-                    log_index: logIndex
-                });
-                
-                // Update wallet balance
-                testState.wallet.usdt_balance += amount;
-                testState.wallet.total_earned += amount;
-                globalThis.$app.save(testState.wallet);
-                
-                result.data.deposits.push(deposit);
-                result.data.events_processed++;
-            } catch (e) {
-                if (e.message.includes('UNIQUE constraint')) {
-                    console.warn('Duplicate deposit skipped:', txHash);
-                } else {
-                    throw e;
-                }
-            }
-        }
-        
-        // 7. Check pending deposit confirmations
-        const pendingDeposits = testState.deposits.filter(d => d.status === 'pending');
-        let newlyConfirmed = 0;
-        
+        // Process pending confirmations (matches checkPendingConfirmations L40-70)
         for (const deposit of pendingDeposits) {
             const confirmations = currentBlock - deposit.block_number;
             
@@ -402,31 +353,137 @@ async function simulateDepositPoll(userAddress) {
                     deposit.confirmations = confirmations;
                     deposit.confirmed_at = new Date().toISOString();
                     globalThis.$app.save(deposit);
-                    newlyConfirmed++;
+                    result.data.newly_confirmed.push({
+                        tx_hash: deposit.tx_hash,
+                        amount: deposit.amount
+                    });
                 } else {
                     // Reorg detected - mutate directly
                     deposit.status = 'failed';
                     globalThis.$app.save(deposit);
                 }
             } else {
-                // Update confirmation count - mutate directly
+                // Update confirmation count
                 deposit.confirmations = confirmations;
                 globalThis.$app.save(deposit);
             }
         }
         
-        // 8. Update last_polled_block
+        // 3. Get block tracking info (matches real hook L111-124)
+        const lastPolledBlock = walletRecord.last_polled_block || 0;
+        const fromBlock = lastPolledBlock === 0 ? Math.max(0, currentBlock - 100) : lastPolledBlock + 1;
+        
+        // 4. Poll for Transfer events (matches real hook L126-143)
+        const toTopic = '0x' + userAddress.slice(2).padStart(64, '0');
+        const logsResponse = await fetch(MOCK_CONFIG.blockchain.rpcUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'eth_getLogs',
+                params: [{
+                    address: MOCK_CONFIG.blockchain.contracts.CommissionDistribution,
+                    fromBlock: fromBlock.toString(16).replace(/^0x/, ''),  // Match real hook encoding
+                    toBlock: currentBlock.toString(16).replace(/^0x/, ''),
+                    topics: [TRANSFER_EVENT_SIG, null, toTopic]
+                }],
+                id: 1
+            })
+        });
+        const logsData = await logsResponse.json();
+        
+        // Check for RPC error (matches real hook L147-149)
+        if (logsData.error) {
+            throw new Error('RPC error: ' + logsData.error.message);
+        }
+        
+        const eventLogs = logsData.result || [];
+        
+        // 5. Process each event (matches real hook L155-215)
+        for (const eventLog of eventLogs) {
+            // Skip removed logs (matches real hook L156-158)
+            if (eventLog.removed) {
+                continue;
+            }
+            
+            const fromAddress = '0x' + eventLog.topics[1].slice(26);
+            const toAddress = '0x' + eventLog.topics[2].slice(26);
+            
+            // Verify recipient matches user (matches real hook L163-165)
+            if (toAddress.toLowerCase() !== userAddress.toLowerCase()) {
+                continue;
+            }
+            
+            // Parse amount (USDT 6 decimals)
+            const amountRaw = parseInt(eventLog.data, 16);
+            const amountUSDT = amountRaw / 10**6;
+            
+            // Skip zero/negative amounts (matches real hook L170-172)
+            if (amountUSDT <= 0) {
+                continue;
+            }
+            
+            const txHash = eventLog.transactionHash;
+            const blockNumber = parseInt(eventLog.blockNumber, 16);
+            const blockHash = eventLog.blockHash;
+            const logIndex = parseInt(eventLog.logIndex || eventLog.log_index, 16);
+            
+            // Create deposit record (matches real hook L176-187)
+            const deposit = globalThis.$app.create('deposits', {
+                user: MOCK_USER.id,
+                amount: amountUSDT,
+                tx_hash: txHash,
+                from_address: fromAddress,
+                status: 'pending',
+                block_number: blockNumber,
+                block_hash: blockHash,
+                confirmations: 0,
+                log_index: logIndex
+            });
+            
+            // Try to save — if duplicate constraint violation, skip (matches real hook L189-195)
+            try {
+                globalThis.$app.save(deposit);
+            } catch (e) {
+                if (e.message && (e.message.includes('UNIQUE constraint') || e.message.includes('duplicate'))) {
+                    console.warn('Duplicate deposit skipped:', txHash);
+                    continue;
+                } else {
+                    throw e;
+                }
+            }
+            
+            // Only update balance AFTER successful deposit save (matches real hook L197-205)
+            testState.wallet.usdt_balance += amountUSDT;
+            testState.wallet.total_earned += amountUSDT;
+            testState.wallet.last_transaction_at = new Date().toISOString();
+            globalThis.$app.save(testState.wallet);
+            
+            // Sync to userRecord (matches real hook L204-205)
+            userRecord.usdt_balance = testState.wallet.usdt_balance;
+            globalThis.$app.save(userRecord);
+            
+            result.data.deposits.push({
+                tx_hash: txHash,
+                amount: amountUSDT,
+                from_address: fromAddress,
+                status: 'pending'
+            });
+            result.data.events_processed++;
+        }
+        
+        // 6. Update last_polled_block (matches real hook L217-219)
         testState.wallet.last_polled_block = currentBlock;
         globalThis.$app.save(testState.wallet);
         
-        // 9. Build response
+        // 7. Build response (matches real hook L221-237)
         result.data.new_balance = testState.wallet.usdt_balance;
         result.data.pending_count = testState.deposits.filter(d => d.status === 'pending').length;
         result.data.confirmed_count = testState.deposits.filter(d => d.status === 'confirmed').length;
         
     } catch (error) {
         result.success = false;
-        result.error = { message: error.message, code: 'POLL_FAILED' };
+        result.error = { message: error.message, code: 'DEPOSIT_POLL_FAILED' };
     }
     
     return result;
@@ -641,34 +698,37 @@ describe('E2E: Deposit Tracking Flow with Mock Blockchain Data', () => {
             
             // Override fetch to return different block hash
             const originalFetch = global.fetch;
-            global.fetch = async (url, options) => {
-                const body = options?.body ? JSON.parse(options.body) : {};
+            try {
+                global.fetch = async (url, options) => {
+                    const body = options?.body ? JSON.parse(options.body) : {};
+                    
+                    if (body.method === 'eth_getBlockByNumber') {
+                        return {
+                            ok: true,
+                            json: async () => ({
+                                jsonrpc: '2.0',
+                                id: 1,
+                                result: {
+                                    hash: '0xreorged_hash_different',  // Different hash!
+                                    number: body.params[0],
+                                    timestamp: '0x65f00000'
+                                }
+                            })
+                        };
+                    }
+                    
+                    return originalFetch(url, options);
+                };
                 
-                if (body.method === 'eth_getBlockByNumber') {
-                    return {
-                        ok: true,
-                        json: async () => ({
-                            jsonrpc: '2.0',
-                            id: 1,
-                            result: {
-                                hash: '0xreorged_hash_different',  // Different hash!
-                                number: body.params[0]
-                            }
-                        })
-                    };
-                }
+                await simulateDepositPoll(MOCK_USER.wallet);
                 
-                return originalFetch(url, options);
-            };
-            
-            await simulateDepositPoll(MOCK_USER.wallet);
-            
-            // Deposit should be marked as failed
-            const failedDeposit = testState.deposits.find(d => d.status === 'failed');
-            expect(failedDeposit).toBeDefined();
-            expect(failedDeposit.block_number).toBe(1050);
-            
-            global.fetch = originalFetch;
+                // Deposit should be marked as failed
+                const failedDeposit = testState.deposits.find(d => d.status === 'failed');
+                expect(failedDeposit).toBeDefined();
+                expect(failedDeposit.block_number).toBe(1050);
+            } finally {
+                global.fetch = originalFetch;
+            }
         });
     });
     
