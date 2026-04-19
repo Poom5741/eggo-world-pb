@@ -131,6 +131,44 @@ make backend             # Start local PocketBase
 make dev-local           # Frontend + local PB
 ```
 
+## GSD (Get Shit Done) Framework
+
+This project uses the GSD framework for structured agentic development. All 79 GSD commands are available in Qoder.
+
+### Quick Start
+
+```bash
+# Check project status
+/gsd-progress
+
+# Plan a phase
+/gsd-plan-phase 1
+
+# Execute the phase
+/gsd-execute-phase 1
+
+# Get help
+/gsd-help
+```
+
+### Documentation
+
+- **Full Guide**: `.qoder/GSD-IN-QODER.md`
+- **Quick Reference**: `.qoder/GSD-COMMANDS.md`
+- **Setup Status**: `.qoder/GSD-SETUP-COMPLETE.md`
+
+### Available Commands
+
+79 slash commands available:
+- `/gsd-new-project` - Initialize projects
+- `/gsd-plan-phase` - Create phase plans
+- `/gsd-execute-phase` - Execute plans
+- `/gsd-debug` - Debug issues
+- `/gsd-progress` - Check status
+- And 74 more...
+
+See `.qoder/GSD-COMMANDS.md` for complete list.
+
 ## NOTES
 
 **PocketBase URL:** Production at `https://pb.eggoworld.io`, local at `http://localhost:8090`

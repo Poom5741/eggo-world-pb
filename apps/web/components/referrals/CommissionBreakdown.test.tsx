@@ -16,7 +16,7 @@ import { createClient } from '@/lib/pocketbase/client'
 // Mock PocketBase client
 vi.mock('@/lib/pocketbase/client', () => ({
   createClient: vi.fn(() => ({
-    collection: vi.fn((name: string) => ({
+    collection: vi.fn((_name: string) => ({
       getList: vi.fn(),
     })),
   })),
@@ -33,7 +33,7 @@ describe('CommissionBreakdown', () => {
     const mockGetList = vi.fn(
       () => new Promise(() => {}) // Never resolves for loading test
     )
-    vi.mocked(createClient().collection('').getList).mockImplementation(mockGetList)
+    ;(createClient().collection('').getList as ReturnType<typeof vi.fn>).mockImplementation(mockGetList)
 
     render(<CommissionBreakdown userId={mockUserId} />)
 
@@ -45,7 +45,7 @@ describe('CommissionBreakdown', () => {
 
   it('แสดง empty state เมื่อไม่มี referral (shows empty state when no referrals)', async () => {
     const mockGetList = vi.fn().mockResolvedValue({ items: [] })
-    vi.mocked(createClient().collection('').getList).mockImplementation(mockGetList)
+    ;(createClient().collection('').getList as ReturnType<typeof vi.fn>).mockImplementation(mockGetList)
 
     render(<CommissionBreakdown userId={mockUserId} />)
 
@@ -67,7 +67,7 @@ describe('CommissionBreakdown', () => {
     }
 
     const mockGetList = vi.fn().mockResolvedValue(mockCommissions)
-    vi.mocked(createClient().collection('').getList).mockImplementation(mockGetList)
+    ;(createClient().collection('').getList as ReturnType<typeof vi.fn>).mockImplementation(mockGetList)
 
     render(<CommissionBreakdown userId={mockUserId} />)
 
@@ -94,7 +94,7 @@ describe('CommissionBreakdown', () => {
     }
 
     const mockGetList = vi.fn().mockResolvedValue(mockCommissions)
-    vi.mocked(createClient().collection('').getList).mockImplementation(mockGetList)
+    ;(createClient().collection('').getList as ReturnType<typeof vi.fn>).mockImplementation(mockGetList)
 
     render(<CommissionBreakdown userId={mockUserId} />)
 

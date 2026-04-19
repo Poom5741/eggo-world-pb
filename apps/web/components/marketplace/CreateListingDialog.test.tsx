@@ -68,9 +68,9 @@ describe('CreateListingDialog', () => {
 
   it('เรียก approveNFTForMarketplace ก่อนสร้าง listing (calls approveNFTForMarketplace before creating listing)', async () => {
     const mockSigner = { address: '0x123' }
-    vi.mocked(eggNft.getSigner).mockResolvedValue(mockSigner as any)
-    vi.mocked(marketplace.approveNFTForMarketplace).mockResolvedValue(true)
-    vi.mocked(marketplace.createListing).mockResolvedValue(true)
+    ;(eggNft.getSigner as ReturnType<typeof vi.fn>).mockResolvedValue(mockSigner as any)
+    ;(marketplace.approveNFTForMarketplace as ReturnType<typeof vi.fn>).mockResolvedValue(true)
+    ;(marketplace.createListing as ReturnType<typeof vi.fn>).mockResolvedValue(true)
     
     render(<CreateListingDialog {...mockProps} />)
     
@@ -100,9 +100,9 @@ describe('CreateListingDialog', () => {
 
   it('แสดงสถานะสำเร็จหลังจากสร้าง listing สำเร็จ (shows success state after listing created)', async () => {
     const mockSigner = { address: '0x123' }
-    vi.mocked(eggNft.getSigner).mockResolvedValue(mockSigner as any)
-    vi.mocked(marketplace.approveNFTForMarketplace).mockResolvedValue(true)
-    vi.mocked(marketplace.createListing).mockResolvedValue(true)
+    ;(eggNft.getSigner as ReturnType<typeof vi.fn>).mockResolvedValue(mockSigner as any)
+    ;(marketplace.approveNFTForMarketplace as ReturnType<typeof vi.fn>).mockResolvedValue(true)
+    ;(marketplace.createListing as ReturnType<typeof vi.fn>).mockResolvedValue(true)
     
     render(<CreateListingDialog {...mockProps} />)
     
@@ -125,8 +125,8 @@ describe('CreateListingDialog', () => {
 
   it('แสดงสถานะ error เมื่อผู้ใช้ปฏิเสธ transaction (shows error state on rejection)', async () => {
     const mockSigner = { address: '0x123' }
-    vi.mocked(eggNft.getSigner).mockResolvedValue(mockSigner as any)
-    vi.mocked(marketplace.approveNFTForMarketplace).mockRejectedValue(
+    ;(eggNft.getSigner as ReturnType<typeof vi.fn>).mockResolvedValue(mockSigner as any)
+    ;(marketplace.approveNFTForMarketplace as ReturnType<typeof vi.fn>).mockRejectedValue(
       new Error('User rejected the approval transaction')
     )
     
@@ -146,11 +146,11 @@ describe('CreateListingDialog', () => {
 
   it('แสดง loading state ระหว่างทำรายการ (shows loading state during transaction)', async () => {
     const mockSigner = { address: '0x123' }
-    vi.mocked(eggNft.getSigner).mockResolvedValue(mockSigner as any)
-    vi.mocked(marketplace.approveNFTForMarketplace).mockImplementation(
+    ;(eggNft.getSigner as ReturnType<typeof vi.fn>).mockResolvedValue(mockSigner as any)
+    ;(marketplace.approveNFTForMarketplace as ReturnType<typeof vi.fn>).mockImplementation(
       () => new Promise((resolve) => setTimeout(resolve, 100))
     )
-    vi.mocked(marketplace.createListing).mockResolvedValue(true)
+    ;(marketplace.createListing as ReturnType<typeof vi.fn>).mockResolvedValue(true)
     
     render(<CreateListingDialog {...mockProps} />)
     

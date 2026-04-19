@@ -1,15 +1,16 @@
-import { describe, it, expect } from 'bun:test'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'bun:test'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { useMarketplaceSync } from './use-marketplace-sync'
 
 // Mock the PocketBase API calls
-const mockGetMarketplaceListings = vi.hoisted(() => vi.fn())
-const mockGetListingById = vi.hoisted(() => vi.fn())
-
 vi.mock('@/lib/pocketbase/marketplace', () => ({
-  getMarketplaceListings: mockGetMarketplaceListings,
-  getListingById: mockGetListingById,
+  getMarketplaceListings: vi.fn(),
+  getListingById: vi.fn(),
 }))
+
+// Get mocked functions after vi.mock
+import { getMarketplaceListings } from '@/lib/pocketbase/marketplace'
+const mockGetMarketplaceListings = getMarketplaceListings as ReturnType<typeof vi.fn>
 
 describe('useMarketplaceSync - Exponential Backoff', () => {
   beforeEach(() => {

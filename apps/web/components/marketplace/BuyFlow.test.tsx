@@ -1,33 +1,33 @@
-import { describe, it, expect, mock } from 'bun:test'
+import { describe, it, expect, vi } from 'bun:test'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { BuyFlow, type BuyFlowProps } from './BuyFlow'
 
-mock.module('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: mock(() => {}),
+    push: vi.fn(() => {}),
   }),
 }))
 
-mock.module('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast: mock(() => {}),
+    toast: vi.fn(() => {}),
   }),
 }))
 
-mock.module('@/lib/contracts/eggNft', () => ({
-  getSigner: mock(async () => ({
-    getAddress: mock(async () => '0x1234567890123456789012345678901234567890'),
+vi.mock('@/lib/contracts/eggNft', () => ({
+  getSigner: vi.fn(async () => ({
+    getAddress: vi.fn(async () => '0x1234567890123456789012345678901234567890'),
   })),
 }))
 
-mock.module('@/lib/contracts/usdt', () => ({
-  checkAllowance: mock(async () => 0n),
-  approveUSDT: mock(async () => true),
+vi.mock('@/lib/contracts/usdt', () => ({
+  checkAllowance: vi.fn(async () => 0n),
+  approveUSDT: vi.fn(async () => true),
 }))
 
-mock.module('@/lib/contracts/marketplace', () => ({
-  buyNFT: mock(async () => true),
+vi.mock('@/lib/contracts/marketplace', () => ({
+  buyNFT: vi.fn(async () => true),
   MARKETPLACE_ADDRESS: '0xMARKETPLACE',
 }))
 

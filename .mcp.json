@@ -15,6 +15,11 @@
     "flux": {
       "command": "npx",
       "args": ["-y", "flux-tasks@latest", "mcp"]
+    },
+    "gsd": {
+      "command": "node",
+      "args": ["/Users/poom-work/tokenine/eggo-pocketbase/.qwen/get-shit-done/bin/gsd-mcp-server.cjs"],
+      "cwd": "/Users/poom-work/tokenine/eggo-pocketbase"
     }
   }
 }
