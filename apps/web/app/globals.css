@@ -599,20 +599,20 @@
 
 /* Buttons */
 .btn-primary {
-  @apply bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground font-[var(--font-pixel)] text-xs px-6 py-3 border-4 border-primary transition-all;
+  @apply bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground font-[var(--font-pixel)] text-xs px-6 py-4 min-h-[44px] border-4 border-primary transition-all;
 }
 
 .btn-secondary {
-  @apply bg-secondary hover:bg-secondary/80 disabled:bg-secondary/50 text-secondary-foreground font-[var(--font-pixel)] text-xs px-6 py-3 border-4 border-secondary transition-all;
+  @apply bg-secondary hover:bg-secondary/80 disabled:bg-secondary/50 text-secondary-foreground font-[var(--font-pixel)] text-xs px-6 py-4 min-h-[44px] border-4 border-secondary transition-all;
 }
 
 .btn-ghost {
-  @apply text-foreground hover:text-primary font-[var(--font-pixel)] text-xs px-4 py-2 border-2 border-primary/30 hover:border-primary transition-all;
+  @apply text-foreground hover:text-primary font-[var(--font-pixel)] text-xs px-4 py-3 min-h-[44px] border-2 border-primary/30 hover:border-primary transition-all;
 }
 
 /* Inputs */
 .input-field {
-  @apply w-full bg-background border-2 border-primary/30 px-3 py-3 font-[var(--font-pixel)] text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none;
+  @apply w-full bg-background border-2 border-primary/30 px-3 py-3 font-[var(--font-pixel)] text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none;
 }
 
 /* Cards & Containers */
@@ -723,6 +723,23 @@
 .gap-clay-xl { gap: 32px; }
 
 /* ============================================
+   WCAG 2.2 TOUCH TARGET UTILITIES
+   Minimum 44×44px for all interactive elements
+   ============================================ */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.touch-target-sm {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
    CLAYMORPHISM PERFORMANCE OPTIMIZATIONS
    ============================================ */
 
@@ -779,4 +796,18 @@
 .bg-clay-volume-2xl {
   will-change: background;
   transform: translateZ(0);
+}
+
+/* iOS zoom prevention — 16px minimum font-size on all inputs */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  .input-field {
+    font-size: 16px !important;
+  }
 }
