@@ -849,6 +849,8 @@ app.post('/api/wallet/feed-egg', async (req, res) => {
             throw new Error('Transaction reverted');
         }
         
+        console.log(`[FEED] Successfully fed egg ${egg_token_id}. New food count: ${newFoodCount}, TX: ${tx.hash}`);
+        
         res.json({
             success: true,
             data: {
@@ -862,6 +864,11 @@ app.post('/api/wallet/feed-egg', async (req, res) => {
         
     } catch (error) {
         console.error('[Feed Egg] Error:', error.code || error.message);
+        
+        // Log blocked attempts for monitoring
+        if (error.code === 'EGG_HATCHED') {
+            console.log(`[FEED] Blocked - Egg ${egg_token_id} already hatched`);
+        }
         
         const errorMessage = error.message.includes('private') || error.message.includes('key')
             ? 'Wallet operation failed'
