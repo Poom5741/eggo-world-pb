@@ -73,12 +73,13 @@ Progress: [█████-----] 4/5 phases complete
 | **LOC**                    | ~60K TypeScript | -      |
 
 ---
+
 | Phase 12-wallet-api-contract-integration P02 | 120 | 1 tasks | 2 files |
 
 ## Quick Tasks Completed
 
-| Task | Date | Description | Status |
-|------|------|-------------|--------|
+| Task                | Date       | Description                                            | Status      |
+| ------------------- | ---------- | ------------------------------------------------------ | ----------- |
 | accessibility-fixes | 2026-04-19 | Fix critical WCAG 2.2 AA compliance issues in Phase 14 | ✅ Complete |
 
 ## Accumulated Context
@@ -152,19 +153,19 @@ Progress: [█████-----] 4/5 phases complete
 
 ### Decisions Log
 
-| Decision                             | Phase | Rationale                                                 | Status    |
-| ------------------------------------ | ----- | --------------------------------------------------------- | --------- |
-| Use ethers.js v6 (not web3.js)       | 12    | Already installed, smaller bundle, better docs            | ✅ Active |
-| Polling (not WebSocket) for deposits | 13    | Matches PocketBase architecture, simpler state management | ✅ Active |
-| @use-gesture/react for touch         | 14    | 6KB bundle, unified touch/mouse API, React hooks pattern  | ✅ Active |
-| Hardcode minimal ABI in server.js    | 12    | Avoid file I/O, keep deployment simple                    | ✅ Active |
-| 12-block confirmation wait           | 12    | Standard for BSC, balance security vs UX                  | ✅ Active |
-| Daily check-in (off-chain)           | 16    | Skip complex mini-games for MVP, database only            | ✅ Active |
-| Check balance before claiming commission | 12 | Save gas, better UX (no tx when zero balance) | ✅ Active |
-| Ownership verification for feed-egg | 12 | Prevent unauthorized feeding (security) | ✅ Active |
-| 20% gas buffer on transactions | 12 | Prevent out-of-gas failures (especially feedEgg variable) | ✅ Active |
-| foodCount validation before gas estimation | 12-04 | Save users from paying gas for hatched eggs | ✅ Active |
-| 400 status for EGG_HATCHED error | 12-04 | Client error semantics, clearer debugging | ✅ Active |
+| Decision                                   | Phase | Rationale                                                 | Status    |
+| ------------------------------------------ | ----- | --------------------------------------------------------- | --------- |
+| Use ethers.js v6 (not web3.js)             | 12    | Already installed, smaller bundle, better docs            | ✅ Active |
+| Polling (not WebSocket) for deposits       | 13    | Matches PocketBase architecture, simpler state management | ✅ Active |
+| @use-gesture/react for touch               | 14    | 6KB bundle, unified touch/mouse API, React hooks pattern  | ✅ Active |
+| Hardcode minimal ABI in server.js          | 12    | Avoid file I/O, keep deployment simple                    | ✅ Active |
+| 12-block confirmation wait                 | 12    | Standard for BSC, balance security vs UX                  | ✅ Active |
+| Daily check-in (off-chain)                 | 16    | Skip complex mini-games for MVP, database only            | ✅ Active |
+| Check balance before claiming commission   | 12    | Save gas, better UX (no tx when zero balance)             | ✅ Active |
+| Ownership verification for feed-egg        | 12    | Prevent unauthorized feeding (security)                   | ✅ Active |
+| 20% gas buffer on transactions             | 12    | Prevent out-of-gas failures (especially feedEgg variable) | ✅ Active |
+| foodCount validation before gas estimation | 12-04 | Save users from paying gas for hatched eggs               | ✅ Active |
+| 400 status for EGG_HATCHED error           | 12-04 | Client error semantics, clearer debugging                 | ✅ Active |
 
 ---
 
@@ -184,6 +185,7 @@ Progress: [█████-----] 4/5 phases complete
 - Updated STATE.md with new position and session timestamp
 
 **Files Modified:**
+
 - `apps/web/components/eggs/feed-dialog.tsx` - Complete rewrite (manual selection grid)
 - `apps/web/components/eggs/egg-card.tsx` - Added ready-to-hatch indicator (+16 lines)
 - `.planning/phases/15-feed-feature/15-01-SUMMARY.md` - Created
@@ -197,13 +199,12 @@ Progress: [█████-----] 4/5 phases complete
 
 **Context Handoff:**
 
-- Phase 12 COMPLETE — All mock endpoints replaced with real contract calls
-- Phase 13 can now start (depends on Phase 12 contract infrastructure)
-- Phase 14 can run in parallel (mobile polish is independent)
-- Phase 15 blocked on Phase 12 ✅ + UI implementation needed
-- Phase 16 blocked on Phase 12 ✅ + test infrastructure improvements
-- P0 security issues FIXED — All 4 mock endpoints now return real transactions
-- Reference implementation at `/resources/pkbase-wallet` was followed
+- Phase 15 COMPLETE — Feed feature fully implemented with manual selection and ready-to-hatch indicators
+- Phase 16 can now start (Play Feature + Test Infrastructure)
+- All P0 security issues FIXED (Phase 12)
+- All P1 quality improvements in progress (Phase 14-15 complete, Phase 16 next)
+- P2 features remaining: Play feature, wallet balance improvements (Phase 16)
+- Reference implementations at `/resources/pkbase-wallet` were followed throughout
 
 ---
 
