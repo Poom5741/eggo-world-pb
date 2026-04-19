@@ -109,34 +109,40 @@ export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogPro
         {/* Scrollable grid area */}
         <div className="flex-1 overflow-y-auto">
           {fetching ? (
-            <div className="py-8 text-center">
+            <div className="py-8 text-center" role="status" aria-live="polite">
               <span className="material-symbols-outlined animate-spin text-4xl text-primary">
                 sync
               </span>
               <p className="text-sm text-muted-foreground mt-2">Loading food inventory...</p>
             </div>
           ) : foodItems.length === 0 ? (
-            <div className="py-8 text-center">
+            <div className="py-8 text-center" role="status">
               <span className="material-symbols-outlined text-4xl text-muted-foreground">
                 restaurant
               </span>
               <p className="text-sm text-muted-foreground mt-2">No food available</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-clay-lg max-h-[60vh] overflow-y-auto p-2">
+            <div 
+              className="grid grid-cols-2 gap-clay-lg max-h-[60vh] overflow-y-auto p-2"
+              role="list"
+              aria-label="Available food items"
+              aria-busy={fetching}
+            >
               {foodItems.map((food) => (
-                <FoodCard
-                  key={food.food_id}
-                  food={{
-                    food_id: food.food_id,
-                    token_id: food.token_id,
-                    food_type: food.food_type as FoodType,
-                    is_consumed: food.is_consumed,
-                    minted_at: food.minted_at,
-                  }}
-                  selected={selectedFoodIds.includes(food.food_id)}
-                  onSelect={handleSelectFood}
-                />
+                <div role="listitem" key={food.food_id}>
+                  <FoodCard
+                    food={{
+                      food_id: food.food_id,
+                      token_id: food.token_id,
+                      food_type: food.food_type as FoodType,
+                      is_consumed: food.is_consumed,
+                      minted_at: food.minted_at,
+                    }}
+                    selected={selectedFoodIds.includes(food.food_id)}
+                    onSelect={handleSelectFood}
+                  />
+                </div>
               ))}
             </div>
           )}
@@ -144,18 +150,26 @@ export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogPro
 
         {/* Sticky footer with counter and button */}
         <DialogFooter variant="clay" className="flex-col gap-3">
-          <p className="text-sm font-bold text-center">{selectedFoodIds.length}/10 food selected</p>
+          <p 
+            className="text-sm font-bold text-center" 
+            role="status" 
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {selectedFoodIds.length}/10 food selected
+          </p>
           <Button
             onClick={handleFeed}
             disabled={loading || selectedFoodIds.length === 0}
             variant="clay"
             size="clay-lg"
             className="w-full min-h-[44px]"
+            aria-busy={loading}
           >
             {loading ? (
               <>
-                <span className="material-symbols-outlined animate-spin">sync</span>
-                Feeding...
+                <span className="material-symbols-outlined animate-spin" aria-hidden="true">sync</span>
+                <span aria-live="polite">Feeding...</span>
               </>
             ) : (
               `Feed ${selectedFoodIds.length} item${selectedFoodIds.length !== 1 ? 's' : ''}`

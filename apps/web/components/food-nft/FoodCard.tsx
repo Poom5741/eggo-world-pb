@@ -40,8 +40,20 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
         'transition-all duration-300 hover:shadow-clay-lg', // Hover lift
         'bg-gradient-to-br from-card/80 to-card',
         food.is_consumed && 'opacity-50 grayscale', // Consumed state
-        selected && 'ring-2 ring-primary shadow-clay-lg' // Selected state
+        selected && 'ring-2 ring-primary shadow-clay-lg', // Selected state
+        onSelect && !food.is_consumed && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
       )}
+      onClick={() => onSelect && !food.is_consumed && onSelect(food.food_id)}
+      onKeyDown={(e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && onSelect && !food.is_consumed) {
+          e.preventDefault()
+          onSelect(food.food_id)
+        }
+      }}
+      tabIndex={onSelect && !food.is_consumed ? 0 : -1}
+      role={onSelect && !food.is_consumed ? 'button' : undefined}
+      aria-pressed={selected}
+      aria-label={`Select ${config.label} food #${food.food_id}, ${selected ? 'selected' : 'not selected'}`}
     >
       <CardHeader className="pb-2 relative z-10">
         <div className="flex items-center justify-between">
@@ -105,13 +117,16 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
                 id={`food-${food.food_id}`}
                 checked={selected}
                 onCheckedChange={() => onSelect(food.food_id)}
-                clay
+                variant="clay"
+                aria-hidden="true"
+                tabIndex={-1}
               />
               <label
                 htmlFor={`food-${food.food_id}`}
                 className="font-[var(--font-pixel)] text-xs peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                aria-hidden="true"
               >
-                Select to feed
+                {config.label} #{food.food_id}
               </label>
             </div>
           )}
