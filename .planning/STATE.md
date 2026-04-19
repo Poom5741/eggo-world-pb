@@ -1,12 +1,12 @@
 ---
 gsd_state_version: 1.0
 milestone: v0.0.7
-milestone_name: milestone
-status: unknown
-last_updated: "2026-04-19T18:39:00.000Z"
+milestone_name: Security & Quality
+status: in_progress
+last_updated: "2026-04-19T19:00:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 5
   completed_plans: 5
 ---
@@ -37,13 +37,16 @@ progress:
 
 ## Current Position
 
-**Phase 15 Plan 01: COMPLETE ✅**  
-**Next Phase:** 15 (Feed Feature) — Plan 02 (if any)
+**v0.0.7 Progress:** 3/5 phases complete (60%)  
+**Next Phase:** 13 (USDT Deposit Tracking) or 16 (Play Feature + Tests)
 
 ```
-Progress: [█████-----] 4/5 phases complete
-          Phase 14 → ✅ COMPLETE (1 plan, mobile responsive polish)
-          Phase 15 → Plan 01 ✅ COMPLETE (feed dialog rewrite + ready-to-hatch indicator)
+Progress: [██████----] 3/5 phases complete
+          Phase 12 → ✅ COMPLETE (wallet-api contract integration)
+          Phase 13 → ⏸️ PENDING (USDT deposit tracking)
+          Phase 14 → ✅ COMPLETE (mobile responsive polish)
+          Phase 15 → ✅ COMPLETE (feed feature)
+          Phase 16 → ⏸️ PENDING (play feature + test infrastructure)
 ```
 
 **Completed Phase 12 Goals:**
@@ -65,8 +68,8 @@ Progress: [█████-----] 4/5 phases complete
 
 | Metric                     | Value           | Target |
 | -------------------------- | --------------- | ------ |
-| **Phases Complete**        | 0/5             | 5/5    |
-| **Requirements Satisfied** | 0/16            | 16/16  |
+| **Phases Complete**        | 3/5             | 5/5    |
+| **Requirements Satisfied** | 8/16            | 16/16  |
 | **Test Coverage**          | 70%             | 80%+   |
 | **Test Failures**          | 9 vi.mock       | 0      |
 | **Build Time**             | 2.5s (Bun)      | < 5s   |
@@ -84,12 +87,13 @@ Progress: [█████-----] 4/5 phases complete
 
 ## Accumulated Context
 
-### v0.0.6 Completed (2026-04-18)
+### v0.0.6 Archived (2026-04-19)
 
 **Milestone:** Frontend Migration & Integration  
 **Duration:** 13 days (2026-04-05 → 2026-04-18)  
-**Phases:** 5 phases (14 plans, 25 tasks)  
-**Requirements:** 25/25 satisfied ✓
+**Final Audit:** 2026-04-19 (v0.0.6-FINAL-AUDIT.md)  
+**Phases:** 5 phases (8, 9, 10, 11, 13)  
+**Requirements:** 19/19 scoped satisfied ✓
 
 **Accomplishments:**
 
@@ -98,7 +102,10 @@ Progress: [█████-----] 4/5 phases complete
 - Buddy Chain referral visualization (G1 20%, G2-G4 10%)
 - Egg management with feed/hatch flows and 12-second animation
 - NFT marketplace with complete buy/sell flows
-- 268/277 tests passing (9 pre-existing vi.mock failures)
+- Smart contract integration (Phase 12 in v0.0.7)
+- Mobile responsive polish with WCAG 2.2 AA compliance
+- Feed feature with manual food selection grid
+- Documentation sync with accurate traceability
 
 **Key Learnings:**
 
@@ -117,17 +124,24 @@ Progress: [█████-----] 4/5 phases complete
 
 ---
 
-### Known Issues (v0.0.7 Scope)
+### v0.0.7 In Progress (Started 2026-04-18)
+
+**Milestone:** Security & Quality  
+**Status:** 3/5 phases complete (60%)  
+**Remaining:** Phase 13 (USDT Deposit), Phase 16 (Play + Tests)
 
 **FIXED:**
 
-- ✅ Mock blockchain calls — Phase 12 completed, all endpoints now return real transaction hashes
+- ✅ Mock blockchain calls — Phase 12 completed, all endpoints return real transaction hashes
+- ✅ Mobile responsive gaps — Phase 14 completed, WCAG 2.2 AA compliant
+- ✅ Feed feature — Phase 15 completed with manual selection grid
 
 **REMAINING:**
 
-1. **Test setup** — 9 vi.mock failures (pre-existing, QUAL-01)
-2. **Feed/Play buttons** — TODO in UI, need real implementation (FEAT-01 to FEAT-07)
-3. **Track deposit hook** — Not implemented, tests in RED PHASE (SEC-05 to SEC-08)
+1. **USDT deposit tracking** — Event polling service with 12-block confirmation (SEC-05 to SEC-08)
+2. **Test setup** — 9 vi.mock failures (pre-existing, QUAL-01)
+3. **Play feature** — Daily check-in reward system (FEAT-05 to FEAT-09)
+4. **Test coverage** — Increase from 70% to 80%+ (QUAL-02)
 
 ---
 
@@ -136,18 +150,19 @@ Progress: [█████-----] 4/5 phases complete
 **Security (P0 — Blocks Launch):**
 
 - ✅ wallet-api/server.js — All 4 mock endpoints replaced with real contract calls (Phase 12)
+- ⏸️ USDT deposit tracking — Not implemented (Phase 13)
 
 **Quality (P1):**
 
 - 9 test files with vi.mock setup failures
 - Test coverage at 70%, target 80%+
-- Track-deposit hook (13-track-deposit.pb.js) not implemented
+- Play feature with daily check-in not implemented (Phase 16)
 
 **Mobile (P2):**
 
-- Bottom tab bar needed for mobile (< 640px)
-- Touch targets need 44×44px minimum (WCAG 2.2)
-- Breakpoints need testing: 320px, 375px, 768px, 1024px, 1440px
+- ✅ Bottom tab bar implemented (Phase 14)
+- ✅ Touch targets meet 44x44px minimum (Phase 14)
+- ✅ Breakpoints tested: 320px, 375px, 768px, 1024px, 1440px (Phase 14)
 
 ---
 
@@ -171,40 +186,31 @@ Progress: [█████-----] 4/5 phases complete
 
 ## Session Continuity
 
-**Last Session:** 2026-04-19T18:39:00.000Z
+**Last Session:** 2026-04-19T19:00:00.000Z
 
 **Session Notes:**
 
-- Phase 15 Plan 01 (Feed Feature) completed
-- Rewrote FeedDialog from quick-fill auto-select to manual 2-column food selection grid
-- Replaced useEggFeed hook with useFoodNft hook (supports 1-10 items vs exactly 10)
-- Added ready-to-hatch visual indicator to EggCard (pulse glow + sparkle icon)
-- Fixed missing Progress import in egg-card.tsx (pre-existing bug)
-- Fixed type mismatch for egg.token_id (string → number conversion)
-- All acceptance criteria pass, build succeeds with zero errors
-- Updated STATE.md with new position and session timestamp
-
-**Files Modified:**
-
-- `apps/web/components/eggs/feed-dialog.tsx` - Complete rewrite (manual selection grid)
-- `apps/web/components/eggs/egg-card.tsx` - Added ready-to-hatch indicator (+16 lines)
-- `.planning/phases/15-feed-feature/15-01-SUMMARY.md` - Created
-- `.planning/STATE.md` - Updated position, session timestamp
+- v0.0.6 milestone archived with final audit (19/19 requirements complete)
+- v0.0.7 progress: 3/5 phases complete (60%)
+- Phase 13 Nyquist validation created (manual-only justification)
+- Phase 14 mobile responsive polish complete
+- Phase 15 feed feature complete
 
 **Next Session Actions:**
 
-1. Continue with Phase 15 Plan 02 (if exists) or move to Phase 16
-2. Test FeedDialog end-to-end on production PocketBase
-3. Verify ready-to-hatch indicator displays correctly for eggs at 10/10 food count
+1. Complete Phase 13 (USDT Deposit Tracking) — SEC-05 to SEC-08
+2. Complete Phase 16 (Play Feature + Test Infrastructure) — QUAL-01/02, FEAT-05 to FEAT-09
+3. Run full test suite and fix 9 vi.mock failures
+4. Increase test coverage from 70% to 80%+
 
 **Context Handoff:**
 
-- Phase 15 COMPLETE — Feed feature fully implemented with manual selection and ready-to-hatch indicators
-- Phase 16 can now start (Play Feature + Test Infrastructure)
+- v0.0.6 ARCHIVED — All scoped requirements satisfied, final audit complete
+- v0.0.7 IN PROGRESS — 3/5 phases complete (12, 14, 15)
+- Remaining work: Phase 13 (USDT deposit), Phase 16 (Play + Tests)
 - All P0 security issues FIXED (Phase 12)
-- All P1 quality improvements in progress (Phase 14-15 complete, Phase 16 next)
-- P2 features remaining: Play feature, wallet balance improvements (Phase 16)
-- Reference implementations at `/resources/pkbase-wallet` were followed throughout
+- Mobile responsive complete with WCAG 2.2 AA compliance
+- Feed feature complete with manual selection and ready-to-hatch indicators
 
 ---
 

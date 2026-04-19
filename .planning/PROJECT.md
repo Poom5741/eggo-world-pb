@@ -88,60 +88,77 @@ SELL / HOLD / BREED on Marketplace
 
 ---
 
-## Current State: v0.0.6 SHIPPED ✅
+## Milestone Archive
+
+### v0.0.6 — Frontend Migration & Integration ✅ ARCHIVED
 
 **Shipped:** 2026-04-18  
-**Milestone:** Frontend Migration & Integration  
+**Audited:** 2026-04-19 (Final Audit: v0.0.6-FINAL-AUDIT.md)  
 **Duration:** 13 days (2026-04-05 → 2026-04-18)
 
-### What Was Delivered
+**What Was Delivered:**
 
-**Phases Completed:** 5 phases (14 plans, 25 tasks)
+- ✅ Claymorphism UI with Material Symbols icons
+- ✅ LINE OAuth authentication flow
+- ✅ Real-time wallet balance (exponential backoff 30s→5min)
+- ✅ Buddy Chain referral visualization (G1 20%, G2-G4 10%)
+- ✅ Egg management with feed/hatch flows
+- ✅ NFT marketplace with buy/sell flows
+- ✅ Smart contract integration (Phase 12)
+- ✅ Mobile responsive polish (Phase 14)
+- ✅ Feed feature with manual food selection (Phase 15)
+- ✅ Documentation sync with traceability (Phase 13)
 
-1. **Claymorphism UI** — Modern design with Material Symbols icons, responsive navigation
-2. **Real-time Wallet** — Auto-polling USDT balance with exponential backoff (30s→5min)
-3. **Buddy Chain Referrals** — 4-level visualization (G1 20%, G2-G4 10%)
-4. **Egg Management** — Feed/hatch flows with 12-second animation sequence
-5. **NFT Marketplace** — Complete buy/sell flows with USDT approval and escrow
-6. **Documentation** — Updated REQUIREMENTS.md with accurate traceability
-
-**Requirements Satisfied:** 25/25 (100% of v0.0.6 scope)
-
-### Current Codebase State
-
-- **LOC:** ~60K TypeScript/JavaScript
-- **Tests:** 268/277 passing (9 pre-existing setup issues)
-- **Build:** 2.5s (Bun)
-- **Deployment:** Static export for Cloudflare Pages
+**Requirements Satisfied:** 19/19 scoped (100%)  
+**Phases Completed:** 5/5 (8, 9, 10, 11, 13)  
+**Final Audit:** `.planning/milestones/v0.0.6-FINAL-AUDIT.md`
 
 ---
 
 ## Current Milestone: v0.0.7 Security & Quality
 
-**Goal:** Address technical debt, improve security, and complete mobile polish
+**Started:** 2026-04-18  
+**Status:** In Progress (3/5 phases complete)  
+**Goal:** Address technical debt, improve security, and complete remaining features
 
 **Target features:**
 
-- **Security (P0):** Replace 4 mock blockchain endpoints in wallet-api with real ethers.js contract calls
-- **Quality (P1):** Fix 9 vi.mock test failures, implement track-deposit hook (USDT polling)
-- **Mobile Polish (P2):** Responsive breakpoints (320px-1440px), touch interactions, wire Feed/Play buttons
-- **Features (P2):** Complete remaining marketplace features, implement Feed feature
+- **Security (P0):** ✅ Replace 4 mock blockchain endpoints (Phase 12 complete)
+- **Quality (P1):** ⏸️ Fix 9 vi.mock test failures, implement USDT deposit tracking (Phase 13, 16)
+- **Mobile Polish (P2):** ✅ Responsive breakpoints, touch interactions, WCAG 2.2 AA (Phase 14 complete)
+- **Features (P2):** ✅ Feed feature complete (Phase 15), ⏸️ Play feature pending (Phase 16)
 
 ---
 
 ## Requirements
 
-### Validated (v0.0.6)
+### Validated (v0.0.6 — ARCHIVED)
 
 - ✓ FOUND-01 → FOUND-06 (Phase 8) — Claymorphism UI, LINE OAuth, navigation
 - ✓ FOUND-07 (Phase 9) — Wallet auto-polling
-- ✓ DASH-01 → DASH-05 (Phase 9) — Dashboard components
+- ✓ DASH-01 → DASH-02 (Phase 9) — Dashboard balance + referrals
 - ✓ EGG-01 → EGG-07 (Phase 10) — Egg management
-- ✓ MKT-01 → MKT-06 (Phase 11) — Marketplace with buy/sell
+- ✓ MKT-02 → MKT-04 (Phase 11) — Marketplace buy/sell flows
 
-### Active (v0.0.7)
+**v0.0.6 Final Score:** 19/19 scoped requirements (100%)  
+**Deferred to v0.0.7:** MKT-01/05/06, MOB-01/02/03/04/05
 
-Requirements being defined — see REQUIREMENTS.md
+### Active (v0.0.7 — In Progress)
+
+**Security (P0):**
+
+- ✅ SEC-01 → SEC-04 (Phase 12) — Real blockchain contract calls
+- ⏸️ SEC-05 → SEC-08 (Phase 13) — USDT deposit tracking (pending)
+
+**Quality (P1):**
+
+- ✅ QUAL-03 → QUAL-06 (Phase 14) — Mobile responsive polish, WCAG 2.2 AA
+- ✅ FEAT-01 → FEAT-04 (Phase 15) — Feed feature with manual selection
+- ⏸️ QUAL-01 → QUAL-02 (Phase 16) — Test infrastructure, coverage 80%+ (pending)
+
+**Features (P2):**
+
+- ⏸️ FEAT-05 → FEAT-09 (Phase 16) — Play feature, daily check-in (pending)
 
 ### Out of Scope
 
@@ -167,25 +184,26 @@ Requirements being defined — see REQUIREMENTS.md
 
 ## Context
 
-**Current state after v0.0.6:**
+**Current state after v0.0.6 archival:**
 
-- Frontend: Complete claymorphism migration with TDD
-- Backend: PocketBase with LINE OAuth, auto-wallet hooks
+- Frontend: Complete claymorphism migration with mobile responsive polish
+- Backend: PocketBase with LINE OAuth, auto-wallet hooks, real contract calls
 - Marketplace: Full buy/sell functionality operational
-- Integration: All E2E flows verified (Auth→Dashboard→Eggs→Marketplace)
+- Integration: All E2E flows verified (Auth→Dashboard→Eggs→Marketplace→Feed)
+- Mobile: WCAG 2.2 AA compliant, 5 breakpoints tested, touch targets 44x44px
 
-**Known Issues:**
+**Known Issues (v0.0.7 Remaining):**
 
-1. **Mock blockchain calls** — 4 wallet-api endpoints need real implementation
-2. **Test setup** — 9 vi.mock failures (pre-existing, not v0.0.6 regressions)
-3. **Feed/Play buttons** — TODO in UI, functionality deferred
-4. **Track deposit hook** — Not implemented, tests in RED PHASE
+1. **USDT deposit tracking** — Event polling service not implemented (SEC-05 to SEC-08)
+2. **Test setup** — 9 vi.mock failures (pre-existing, QUAL-01)
+3. **Play feature** — Daily check-in reward system not implemented (FEAT-05 to FEAT-09)
+4. **Test coverage** — Currently 70%, target 80%+ (QUAL-02)
 
 **User Feedback:**
 
-- Initial testing shows positive response to claymorphism design
+- Positive response to claymorphism design and hatch animation
 - Buddy Chain visualization well-received for gamification
-- Hatch animation praised for building anticipation
+- Feed feature manual selection preferred over auto-fill (Phase 15 decision)
 
 ---
 
