@@ -113,8 +113,12 @@ Plans:
 2. User can select up to 10 food NFTs with counter showing "X/10 food selected"
 3. Egg card displays progress bar showing food_count / 10 and visual indicator when ready to hatch
 4. Consumed food NFTs are marked as "used" in database and hidden from future picker
-   **Plans**: TBD
+   **Plans**: 1 plan
    **UI hint**: yes
+
+Plans:
+
+- [ ] 15-01-PLAN.md — Rewrite FeedDialog with manual selection grid, add ready-to-hatch indicator to EggCard
 
 ---
 
