@@ -23,31 +23,31 @@ eggo-pocketbase/
 
 ## WHERE TO LOOK
 
-| Task | Location | Notes |
-|------|----------|-------|
-| Add UI page | `apps/web/app/` | App Router, use existing auth pattern |
-| Add React component | `apps/web/components/` | Colocate tests, use shadcn/ui |
-| Add shadcn/ui component | `apps/web/components/ui/` | Run `bunx shadcn@latest add` |
-| Add PocketBase hook | `apps/backend/pb_hooks/` | Name: `NN-feature.pb.js` (NN = sequence) |
-| Add collection | `apps/backend/collections/` | Update migrations after |
-| Wallet API changes | `wallet-api/server.js` | Express.js, ethers v6 |
-| LINE OAuth config | `apps/backend/.env` | LINE_CHANNEL_ID, LINE_CHANNEL_SECRET |
-| Add smart contract | `contracts/src/` | Foundry, Solidity 0.8.20, OpenZeppelin |
-| Add contract test | `contracts/test/` | Forge test |
-| Deploy contracts | `contracts/script/` | Forge script, BSC testnet/mainnet |
-| Reference example | `resources/mvp-foodcourt/` | 20+ hook examples, Thai language |
+| Task                    | Location                    | Notes                                    |
+| ----------------------- | --------------------------- | ---------------------------------------- |
+| Add UI page             | `apps/web/app/`             | App Router, use existing auth pattern    |
+| Add React component     | `apps/web/components/`      | Colocate tests, use shadcn/ui            |
+| Add shadcn/ui component | `apps/web/components/ui/`   | Run `bunx shadcn@latest add`             |
+| Add PocketBase hook     | `apps/backend/pb_hooks/`    | Name: `NN-feature.pb.js` (NN = sequence) |
+| Add collection          | `apps/backend/collections/` | Update migrations after                  |
+| Wallet API changes      | `wallet-api/server.js`      | Express.js, ethers v6                    |
+| LINE OAuth config       | `apps/backend/.env`         | LINE_CHANNEL_ID, LINE_CHANNEL_SECRET     |
+| Add smart contract      | `contracts/src/`            | Foundry, Solidity 0.8.20, OpenZeppelin   |
+| Add contract test       | `contracts/test/`           | Forge test                               |
+| Deploy contracts        | `contracts/script/`         | Forge script, BSC testnet/mainnet        |
+| Reference example       | `resources/mvp-foodcourt/`  | 20+ hook examples, Thai language         |
 
 ## CODE MAP
 
-| Symbol | Type | Location | Role |
-|--------|------|----------|------|
-| `app/page.tsx` | Entry | `apps/web/app/` | Landing page |
-| `app/auth/*` | Pages | `apps/web/app/auth/` | Login, signup, callback, error |
-| `middleware.ts` | Middleware | `apps/web/` | Edge auth, LINE OAuth redirect |
-| `client.ts` | Client | `apps/web/lib/pocketbase/` | PocketBase SDK wrapper |
-| `01-create-wallet.pb.js` | Hook | `apps/backend/pb_hooks/` | Auto-creates EVM wallet on signup |
-| `04-auth-token.pb.js` | Hook | `apps/backend/pb_hooks/` | LINE OAuth token exchange |
-| `server.js` | Server | `wallet-api/` | Wallet generation endpoint |
+| Symbol                   | Type       | Location                   | Role                              |
+| ------------------------ | ---------- | -------------------------- | --------------------------------- |
+| `app/page.tsx`           | Entry      | `apps/web/app/`            | Landing page                      |
+| `app/auth/*`             | Pages      | `apps/web/app/auth/`       | Login, signup, callback, error    |
+| `middleware.ts`          | Middleware | `apps/web/`                | Edge auth, LINE OAuth redirect    |
+| `client.ts`              | Client     | `apps/web/lib/pocketbase/` | PocketBase SDK wrapper            |
+| `01-create-wallet.pb.js` | Hook       | `apps/backend/pb_hooks/`   | Auto-creates EVM wallet on signup |
+| `04-auth-token.pb.js`    | Hook       | `apps/backend/pb_hooks/`   | LINE OAuth token exchange         |
+| `server.js`              | Server     | `wallet-api/`              | Wallet generation endpoint        |
 
 ## CONVENTIONS
 
@@ -56,6 +56,7 @@ eggo-pocketbase/
 **Package Management:** Bun only for `apps/web` (not npm/yarn/pnpm)
 
 **File Naming:**
+
 - PocketBase hooks: `NN-feature.pb.js` (NN = execution order)
 - React components: PascalCase (`CashierDashboard.tsx`)
 - Pages: kebab-case directories (`auth/callback/page.tsx`)
@@ -70,6 +71,7 @@ eggo-pocketbase/
 ## ANTI-PATTERNS (THIS PROJECT)
 
 **DO NOT:**
+
 - Create API routes in `apps/web/app/api/` - static export incompatible
 - Access `window`, `localStorage` in initial render (hydration mismatch)
 - Access `pb.authStore.record` during SSR (use `useIsHydrated()` hook)
@@ -79,6 +81,7 @@ eggo-pocketbase/
 - Create `pb_hooks` without authentication (`$apis.requireAuth(e)`)
 
 **NEVER:**
+
 - Commit `.env` files with real secrets
 - Log private keys or sensitive data
 - Skip input validation before blockchain operations
@@ -86,6 +89,7 @@ eggo-pocketbase/
 ## UNIQUE STYLES
 
 **Hydration Safety:**
+
 ```typescript
 const isHydrated = useIsHydrated()
 const user = isHydrated ? pb.authStore.record : null
@@ -93,10 +97,11 @@ const user = isHydrated ? pb.authStore.record : null
 ```
 
 **PocketBase Hook Response:**
+
 ```javascript
-e.json(200, { 
-  success: true, 
-  data: { ... } 
+e.json(200, {
+  success: true,
+  data: { ... }
 })
 // Error: e.json(400, { success: false, error: { message, code } })
 ```
@@ -141,6 +146,7 @@ make dev-local           # Frontend + local PB
 **References:** `resources/mvp-foodcourt/CLAUDE.md` has comprehensive hook examples
 
 <!-- OMO:START -->
+
 ## OMO Workflow (Hybrid PM System)
 
 **Adopted**: Oh-My-OpenAgent PM workflow for feature-level planning. Use for new features, keep `.planning/phases/` for major milestones.
@@ -161,16 +167,20 @@ apps/web/features/<feature-name>/
 # Feature: <name>
 
 ## Problem
+
 <What user pain point does this solve?>
 
 ## Success Criteria
+
 - <Measurable outcome 1>
 - <Measurable outcome 2>
 
 ## Out of Scope
+
 - <What we're NOT doing>
 
 ## Acceptance Test
+
 <How to verify: "Open X, verify Y, expect Z">
 ```
 
@@ -180,26 +190,29 @@ apps/web/features/<feature-name>/
 # Sprint: <feature-name>
 
 ## In Progress
+
 - [ ] P1: <TASK_ID> Task description (#github-issue)
   - Subtasks if needed
   - Accepts: deps=none
 
 ## To Do
+
 - [ ] P1: <TASK_ID> Task (#issue)
   - Accepts: deps=<TASK_ID>
 - [ ] P2: <TASK_ID> Task (#issue)
 
 ## Done
+
 - [x] <TASK_ID> Completed task (#issue)
 ```
 
 ### Priority Rules
 
-| Priority | Meaning | Response Time |
-|----------|---------|---------------|
-| P0 | Urgent, blocks others | Immediate |
-| P1 | Normal feature work | Next sprint |
-| P2 | Nice-to-have | Backlog |
+| Priority | Meaning               | Response Time |
+| -------- | --------------------- | ------------- |
+| P0       | Urgent, blocks others | Immediate     |
+| P1       | Normal feature work   | Next sprint   |
+| P2       | Nice-to-have          | Backlog       |
 
 ### Workflow
 
@@ -225,17 +238,20 @@ git commit -m "fix: handle loading state in balance card #47"
 <!-- OMO:END -->
 
 <!-- FLUX:START -->
+
 ## Flux Task Management
 
 You have access to Flux for task management via MCP or CLI.
 
 **Rules:**
+
 - All work MUST belong to exactly one project_id
 - Do NOT guess or invent a project_id
 - Track all work as tasks; update status as you progress
 - Close tasks immediately when complete
 
 **Startup:**
+
 1. List projects (`flux project list`)
 2. Select or create ONE project
 3. Confirm active project_id before any work
@@ -247,6 +263,7 @@ You have access to Flux for task management via MCP or CLI.
 **MCP Integration:** Flux is configured in `.mcp.json` as the `flux` MCP server.
 
 **Agent Workflow:**
+
 ```bash
 # 1. Get next ready task (unblocked, priority-sorted)
 flux ready
@@ -264,6 +281,7 @@ flux task done <task-id> --note "Completed: [what you did]"
 ```
 
 **Task Creation Pattern:**
+
 ```bash
 # Create new task with priority
 flux task create "<task title>" -P 0  # P0=urgent, P1=normal, P2=low
@@ -275,6 +293,7 @@ flux task create "<task>" --depends-on <task-id>
 **Current Project:** `Eggo NFT Platform (zsvm79i)` - located at `.flux/`
 
 **Commands:**
+
 - `flux project list` - List all projects
 - `flux ready` - Show unblocked tasks sorted by priority
 - `flux task list` - List all tasks
@@ -294,21 +313,26 @@ flux task create "<task>" --depends-on <task-id>
 ### Common Deployment Mistakes
 
 **1. Wrong Directory**
+
 - Production is at `/root/eggo-world-pb` NOT `/root/eggo-pocketbase`
 - Verify: `ssh root@host "find /root -name 'pb_hooks' -type d"`
 
 **2. PocketBase Runs as Process, NOT Docker**
+
 - Production uses binary: `./pocketbase serve` (not Docker)
 - Check: `ps aux | grep 'pocketbase serve'`
 - Don't: Try `docker-compose restart pocketbase` (doesn't exist)
 
 **3. Hook Loading Location**
+
 - PocketBase loads `pb_hooks/` from CURRENT WORKING DIRECTORY
 - MUST `cd /root/eggo-world-pb/apps/backend` before starting
 - NOT from `/root` or project root!
 
 **4. SSH Configuration**
+
 - Set BEFORE deployment:
+
 ```bash
 export SSH_USER="root"
 export SSH_KEY="~/.ssh/id_rsa"
@@ -317,10 +341,12 @@ export SSH_HOST="204.168.144.14"
 ```
 
 **5. Hook Loading Verification**
+
 - After restart, check: `tail -50 /tmp/pocketbase.log | grep 'endpoint registered'`
 - Should see "Hot wallet balance endpoint registered" etc.
 
 **6. Endpoint Testing**
+
 - 400/401/403 errors are NORMAL for unauthenticated requests
 - Test with auth: `curl -H "Authorization: Bearer $TOKEN" ...`
 
@@ -329,12 +355,14 @@ export SSH_HOST="204.168.144.14"
 ### Production Deployment Checklist
 
 #### Pre-Deployment
+
 - [ ] Verify directory: `ssh root@204.168.144.14 "find /root -name 'pb_hooks'"`
 - [ ] Check running process: `ssh root@host "ps aux | grep pocketbase"`
 - [ ] Set SSH environment variables
 - [ ] Backup: `ssh root@host "cp -r pb_hooks pb_hooks.backup"`
 
 #### Upload Files
+
 ```bash
 # Upload new hooks
 scp -o StrictHostKeyChecking=no apps/backend/pb_hooks/NN-*.pb.js \
@@ -350,6 +378,7 @@ ssh root@host "head -5 /root/eggo-world-pb/apps/backend/pb_hooks/12-*.pb.js"
 ```
 
 #### Restart PocketBase
+
 ```bash
 # Kill existing
 ssh root@204.168.144.14 "pkill -f 'pocketbase serve'"
@@ -363,6 +392,7 @@ ssh root@204.168.144.14 "
 ```
 
 #### Verify
+
 ```bash
 # Health check
 curl -s https://pb.eggoworld.io/api/health
@@ -383,17 +413,20 @@ curl -X POST https://pb.eggoworld.io/api/v2/hot-wallet/balance \
 ### Quick Reference
 
 **SSH Access**
+
 ```bash
 ssh -o StrictHostKeyChecking=no root@204.168.144.14
 ```
 
 **Upload Hook**
+
 ```bash
 scp -o StrictHostKeyChecking=no apps/backend/pb_hooks/12-*.pb.js \
   root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/
 ```
 
 **Restart PocketBase**
+
 ```bash
 ssh root@204.168.144.14 "
   pkill -f 'pocketbase serve' &&
@@ -404,6 +437,7 @@ ssh root@204.168.144.14 "
 ```
 
 **Check Logs**
+
 ```bash
 ssh root@204.168.144.14 "tail -50 /tmp/pocketbase.log | grep -E 'endpoint|hook'"
 ```
@@ -430,3 +464,440 @@ ssh root@204.168.144.14 "tail -50 /tmp/pocketbase.log | grep -E 'endpoint|hook'"
 **Error:** 400/401/403 on endpoint
 **Cause:** Missing auth
 **Fix:** Add `Authorization: Bearer <token>` header
+
+---
+
+## MISTAKES & LEARNINGS
+
+### Wallet Creation Hook Fix (April 2026)
+
+**Issue:** LINE OAuth signup was failing with `{"daccPublickey":{"code":"validation_invalid_format"}}`
+
+**Root Cause:**
+
+- Wallet hook `01-create-wallet.pb.js` was calling wallet-api with WRONG parameters
+- Was sending: `{userId: e.record.id}` ❌
+- Should send: `{passwordSecretkey: randomPassword, publicEncryption: false}` ✅
+- Wallet-api validation failed, so daccPublickey was undefined/empty
+- PocketBase validation failed because daccPublickey field requires pattern `^daccPublickey_`
+
+**Initial Mistake:**
+First "fix" tried to use `e.record.getString('password')` thinking it contained the user's raw password. **WRONG!**
+
+- PocketBase hashes passwords before storage
+- `e.record.getString('password')` returns the HASH, not raw password ❌
+- Wallet-api validation expects 12-120 character password, not a 60-char hash ❌
+
+**Correct Fix (learned from reference implementation):**
+Refer to `/Users/poom-work/tokenine/eggo-pocketbase/resources/pkbase-wallet/pkbase/pb_hooks/01-create-wallet-hook.pb.js`:
+
+```javascript
+// Generate RANDOM secure password for wallet encryption (NOT user's password!)
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+let passwordSecretkey = ""
+for (let i = 0; i < 20; i++) {
+  passwordSecretkey += charset.charAt(Math.floor(Math.random() * charset.length))
+}
+
+// Use this random password to create wallet
+const requestBody = {
+  passwordSecretkey: passwordSecretkey, // ✅ Generated random password
+  publicEncryption: false,
+}
+
+// Store in pin field
+e.record.set("pin", passwordSecretkey)
+e.record.set("wallet", responseData.data.address)
+e.record.set("daccPublickey", responseData.data.daccPublickey)
+```
+
+**Key Learnings:**
+
+1. **ALWAYS check reference implementations FIRST** before fixing
+2. **User passwords are hashed** - never use for wallet encryption
+3. **Generate random password** for wallet, store in `pin` field
+4. **Verify wallet-api spec** before calling it
+5. **Test on production** not just local - infrastructure issues (Nginx, Docker networking) wasted time
+6. **Don't trust internet tutorials** - use project's own reference code (`/resources/`)
+
+**Files to Reference:**
+
+- Hook fix: `apps/backend/pb_hooks/01-create-wallet.pb.js`
+- Reference: `resources/pkbase-wallet/pkbase/pb_hooks/01-create-wallet-hook.pb.js` ✅
+- Wallet API spec: `resources/pkbase-wallet/wallet-srv/API_LIST.md`
+
+**Verification Steps (MUST DO):**
+
+```bash
+# 1. Verify hook file has fix
+ssh root@pb_host "grep 'randomPassword\|passwordSecretkey' /root/eggo-world-pb/apps/backend/pb_hooks/01-create-wallet.pb.js"
+
+# 2. Restart production PocketBase
+ssh root@pb_host "pkill -f 'pocketbase serve' && cd /root/eggo-world-pb/apps/backend && nohup ./pocketbase serve --http=0.0.0.0:8090 >> /tmp/pocketbase.log 2>&1 &"
+
+# 3. Verify hook loaded
+ssh root@pb_host "tail -50 /tmp/pocketbase.log | grep 'Create wallet hook registered'"
+
+# 4. Test user creation via Direct API
+ssh root@pb_host 'curl -s -X POST "http://localhost:8090/api/collections/users/records" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"username\":\"test\",\"password\":\"TestPass123!\",\"passwordConfirm\":\"TestPass123!\"}"'
+# ✅ Should return: {"id":"...","collectionId":"_pb_users_auth_",...} with status 200
+# ❌ Should NOT return: {"daccPublickey":{"code":"validation_invalid_format"}}
+```
+
+**Anti-Patterns (NEVER DO):**
+
+- ❌ Don't use user's password for wallet encryption (it's hashed)
+- ❌ Don't skip reading reference implementations
+- ❌ Don't assume production infrastructure will work (always test end-to-end)
+- ❌ Don't debug Docker networking if binary process exists
+
+**Success Criteria:**
+
+- [ ] User creation API returns 200 OK (not 400 validation error)
+- [ ] User record has: `wallet`, `daccPublickey`, `pin` fields populated
+- [ ] Logs show: "Wallet created successfully: 0x..."
+- [ ] daccPublickey format matches: `daccPublickey_0x..._...` (starts with `daccPublickey_`)
+
+---
+
+### Wallet Hook Critical Bug Fix (April 2026)
+
+**Issue:** User signup via LINE OAuth was creating records but they were never committed to database.
+
+**Root Cause:**
+
+- Hook `01-create-wallet.pb.js` was missing `e.next()` call
+- Without `e.next()`, PocketBase doesn't commit the record
+- User creation appeared to succeed but record was never saved
+
+**Additional Issues Found & Fixed:**
+
+- Missing `e.next()` meant record never committed ❌
+- Hardcoded wallet API URL (`http://172.18.0.4:3001`) ❌
+- Using user's hashed password instead of random password ❌
+- Wrong API endpoint path (`/api/wallet/create` vs `/api/v1/wallet/create`) ❌
+- Returning hardcoded `version: 3` instead of actual encryption version ❌
+
+**Correct Fix (committed in `47d8187`):**
+
+```javascript
+// Use onRecordBeforeCreate (NOT onRecordCreate)
+onRecordBeforeCreate((e) => {
+  // ... wallet creation logic ...
+
+  // CRITICAL: Must call e.next() to commit the record
+  e.next()
+})
+```
+
+**Key Learnings:**
+
+1. **`e.next()` is MANDATORY** - Without it, records are never committed
+2. **Use `onRecordBeforeCreate`** - Set fields BEFORE commit, not after
+3. **Generate random password** - User's password is hashed, use generated random password
+4. **Use environment variables** - Don't hardcode API URLs
+5. **Return actual encryption version** - Don't hardcode version numbers
+6. **Test user creation end-to-end** - Verify records are actually created
+
+**Files Modified:**
+
+- `apps/backend/pb_hooks/01-create-wallet.pb.js` - Hook fix
+- `wallet-api/server.js` - Version fix (now returns `encryptedPrivateKey.version`)
+
+**Verification Steps (MUST DO):**
+
+```bash
+# 1. Test user creation
+curl -X POST http://localhost:8090/api/collections/users/records \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","username":"test","password":"TestPass123!","passwordConfirm":"TestPass123!"}'
+
+# Expected: 200 OK with user record including wallet, daccPublickey, pin
+# NOT expected: 400 error or record without wallet fields
+
+# 2. Verify hook has e.next()
+grep "e.next()" apps/backend/pb_hooks/01-create-wallet.pb.js
+# Should exist at end of hook function
+
+# 3. Verify encryption version
+curl -X POST http://localhost:3001/api/wallet/create \
+  -H "Content-Type: application/json" \
+  -d '{"userId":"test123"}' | jq '.data.version'
+# Should return: 4 (AES-256-GCM), NOT 3 (XOR)
+```
+
+**Anti-Patterns (NEVER DO):**
+
+- ❌ Use `onRecordCreate` without `e.next()` - record won't commit
+- ❌ Hardcode wallet API URLs - use `$os.getenv("WALLET_SRV_URL")`
+- ❌ Use user's password for wallet - generate random password
+- ❌ Hardcode version numbers - return actual encryption version
+
+**Success Criteria:**
+
+- [ ] User creation returns 200 OK with wallet fields populated
+- [ ] `e.next()` exists in hook at line 89
+- [ ] Wallet API returns `version: 4` (AES-256-GCM)
+- [ ] WALLET_SRV_URL uses environment variable
+
+---
+
+## REMAINING ISSUES - IMPLEMENTATION GUIDE
+
+### 1. Mock Contract Interactions (P0 - Security Critical)
+
+**Problem:** 4 wallet-api endpoints return mock data instead of real blockchain transactions:
+
+- `/api/v1/wallet/mint-egg` (line 388)
+- `/api/v1/wallet/claim-commission` (line 422)
+- `/api/v1/wallet/mint-food` (line 457)
+- `/api/v1/wallet/feed-egg` (line 493)
+
+**What Needs Implementation:**
+
+These endpoints currently return fake transaction hashes. Real implementation requires:
+
+```javascript
+// Current (MOCK - DON'T USE IN PRODUCTION):
+app.post("/api/v1/wallet/mint-egg", async (req, res) => {
+  // ... validation ...
+  res.json({
+    success: true,
+    data: {
+      transaction_hash: "0xMOCK_HASH", // ❌ FAKE
+      token_id: Math.floor(Math.random() * 1000), // ❌ FAKE
+    },
+  })
+})
+
+// Required (REAL CONTRACT CALL):
+app.post("/api/v1/wallet/mint-egg", async (req, res) => {
+  const { user_address, egg_id } = req.body
+
+  // 1. Get user's encrypted private key from database
+  const user = await pocketBase.collection("users").getOne(user_address)
+  const privateKey = await decryptPrivateKey(user.encrypted_private_key, MASTER_KEY + user.id)
+
+  // 2. Create ethers.js signer
+  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL)
+  const signer = new ethers.Wallet(privateKey, provider)
+
+  // 3. Connect to NFT contract
+  const nftContract = new ethers.Contract(
+    process.env.NEXT_PUBLIC_EGG_NFT_ADDRESS,
+    EGG_NFT_ABI,
+    signer
+  )
+
+  // 4. Call smart contract function
+  const tx = await nftContract.mintEgg(egg_id)
+  await tx.wait() // Wait for confirmation
+
+  // 5. Return real transaction hash
+  res.json({
+    success: true,
+    data: {
+      transaction_hash: tx.hash, // ✅ REAL
+      token_id: await nftContract.tokenOfOwnerByIndex(user_address, 0), // ✅ REAL
+    },
+  })
+})
+```
+
+**Prerequisites:**
+
+1. Smart contracts deployed to target network
+2. Contract addresses file exists (`/contract-addresses.json`)
+3. RPC endpoint configured (`NEXT_PUBLIC_RPC_URL` in `.env`)
+4. Contract ABIs defined (array of function signatures)
+
+**Files to Create/Modify:**
+
+- `wallet-api/server.js` - Replace 4 mock endpoints with real contract calls
+- `wallet-api/contracts/` - Directory for contract ABIs
+- `.env` - Add `RPC_URL`, contract addresses
+
+**Testing:**
+
+```bash
+# Test mint-egg endpoint
+curl -X POST http://localhost:3001/api/v1/wallet/mint-egg \
+  -H "Content-Type: application/json" \
+  -d '{"user_address":"0x...","egg_id":1}'
+# Expected: Real transaction hash, not mock
+
+# Verify on blockchain explorer
+# Check transaction hash on BSC testnet: https://testnet.bscscan.com/tx/HASH
+```
+
+**Dependencies:** Contract deployment must complete first.
+
+---
+
+### 2. Feed Feature (P2 - Nice to Have)
+
+**Problem:** UI button exists in `apps/web/app/eggs/page.tsx:89` but does nothing.
+
+**What Needs Implementation:**
+
+**Frontend** (`apps/web/app/eggs/page.tsx`):
+
+```typescript
+// Current (TODO comment):
+// TODO: Implement feed flow
+
+// Required implementation:
+const handleFeed = async (eggId: number, foodIds: number[]) => {
+  try {
+    const signer = await getSigner()
+    const contract = getEggNftContract(signer)
+
+    // Call smart contract
+    const tx = await contract.feedEgg(eggId, foodIds)
+    await tx.wait()
+
+    // Update UI
+    toast.success("Egg fed successfully!")
+    refreshEggData()
+  } catch (error) {
+    toast.error("Failed to feed egg")
+  }
+}
+```
+
+**Backend Hook** (`apps/backend/pb_hooks/16-feed-egg.pb.js`):
+
+```javascript
+routerAdd("POST", "/api/v2/feed-egg", (e) => {
+  const { users } = e.requireAuth()
+  const { egg_token_id, food_ids } = e.parseBody()
+
+  // 1. Validate user owns the egg NFT
+  // 2. Validate user owns the food NFTs
+  // 3. Call wallet-api to execute transaction
+  // 4. Mark food NFTs as consumed
+  // 5. Update egg properties (food_count, rarity_bonus)
+
+  e.json(200, {
+    success: true,
+    data: {
+      transaction_hash: tx.hash,
+      new_food_count: newCount,
+      rarity_bonus: bonus,
+    },
+  })
+})
+```
+
+**Wallet API** (`wallet-api/server.js`):
+
+- Already has `/api/v1/wallet/feed-egg` endpoint (line 493) - needs real contract call
+
+**Dependencies:**
+
+- Contract interactions implemented (Issue #1)
+- Food NFT contract deployed
+- Egg NFT contract has `feedEgg` function
+
+---
+
+### 3. Play Feature (P2 - Nice to Have)
+
+**Problem:** UI button exists in `apps/web/app/eggs/page.tsx:95` but does nothing.
+
+**What Needs Implementation:**
+
+Similar to Feed feature, but for play/interaction mechanics. Exact implementation depends on game design:
+
+**Frontend** (`apps/web/app/eggs/page.tsx`):
+
+```typescript
+// Current (TODO comment):
+// TODO: Implement play interaction
+
+// Required implementation (example):
+const handlePlay = async (eggId: number) => {
+  try {
+    const signer = await getSigner()
+    const contract = getEggNftContract(signer)
+
+    const tx = await contract.playWithEgg(eggId)
+    await tx.wait()
+
+    toast.success("Played with egg!")
+  } catch (error) {
+    toast.error("Failed to play")
+  }
+}
+```
+
+**Status:** Waiting for game design specification (play = minigame? interaction? earning mechanism?).
+
+---
+
+### 4. RED PHASE Test (P1 - Quality Issue)
+
+**Problem:** Test file `apps/backend/pb_hooks/13-track-deposit.test.js` line 703 states:
+
+```javascript
+console.log("Status: RED PHASE - Tests will fail until hook is implemented")
+```
+
+**What Needs Implementation:**
+
+**Hook File** (`apps/backend/pb_hooks/13-track-deposit.pb.js`):
+
+```javascript
+// Hook needs to:
+// 1. Poll USDT Transfer events for user deposits
+// 2. Track deposit amounts and timestamps
+// 3. Update user's deposit records in PocketBase
+// 4. Handle duplicate transaction detection
+// 5. Emit events for deposit confirmations
+
+routerAdd("POST", "/api/v2/track-deposit", (e) => {
+  const { users } = e.requireAuth()
+  const { transaction_hash } = e.parseBody()
+
+  // Implementation needed:
+  // 1. Verify transaction on blockchain
+  // 2. Check if already tracked (prevent duplicates)
+  // 3. Create deposit record
+  // 4. Update user balance if needed
+
+  e.json(200, {
+    success: true,
+    data: {
+      deposit_id: record.id,
+      amount: amount,
+      confirmed: true,
+    },
+  })
+})
+```
+
+**Testing:**
+
+```bash
+# Run test to verify
+bun test apps/backend/pb_hooks/13-track-deposit.test.js
+# Expected: All tests pass
+# Current: Tests fail with "hook not implemented"
+```
+
+---
+
+## SUMMARY - Fixed vs Remaining
+
+| Category                     | Count                 | Files                                            |
+| ---------------------------- | --------------------- | ------------------------------------------------ |
+| **Fixed & Committed**        | 6 issues              | `01-create-wallet.pb.js`, `wallet-api/server.js` |
+| **Blocked (Need Contracts)** | 1 issue (4 endpoints) | `wallet-api/server.js`                           |
+| **Deferred (Need Decision)** | 2 issues              | `apps/web/app/eggs/page.tsx`                     |
+| **Pending Implementation**   | 1 issue               | `13-track-deposit.pb.js`                         |
+
+**Next Actions:**
+
+1. Deploy smart contracts → Fix mock contract interactions
+2. Decide on Feed/Play features → Implement UI + backend
+3. Implement track-deposit hook → Fix RED PHASE test
