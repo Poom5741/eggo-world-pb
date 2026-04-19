@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v0.0.7
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-19T03:35:35.834Z"
+last_updated: "2026-04-19T03:54:36.000Z"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 5
+  completed_plans: 5
 ---
 
 # STATE.md — Project Memory
@@ -24,7 +24,7 @@ progress:
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** Phase 12 — wallet-api-contract-integration
+**Current Focus:** Phase 13 — USDT Deposit Tracking (Ready to start)
 
 **Constraints:**
 
@@ -41,8 +41,8 @@ progress:
 **Next Phase:** 13 (USDT Deposit Tracking) — Ready to start
 
 ```
-Progress: [██--------] 2/5 phases complete
-          Phase 12 → ✅ COMPLETE
+Progress: [███-------] 2/5 phases complete
+          Phase 12 → ✅ COMPLETE (4 plans, SEC-04 satisfied)
           Phase 13 → Next
 ```
 
@@ -55,6 +55,7 @@ Progress: [██--------] 2/5 phases complete
 - ✅ Deployed to 0xl3 testnet (Chain ID: 7117)
 - ✅ claim-commission handles zero balance gracefully (no tx sent)
 - ✅ feed-egg validates ownership and hatching status
+- ✅ feed-egg validates foodCount < 10 (Plan 12-04 gap closure - SEC-04 complete)
 - ✅ All endpoints return real transaction hashes
 - ✅ 12-block confirmation wait on all transactions
 
@@ -153,38 +154,32 @@ Progress: [██--------] 2/5 phases complete
 | Hardcode minimal ABI in server.js    | 12    | Avoid file I/O, keep deployment simple                    | ✅ Active |
 | 12-block confirmation wait           | 12    | Standard for BSC, balance security vs UX                  | ✅ Active |
 | Daily check-in (off-chain)           | 16    | Skip complex mini-games for MVP, database only            | ✅ Active |
-| Check balance before claiming commission | 12 | Save gas, better UX (no tx when zero balance)        | ✅ Active |
-| Ownership verification for feed-egg  | 12    | Prevent unauthorized feeding (security)                   | ✅ Active |
-| 20% gas buffer on transactions       | 12    | Prevent out-of-gas failures (especially feedEgg variable) | ✅ Active |
+| Check balance before claiming commission | 12 | Save gas, better UX (no tx when zero balance) | ✅ Active |
+| Ownership verification for feed-egg | 12 | Prevent unauthorized feeding (security) | ✅ Active |
+| 20% gas buffer on transactions | 12 | Prevent out-of-gas failures (especially feedEgg variable) | ✅ Active |
+| foodCount validation before gas estimation | 12-04 | Save users from paying gas for hatched eggs | ✅ Active |
+| 400 status for EGG_HATCHED error | 12-04 | Client error semantics, clearer debugging | ✅ Active |
 
 ---
 
 ## Session Continuity
 
-**Last Session:** 2026-04-19T03:35:35.831Z
+**Last Session:** 2026-04-19T03:54:36.000Z
 
 **Session Notes:**
 
-- Phase 12 Wave 2 completed in commit `ab853309` by human developer
-- All 4 mock endpoints replaced with real ethers.js contract calls:
-  - mint-egg: Real EggNFT.mintEgg() with gas estimation
-  - mint-food: Real FoodNFT.mint() with quantity support
-  - claim-commission: Real CommissionDistribution.claimCommission()
-  - feed-egg: Real EggNFT.feedEgg() with ownership verification
-- Added PocketBase admin authentication for encrypted private key access
-- Added withRetry wrapper with exponential backoff (3 attempts)
-- All endpoints wait for 12 confirmations, use 20% gas buffer
-- Contracts deployed on 0xl3 testnet (Chain ID: 7117)
-- SUMMARY.md files created for 12-03 (this session)
-- STATE.md and ROADMAP.md updated with Phase 12 completion
+- Phase 12 Plan 12-04 (gap closure) completed
+- Added foodCount validation to feed-egg endpoint to prevent feeding hatched eggs
+- Validation: check foodCount < 10 BEFORE gas estimation (saves gas)
+- Error handling: 400 EGG_HATCHED with user-friendly message
+- Monitoring: added logging for blocked and successful feed attempts
+- SEC-04 requirement now fully satisfied (was partial, now complete)
+- Updated STATE.md with new decisions and session timestamp
 
-**Files to Preserve:****
-
-- `.planning/ROADMAP.md` — Phase structure with success criteria
-- `.planning/STATE.md` — This file (project memory)
-- `.planning/REQUIREMENTS.md` — 16 requirements with traceability
-- `.planning/phases/12-*/12-CONTEXT.md` — Phase 12 implementation decisions
-- `.planning/research/SUMMARY.md` — Research synthesis
+**Files Modified:**
+- `wallet-api/server.js` - feed-egg endpoint validation (+23 lines)
+- `.planning/STATE.md` - Updated position, decisions, session timestamp
+- `.planning/phases/12-wallet-api-contract-integration/12-04-SUMMARY.md` - Created
 
 **Next Session Actions:**
 
