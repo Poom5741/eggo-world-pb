@@ -186,7 +186,7 @@ Progress: [██████----] 3/5 phases complete
 
 ## Session Continuity
 
-**Last Session:** 2026-04-19T19:00:00.000Z
+**Last Session:** 2026-04-19T19:30:00.000Z
 
 **Session Notes:**
 
@@ -195,19 +195,25 @@ Progress: [██████----] 3/5 phases complete
 - Phase 13 Nyquist validation created (manual-only justification)
 - Phase 14 mobile responsive polish complete
 - Phase 15 feed feature complete
+- Phase 16 context gathered - ready for planning (Play feature, test infrastructure, wallet balance modal)
 
 **Next Session Actions:**
 
-1. Complete Phase 13 (USDT Deposit Tracking) — SEC-05 to SEC-08
-2. Complete Phase 16 (Play Feature + Test Infrastructure) — QUAL-01/02, FEAT-05 to FEAT-09
-3. Run full test suite and fix 9 vi.mock failures
-4. Increase test coverage from 70% to 80%+
+1. Plan Phase 16 using /gsd-plan-phase 16
+2. Execute Phase 16 plans (Play feature, test fixes, balance modal)
+3. Complete Phase 13 (USDT Deposit Tracking) — SEC-05 to SEC-08
+4. Run full test suite and verify 80%+ coverage
 
 **Context Handoff:**
 
 - v0.0.6 ARCHIVED — All scoped requirements satisfied, final audit complete
 - v0.0.7 IN PROGRESS — 3/5 phases complete (12, 14, 15)
-- Remaining work: Phase 13 (USDT deposit), Phase 16 (Play + Tests)
+- Phase 16 CONTEXT.md created with 20 decisions across 4 areas:
+  - Play Feature UX: Button on egg card, modal dialog, streak counter with fire emoji
+  - Test Infrastructure: Fix failures first, integration tests, colocated files
+  - Wallet Balance Modal: Tap balance to open, full breakdown + 10 transactions
+  - Daily Check-in Backend: user_stats collection, PocketBase hook, mint Food NFT, 7d/30d bonuses
+- Remaining work: Phase 13 (USDT deposit), Phase 16 execution
 - All P0 security issues FIXED (Phase 12)
 - Mobile responsive complete with WCAG 2.2 AA compliance
 - Feed feature complete with manual selection and ready-to-hatch indicators
