@@ -32,7 +32,7 @@
 2. ✅ User can claim referral commission and see real blockchain transaction in wallet
 3. ✅ User can mint Food NFT with real USDT deduction from wallet
 4. ✅ User can feed Egg NFT with real blockchain transaction updating food_count
-   **Plans**: 3 plans COMPLETE (8 tasks total)
+   **Plans**: 4 plans COMPLETE (11 tasks total)
    **UI hint**: no
    **Status**: ✅ COMPLETE 2026-04-18
 
@@ -40,6 +40,7 @@
    - [x] 12-01-PLAN.md — Deploy contracts to 0xl3 testnet, create address registry ✅
    - [x] 12-02-PLAN.md — Replace mint-egg and mint-food mocks with real contract calls ✅
    - [x] 12-03-PLAN.md — Replace claim-commission and feed-egg mocks, add gas sponsorship ✅
+   - [x] 12-04-PLAN.md — Add missing foodCount validation to feed-egg endpoint (gap closure) ✅
 
 **Completion Evidence:**
 
