@@ -4,8 +4,9 @@
 
 console.log("Setting up create wallet hook...");
 
-onRecordBeforeCreate((e) => {
-    console.log("Create wallet hook triggered for user:", e.record.id);
+onRecordCreate("users", (e) => {
+    const { users } = $apis.requireAuth()
+    console.log("Create wallet hook triggered for user:", e.record.id, "auth user:", users.id);
 
     // Initialize default game fields
     e.record.set("usdt_balance", 0);

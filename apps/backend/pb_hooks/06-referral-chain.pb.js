@@ -6,11 +6,11 @@ console.log("Setting up referral chain hook...");
 // Use $os.getenv for cross-file config access (globalThis is isolated per-file in PocketBase JSVM)
 var PLATFORM_ADDRESS = $os.getenv("PLATFORM_ADDRESS") || "0x0000000000000000000000000000000000000000"
 
-onRecordAfterCreateSuccess((e) => {
+onRecordAfterCreateSuccess("users", (e) => {
     const user = e.record;
     const referrerId = user.getString("referrer_id");
     
-    if (!referrerId) {
+    if (!referrerId || referrerId === "") {
         console.log("No referrer for user:", user.id);
         return;
     }
