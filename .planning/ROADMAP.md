@@ -2,20 +2,20 @@
 
 **Milestone:** Security & Quality  
 **Created:** 2026-04-18  
-**Status:** Executing (3/5 phases complete)  
+**Status:** Executing (5/5 phases complete)  
 **Phases:** 5 (12-16)  
 **Granularity:** Standard (from config: 2-week timeline, solo developer)  
-**Coverage:** 8/16 requirements mapped ✓
+**Coverage:** 16/16 requirements mapped ✓
 
 ---
 
 ## Phases
 
 - [x] **Phase 12: Wallet-API Contract Integration** — Replace 4 mock blockchain endpoints with real ethers.js contract calls ✅ COMPLETE
-- [ ] **Phase 13: USDT Deposit Tracking** — Implement event polling service with 12-block confirmation wait
+- [x] **Phase 13: USDT Deposit Tracking** — Implement event polling service with 12-block confirmation wait ✅ COMPLETE 2026-04-19
 - [x] **Phase 14: Mobile Responsive Polish** — Bottom tab bar, touch targets, responsive breakpoints (320px-1440px) ✅ COMPLETE 2026-04-19
 - [x] **Phase 15: Feed Feature** — Wire Feed button, food picker UI, progress tracking, hatch animation ✅ COMPLETE 2026-04-19
-- [ ] **Phase 16: Play Feature + Test Infrastructure** — Daily check-in reward system, fix vi.mock failures, increase test coverage
+- [x] **Phase 16: Play Feature + Test Infrastructure** — Daily check-in reward system, fix vi.mock failures, increase test coverage ✅ COMPLETE 2026-04-19
 
 ---
 
@@ -71,7 +71,16 @@
 
 Plans:
 
-- [ ] 13-01-PLAN.md — Fix deposit tracking: block tracking, 12-block confirmation, duplicate detection, UI notifications
+- [x] 13-01-PLAN.md — Fix deposit tracking: block tracking, 12-block confirmation, duplicate detection, UI notifications ✅
+
+**Completion Evidence:**
+
+- Commit: See git history (Phase 13 implemented in previous session)
+- Backend hook: `apps/backend/pb_hooks/13-track-deposit.pb.js` (271 lines)
+- Test suite: 29 tests pass, 0 failures
+- Frontend: `apps/web/app/dashboard/deposit/page.tsx` with auto-polling
+- UAT: 12/12 tests passed (13-UAT.md)
+- All SEC requirements satisfied (SEC-05, SEC-06, SEC-07, SEC-08)
 
 ---
 
@@ -154,11 +163,18 @@ Plans:
 
 Plans:
 
-- [ ] 16-01-PLAN.md — Fix 9 vi.mock test failures (QUAL-01)
-- [ ] 16-02-PLAN.md — Play button on egg cards, check-in modal, streak counter (FEAT-05, FEAT-06, FEAT-07)
-- [ ] 16-03-PLAN.md — PocketBase hook for daily check-in with cooldown and NFT minting (FEAT-06, FEAT-07)
-- [ ] 16-04-PLAN.md — Balance detail modal with transaction history (FEAT-08, FEAT-09)
-- [ ] 16-05-PLAN.md — Test coverage increase to 80%+ for Phase 16 features (QUAL-02)
+- [x] 16-01-PLAN.md — Fix 9 vi.mock test failures (QUAL-01) ✅
+- [x] 16-02-PLAN.md — Play button on egg cards, check-in modal, streak counter (FEAT-05, FEAT-06, FEAT-07) ✅
+- [x] 16-03-PLAN.md — PocketBase hook for daily check-in with cooldown and NFT minting (FEAT-06, FEAT-07) ✅
+- [x] 16-04-PLAN.md — Balance detail modal with transaction history (FEAT-08, FEAT-09) ✅
+- [x] 16-05-PLAN.md — Test coverage increase to 80%+ for Phase 16 features (QUAL-02) ✅
+
+**Completion Evidence:**
+
+- 5 plans executed across 3 waves
+- 49 new tests created, all passing
+- UAT: 22/22 tests passed (16-UAT.md)
+- All requirements satisfied (QUAL-01, QUAL-02, FEAT-05 to FEAT-09)
 
 ---
 
@@ -167,10 +183,10 @@ Plans:
 | Phase                                  | Plans Complete | Status      | Completed  |
 | -------------------------------------- | -------------- | ----------- | ---------- |
 | 12. Wallet-API Contract Integration    | 4/4            | ✅ Complete | 2026-04-18 |
-| 13. USDT Deposit Tracking              | 0/1            | Not started | -          |
+| 13. USDT Deposit Tracking              | 1/1            | ✅ Complete | 2026-04-19 |
 | 14. Mobile Responsive Polish           | 1/1            | ✅ Complete | 2026-04-19 |
 | 15. Feed Feature                       | 1/1            | ✅ Complete | 2026-04-19 |
-| 16. Play Feature + Test Infrastructure | 0/5            | Not started | -          |
+| 16. Play Feature + Test Infrastructure | 5/5            | ✅ Complete | 2026-04-19 |
 
 ---
 
