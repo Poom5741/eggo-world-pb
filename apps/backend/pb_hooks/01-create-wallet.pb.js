@@ -88,6 +88,27 @@ onRecordCreate((e) => {
     }
 
     e.next();
+
+    // Create user_wallets record AFTER user is committed (needs user ID)
+    try {
+        var userWalletsCollection = $app.findCollectionByNameOrId("user_wallets");
+        var userWalletRecord = new Record(userWalletsCollection);
+        
+        userWalletRecord.set("user_id", e.record.id);
+        userWalletRecord.set("wallet_address", e.record.get("wallet") || "");
+        userWalletRecord.set("usdt_balance", 0);
+        userWalletRecord.set("total_earned", 0);
+        userWalletRecord.set("total_spent", 0);
+        userWalletRecord.set("total_withdrawn", 0);
+        
+        $app.save(userWalletRecord);
+        
+        console.log("user_wallets record created for user:", e.record.id);
+    } catch (walletError) {
+        console.error("Failed to create user_wallets record:", walletError);
+        // Non-fatal: user exists with wallet, just missing wallet record
+        // Can be backfilled manually if needed
+    }
 }, "users");
 
 console.log("Create wallet hook registered");
