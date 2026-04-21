@@ -43,6 +43,54 @@ try {
   console.error('Failed to load contract addresses:', error.message);
 }
 
+// Platform relayer wallet for gas sponsorship (D-05)
+// This wallet pays gas fees on behalf of users for all operations
+let relayerWallet = null
+
+function initializeRelayerWallet() {
+  const relayerPrivateKey = process.env.RELAYER_PRIVATE_KEY
+
+  if (!relayerPrivateKey) {
+    console.warn("WARNING: RELAYER_PRIVATE_KEY not set. Gas sponsorship disabled.")
+    console.warn("Users will need their own BNB for gas fees.")
+    return null
+  }
+
+  try {
+    const provider = new ethers.JsonRpcProvider(RPC_URL)
+    relayerWallet = new ethers.Wallet(relayerPrivateKey, provider)
+    console.log(`Relayer wallet initialized: ${relayerWallet.address}`)
+    return relayerWallet
+  } catch (error) {
+    console.error("Failed to initialize relayer wallet:", error.message)
+    return null
+  }
+}
+
+// Initialize on server startup
+initializeRelayerWallet()
+
+// Gas sponsorship logging helper
+function logGasSponsorship(operation, userId, receipt) {
+  const gasCost = receipt.gasUsed * receipt.effectiveGasPrice
+  const gasCostBNB = ethers.formatEther(gasCost)
+
+  // Log for accounting/monitoring
+  console.log(
+    `[Gas Sponsorship] ${operation} - User: ${userId}, Gas: ${gasCostBNB} BNB, TxHash: ${receipt.transactionHash}`
+  )
+
+  // Future: Store in database for accounting
+  // For MVP: logging only (D-05)
+
+  return {
+    gasUsed: receipt.gasUsed.toString(),
+    effectiveGasPrice: receipt.effectiveGasPrice.toString(),
+    totalCostWei: gasCost.toString(),
+    totalCostBNB: gasCostBNB,
+  }
+}
+
 // Minimal ABI for EggNFT (mintEgg function)
 const EGG_NFT_ABI = [
   "function mintEgg(uint256 eggId) external payable returns (uint256)",
@@ -639,9 +687,8 @@ app.post('/api/wallet/mint-egg', async (req, res) => {
             // Continue - don't fail mint if PB record creation fails
         }
         
-        // Log sponsored gas cost (D-05)
-        const gasCost = receipt.gasUsed * receipt.effectiveGasPrice;
-        console.log(`[Gas Sponsorship] Mint Egg - User: ${userId}, Gas: ${ethers.formatEther(gasCost)} BNB, TxHash: ${tx.hash}`);
+        // Log gas cost for monitoring (user pays gas for mint, logged for tracking)
+        logGasSponsorship('Mint Egg', userId, receipt)
         
         res.json({
             success: true,
