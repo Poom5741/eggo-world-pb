@@ -220,7 +220,7 @@ export function BuyFlow({
    * ปิด dialog
    * Close dialog
    */
-  const handleClose = useCallback(() => {
+  const _handleClose = useCallback(() => {
     setIsDialogOpen(false)
     setError(null)
   }, [])

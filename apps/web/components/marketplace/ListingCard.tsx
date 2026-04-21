@@ -38,7 +38,7 @@ function formatPrice(price: number): string {
   return price.toFixed(2)
 }
 
-export function ListingCard({ id, image, name, rarity, price, seller, polling = false, onClick }: ListingCardProps) {
+export function ListingCard({ id: _id, image, name, rarity, price, seller, polling = false, onClick }: ListingCardProps) {
   const rarityInfo = getRarityInfo(rarity)
 
   return (

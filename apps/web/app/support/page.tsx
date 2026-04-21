@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, isAuthenticated } from '@/lib/pocketbase/client'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
