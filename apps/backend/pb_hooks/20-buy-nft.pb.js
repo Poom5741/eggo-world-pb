@@ -82,7 +82,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         // Get listing details
         const nftId = listing.getString('nft_id');
         const nftType = listing.getString('nft_type');
-        const price = listing.getNumber('price');
+        const price = parseFloat(listing.get('price') || '0');
         const sellerId = listing.getString('seller_id');
         
         if (!nftId || !nftType || !price || !sellerId) {
@@ -161,7 +161,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
             });
         }
         
-        const buyerBalance = buyerWallet.getNumber('usdt_balance') || 0;
+        const buyerBalance = parseFloat(buyerWallet.get('usdt_balance') || '0');
         if (buyerBalance < price) {
             return e.json(400, { 
                 success: false, 
@@ -178,12 +178,12 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         
         // Deduct USDT from buyer
         buyerWallet.set('usdt_balance', buyerBalance - price);
-        buyerWallet.set('total_spent', (buyerWallet.getNumber('total_spent') || 0) + price);
+        buyerWallet.set('total_spent', (parseFloat(buyerWallet.get('total_spent') || '0')) + price);
         buyerWallet.set('last_transaction_at', new Date().toISOString());
         $app.save(buyerWallet);
         
         // Update buyer's user record
-        buyer.set('usdt_balance', buyerWallet.getNumber('usdt_balance'));
+        buyer.set('usdt_balance', buyerWallet.get('usdt_balance'));
         $app.save(buyer);
         
         // Credit seller (find or create seller wallet)
@@ -192,14 +192,14 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         });
         
         if (sellerWallet) {
-            const currentBalance = sellerWallet.getNumber('usdt_balance') || 0;
+            const currentBalance = parseFloat(sellerWallet.get('usdt_balance') || '0');
             sellerWallet.set('usdt_balance', currentBalance + sellerAmount);
-            sellerWallet.set('total_earned', (sellerWallet.getNumber('total_earned') || 0) + sellerAmount);
+            sellerWallet.set('total_earned', (parseFloat(sellerWallet.get('total_earned') || '0')) + sellerAmount);
             sellerWallet.set('last_transaction_at', new Date().toISOString());
             $app.save(sellerWallet);
             
             // Update seller's user record
-            seller.set('usdt_balance', sellerWallet.getNumber('usdt_balance'));
+            seller.set('usdt_balance', sellerWallet.get('usdt_balance'));
             $app.save(seller);
         }
         
