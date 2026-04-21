@@ -4,12 +4,7 @@
 
 console.log("Setting up create wallet hook...");
 
-onRecordBeforeCreate((e) => {
-    // Only process users collection (not other collections)
-    if (e.record.collection().name !== "users") {
-        e.next()
-        return
-    }
+onRecordCreate((e) => {
     console.log("Create wallet hook triggered for user:", e.record.id);
 
     // Initialize default game fields
@@ -22,18 +17,15 @@ onRecordBeforeCreate((e) => {
     console.log("Default game fields initialized");
 
     try {
-        var walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-srv:3000";
+        var walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001";
         var apiUrl = walletApiUrl + "/api/wallet/create";
         
-        // Generate random password for wallet encryption (follows reference implementation)
-        var randomPassword = Math.random().toString(36).slice(-10) + Date.now().toString(36) + Math.random().toString(36).slice(-10);
-        
+        // Send user ID to wallet API
         var requestBody = {
-            passwordSecretkey: randomPassword,
-            publicEncryption: false
+            userId: e.record.id
         };
 
-        console.log("Calling wallet-api to create wallet...");
+        console.log("Calling wallet-api to create wallet for user:", e.record.id);
         console.log("Request URL:", apiUrl);
 
         var response = $http.send({
@@ -82,7 +74,6 @@ onRecordBeforeCreate((e) => {
         // Set wallet fields on record BEFORE e.next() so they are committed with the record
         e.record.set("wallet", address);
         e.record.set("daccPublickey", daccPublickey);
-        e.record.set("pin", randomPassword);
         
         // Save encrypted private key for Phase 12 contract calls (line 320-359 from explore results)
         if (responseData.data.encryptedPrivateKey) {
@@ -101,7 +92,7 @@ onRecordBeforeCreate((e) => {
         throw new Error("Wallet creation failed, aborting user creation: " + error.message);
     }
 
-
-});
+    e.next();
+}, "users");
 
 console.log("Create wallet hook registered");
