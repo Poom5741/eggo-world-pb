@@ -7,12 +7,15 @@
  * 2. Get listing from marketplace_listings collection
  * 3. Verify NFT exists and is listed for sale
  * 4. Verify buyer has sufficient USDT balance
- * 5. Deduct USDT from buyer
- * 6. Transfer NFT ownership to buyer
- * 7. Credit USDT to seller (minus platform fee)
- * 8. Mark listing as sold
- * 9. Record transaction
- * 10. Return success with transaction hash
+ * 5. Call wallet-api for on-chain purchase (gas sponsored by platform)
+ * 6. Wait for on-chain confirmation (12 blocks)
+ * 7. After on-chain success, update PocketBase records:
+ *    - Transfer NFT ownership to buyer
+ *    - Update user_wallets balances
+ *    - Mark listing as sold
+ *    - Create commission records
+ *    - Record transaction
+ * 8. Return success with on-chain transaction hash
  * 
  * Request Body:
  * {
@@ -30,7 +33,7 @@
  *     "platform_fee": "1.00",
  *     "seller_amount": "24.00",
  *     "new_owner": "buyer_user_id",
- *     "tx_hash": "txn_..."
+ *     "tx_hash": "0x..." (on-chain transaction hash)
  *   }
  * }
  */
@@ -83,7 +86,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         const nftId = listing.getString('nft_id');
         const nftType = listing.getString('nft_type');
         const price = parseFloat(listing.get('price') || '0');
-        const sellerId = listing.getString('seller_id');
+        const sellerId = listing.getString('seller') || listing.getString('seller_id');
         
         if (!nftId || !nftType || !price || !sellerId) {
             return e.json(400, { 
@@ -96,7 +99,8 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         }
         
         // Validate NFT type
-        const validTypes = ['egg', 'food', 'animal'];
+        const validTypes = ['egg', 'food', 'animal', 'Egg', 'Food', 'Animal'];
+        const normalizedNftType = nftType.toLowerCase();
         if (!validTypes.includes(nftType)) {
             return e.json(400, { 
                 success: false, 
@@ -108,7 +112,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         }
         
         // Determine collection name and find NFT record
-        const collectionName = nftType === 'egg' ? 'egg_nfts' : nftType === 'food' ? 'food_nfts' : 'animal_nfts';
+        const collectionName = normalizedNftType === 'egg' ? 'egg_nfts' : normalizedNftType === 'food' ? 'food_nfts' : 'animal_nfts';
         const nft = $app.findRecordById(collectionName, nftId);
         
         if (!nft) {
@@ -171,6 +175,60 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
                 } 
             });
         }
+        
+        // Call wallet-api for on-chain purchase (gas sponsored by platform)
+        const walletApiUrl = $os.getenv("WALLET_API_URL") || "http://localhost:3001"
+        const marketplaceContractAddress = $os.getenv("MARKETPLACE_CONTRACT_ADDRESS")
+        
+        if (!marketplaceContractAddress) {
+            return e.json(500, {
+                success: false,
+                error: {
+                    message: "Marketplace contract address not configured",
+                    code: "CONFIG_ERROR"
+                }
+            })
+        }
+        
+        console.log("Calling wallet-api for on-chain purchase: listingId=" + nftId)
+        
+        const walletApiResponse = await $http.send({
+            url: walletApiUrl + "/api/wallet/buy-nft",
+            method: "POST",
+            body: formatter.bytes({
+                buyerUserId: buyer.id,
+                listingId: nftId,
+                marketplaceAddress: marketplaceContractAddress
+            }),
+            headers: { "Content-Type": "application/json" },
+            timeout: 120 // 120 seconds for 12-block confirmation
+        })
+        
+        if (walletApiResponse.statusCode !== 200) {
+            console.log("wallet-api error: " + walletApiResponse.content)
+            return e.json(500, {
+                success: false,
+                error: {
+                    message: "On-chain purchase failed",
+                    code: "ON_CHAIN_BUY_FAILED",
+                    details: walletApiResponse.content
+                }
+            })
+        }
+        
+        const walletApiResult = json.unmarshal(walletApiResponse.content)
+        if (!walletApiResult.success) {
+            return e.json(500, {
+                success: false,
+                error: {
+                    message: walletApiResult.error.message,
+                    code: walletApiResult.error.code
+                }
+            })
+        }
+        
+        const txHash = walletApiResult.data.txHash
+        console.log("On-chain purchase confirmed: " + txHash)
         
         // Calculate platform fee and seller amount
         const platformFee = price * (PLATFORM_FEE_PERCENT / 100);
@@ -243,7 +301,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
                 platform_fee: platformFee,
                 seller_amount: sellerAmount,
                 new_owner: buyer.id,
-                tx_hash: transaction.id // Using transaction ID as hash reference
+                tx_hash: txHash // On-chain transaction hash
             }
         });
     } catch (error) {
