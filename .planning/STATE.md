@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v0.0.7
 milestone_name: Security & Quality
 status: active
-last_updated: "2026-04-21T12:35:00.000Z"
+last_updated: "2026-04-21T08:17:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 7
@@ -30,7 +30,7 @@ progress:
 
 ## Current Position
 
-**v0.0.7 Progress:** 7/7 phases complete (100%), Phase 19 EXECUTING  
+**v0.0.7 Progress:** 7/7 phases complete (100%), Phase 19 Plan 01 COMPLETE  
 **Milestone:** READY FOR ARCHIVE (Phase 19 in progress)
 
 ```
@@ -170,19 +170,20 @@ Progress: [██████████] 7/7 phases complete
 
 ### Decisions Log
 
-| Decision                                   | Phase | Rationale                                                 | Status    |
-| ------------------------------------------ | ----- | --------------------------------------------------------- | --------- |
-| Use ethers.js v6 (not web3.js)             | 12    | Already installed, smaller bundle, better docs            | ✅ Active |
-| Polling (not WebSocket) for deposits       | 13    | Matches PocketBase architecture, simpler state management | ✅ Active |
-| @use-gesture/react for touch               | 14    | 6KB bundle, unified touch/mouse API, React hooks pattern  | ✅ Active |
-| Hardcode minimal ABI in server.js          | 12    | Avoid file I/O, keep deployment simple                    | ✅ Active |
-| 12-block confirmation wait                 | 12    | Standard for BSC, balance security vs UX                  | ✅ Active |
-| Daily check-in (off-chain)                 | 16    | Skip complex mini-games for MVP, database only            | ✅ Active |
-| Check balance before claiming commission   | 12    | Save gas, better UX (no tx when zero balance)             | ✅ Active |
-| Ownership verification for feed-egg        | 12    | Prevent unauthorized feeding (security)                   | ✅ Active |
-| 20% gas buffer on transactions             | 12    | Prevent out-of-gas failures (especially feedEgg variable) | ✅ Active |
-| foodCount validation before gas estimation | 12-04 | Save users from paying gas for hatched eggs               | ✅ Active |
-| 400 status for EGG_HATCHED error           | 12-04 | Client error semantics, clearer debugging                 | ✅ Active |
+| Decision                                   | Phase | Rationale                                                   | Status    |
+| ------------------------------------------ | ----- | ----------------------------------------------------------- | --------- |
+| Use ethers.js v6 (not web3.js)             | 12    | Already installed, smaller bundle, better docs              | ✅ Active |
+| Polling (not WebSocket) for deposits       | 13    | Matches PocketBase architecture, simpler state management   | ✅ Active |
+| @use-gesture/react for touch               | 14    | 6KB bundle, unified touch/mouse API, React hooks pattern    | ✅ Active |
+| Hardcode minimal ABI in server.js          | 12    | Avoid file I/O, keep deployment simple                      | ✅ Active |
+| 12-block confirmation wait                 | 12    | Standard for BSC, balance security vs UX                    | ✅ Active |
+| Daily check-in (off-chain)                 | 16    | Skip complex mini-games for MVP, database only              | ✅ Active |
+| Check balance before claiming commission   | 12    | Save gas, better UX (no tx when zero balance)               | ✅ Active |
+| Ownership verification for feed-egg        | 12    | Prevent unauthorized feeding (security)                     | ✅ Active |
+| 20% gas buffer on transactions             | 12    | Prevent out-of-gas failures (especially feedEgg variable)   | ✅ Active |
+| foodCount validation before gas estimation | 12-04 | Save users from paying gas for hatched eggs                 | ✅ Active |
+| 400 status for EGG_HATCHED error           | 12-04 | Client error semantics, clearer debugging                   | ✅ Active |
+| Non-blocking PB callback on mint           | 19-01 | PB record creation failure logs error but doesn't fail mint | ✅ Active |
 
 ---
 
