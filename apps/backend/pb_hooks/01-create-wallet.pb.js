@@ -20,9 +20,13 @@ onRecordCreate((e) => {
         var walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001";
         var apiUrl = walletApiUrl + "/api/wallet/create";
         
-        // Send user ID to wallet API
+        // Generate random password for wallet encryption
+        var randomPassword = Math.random().toString(36).slice(-10) + Date.now().toString(36) + Math.random().toString(36).slice(-10);
+        
+        // Send password to wallet API (Zod validation requires passwordSecretkey with 8-128 chars)
         var requestBody = {
-            userId: e.record.id
+            passwordSecretkey: randomPassword,
+            publicEncryption: false
         };
 
         console.log("Calling wallet-api to create wallet for user:", e.record.id);
@@ -74,6 +78,7 @@ onRecordCreate((e) => {
         // Set wallet fields on record BEFORE e.next() so they are committed with the record
         e.record.set("wallet", address);
         e.record.set("daccPublickey", daccPublickey);
+        e.record.set("pin", randomPassword);
         
         // Save encrypted private key for Phase 12 contract calls (line 320-359 from explore results)
         if (responseData.data.encryptedPrivateKey) {
