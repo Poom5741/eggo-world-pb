@@ -20,9 +20,9 @@ type ConfirmationProgress = 'idle' | 'preparing' | 'waiting' | 'confirmed' | 'er
 
 interface UserWallet {
   id: string
-  owner: string
-  balance: string
-  token: string
+  user_id: string
+  usdt_balance: number
+  wallet_address: string
 }
 
 export default function MintPage() {
@@ -55,14 +55,8 @@ export default function MintPage() {
 
     const fetchBalance = async () => {
       try {
-        const result = await pb.collection('user_wallets').getList<UserWallet>(1, 1, {
-          filter: `owner="${user.id}"`,
-        })
-
-        if (result.items.length > 0) {
-          const wallet = result.items[0]
-          setBalance(parseFloat(wallet.balance) || 0)
-        }
+        const wallet = await pb.collection('user_wallets').getFirstListItem<UserWallet>(`user_id="${user.id}"`)
+        setBalance(wallet.usdt_balance || 0)
       } catch (err) {
         console.error('[Mint] Failed to fetch balance:', err)
         // Balance defaults to 0, which will disable mint button
