@@ -4,9 +4,13 @@
 
 console.log("Setting up create wallet hook...");
 
-onRecordCreate("users", (e) => {
-    const { users } = $apis.requireAuth()
-    console.log("Create wallet hook triggered for user:", e.record.id, "auth user:", users.id);
+onRecordBeforeCreate((e) => {
+    // Only process users collection (not other collections)
+    if (e.record.collection().name !== "users") {
+        e.next()
+        return
+    }
+    console.log("Create wallet hook triggered for user:", e.record.id);
 
     // Initialize default game fields
     e.record.set("usdt_balance", 0);
@@ -97,7 +101,7 @@ onRecordCreate("users", (e) => {
         throw new Error("Wallet creation failed, aborting user creation: " + error.message);
     }
 
-    e.next();
+
 });
 
 console.log("Create wallet hook registered");
