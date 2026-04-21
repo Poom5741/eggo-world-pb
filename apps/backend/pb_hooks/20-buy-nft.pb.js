@@ -41,8 +41,8 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
     try {
         const buyer = $apis.requireAuth(e);
         
-        const body = e.parseBody();
-        const { listing_id, buyer_address } = body;
+        const body = e.requestInfo().body;
+        const { listing_id, buyer_address } = body || {};
         
         // Validate inputs
         if (!listing_id) {
@@ -56,7 +56,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         }
         
         // Find the marketplace listing
-        const listing = $app.dao().findRecordById('marketplace_listings', listing_id);
+        const listing = $app.findRecordById('marketplace_listings', listing_id);
         
         if (!listing) {
             return e.json(404, { 
@@ -109,7 +109,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         
         // Determine collection name and find NFT record
         const collectionName = nftType === 'egg' ? 'egg_nfts' : nftType === 'food' ? 'food_nfts' : 'animal_nfts';
-        const nft = $app.dao().findRecordById(collectionName, nftId);
+        const nft = $app.findRecordById(collectionName, nftId);
         
         if (!nft) {
             return e.json(404, { 
@@ -134,7 +134,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         }
         
         // Get seller info
-        const seller = $app.dao().findRecordById('users', sellerId);
+        const seller = $app.findRecordById('users', sellerId);
         
         if (!seller) {
             return e.json(404, { 
@@ -147,7 +147,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         }
         
         // Check buyer's USDT balance
-        const buyerWallet = $app.dao().findFirstRecordByFilter('user_wallets', 'user_id = {:user_id}', {
+        const buyerWallet = $app.findFirstRecordByFilter('user_wallets', 'user_id = {:user_id}', {
             '@user_id': buyer.id
         });
         
@@ -180,14 +180,14 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         buyerWallet.set('usdt_balance', buyerBalance - price);
         buyerWallet.set('total_spent', (buyerWallet.getNumber('total_spent') || 0) + price);
         buyerWallet.set('last_transaction_at', new Date().toISOString());
-        $app.dao().save(buyerWallet);
+        $app.save(buyerWallet);
         
         // Update buyer's user record
         buyer.set('usdt_balance', buyerWallet.getNumber('usdt_balance'));
-        $app.dao().save(buyer);
+        $app.save(buyer);
         
         // Credit seller (find or create seller wallet)
-        const sellerWallet = $app.dao().findFirstRecordByFilter('user_wallets', 'user_id = {:user_id}', {
+        const sellerWallet = $app.findFirstRecordByFilter('user_wallets', 'user_id = {:user_id}', {
             '@user_id': seller.id
         });
         
@@ -196,42 +196,41 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
             sellerWallet.set('usdt_balance', currentBalance + sellerAmount);
             sellerWallet.set('total_earned', (sellerWallet.getNumber('total_earned') || 0) + sellerAmount);
             sellerWallet.set('last_transaction_at', new Date().toISOString());
-            $app.dao().save(sellerWallet);
+            $app.save(sellerWallet);
             
             // Update seller's user record
             seller.set('usdt_balance', sellerWallet.getNumber('usdt_balance'));
-            $app.dao().save(seller);
+            $app.save(seller);
         }
         
         // Transfer NFT ownership
         nft.set('owner', buyer.id);
         nft.set('is_listed', false);
         nft.set('listed_price', null);
-        $app.dao().save(nft);
+        $app.save(nft);
         
         // Record transaction
-        const transaction = $app.dao().createRecord('transactions', {
-            "user": buyer.id,
-            "type": "purchase",
-            "amount": price,
-            "currency": "USDT",
-            "nft_id": nftId,
-            "nft_type": nftType,
-            "status": "completed",
-            "metadata": {
-                "listing_id": listing_id,
-                "seller_id": sellerId,
-                "platform_fee": platformFee,
-                "seller_amount": sellerAmount
-            }
+        const transaction = $app.newRecord('transactions');
+        transaction.set('user', buyer.id);
+        transaction.set('type', 'purchase');
+        transaction.set('amount', price);
+        transaction.set('currency', 'USDT');
+        transaction.set('nft_id', nftId);
+        transaction.set('nft_type', nftType);
+        transaction.set('status', 'completed');
+        transaction.set('metadata', {
+            "listing_id": listing_id,
+            "seller_id": sellerId,
+            "platform_fee": platformFee,
+            "seller_amount": sellerAmount
         });
-        $app.dao().save(transaction);
+        $app.save(transaction);
         
         // Mark listing as sold
         listing.set('status', 'sold');
         listing.set('buyer_id', buyer.id);
         listing.set('sold_at', new Date().toISOString());
-        $app.dao().save(listing);
+        $app.save(listing);
         
         console.log(`NFT purchased: ${nftType} ${nftId} sold for ${price} USDT from ${sellerId} to ${buyer.id} via listing ${listing_id}`);
         
