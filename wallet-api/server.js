@@ -580,6 +580,69 @@ app.post('/api/wallet/mint-egg', async (req, res) => {
         
         console.log(`[Mint Egg] Confirmed in block ${receipt.blockNumber}`);
         
+        // Create PocketBase egg_nfts record after successful mint
+        try {
+            const pbToken = await getPocketBaseAdminToken();
+            
+            // Extract token_id from transaction logs (Transfer event)
+            let tokenId = null;
+            if (receipt.logs) {
+                const transferEvent = receipt.logs.find((log) => {
+                    try {
+                        return log.fragment?.name === 'Transfer' && log.args?.to === walletAddress;
+                    } catch {
+                        return false;
+                    }
+                });
+                if (transferEvent) {
+                    tokenId = transferEvent.args.tokenId.toString();
+                }
+            }
+            
+            // Fallback: if tokenId not extracted, use eggId as temporary identifier
+            if (!tokenId) {
+                console.warn('[Mint Egg] Could not extract tokenId from logs, using eggId');
+                tokenId = eggId.toString();
+            }
+            
+            // Create egg_nfts record in PocketBase
+            const pbCreateResponse = await fetch(`${PB_URL}/api/collections/egg_nfts/records`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${pbToken}`
+                },
+                body: JSON.stringify({
+                    token_id: tokenId,
+                    tx_hash: tx.hash,
+                    owner: userId,
+                    wallet_address: walletAddress,
+                    food_count: 2,
+                    is_hatched: false,
+                    referral_chain: referrerAddress || null,
+                    mint_block: receipt.blockNumber,
+                    status: 'confirmed'
+                })
+            });
+            
+            if (!pbCreateResponse.ok) {
+                const pbError = await pbCreateResponse.text();
+                console.error('[Mint Egg] Failed to create egg_nfts record:', pbError);
+                // Don't fail the mint if PocketBase record creation fails - log and continue
+                // This is a critical failure that should be monitored
+            } else {
+                const pbRecord = await pbCreateResponse.json();
+                console.log(`[Mint Egg] Created egg_nfts record: ${pbRecord.id}`);
+            }
+        } catch (pbError) {
+            console.error('[Mint Egg] PocketBase callback error:', pbError.message);
+            // Continue - don't fail mint if PB record creation fails
+        }
+        
+        // Log sponsored gas cost (D-05)
+        const gasCost = receipt.gasUsed * receipt.effectiveGasPrice;
+        console.log(`[Gas Sponsorship] Mint Egg - User: ${userId}, Gas: ${ethers.formatEther(gasCost)} BNB, TxHash: ${tx.hash}`);
+        
         res.json({
             success: true,
             data: {
