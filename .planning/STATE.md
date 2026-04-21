@@ -30,7 +30,7 @@ progress:
 
 ## Current Position
 
-**v0.0.7 Progress:** 7/7 phases complete (100%), Phase 19 Plan 01 COMPLETE  
+**v0.0.7 Progress:** 7/7 phases complete (100%), Phase 19 Plan 04 COMPLETE  
 **Milestone:** READY FOR ARCHIVE (Phase 19 in progress)
 
 ```
@@ -170,26 +170,27 @@ Progress: [██████████] 7/7 phases complete
 
 ### Decisions Log
 
-| Decision                                   | Phase | Rationale                                                   | Status    |
-| ------------------------------------------ | ----- | ----------------------------------------------------------- | --------- |
-| Use ethers.js v6 (not web3.js)             | 12    | Already installed, smaller bundle, better docs              | ✅ Active |
-| Polling (not WebSocket) for deposits       | 13    | Matches PocketBase architecture, simpler state management   | ✅ Active |
-| @use-gesture/react for touch               | 14    | 6KB bundle, unified touch/mouse API, React hooks pattern    | ✅ Active |
-| Hardcode minimal ABI in server.js          | 12    | Avoid file I/O, keep deployment simple                      | ✅ Active |
-| 12-block confirmation wait                 | 12    | Standard for BSC, balance security vs UX                    | ✅ Active |
-| Daily check-in (off-chain)                 | 16    | Skip complex mini-games for MVP, database only              | ✅ Active |
-| Check balance before claiming commission   | 12    | Save gas, better UX (no tx when zero balance)               | ✅ Active |
-| Ownership verification for feed-egg        | 12    | Prevent unauthorized feeding (security)                     | ✅ Active |
-| 20% gas buffer on transactions             | 12    | Prevent out-of-gas failures (especially feedEgg variable)   | ✅ Active |
-| foodCount validation before gas estimation | 12-04 | Save users from paying gas for hatched eggs                 | ✅ Active |
-| 400 status for EGG_HATCHED error           | 12-04 | Client error semantics, clearer debugging                   | ✅ Active |
-| Non-blocking PB callback on mint           | 19-01 | PB record creation failure logs error but doesn't fail mint | ✅ Active |
+| Decision                                   | Phase | Rationale                                                      | Status    |
+| ------------------------------------------ | ----- | -------------------------------------------------------------- | --------- |
+| Use ethers.js v6 (not web3.js)             | 12    | Already installed, smaller bundle, better docs                 | ✅ Active |
+| Polling (not WebSocket) for deposits       | 13    | Matches PocketBase architecture, simpler state management      | ✅ Active |
+| @use-gesture/react for touch               | 14    | 6KB bundle, unified touch/mouse API, React hooks pattern       | ✅ Active |
+| Hardcode minimal ABI in server.js          | 12    | Avoid file I/O, keep deployment simple                         | ✅ Active |
+| 12-block confirmation wait                 | 12    | Standard for BSC, balance security vs UX                       | ✅ Active |
+| Daily check-in (off-chain)                 | 16    | Skip complex mini-games for MVP, database only                 | ✅ Active |
+| Check balance before claiming commission   | 12    | Save gas, better UX (no tx when zero balance)                  | ✅ Active |
+| Ownership verification for feed-egg        | 12    | Prevent unauthorized feeding (security)                        | ✅ Active |
+| 20% gas buffer on transactions             | 12    | Prevent out-of-gas failures (especially feedEgg variable)      | ✅ Active |
+| foodCount validation before gas estimation | 12-04 | Save users from paying gas for hatched eggs                    | ✅ Active |
+| 400 status for EGG_HATCHED error           | 12-04 | Client error semantics, clearer debugging                      | ✅ Active |
+| Non-blocking PB callback on mint           | 19-01 | PB record creation failure logs error but doesn't fail mint    | ✅ Active |
+| Mint uses user wallet for gas (MVP)        | 19-04 | Full gas sponsorship requires meta-transactions (out of scope) | ✅ Active |
 
 ---
 
 ## Session Continuity
 
-**Last Session:** 2026-04-19T21:50:00.000Z
+**Last Session:** 2026-04-21T08:30:00.000Z
 
 **Session Notes:**
 
@@ -199,6 +200,8 @@ Progress: [██████████] 7/7 phases complete
 - Phase 18 COMPLETED — LINE OAuth wallet auto-creation fixed
 - Phase 08 marked complete (all 3 plans executed with summaries)
 - Phase 12 gap (foodCount validation) re-verified and confirmed closed
+- Phase 19 Plan 01 COMPLETED — Mint-egg PocketBase callback integration
+- Phase 19 Plan 04 COMPLETED — Gas sponsorship system with relayer wallet
 
 **Next Session Actions:**
 
@@ -260,4 +263,4 @@ Progress: [██████████] 7/7 phases complete
 
 ---
 
-_Last updated: 2026-04-18 — Roadmap created by gsd-roadmapper_
+_Last updated: 2026-04-21 — Phase 19 Plan 04 complete_
