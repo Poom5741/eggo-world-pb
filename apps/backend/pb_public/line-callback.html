@@ -194,6 +194,30 @@
                     }
                 }
                 
+                // Verify wallet was created by hook
+                console.log("=== VERIFY WALLET CREATION ===")
+                console.log("User ID:", user.id)
+                console.log("User wallet:", user.wallet || "MISSING")
+                console.log("User daccPublickey:", user.daccPublickey || "MISSING")
+                
+                if (!user.wallet) {
+                    console.error("⚠ WALLET NOT CREATED BY HOOK - This should not happen after Phase 18 fix")
+                    console.error("User record:", JSON.stringify(user, null, 2))
+                    
+                    // Show error to user (wallet is required for Buy Now flow)
+                    showError("Wallet creation failed. Please contact support. (Error: WALLET_NOT_CREATED)")
+                    return
+                }
+                
+                if (!user.daccPublickey) {
+                    console.error("⚠ DACC PUBLIC KEY MISSING")
+                    showError("Wallet setup incomplete. Please contact support. (Error: DACC_KEY_MISSING)")
+                    return
+                }
+                
+                console.log("✓ Wallet verified:", user.wallet)
+                console.log("✓ daccPublickey verified:", user.daccPublickey)
+                
                 // After user is created/updated, authenticate with PocketBase to get token
                 // Call /api/auth/line-auth endpoint which internally calls authWithPassword
                 const generatedPassword = password; // Use the same random password from earlier
@@ -233,27 +257,6 @@
                     return;
                 }
                             
-                if (!user.wallet) {
-                    console.log("Creating wallet via API...");
-                    try {
-                        const walletRes = await fetch(window.location.origin + '/api/wallet/create', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ userId: user.id })
-                        });
-                        
-                        if (walletRes.ok) {
-                            const walletData = await walletRes.json();
-                            console.log("Wallet created:", walletData);
-                            user = await pb.collection('users').getOne(user.id);
-                            console.log("Refreshed user with wallet:", user.wallet_address);
-                        } else {
-                            console.log("Wallet API response:", walletRes.status, await walletRes.text());
-                        }
-                    } catch (walletErr) {
-                        console.log("Wallet creation error:", walletErr.message);
-                    }
-                }
 
                 localStorage.setItem('pb_auth', JSON.stringify({ token: pbToken, model: userWithToken }));
                 
@@ -272,6 +275,7 @@
                     <strong>✓ Login Successful!</strong><br><br>
                     <strong>Name:</strong> ${user.name || 'N/A'}<br>
                     <strong>Email:</strong> ${user.email || 'N/A'}<br>
+                    <strong>Wallet:</strong> ${user.wallet ? user.wallet.substring(0, 10) + '...' : 'MISSING'}<br>
                     <br>กรุณากลับไปหน้าแอปพลิเคชันแล้วล็อกอินใหม่
                 `;
                 
