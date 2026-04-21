@@ -51,7 +51,8 @@ const EGG_NFT_ABI = [
   "function ownerOf(uint256 tokenId) external view returns (address)",
   "function setFoodNFTContract(address _foodNft) external",
   "function setAnimalNFTContract(address _animalNft) external",
-  "function feedEgg(uint256 eggTokenId, uint256[] calldata foodTokenIds) external"
+  "function feedEgg(uint256 eggTokenId, uint256[] calldata foodTokenIds) external",
+  "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
 ];
 
 // Minimal ABI for FoodNFT (mint function)
@@ -526,7 +527,7 @@ app.post('/api/v1/wallet/balance', async (req, res) => {
 // Mint Egg NFT
 app.post('/api/wallet/mint-egg', async (req, res) => {
     try {
-        const { userId, wallet: walletAddress, eggId, eggNftAddress } = req.body;
+        const { userId, wallet: walletAddress, eggId, eggNftAddress, referrerAddress } = req.body;
         
         if (!userId || !walletAddress || !eggId || !eggNftAddress) {
             return res.status(400).json({ 
