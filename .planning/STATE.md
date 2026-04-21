@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v0.0.7
 milestone_name: Security & Quality
-status: complete
-last_updated: "2026-04-19T21:45:00.000Z"
+status: active
+last_updated: "2026-04-21T00:00:00.000Z"
 progress:
-  total_phases: 5
+  total_phases: 6
   completed_phases: 5
   total_plans: 12
   completed_plans: 12
@@ -24,7 +24,7 @@ progress:
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** Milestone v0.0.7 COMPLETE — Ready for next milestone planning
+**Current Focus:** Phase 17 — UAT & Verification Gap Closure
 
 **Constraints:**
 
@@ -37,16 +37,17 @@ progress:
 
 ## Current Position
 
-**v0.0.7 Progress:** 5/5 phases complete (100%)  
-**Milestone:** READY FOR ARCHIVAL
+**v0.0.7 Progress:** 5/6 phases complete (83%), Phase 17 added for gap closure  
+**Milestone:** IN PROGRESS
 
 ```
-Progress: [██████████] 5/5 phases complete
+Progress: [█████████░] 5/6 phases complete
           Phase 12 → ✅ COMPLETE (wallet-api contract integration)
           Phase 13 → ✅ COMPLETE (USDT deposit tracking)
           Phase 14 → ✅ COMPLETE (mobile responsive polish)
           Phase 15 → ✅ COMPLETE (feed feature)
           Phase 16 → ✅ COMPLETE (play feature + test infrastructure)
+          Phase 17 → 📋 PLANNED (UAT & verification gap closure)
 ```
 
 **Completed Phase 12 Goals:**
@@ -127,8 +128,8 @@ Progress: [██████████] 5/5 phases complete
 ### v0.0.7 In Progress (Started 2026-04-18)
 
 **Milestone:** Security & Quality  
-**Status:** 5/5 phases complete (100%) — READY FOR ARCHIVAL  
-**Remaining:** None
+**Status:** 5/6 phases complete (83%), Phase 17 added for gap closure  
+**Remaining:** Phase 17 (UAT & verification gap closure)
 
 **FIXED:**
 
@@ -138,10 +139,15 @@ Progress: [██████████] 5/5 phases complete
 - ✅ USDT deposit tracking — Phase 13 completed with 12-block confirmation
 - ✅ Test infrastructure — Phase 16 completed, 49 new tests, 80%+ coverage
 - ✅ Play feature — Phase 16 completed with daily check-in and streak rewards
+- ✅ Phase 08 marked complete — All 3 plans executed with summaries
 
 **REMAINING:**
 
-None — all phases complete!
+- Phase 17: UAT & Verification Gap Closure
+  - Phase 10 UAT: 10 pending test scenarios (egg display, feed/hatch flows, polling, error handling)
+  - Phase 03 Gap 1: Buy Now button stub → implement actual NFT purchase with USDT approval
+  - Phase 03 Gap 2: Dashboard eggs/commissions pages need auto-polling with "Updating..." indicators
+  - Phase 12 Gap: feed-egg endpoint needs foodCount < 10 validation (already fixed in 12-04, needs re-verification)
 
 ---
 
@@ -191,21 +197,24 @@ None — all phases complete!
 **Session Notes:**
 
 - v0.0.6 milestone archived with final audit (19/19 requirements complete)
-- v0.0.7 MILESTONE COMPLETE — 5/5 phases (100%)
-- Phase 13 USDT Deposit Tracking verified with UAT (12/12 tests passed)
-- Phase 16 Play Feature + Test Infrastructure complete (22/22 UAT tests passed)
-- All 16 requirements satisfied (SEC-01 to SEC-08, QUAL-01 to QUAL-06, FEAT-01 to FEAT-09)
+- v0.0.7 MILESTONE: 5/6 phases complete (83%), Phase 17 added for gap closure
+- Phase 17 created to close outstanding UAT and verification gaps from Phases 03, 10, 12
+- Phase 08 marked complete (all 3 plans executed with summaries)
+- Phase 12 gap (foodCount validation) already fixed in 12-04, needs re-verification in Phase 17
 
 **Next Session Actions:**
 
-1. Archive v0.0.7 milestone using /gsd-complete-milestone
-2. Plan v0.1.0 milestone for next feature set
-3. Deploy Phase 13 and Phase 16 to production
+1. Execute Phase 17: Discuss, plan, and close UAT & verification gaps
+2. Complete Phase 10 UAT (10 test scenarios)
+3. Fix Phase 03 verification gaps (Buy Now stub, dashboard polling)
+4. Re-verify Phase 12 foodCount validation fix
+5. Archive v0.0.7 milestone using /gsd-complete-milestone
 
 **Context Handoff:**
 
 - v0.0.6 ARCHIVED — All scoped requirements satisfied, final audit complete
-- v0.0.7 COMPLETE — 5/5 phases complete (100%), ready for archival
+- v0.0.7 IN PROGRESS — 5/6 phases complete (83%), Phase 17 added for gap closure
+- Phase 17 scope: Close UAT gaps (Phase 10: 10 scenarios) and verification gaps (Phase 03: 2 gaps, Phase 12: 1 gap)
 - All P0 security issues FIXED (Phases 12, 13)
 - All P1 quality issues FIXED (Phases 14, 15, 16)
 - Mobile responsive complete with WCAG 2.2 AA compliance

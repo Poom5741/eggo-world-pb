@@ -1,21 +1,23 @@
 /**
  * Hook: 20-buy-nft.pb.js
- * Event: Router (POST /api/v2/buy-nft)
+ * Event: Router (POST /api/v2/marketplace/buy)
  * 
  * Flow:
  * 1. Authenticate user (buyer)
- * 2. Verify NFT exists and is listed for sale
- * 3. Verify buyer has sufficient USDT balance
- * 4. Deduct USDT from buyer
- * 5. Transfer NFT ownership to buyer
- * 6. Credit USDT to seller (minus platform fee)
- * 7. Record transaction
- * 8. Return success with transaction hash
+ * 2. Get listing from marketplace_listings collection
+ * 3. Verify NFT exists and is listed for sale
+ * 4. Verify buyer has sufficient USDT balance
+ * 5. Deduct USDT from buyer
+ * 6. Transfer NFT ownership to buyer
+ * 7. Credit USDT to seller (minus platform fee)
+ * 8. Mark listing as sold
+ * 9. Record transaction
+ * 10. Return success with transaction hash
  * 
  * Request Body:
  * {
- *   "nft_id": "nft_record_id",
- *   "nft_type": "egg|food|animal"
+ *   "listing_id": "marketplace_listing_record_id",
+ *   "buyer_address": "0x..." (optional, for logging)
  * }
  * 
  * Response:
@@ -23,35 +25,79 @@
  *   "success": true,
  *   "data": {
  *     "nft_token_id": 1,
+ *     "nft_type": "egg",
  *     "price": "25.00",
- *     "tx_hash": "0x...",
- *     "new_owner": "buyer_user_id"
+ *     "platform_fee": "1.00",
+ *     "seller_amount": "24.00",
+ *     "new_owner": "buyer_user_id",
+ *     "tx_hash": "txn_..."
  *   }
  * }
  */
 
 const PLATFORM_FEE_PERCENT = 4; // 4% platform fee
 
-routerAdd("POST", "/api/v2/buy-nft", (e) => {
+routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
     try {
         const buyer = $apis.requireAuth(e);
         
         const body = e.parseBody();
-        const { nft_id, nft_type } = body;
+        const { listing_id, buyer_address } = body;
         
         // Validate inputs
-        if (!nft_id || !nft_type) {
+        if (!listing_id) {
             return e.json(400, { 
                 success: false, 
                 error: { 
-                    message: 'NFT ID and type required',
+                    message: 'listing_id is required',
                     code: 'INVALID_PARAMETERS'
                 } 
             });
         }
         
+        // Find the marketplace listing
+        const listing = $app.dao().findRecordById('marketplace_listings', listing_id);
+        
+        if (!listing) {
+            return e.json(404, { 
+                success: false, 
+                error: { 
+                    message: 'Listing not found',
+                    code: 'LISTING_NOT_FOUND'
+                } 
+            });
+        }
+        
+        // Verify listing is active
+        if (listing.getString('status') !== 'active') {
+            return e.json(400, { 
+                success: false, 
+                error: { 
+                    message: 'Listing is not active',
+                    code: 'LISTING_NOT_ACTIVE'
+                } 
+            });
+        }
+        
+        // Get listing details
+        const nftId = listing.getString('nft_id');
+        const nftType = listing.getString('nft_type');
+        const price = listing.getNumber('price');
+        const sellerId = listing.getString('seller_id');
+        
+        if (!nftId || !nftType || !price || !sellerId) {
+            return e.json(400, { 
+                success: false, 
+                error: { 
+                    message: 'Invalid listing data',
+                    code: 'INVALID_LISTING'
+                } 
+            });
+        }
+        
+        // Validate NFT type
         const validTypes = ['egg', 'food', 'animal'];
-        if (!validTypes.includes(nft_type)) {
+        if (!validTypes.includes(nftType)) {
             return e.json(400, { 
                 success: false, 
                 error: { 
@@ -61,11 +107,9 @@ routerAdd("POST", "/api/v2/buy-nft", (e) => {
             });
         }
         
-        // Determine collection name
-        const collectionName = nft_type === 'egg' ? 'egg_nfts' : nft_type === 'food' ? 'food_nfts' : 'animal_nfts';
-        
-        // Find NFT record
-        const nft = $app.dao().findRecordById(collectionName, nft_id);
+        // Determine collection name and find NFT record
+        const collectionName = nftType === 'egg' ? 'egg_nfts' : nftType === 'food' ? 'food_nfts' : 'animal_nfts';
+        const nft = $app.dao().findRecordById(collectionName, nftId);
         
         if (!nft) {
             return e.json(404, { 
@@ -77,30 +121,19 @@ routerAdd("POST", "/api/v2/buy-nft", (e) => {
             });
         }
         
-        // Verify NFT is listed for sale
-        if (!nft.getBool('is_listed')) {
+        // Verify NFT is still owned by seller
+        const currentOwner = nft.getString('owner');
+        if (currentOwner !== sellerId) {
             return e.json(400, { 
                 success: false, 
                 error: { 
-                    message: 'NFT is not listed for sale',
-                    code: 'NFT_NOT_LISTED'
-                } 
-            });
-        }
-        
-        const price = nft.getNumber('listed_price');
-        if (!price || price <= 0) {
-            return e.json(400, { 
-                success: false, 
-                error: { 
-                    message: 'Invalid listing price',
-                    code: 'INVALID_PRICE'
+                    message: 'NFT ownership mismatch',
+                    code: 'OWNERSHIP_MISMATCH'
                 } 
             });
         }
         
         // Get seller info
-        const sellerId = nft.getString('owner');
         const seller = $app.dao().findRecordById('users', sellerId);
         
         if (!seller) {
@@ -182,24 +215,31 @@ routerAdd("POST", "/api/v2/buy-nft", (e) => {
             "type": "purchase",
             "amount": price,
             "currency": "USDT",
-            "nft_id": nft.id,
-            "nft_type": nft_type,
+            "nft_id": nftId,
+            "nft_type": nftType,
             "status": "completed",
             "metadata": {
-                "seller_id": seller.id,
+                "listing_id": listing_id,
+                "seller_id": sellerId,
                 "platform_fee": platformFee,
                 "seller_amount": sellerAmount
             }
         });
         $app.dao().save(transaction);
         
-        console.log(`NFT purchased: ${nft_type} ${nft.id} sold for ${price} USDT from ${seller.id} to ${buyer.id}`);
+        // Mark listing as sold
+        listing.set('status', 'sold');
+        listing.set('buyer_id', buyer.id);
+        listing.set('sold_at', new Date().toISOString());
+        $app.dao().save(listing);
+        
+        console.log(`NFT purchased: ${nftType} ${nftId} sold for ${price} USDT from ${sellerId} to ${buyer.id} via listing ${listing_id}`);
         
         return e.json(200, {
             success: true,
             data: {
-                nft_token_id: nft.get('token_id') || nft.id,
-                nft_type: nft_type,
+                nft_token_id: nft.get('token_id') || nftId,
+                nft_type: nftType,
                 price: price,
                 platform_fee: platformFee,
                 seller_amount: sellerAmount,

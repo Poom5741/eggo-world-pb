@@ -2,8 +2,8 @@
 
 **Milestone:** Security & Quality  
 **Created:** 2026-04-18  
-**Status:** Executing (5/5 phases complete)  
-**Phases:** 5 (12-16)  
+**Status:** Executing (5/5 phases complete, 1 new phase added)  
+**Phases:** 6 (12-17)  
 **Granularity:** Standard (from config: 2-week timeline, solo developer)  
 **Coverage:** 16/16 requirements mapped ✓
 
@@ -16,6 +16,7 @@
 - [x] **Phase 14: Mobile Responsive Polish** — Bottom tab bar, touch targets, responsive breakpoints (320px-1440px) ✅ COMPLETE 2026-04-19
 - [x] **Phase 15: Feed Feature** — Wire Feed button, food picker UI, progress tracking, hatch animation ✅ COMPLETE 2026-04-19
 - [x] **Phase 16: Play Feature + Test Infrastructure** — Daily check-in reward system, fix vi.mock failures, increase test coverage ✅ COMPLETE 2026-04-19
+- [ ] **Phase 17: UAT & Verification Gap Closure** — Complete Phase 10 UAT (10 scenarios), fix Phase 03 verification gaps (Buy Now stub, dashboard polling), fix Phase 12 verification gap (foodCount validation)
 
 ---
 
@@ -178,6 +179,29 @@ Plans:
 
 ---
 
+### Phase 17: UAT & Verification Gap Closure
+
+**Goal:** Close all outstanding UAT and verification gaps from prior phases  
+**Depends on:** Phase 10 (egg management), Phase 03 (frontend marketplace), Phase 12 (wallet-api)  
+**Requirements:** QUAL-01, QUAL-02, SEC-04, UI-05  
+**Success Criteria** (what must be TRUE):
+
+1. Phase 10 UAT: All 10 test scenarios executed and documented (egg display, feed flow, hatch flow, polling, error handling)
+2. Phase 03 Gap 1: Buy Now button on product detail page executes actual NFT purchase with USDT approval flow
+3. Phase 03 Gap 2: Dashboard eggs and commissions pages have auto-polling with "Updating..." indicators
+4. Phase 12 Gap: feed-egg endpoint validates foodCount < 10 before sending transaction (prevents feeding hatched eggs)
+   **Plans**: 3 plans
+   **UI hint**: yes
+   **Status**: 📋 PLANNED
+
+Plans:
+
+- [ ] 17-01-PLAN.md — Execute Phase 10 UAT (10 test scenarios) + re-verify Phase 12 foodCount validation
+- [ ] 17-02-PLAN.md — Complete Buy Now flow with USDT internal ledger transfer (Phase 03 Gap 1)
+- [ ] 17-03-PLAN.md — Verify/add dashboard auto-polling with "Updating..." indicators (Phase 03 Gap 2)
+
+---
+
 ## Progress Table
 
 | Phase                                  | Plans Complete | Status      | Completed  |
@@ -187,6 +211,7 @@ Plans:
 | 14. Mobile Responsive Polish           | 1/1            | ✅ Complete | 2026-04-19 |
 | 15. Feed Feature                       | 1/1            | ✅ Complete | 2026-04-19 |
 | 16. Play Feature + Test Infrastructure | 5/5            | ✅ Complete | 2026-04-19 |
+| 17. UAT & Verification Gap Closure     | 0/3            | 📋 Planned  | -          |
 
 ---
 
@@ -245,4 +270,4 @@ Phase 14 (Mobile Polish) → Independent, can run parallel
 
 ---
 
-_Last updated: 2026-04-18 — Roadmap created by gsd-roadmapper_
+_Last updated: 2026-04-21 — Phase 17 plans created_
