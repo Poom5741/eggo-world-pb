@@ -79,16 +79,6 @@ onRecordCreate((e) => {
         e.record.set("wallet", address);
         e.record.set("daccPublickey", daccPublickey);
         e.record.set("pin", randomPassword);
-        
-        // Save encrypted private key for Phase 12 contract calls (line 320-359 from explore results)
-        if (responseData.data.encryptedPrivateKey) {
-            e.record.set("encrypted_private_key", JSON.stringify(responseData.data.encryptedPrivateKey));
-        }
-        
-        // Save wallet encryption version
-        if (responseData.data.version) {
-            e.record.set("wallet_version", responseData.data.version);
-        }
 
         console.log("Wallet fields set on record");
 
