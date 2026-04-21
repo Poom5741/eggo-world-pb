@@ -7,20 +7,21 @@ export type NavItem = {
   href: string
 }
 
-// Navigation items for desktop SideNav (5 items)
+// Navigation items for desktop SideNav (6 items)
 export const NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
   { icon: 'egg', label: 'Eggs', href: '/eggs' },
+  { icon: 'add_circle', label: 'Mint', href: '/mint' },
   { icon: 'pets', label: 'Animals', href: '/animals' },
   { icon: 'storefront', label: 'Marketplace', href: '/marketplace' },
   { icon: 'group_add', label: 'Referrals', href: '/referrals' },
 ]
 
-// Navigation items for mobile BottomNavMobile (4 items - excludes Referrals)
+// Navigation items for mobile BottomNavMobile (4 items - excludes Animals, Referrals)
 export const MOBILE_NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
   { icon: 'egg', label: 'Eggs', href: '/eggs' },
-  { icon: 'pets', label: 'Animals', href: '/animals' },
+  { icon: 'add_circle', label: 'Mint', href: '/mint' },
   { icon: 'storefront', label: 'Marketplace', href: '/marketplace' },
 ]
 
