@@ -118,6 +118,15 @@ const COMMISSION_ABI = [
   "function setFoodNFTContract(address _foodNft) external"
 ];
 
+// Minimal ABI for Marketplace contract
+const MARKETPLACE_ABI = [
+  "function buyNFT(uint256 listingId) external",
+  "function getListedNFT(uint256 listingId) external view returns (tuple(address seller, uint256 price, bool active))",
+  "function createListing(uint256 nftId, uint256 nftType, uint256 price) external",
+  "function cancelListing(uint256 listingId) external",
+  "event NFTSold(uint256 indexed listingId, address indexed seller, address indexed buyer, uint256 price)"
+];
+
 app.use(cors());
 app.use(express.json());
 
@@ -993,6 +1002,109 @@ app.post('/api/wallet/feed-egg', async (req, res) => {
             } 
         });
     }
+});
+
+// Buy NFT endpoint (on-chain with gas sponsorship)
+app.post("/api/wallet/buy-nft", async (req, res) => {
+  try {
+    const { buyerUserId, listingId, marketplaceAddress } = req.body
+
+    if (!buyerUserId || !listingId || !marketplaceAddress) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: "Missing required parameters: buyerUserId, listingId, marketplaceAddress",
+        },
+      })
+    }
+
+    console.log(`[Buy NFT] Buyer: ${buyerUserId}, Listing: ${listingId}`)
+
+    // Get platform relayer wallet (pays gas for user)
+    if (!relayerWallet) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Relayer wallet not configured", code: "RELAYER_NOT_CONFIGURED" },
+      })
+    }
+
+    // Connect to marketplace contract
+    const marketplaceContract = new ethers.Contract(
+      marketplaceAddress,
+      MARKETPLACE_ABI,
+      relayerWallet
+    )
+
+    // Get listing details
+    const listing = await marketplaceContract.getListedNFT(listingId)
+    const price = listing[1] // price is second element of tuple
+    const isActive = listing[2] // active flag is third element
+
+    if (!isActive) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Listing is not active", code: "LISTING_NOT_ACTIVE" },
+      })
+    }
+
+    console.log(`[Buy NFT] Listing price: ${ethers.formatUnits(price, 18)} USDT`)
+
+    // Estimate gas with 20% buffer
+    const gasEstimate = await marketplaceContract.buyNFT.estimateGas(listingId)
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100)
+
+    console.log(`[Buy NFT] Gas estimate: ${gasEstimate}, Gas limit: ${gasLimit}`)
+
+    // Execute buyNFT transaction with retry (relayer pays gas)
+    const tx = await withRetry(
+      async () => {
+        return await marketplaceContract.buyNFT(listingId, {
+          gasLimit: gasLimit,
+        })
+      },
+      3,
+      1000
+    )
+
+    console.log(`[Buy NFT] Transaction sent: ${tx.hash}`)
+
+    // Wait for confirmations
+    const receipt = await tx.wait(CONFIRMATIONS)
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted")
+    }
+
+    console.log(`[Buy NFT] Confirmed in block ${receipt.blockNumber}`)
+
+    // Log sponsored gas cost (D-05)
+    logGasSponsorship('Buy NFT', buyerUserId, receipt)
+
+    res.json({
+      success: true,
+      data: {
+        txHash: tx.hash,
+        blockNumber: receipt.blockNumber,
+        status: "confirmed",
+        listingId: listingId,
+      },
+    })
+  } catch (error) {
+    const errorMessage =
+      error.message.includes("private") || error.message.includes("key")
+        ? "Wallet operation failed"
+        : error.message
+
+    console.error("[Buy NFT] Error:", error.code || error.message)
+
+    res.status(500).json({
+      success: false,
+      error: {
+        message: errorMessage,
+        code: error.code || "BUY_FAILED",
+      },
+    })
+  }
 });
 
 app.listen(PORT, '0.0.0.0', () => {
