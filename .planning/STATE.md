@@ -275,15 +275,10 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
   - Multi-layer validation for tier claims (hook → wallet-api → contract)
   - Tier thresholds: Seedling (10), Grower (100), Farmer (1,000) items
   - USDT rewards: $5, $50, $500 respectively from CoinStor reserve
-- **Phase 24 CONTEXT GATHERED** — Polish & Launch Prep context captured
-  - 19 implementation decisions locked (D-01 through D-19)
-  - 6 gray areas discussed: Error Boundaries, Monitoring Dashboard, Performance Optimization, Onboarding Tutorial, Recruitment Bonus, Launch Checklist
-  - Route-level error boundaries for all authenticated routes
-  - Admin monitoring page for transaction success rates
-  - Bundle analysis via @next/bundle-analyzer with build-time warnings
-  - Overlay onboarding tutorial triggered on first dashboard visit
-  - Recruitment bonus via PocketBase hook (Food NFTs only)
-  - Markdown launch checklist for technical readiness verification
+- **Phase 24 PLANNED** — Polish & Launch Prep (3/3 plans)
+  - 24-01: Error Boundaries (6 routes) + Monitoring Dashboard (transaction_logs collection, /admin/monitoring page)
+  - 24-02: Performance (@next/bundle-analyzer, dynamic imports) + Onboarding Tutorial (4-step overlay)
+  - 24-03: Recruitment Bonus (Food NFTs at 10/100/1,000/10,000) + Launch Checklist (24-LAUNCH-CHECKLIST.md)
 - All P0 security issues FIXED (Phases 12, 13)
 - All P1 quality issues FIXED (Phases 14, 15, 16)
 - Mobile responsive complete with WCAG 2.2 AA compliance
