@@ -6,9 +6,9 @@ status: active
 last_updated: "2026-04-22T14:30:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 2
-  total_plans: 9
-  completed_plans: 9
+  completed_phases: 3
+  total_plans: 12
+  completed_plans: 12
 ---
 
 # STATE.md — Project Memory
@@ -44,10 +44,10 @@ Milestone v0.0.7: [██████████] 8/8 phases complete + archive
           Phase 18 → ✅ COMPLETE (fix LINE OAuth wallet auto-creation)
           Phase 19 → ✅ COMPLETE (real NFT mint flow & marketplace integration)
 
-Milestone v0.0.8: [████████░░] 4/5 phases complete
+Milestone v0.0.8: [██████████] 5/5 phases complete
           Phase 20 → ✅ COMPLETE (gap closure & UAT execution)
           Phase 21 → ✅ COMPLETE (breeding system - 6/6 plans complete)
-          - Phase 22 → 📋 CONTEXT GATHERED (tier rewards — ready for planning)
+          Phase 22 → ✅ COMPLETE (tier rewards & badges - 3/3 plans complete)
           Phase 23 → 📋 PLANNED (secondary market)
           Phase 24 → 📋 PLANNED (polish & launch prep)
 
@@ -242,7 +242,7 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 **Next Session Actions:**
 
-1. Plan Phase 22 (Tier Rewards) using `/gsd-plan-phase 22`
+1. Plan Phase 23 (Secondary Market & Royalties) using `/gsd-plan-phase 23`
 2. Execute 20-UAT.md manually (16 UAT scenarios) using `/gsd-verify-work 20`
 
 **Context Handoff:**
@@ -265,7 +265,10 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
   - Phase 10/17: deferred UAT scenarios (16 total: 10 + 6) → tracked in 20-UAT.md
   - Bug fixes: empty state CTA → /marketplace, FeaturedEggHero FEED ME wired to FeedDialog
 - **Phase 21 COMPLETED** — Breeding system implementation (6/6 plans complete)
-- **Phase 22 PLANNED** — Tier rewards & badges planned (3 plans, 3 waves)
+- **Phase 22 COMPLETED** — Tier rewards & badges implemented (3/3 plans complete)
+  - Wave 1 (22-01): TierBadge.sol ERC-5192 contract, tier_claims & tier_badges collections
+  - Wave 2 (22-02): check-tier-reward hook, wallet-api tier-claim endpoint, UI components
+  - Wave 3 (22-03): Dashboard tier section, /dashboard/tiers page, barrel exports
   - 23 implementation decisions locked (D-01 through D-23)
   - 6 gray areas discussed: contract design, backend hook, thresholds, rewards, profile integration, frontend patterns
   - ERC-5192 soulbound badge contract design
@@ -336,4 +339,4 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 ---
 
-_Last updated: 2026-04-22 — Phase 21 complete (breeding system with dialog UI, cooldown validation, breeding egg display, success animation)_
+_Last updated: 2026-04-22 — Phase 22 complete (tier rewards & badges with ERC-5192 contract, backend hook, wallet-api integration, dashboard tier section)_
