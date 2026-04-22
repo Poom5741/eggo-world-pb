@@ -229,11 +229,9 @@ routerAdd("POST", "/api/v2/list-animal", (e) => {
     }
 
     // Find animal (ownership verification - D-25)
-    const animal = $app
-      .dao()
-      .findFirstRecordByFilter("animal_nfts", "animal_id = {:animal_id}", {
-        "@animal_id": animal_id,
-      })
+    const animal = $app.dao().findFirstRecordByFilter("animal_nfts", "animal_id = {:animal_id}", {
+      "@animal_id": animal_id,
+    })
 
     if (!animal) {
       return e.json(400, {
@@ -378,11 +376,9 @@ function distributeRoyalties(listing, salePrice, buyer) {
   }
 
   // Credit seller
-  const sellerWallet = $app
-    .dao()
-    .findFirstRecordByFilter("user_wallets", "owner = {:owner}", {
-      "@owner": listing.get("seller_id"),
-    })
+  const sellerWallet = $app.dao().findFirstRecordByFilter("user_wallets", "owner = {:owner}", {
+    "@owner": listing.get("seller_id"),
+  })
 
   if (sellerWallet) {
     const currentBalance = parseFloat(sellerWallet.get("usdt_balance") || "0")
@@ -635,17 +631,17 @@ function createCommissionRecords(referralChain, totalAmount, eggId, type) {
 
 **If this table has assumptions:** A1, A2, A3 need verification — animal_nfts.owner exists [VERIFIED: animal_nfts.json line 27-37], egg_nfts.referral_chain exists [VERIFIED: egg_nfts.json line 126-131], Marketplace.sol support needs contract inspection.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Does Marketplace.sol listItem() support Animal NFT type?**
    - What we know: MARKETPLACE_ABI has buyNFT(uint256 listingId) [VERIFIED: wallet-api/server.js line 122-128]
    - What's unclear: Whether nftType enum includes Animal or if contract needs modification
-   - Recommendation: Check contract source or deployment; if unsupported, use resale_listings purely off-chain with separate buy flow
+   - **RESOLVED:** D-07/D-09/D-21 — Use off-chain resale_listings collection with separate `/api/v2/buy-animal` endpoint. No on-chain Animal listing required.
 
 2. **Should we add original_referral_chain to animal_nfts collection?**
    - What we know: Currently animal_nfts lacks referral_chain [VERIFIED: animal_nfts.json schema]
    - What's unclear: Whether tracing via parent_egg_id is sufficient or direct field is better
-   - Recommendation: For Phase 23, trace via parent_egg_id at listing creation time; add field in Phase 24 if performance issues arise
+   - **RESOLVED:** D-21/D-22 — Trace referral chain at listing creation via `parent_egg_id → egg_nfts.referral_chain`. Store in resale_listings.royalty_recipients. No animal_nfts schema change needed.
 
 ## Environment Availability
 
