@@ -36,8 +36,43 @@
  */
 
 const BREEDING_FEE = 5; // 5 USDT
+const BREED_COOLDOWN_HOURS = 48; // 48 hour cooldown per AnimalNFT.sol
 var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 var INITIAL_FOOD_COUNT = parseInt($os.getenv("INITIAL_FOOD_COUNT") || "2", 10)
+
+/**
+ * Check if an animal is on breeding cooldown
+ * ตรวจสอบว่าสัตว์อยู่ในระยะ cooldown หรือไม่
+ */
+function isOnCooldown(lastBredAt) {
+    if (!lastBredAt) return false;
+    
+    const lastBred = new Date(lastBredAt).getTime();
+    const cooldownMs = BREED_COOLDOWN_HOURS * 60 * 60 * 1000;
+    const cooldownEnd = lastBred + cooldownMs;
+    
+    return Date.now() < cooldownEnd;
+}
+
+/**
+ * Format remaining cooldown time for error messages
+ */
+function formatCooldownRemaining(lastBredAt) {
+    if (!lastBredAt) return '';
+    
+    const lastBred = new Date(lastBredAt).getTime();
+    const cooldownMs = BREED_COOLDOWN_HOURS * 60 * 60 * 1000;
+    const cooldownEnd = lastBred + cooldownMs;
+    const remainingMs = Math.max(0, cooldownEnd - Date.now());
+    
+    const hours = Math.floor(remainingMs / (60 * 60 * 1000));
+    const minutes = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+}
 
 routerAdd("POST", "/api/v2/breed-animals", (e) => {
     try {
@@ -130,6 +165,34 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
             });
         }
         
+        // Check breeding cooldown for parent1 (fast-fail pattern per 16-feed-egg.pb.js)
+        const parent1LastBred = parent1.get('last_bred_at');
+        if (isOnCooldown(parent1LastBred)) {
+            const remaining = formatCooldownRemaining(parent1LastBred);
+            return e.json(400, { 
+                success: false, 
+                error: { 
+                    message: `Parent 1 is on breeding cooldown. Ready in ${remaining}`,
+                    code: 'PARENT1_ON_COOLDOWN',
+                    cooldown_remaining_ms: new Date(parent1LastBred).getTime() + (BREED_COOLDOWN_HOURS * 60 * 60 * 1000) - Date.now()
+                } 
+            });
+        }
+        
+        // Check breeding cooldown for parent2
+        const parent2LastBred = parent2.get('last_bred_at');
+        if (isOnCooldown(parent2LastBred)) {
+            const remaining = formatCooldownRemaining(parent2LastBred);
+            return e.json(400, { 
+                success: false, 
+                error: { 
+                    message: `Parent 2 is on breeding cooldown. Ready in ${remaining}`,
+                    code: 'PARENT2_ON_COOLDOWN',
+                    cooldown_remaining_ms: new Date(parent2LastBred).getTime() + (BREED_COOLDOWN_HOURS * 60 * 60 * 1000) - Date.now()
+                } 
+            });
+        }
+        
         // Get parent generations
         const parent1Gen = parent1.get('generation') || 0;
         const parent2Gen = parent2.get('generation') || 0;
@@ -207,6 +270,13 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         const eggRecords = $app.dao().findRecordsByFilter('egg_nfts', 'token_id', 'DESC', 1, 1);
         const nextTokenId = eggRecords.length > 0 ? (eggRecords[0].get('token_id') || 0) + 1 : 1;
         
+        // Set last_bred_at for both parents to enforce cooldown
+        const now = new Date().toISOString();
+        parent1.set('last_bred_at', now);
+        parent2.set('last_bred_at', now);
+        $app.dao().saveRecord(parent1);
+        $app.dao().saveRecord(parent2);
+        
         // Create breeding egg record
         const breedingEgg = $app.dao().createRecord($app.dao().getCollectionByNameOrId('egg_nfts'));
         breedingEgg.set('egg_id', nextTokenId - 1);
@@ -223,7 +293,7 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         breedingEgg.set('rarity_seed', Math.floor(Math.random() * 1000000));
         breedingEgg.set('referral_chain', referralChain.filter(r => r !== null));
         breedingEgg.set('tx_hash', txHash);
-        breedingEgg.set('minted_at', new Date().toISOString());
+        breedingEgg.set('minted_at', now);
         
         $app.dao().saveRecord(breedingEgg);
         

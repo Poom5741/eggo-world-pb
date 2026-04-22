@@ -4,7 +4,7 @@ import React from 'react'
 import { AnimalData } from '@/hooks/use-animal-poll'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { isOnCooldown, formatCooldownRemaining, calculateCooldownRemaining } from '@/hooks/use-breeding'
+import { formatCooldownRemaining, calculateCooldownRemaining } from '@/hooks/use-breeding'
 
 /**
  * Props for AnimalSelectionGrid component

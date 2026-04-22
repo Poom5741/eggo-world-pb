@@ -3,6 +3,7 @@
 import React from 'react'
 import { AnimalData } from '@/hooks/use-animal-poll'
 import { Badge } from '@/components/ui/badge'
+import { CooldownTimer } from '@/components/breeding/CooldownTimer'
 import { cn } from '@/lib/utils'
 
 /**
@@ -15,6 +16,10 @@ export interface AnimalCardProps {
   onBreed?: (animal: AnimalData) => void
   polling?: boolean
   showBreedButton?: boolean
+  /** Show cooldown timer (for breeding context) */
+  showCooldown?: boolean
+  /** Cooldown duration in hours (default: 48) */
+  cooldownHours?: number
 }
 
 const speciesConfig: Record<string, { icon: string; color: string }> = {
@@ -35,7 +40,26 @@ const rarityConfig: Record<string, { label: string; color: string }> = {
   Legendary: { label: 'LEGENDARY', color: 'text-warning' },
 }
 
-export function AnimalCard({ animal, onSell, onBreed, polling, showBreedButton = false }: AnimalCardProps) {
+/**
+ * Check if an animal is currently on breeding cooldown
+ * ตรวจสอบว่าสัตว์อยู่ในระยะ cooldown หรือไม่
+ */
+function isOnCooldown(lastBredAt: string, cooldownHours: number = 48): boolean {
+  const lastBred = new Date(lastBredAt).getTime()
+  const cooldownMs = cooldownHours * 60 * 60 * 1000
+  const cooldownEnd = lastBred + cooldownMs
+  return Date.now() < cooldownEnd
+}
+
+export function AnimalCard({ 
+  animal, 
+  onSell, 
+  onBreed, 
+  polling, 
+  showBreedButton = false,
+  showCooldown = false,
+  cooldownHours = 48,
+}: AnimalCardProps) {
   const species = speciesConfig[animal.species] || { icon: '🐾', color: 'text-primary' }
   const rarity = rarityConfig[animal.rarity] || { label: 'COMMON', color: 'text-primary' }
 
@@ -75,19 +99,41 @@ export function AnimalCard({ animal, onSell, onBreed, polling, showBreedButton =
       </div>
 
       {/* Minted Date - วันที่ mint */}
-      <div className="text-xs text-on-surface-variant mb-4">
+      <div className="text-xs text-on-surface-variant mb-2">
         Minted: {new Date(animal.minted_at).toLocaleDateString()}
       </div>
+
+      {/* Cooldown Timer - แสดงเมื่ออยู่ในโหมด breeding */}
+      {showCooldown && (
+        <div className="mb-4">
+          <CooldownTimer
+            lastBredAt={animal.last_bred_at}
+            cooldownHours={cooldownHours}
+            size="md"
+            showLabel
+          />
+        </div>
+      )}
 
       {/* Action Buttons - ปุ่มกด */}
       <div className="space-y-3">
         {showBreedButton && onBreed && (
           <button
             onClick={() => onBreed(animal)}
-            className="w-full py-3 bg-primary text-on-primary rounded-full font-black text-sm hover:bg-primary/80 transition-colors flex items-center justify-center gap-2"
+            disabled={!!animal.last_bred_at && isOnCooldown(animal.last_bred_at, cooldownHours)}
+            className={cn(
+              "w-full py-3 rounded-full font-black text-sm flex items-center justify-center gap-2 transition-colors",
+              animal.last_bred_at && isOnCooldown(animal.last_bred_at, cooldownHours)
+                ? "bg-surface-container-high text-on-surface-variant cursor-not-allowed"
+                : "bg-primary text-on-primary hover:bg-primary/80"
+            )}
           >
-            <span className="material-symbols-outlined text-base">favorite</span>
-            Breed
+            <span className="material-symbols-outlined text-base">
+              {animal.last_bred_at && isOnCooldown(animal.last_bred_at, cooldownHours) ? 'timer' : 'favorite'}
+            </span>
+            {animal.last_bred_at && isOnCooldown(animal.last_bred_at, cooldownHours) 
+              ? 'On Cooldown' 
+              : 'Breed'}
           </button>
         )}
         {onSell && (
