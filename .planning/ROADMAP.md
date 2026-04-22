@@ -42,7 +42,10 @@
   - [ ] 23-01-PLAN.md — Backend: resale_listings collection, listing hook, purchase hook with royalty distribution (Wave 1)
   - [ ] 23-02-A-PLAN.md — Frontend UI Components: ListAnimalDialog, AnimalCard modification with "Listed by" badge (Wave 2)
   - [ ] 23-02-B-PLAN.md — Marketplace Integration: useAnimalMarketplace hook, AnimalListingsSection, marketplace Animals tab (Wave 3)
-- [ ] Phase 24: Polish & Launch Prep (0/2 plans)
+- [ ] Phase 24: Polish & Launch Prep (3/3 plans)
+  - [ ] 24-01-PLAN.md — Error Boundaries & Monitoring Dashboard (Wave 1)
+  - [ ] 24-02-PLAN.md — Performance Optimization & Onboarding Tutorial (Wave 2)
+  - [ ] 24-03-PLAN.md — Recruitment Bonus & Launch Checklist (Wave 3)
 
 ## Progress
 
@@ -60,8 +63,8 @@
 | 21. Breeding System      | v0.0.8    | 5/6            | In Progress | 2026-04-22 |
 | 22. Tier Rewards         | v0.0.8    | 3/3            | Complete    | 2026-04-22 |
 | 23. Secondary Market     | v0.0.8    | 3/3            | Planned     | -          |
-| 24. Polish & Launch Prep | v0.0.8    | 0/2            | Planned     | -          |
+| 24. Polish & Launch Prep | v0.0.8    | 3/3            | Planned     | -          |
 
 ---
 
-_Last updated: 2026-04-22 — Phase 23 split into 3 plans: 01 (Backend), 02-A (UI Components), 02-B (Marketplace Integration)_
+_Last updated: 2026-04-22 — Phase 24 planned (3/3 plans): Error boundaries + monitoring, performance + onboarding, recruitment bonus + launch checklist_
