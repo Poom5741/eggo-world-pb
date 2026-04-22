@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v0.0.8
 milestone_name: NFT Ecosystem Complete
 status: active
-last_updated: "2026-04-22T10:00:00.000Z"
+last_updated: "2026-04-22T12:13:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # STATE.md — Project Memory
@@ -44,8 +44,8 @@ Milestone v0.0.7: [██████████] 8/8 phases complete + archive
           Phase 18 → ✅ COMPLETE (fix LINE OAuth wallet auto-creation)
           Phase 19 → ✅ COMPLETE (real NFT mint flow & marketplace integration)
 
-Milestone v0.0.8: [░░░░░░░░░░] 0/5 phases planned
-          Phase 20 → 🚧 PLANNED (gap closure & UAT execution)
+Milestone v0.0.8: [██░░░░░░░░] 1/5 phases active
+          Phase 20 → 🚧 ACTIVE 1/3 plans complete (gap closure & UAT execution)
           Phase 21 → 📋 PLANNED (breeding system)
           Phase 22 → 📋 PLANNED (tier rewards)
           Phase 23 → 📋 PLANNED (secondary market)
@@ -192,27 +192,29 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 ### Decisions Log
 
-| Decision                                   | Phase | Rationale                                                      | Status    |
-| ------------------------------------------ | ----- | -------------------------------------------------------------- | --------- |
-| Use ethers.js v6 (not web3.js)             | 12    | Already installed, smaller bundle, better docs                 | ✅ Active |
-| Polling (not WebSocket) for deposits       | 13    | Matches PocketBase architecture, simpler state management      | ✅ Active |
-| @use-gesture/react for touch               | 14    | 6KB bundle, unified touch/mouse API, React hooks pattern       | ✅ Active |
-| Hardcode minimal ABI in server.js          | 12    | Avoid file I/O, keep deployment simple                         | ✅ Active |
-| 12-block confirmation wait                 | 12    | Standard for BSC, balance security vs UX                       | ✅ Active |
-| Daily check-in (off-chain)                 | 16    | Skip complex mini-games for MVP, database only                 | ✅ Active |
-| Check balance before claiming commission   | 12    | Save gas, better UX (no tx when zero balance)                  | ✅ Active |
-| Ownership verification for feed-egg        | 12    | Prevent unauthorized feeding (security)                        | ✅ Active |
-| 20% gas buffer on transactions             | 12    | Prevent out-of-gas failures (especially feedEgg variable)      | ✅ Active |
-| foodCount validation before gas estimation | 12-04 | Save users from paying gas for hatched eggs                    | ✅ Active |
-| 400 status for EGG_HATCHED error           | 12-04 | Client error semantics, clearer debugging                      | ✅ Active |
-| Non-blocking PB callback on mint           | 19-01 | PB record creation failure logs error but doesn't fail mint    | ✅ Active |
-| Mint uses user wallet for gas (MVP)        | 19-04 | Full gas sponsorship requires meta-transactions (out of scope) | ✅ Active |
+| Decision                                    | Phase | Rationale                                                                   | Status    |
+| ------------------------------------------- | ----- | --------------------------------------------------------------------------- | --------- |
+| Use ethers.js v6 (not web3.js)              | 12    | Already installed, smaller bundle, better docs                              | ✅ Active |
+| Polling (not WebSocket) for deposits        | 13    | Matches PocketBase architecture, simpler state management                   | ✅ Active |
+| @use-gesture/react for touch                | 14    | 6KB bundle, unified touch/mouse API, React hooks pattern                    | ✅ Active |
+| Hardcode minimal ABI in server.js           | 12    | Avoid file I/O, keep deployment simple                                      | ✅ Active |
+| 12-block confirmation wait                  | 12    | Standard for BSC, balance security vs UX                                    | ✅ Active |
+| Daily check-in (off-chain)                  | 16    | Skip complex mini-games for MVP, database only                              | ✅ Active |
+| Check balance before claiming commission    | 12    | Save gas, better UX (no tx when zero balance)                               | ✅ Active |
+| Ownership verification for feed-egg         | 12    | Prevent unauthorized feeding (security)                                     | ✅ Active |
+| 20% gas buffer on transactions              | 12    | Prevent out-of-gas failures (especially feedEgg variable)                   | ✅ Active |
+| foodCount validation before gas estimation  | 12-04 | Save users from paying gas for hatched eggs                                 | ✅ Active |
+| 400 status for EGG_HATCHED error            | 12-04 | Client error semantics, clearer debugging                                   | ✅ Active |
+| Non-blocking PB callback on mint            | 19-01 | PB record creation failure logs error but doesn't fail mint                 | ✅ Active |
+| Mint uses user wallet for gas (MVP)         | 19-04 | Full gas sponsorship requires meta-transactions (out of scope)              | ✅ Active |
+| Rename currentFoodCount to preFeedFoodCount | 20-01 | Avoid JS const redeclaration in same try block scope                        | ✅ Active |
+| eval(hookSource) for pb_hook unit tests     | 20-01 | ES module caching prevents re-evaluation; eval ensures fresh mocked globals | ✅ Active |
 
 ---
 
 ## Session Continuity
 
-**Last Session:** 2026-04-21T09:00:00.000Z
+**Last Session:** 2026-04-22T12:13:00.000Z
 
 **Session Notes:**
 
@@ -221,16 +223,20 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 - Phase 17 COMPLETED — All UAT & verification gaps closed
 - Phase 18 COMPLETED — LINE OAuth wallet auto-creation fixed
 - Phase 19 COMPLETED — Real NFT mint flow & marketplace integration
-- Phase 20 PLANNED — Combines Phase 12 + 19 verification gaps + deferred UAT
+- Phase 20-01 COMPLETED — Code fixes and backend validation
+  - Empty state CTA routes to /marketplace (not /eggs self-loop)
+  - FeaturedEggHero FEED ME wired to FeedDialog with correct egg data
+  - PocketBase hook fast-fail validation: rejects feed when foodCount + requested > 10
+  - Hook returns 400 with code 'EGG_FULL' per D-11
+  - 12 unit tests pass (6 page tests + 6 hook tests)
 - UAT gaps (Phase 10/17) documented and deferred to Phase 20
 - Debug session (LINE OAuth daccPublickey) resolved
 - Phase 08 open questions (Material Symbols) closed
 
 **Next Session Actions:**
 
-1. Plan Phase 20 using `/gsd-plan-phase 20`
-2. Execute Phase 20 plans using `/gsd-execute-phase 20`
-3. Archive v0.0.7 milestone using `/gsd-complete-milestone` (if not yet archived)
+1. Execute 20-02-PLAN.md — UAT execution: 16 manual scenarios
+2. Execute 20-03-PLAN.md — Gas sponsorship documentation
 
 **Context Handoff:**
 

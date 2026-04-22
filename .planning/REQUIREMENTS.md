@@ -11,10 +11,10 @@
 
 ### Phase 20: Gap Closure & UAT (P0)
 
-**GAPS-01:** Feed-egg endpoint validates foodCount < 10 before processing  
+**GAPS-01:** ✅ Feed-egg endpoint validates foodCount < 10 before processing (hook fast-fail + wallet-api safety net)  
 **GAPS-02:** Complete 10 UAT scenarios for feed/hatch/polling/empty state  
 **GAPS-03:** Document gas sponsorship system with 5 human verification tests  
-**GAPS-04:** Implement empty state UI for /eggs page when user has no eggs  
+**GAPS-04:** ✅ Implement empty state UI for /eggs page when user has no eggs (CTA routes to /marketplace)  
 **GAPS-05:** Execute Phase 17 UAT re-verification (6 manual scenarios)
 
 ---
@@ -83,13 +83,14 @@
 
 ## Traceability
 
-| REQ-ID                | Phase    | Status  |
-| --------------------- | -------- | ------- |
-| GAPS-01 → GAPS-05     | Phase 20 | Planned |
-| BREED-01 → BREED-07   | Phase 21 | Planned |
-| TIER-01 → TIER-06     | Phase 22 | Planned |
-| RESALE-01 → RESALE-05 | Phase 23 | Planned |
-| POLISH-01 → POLISH-05 | Phase 24 | Planned |
+| REQ-ID                    | Phase    | Status              |
+| ------------------------- | -------- | ------------------- |
+| GAPS-01, GAPS-04          | Phase 20 | ✅ Complete (20-01) |
+| GAPS-02, GAPS-03, GAPS-05 | Phase 20 | Planned             |
+| BREED-01 → BREED-07       | Phase 21 | Planned             |
+| TIER-01 → TIER-06         | Phase 22 | Planned             |
+| RESALE-01 → RESALE-05     | Phase 23 | Planned             |
+| POLISH-01 → POLISH-05     | Phase 24 | Planned             |
 
 ---
 
