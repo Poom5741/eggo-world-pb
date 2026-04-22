@@ -75,7 +75,8 @@ export function CreateListingDialog({
 
       // Call PocketBase API to create listing
       const pb = createClient()
-      const response = await fetch('/api/v2/list-animal', {
+      const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'https://pb.eggoworld.io'
+      const response = await fetch(`${pbUrl}/api/v2/list-animal`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
