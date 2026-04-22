@@ -214,7 +214,7 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 ## Session Continuity
 
-**Last Session:** 2026-04-22T12:50:00.000Z
+**Last Session:** 2026-04-22T13:00:00.000Z
 
 **Session Notes:**
 
@@ -232,6 +232,13 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 - UAT gaps (Phase 10/17) documented and deferred to Phase 20
 - Debug session (LINE OAuth daccPublickey) resolved
 - Phase 08 open questions (Material Symbols) closed
+- **Phase 21 CONTEXT GATHERED** — Breeding system context captured
+  - 12 implementation decisions locked (D-01 through D-12)
+  - 4 gray areas discussed: breeding UI, cooldown UX, egg handling, navigation
+  - Dialog-based breeding flow with two animal slots (reuse FeedDialog pattern)
+  - Visual countdown timer + multi-layer validation (UI → hook → contract)
+  - Breeding eggs mixed in /eggs page with special badge
+  - Access via animal card action menu (no dedicated route)
 
 **Next Session Actions:**
 
@@ -257,6 +264,13 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
   - Phase 19 gap: gas sponsorship documentation (operator runbook at docs/GAS_SPONSORSHIP.md)
   - Phase 10/17: deferred UAT scenarios (16 total: 10 + 6) → tracked in 20-UAT.md
   - Bug fixes: empty state CTA → /marketplace, FeaturedEggHero FEED ME wired to FeedDialog
+- **Phase 21 CONTEXT GATHERED** — Breeding system implementation decisions captured
+  - 12 decisions locked (D-01 through D-12)
+  - Dialog-based breeding flow (reuse FeedDialog pattern)
+  - Visual countdown timer + multi-layer validation
+  - Breeding eggs in /eggs page with badge
+  - Backend hook cooldown validation fast-fail
+  - Smart contracts already deployed (no changes needed)
 - All P0 security issues FIXED (Phases 12, 13)
 - All P1 quality issues FIXED (Phases 14, 15, 16)
 - Mobile responsive complete with WCAG 2.2 AA compliance
