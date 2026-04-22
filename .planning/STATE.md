@@ -265,13 +265,16 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
   - Phase 10/17: deferred UAT scenarios (16 total: 10 + 6) → tracked in 20-UAT.md
   - Bug fixes: empty state CTA → /marketplace, FeaturedEggHero FEED ME wired to FeedDialog
 - **Phase 21 COMPLETED** — Breeding system implementation (6/6 plans complete)
-- **Phase 22 CONTEXT GATHERED** — Tier rewards & badges context captured
+- **Phase 22 PLANNED** — Tier rewards & badges planned (3 plans, 3 waves)
   - 23 implementation decisions locked (D-01 through D-23)
   - 6 gray areas discussed: contract design, backend hook, thresholds, rewards, profile integration, frontend patterns
   - ERC-5192 soulbound badge contract design
   - Multi-layer validation for tier claims (hook → wallet-api → contract)
   - Tier thresholds: Seedling (10), Grower (100), Farmer (1,000) items
   - USDT rewards: $5, $50, $500 respectively from CoinStor reserve
+  - Wave 1 (22-01): Smart Contract & Collections — TierBadge.sol, IERC5192, tier_claims, tier_badges
+  - Wave 2 (22-02): Backend Hook & Wallet-API — check-tier-reward hook, /tier-claim endpoint, UI components
+  - Wave 3 (22-03): Frontend Integration — TierSection, dashboard integration, /tiers page
   - Wave 1 (21-01, 21-02): ✅ COMPLETE — Breeding Dialog UI, Animal Card Action Menu
   - Wave 2 (21-03, 21-04, 21-05): ✅ COMPLETE — Cooldown Display, Egg Display, Backend Hook
     - CooldownTimer component with visual countdown
