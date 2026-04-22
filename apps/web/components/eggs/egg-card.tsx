@@ -4,6 +4,7 @@ import React from 'react'
 import { EggData } from '@/hooks/use-egg-poll'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { BreedingBadge } from './BreedingEggTooltip'
 import { cn } from '@/lib/utils'
 
 /**
@@ -69,6 +70,16 @@ export function EggCard({ egg, onManage, onHatch, onSell, onPlay, polling }: Egg
             Updating...
           </Badge>
         )}
+        {/* Breeding egg badge - ป้ายไข่จากการผสมพันธุ์ */}
+        {egg.is_breeding_egg && (
+          <Badge 
+            variant="clay" 
+            className="absolute top-2 left-2 bg-tertiary-container text-on-tertiary-container gap-1"
+          >
+            <span className="material-symbols-outlined text-xs">favorite</span>
+            Breeding Egg
+          </Badge>
+        )}
         <img
           alt={`Egg ${egg.egg_id}`}
           className="h-32 object-contain"
@@ -84,7 +95,14 @@ export function EggCard({ egg, onManage, onHatch, onSell, onPlay, polling }: Egg
           </h3>
           <p className={cn("text-xs font-bold", rarity.color)}>
             {rarity.label} • {egg.element_type || 'NORMAL'}
+            {egg.is_breeding_egg && egg.generation !== undefined && (
+              <span className="ml-1 text-tertiary">• Gen {egg.generation}</span>
+            )}
           </p>
+          {/* Breeding badge for breeding eggs */}
+          {egg.is_breeding_egg && (
+            <BreedingBadge egg={egg} className="mt-1.5" />
+          )}
         </div>
         {/* Food count badge - แสดงจำนวนอาหาร */}
         <div className="flex items-center gap-2">

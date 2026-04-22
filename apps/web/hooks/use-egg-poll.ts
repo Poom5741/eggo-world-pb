@@ -15,6 +15,14 @@ export interface EggData {
   rarity_seed?: number
   element_type?: string
   owner?: string
+  /** Whether this egg was created through breeding */
+  is_breeding_egg?: boolean
+  /** Parent animal ID for breeding eggs */
+  parent1_animal_id?: number | null
+  /** Parent animal ID for breeding eggs */
+  parent2_animal_id?: number | null
+  /** Generation number (0 for minted eggs, 1+ for bred eggs) */
+  generation?: number
 }
 
 /**
