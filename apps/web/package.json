@@ -11,7 +11,11 @@
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
     "prepare": "husky",
-    "db:seed-listings": "bun run scripts/create-test-listings.ts"
+    "db:seed-listings": "bun run scripts/create-test-listings.ts",
+    "analyze": "ANALYZE=true next build",
+    "analyze:server": "SERVER_ANALYZE=true next build",
+    "analyze:browser": "BROWSER_ANALYZE=true next build",
+    "check-size": "node scripts/check-bundle-size.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -70,6 +74,7 @@
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^20.8.9",
+    "@next/bundle-analyzer": "^16.2.4",
     "@tailwindcss/postcss": "^4.2.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

@@ -44,21 +44,35 @@ export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogPro
   /**
    * Fetch available food เมื่อ dialog เปิด
    * getUserFoodNfts จะ filter is_consumed = false โดยอัตโนมัติ
+   * 
+   * Fix: Added cleanup flag to prevent state updates after unmount/close
+   * Fix: Removed getUserFoodNfts from deps since it's now useCallback memoized
    */
   useEffect(() => {
     if (!open) return
+    
+    let cancelled = false
     const loadFood = async () => {
       setFetching(true)
       const pb = createClient()
       const user = pb.authStore.record
-      if (user) {
+      if (user && !cancelled) {
         const foods = await getUserFoodNfts(user.id)
-        setFoodItems(foods)
+        if (!cancelled) {
+          setFoodItems(foods)
+        }
       }
-      setFetching(false)
+      if (!cancelled) {
+        setFetching(false)
+      }
     }
     loadFood()
-  }, [open, getUserFoodNfts])
+    
+    // Cleanup: prevent state updates if dialog closes during fetch
+    return () => {
+      cancelled = true
+    }
+  }, [open]) // getUserFoodNfts is stable (useCallback), no need to include
 
   /**
    * Reset state เมื่อ dialog ปิด

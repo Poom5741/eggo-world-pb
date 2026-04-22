@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { createClient } from '@/lib/pocketbase/client';
 
 interface MintResult {
@@ -103,18 +103,24 @@ export function useFoodNft() {
     }
   };
 
-  const getUserFoodNfts = async (userId: string) => {
+  const getUserFoodNfts = useCallback(async (userId: string) => {
     try {
       const pb = createClient();
+      // Use requestKey: null to disable auto-cancellation for this request
       const records = await pb.collection('food_nfts').getList(1, 100, {
         filter: `owner = "${userId}" && is_consumed = false`,
+        requestKey: null,
       });
       return records.items;
     } catch (err) {
+      // Don't log ClientResponseError for auto-cancellation (it's expected when dialog closes)
+      if (err && typeof err === 'object' && 'isCanceled' in err && err.isCanceled) {
+        return [];
+      }
       console.error('Error fetching food NFTs:', err);
       return [];
     }
-  };
+  }, []);
 
   const getTotalFoodConsumed = async (userId: string): Promise<number> => {
     try {
