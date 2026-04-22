@@ -75,6 +75,19 @@ export default function Eggs() {
     }
   }, [isHydrated, user, router])
   
+  // Refresh eggs when page gains focus (e.g., after breeding success navigation)
+  // รีเฟรชไข่เมื่อหน้ากลับมาโฟกัส (เช่น หลังจากนำทางจาก breeding success)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user?.id) {
+        refresh()
+      }
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [refresh, user?.id])
+  
   // Handle manage egg action - เปิด FeedDialog เมื่อคลิก "Manage Egg"
   const handleManageEgg = (eggId: number) => {
     const egg = eggs.find(e => e.egg_id === eggId)

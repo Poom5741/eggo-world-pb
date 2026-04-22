@@ -14,8 +14,9 @@ import { AnimalData } from '@/hooks/use-animal-poll'
 import { useBreeding, BreedingResult } from '@/hooks/use-breeding'
 import { AnimalSelectionGrid } from './AnimalSelectionGrid'
 import { BreedingConfirmation } from './BreedingConfirmation'
+import { BreedingSuccessModal } from './BreedingSuccessModal'
 
-type BreedingStep = 'selection' | 'confirmation'
+type BreedingStep = 'selection' | 'confirmation' | 'success'
 
 /**
  * Props for BreedingDialog component
@@ -57,11 +58,15 @@ export function BreedingDialog({
   const { breedAnimals, loading } = useBreeding()
   const [step, setStep] = useState<BreedingStep>('selection')
   const [selectedParentIds, setSelectedParentIds] = useState<number[]>([])
+  const [breedingResult, setBreedingResult] = useState<BreedingResult | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   // Reset state when dialog opens/closes
   useEffect(() => {
     if (open) {
       setStep('selection')
+      setBreedingResult(null)
+      setShowSuccessModal(false)
       // If initialParent1 is provided, pre-select it
       if (initialParent1) {
         setSelectedParentIds([initialParent1.animal_id])
@@ -71,6 +76,8 @@ export function BreedingDialog({
     } else {
       setSelectedParentIds([])
       setStep('selection')
+      setBreedingResult(null)
+      setShowSuccessModal(false)
     }
   }, [open, initialParent1])
 
@@ -124,10 +131,22 @@ export function BreedingDialog({
 
     const result = await breedAnimals(parent1.animal_id, parent2.animal_id)
     if (result) {
-      onSuccess(result)
+      setBreedingResult(result)
+      setShowSuccessModal(true)
       onOpenChange(false)
     }
-  }, [parent1, parent2, breedAnimals, onSuccess, onOpenChange])
+  }, [parent1, parent2, breedAnimals, onOpenChange])
+
+  /**
+   * Handle success modal close/redirect
+   */
+  const handleSuccessComplete = useCallback(() => {
+    if (breedingResult) {
+      onSuccess(breedingResult)
+    }
+    setShowSuccessModal(false)
+    setBreedingResult(null)
+  }, [breedingResult, onSuccess])
 
   /**
    * Get the ID to exclude from selection (parent1 when selecting parent2)
@@ -227,6 +246,16 @@ export function BreedingDialog({
           </DialogFooter>
         )}
       </DialogContent>
+
+      {/* Breeding Success Modal */}
+      <BreedingSuccessModal
+        open={showSuccessModal}
+        onOpenChange={setShowSuccessModal}
+        breedingResult={breedingResult}
+        parent1={parent1}
+        parent2={parent2}
+        onSuccess={handleSuccessComplete}
+      />
     </Dialog>
   )
 }
