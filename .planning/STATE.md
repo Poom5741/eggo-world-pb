@@ -152,8 +152,11 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 | Category     | Item                                                        | Status                                         |
 | ------------ | ----------------------------------------------------------- | ---------------------------------------------- |
 | UAT          | Phase 10: 10 UAT scenarios (feed/hatch/polling/empty state) | Deferred to Phase 20 - requires manual testing |
+| UAT          | Phase 17: UAT re-execution (6 manual scenarios)             | Deferred to Phase 20 - requires manual testing |
+| Verification | Phase 03: Frontend marketplace verification gaps            | Deferred to Phase 20 - legacy gaps             |
 | Verification | Phase 12: feed-egg foodCount validation gap                 | Moved to Phase 20 - real bug fix needed        |
-| Verification | Phase 19: gas sponsorship documentation + human tests       | Moved to Phase 20 - MVP decision + testing     |
+| Verification | Phase 19: gas sponsorship documentation + 5 human tests     | Moved to Phase 20 - MVP decision + testing     |
+| Context      | Phase 08: Material Symbols integration questions            | Resolved during implementation, documented     |
 
 ---
 
