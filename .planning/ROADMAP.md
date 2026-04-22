@@ -47,24 +47,32 @@
   - [x] 24-02-PLAN.md — Performance Optimization & Onboarding Tutorial (Wave 2)
   - [x] 24-03-PLAN.md — Recruitment Bonus & Launch Checklist (Wave 3)
 
+### v0.0.9 UX/UI Consistency & Accessibility (Planned)
+
+- [ ] Phase 25: UX/UI Consistency Audit Fixes (3 plans planned) — not started
+  - [ ] 25-01-PLAN.md — P0 Critical Fixes: Emoji removal, hardcoded colors, accessibility violations (Days 1-5)
+  - [ ] 25-02-PLAN.md — P1 High Priority: Container widths, typography, component standardization (Days 6-10)
+  - [ ] 25-03-PLAN.md — P2 Technical Debt: Shadows, borders, layouts, interactions polish (Days 11-12)
+
 ## Progress
 
-| Phase                    | Milestone | Plans Complete | Status      | Completed  |
-|--------------------------|-----------|----------------|-------------|------------|
-| 12. Contract Integration | v0.0.7    | 4/4            | Complete    | 2026-04-18 |
-| 13. Documentation Sync   | v0.0.7    | 1/1            | Complete    | 2026-04-19 |
-| 14. Marketplace Complete | v0.0.7    | 1/1            | Complete    | 2026-04-19 |
-| 15. Feed Feature         | v0.0.7    | 1/1            | Complete    | 2026-04-20 |
-| 16. Play & Tests         | v0.0.7    | 3/3            | Complete    | 2026-04-20 |
-| 17. UAT Verification     | v0.0.7    | 3/3            | Complete    | 2026-04-21 |
-| 18. LINE OAuth Fix       | v0.0.7    | 2/2            | Complete    | 2026-04-21 |
-| 19. NFT Mint Flow        | v0.0.7    | 5/5            | Complete    | 2026-04-21 |
-| 20. Gap Closure & UAT    | v0.0.8    | 3/3            | Complete    | 2026-04-22 |
-| 21. Breeding System      | v0.0.8    | 6/6            | Complete    | 2026-04-22 |
-| 22. Tier Rewards         | v0.0.8    | 3/3            | Complete    | 2026-04-22 |
-| 23. Secondary Market      | v0.0.8    | 3/3            | Complete    | 2026-04-22 |
-| 24. Polish & Launch Prep | v0.0.8    | 3/3            | Complete    | 2026-04-22 |
+| Phase                    | Milestone | Plans Complete | Status   | Completed  |
+| ------------------------ | --------- | -------------- | -------- | ---------- |
+| 12. Contract Integration | v0.0.7    | 4/4            | Complete | 2026-04-18 |
+| 13. Documentation Sync   | v0.0.7    | 1/1            | Complete | 2026-04-19 |
+| 14. Marketplace Complete | v0.0.7    | 1/1            | Complete | 2026-04-19 |
+| 15. Feed Feature         | v0.0.7    | 1/1            | Complete | 2026-04-20 |
+| 16. Play & Tests         | v0.0.7    | 3/3            | Complete | 2026-04-20 |
+| 17. UAT Verification     | v0.0.7    | 3/3            | Complete | 2026-04-21 |
+| 18. LINE OAuth Fix       | v0.0.7    | 2/2            | Complete | 2026-04-21 |
+| 19. NFT Mint Flow        | v0.0.7    | 5/5            | Complete | 2026-04-21 |
+| 20. Gap Closure & UAT    | v0.0.8    | 3/3            | Complete | 2026-04-22 |
+| 21. Breeding System      | v0.0.8    | 6/6            | Complete | 2026-04-22 |
+| 22. Tier Rewards         | v0.0.8    | 3/3            | Complete | 2026-04-22 |
+| 23. Secondary Market     | v0.0.8    | 3/3            | Complete | 2026-04-22 |
+| 24. Polish & Launch Prep | v0.0.8    | 3/3            | Complete | 2026-04-22 |
+| 25. UX/UI Consistency    | v0.0.9    | 0/3            | Planned  | -          |
 
 ---
 
-_Last updated: 2026-04-22 — Phase 24 planned (3/3 plans): Error boundaries + monitoring, performance + onboarding, recruitment bonus + launch checklist_
+_Last updated: 2026-04-22 — Phase 24 planned (3/3 plans): Error boundaries + monitoring, performance + onboarding, recruitment bonus + launch checklist. Phase 25 added: UX/UI consistency audit fixes (93 violations, P0→P1→P2, 9-12 days)_

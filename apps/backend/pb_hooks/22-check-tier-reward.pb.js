@@ -35,7 +35,8 @@ routerAdd("POST", "/api/v2/check-tier-reward", (e) => {
     try {
         const user = $apis.requireAuth(e);
         
-        const body = e.parseBody();
+        const requestInfo = e.requestInfo();
+        const body = requestInfo.body || {};
         const { tier } = body;
         
         // Validate tier parameter
@@ -60,8 +61,16 @@ routerAdd("POST", "/api/v2/check-tier-reward", (e) => {
         const config = tierConfig[tier];
         
         // Get user's lifetime food items
-        const lifetimeFoodItems = user.get('lifetime_food_items') || 0;
-        const highestTierReached = user.get('highest_tier_reached') || '';
+        let lifetimeFoodItems = 0;
+        let highestTierReached = '';
+        
+        if (user && typeof user.get === 'function') {
+            lifetimeFoodItems = user.get('lifetime_food_items') || 0;
+            highestTierReached = user.get('highest_tier_reached') || '';
+        } else if (user) {
+            lifetimeFoodItems = user.lifetime_food_items || 0;
+            highestTierReached = user.highest_tier_reached || '';
+        }
         
         // Check sequential claim order
         const tierOrder = ['seedling', 'grower', 'farmer'];
@@ -180,8 +189,10 @@ routerAdd("POST", "/api/v2/check-tier-reward", (e) => {
         const txHash = walletResult.data.txHash;
         
         // Update user's highest_tier_reached
-        user.set('highest_tier_reached', tier);
-        $app.dao().saveRecord(user);
+        if (user && typeof user.set === 'function') {
+            user.set('highest_tier_reached', tier);
+            $app.dao().saveRecord(user);
+        }
         
         // Create tier_claims record
         const tierClaimsCollection = $app.dao().getCollectionByNameOrId("tier_claims");
@@ -246,8 +257,18 @@ routerAdd("GET", "/api/v2/check-tier-reward", (e) => {
     try {
         const user = $apis.requireAuth(e);
         
-        const lifetimeFoodItems = user.get('lifetime_food_items') || 0;
-        const highestTierReached = user.get('highest_tier_reached') || '';
+        // Try to get fields from user object directly (auth record)
+        let lifetimeFoodItems = 0;
+        let highestTierReached = '';
+        
+        if (user && typeof user.get === 'function') {
+            lifetimeFoodItems = user.get('lifetime_food_items') || 0;
+            highestTierReached = user.get('highest_tier_reached') || '';
+        } else if (user) {
+            // Fallback: try direct property access
+            lifetimeFoodItems = user.lifetime_food_items || 0;
+            highestTierReached = user.highest_tier_reached || '';
+        }
         
         const tierOrder = ['seedling', 'grower', 'farmer'];
         const tierConfig = {
