@@ -1,0 +1,80 @@
+{
+  "name": "tier_badges",
+  "type": "base",
+  "system": false,
+  "schema": [
+    {
+      "name": "user",
+      "type": "relation",
+      "required": true,
+      "unique": false,
+      "options": {
+        "collectionId": "_pb_users_auth_",
+        "cascadeDelete": true,
+        "minSelect": null,
+        "maxSelect": 1,
+        "displayFields": null
+      }
+    },
+    {
+      "name": "token_id",
+      "type": "number",
+      "required": true,
+      "unique": false,
+      "options": {
+        "min": 1,
+        "max": 3
+      }
+    },
+    {
+      "name": "tier_name",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": [
+          "Seedling",
+          "Grower",
+          "Farmer"
+        ]
+      }
+    },
+    {
+      "name": "contract_address",
+      "type": "text",
+      "required": true,
+      "unique": false,
+      "options": {
+        "pattern": "^0x[a-fA-F0-9]{40}$"
+      }
+    },
+    {
+      "name": "tx_hash",
+      "type": "text",
+      "required": true,
+      "unique": false,
+      "options": {
+        "pattern": "^0x[a-fA-F0-9]{64}$"
+      }
+    },
+    {
+      "name": "minted_at",
+      "type": "date",
+      "required": true,
+      "unique": false,
+      "options": {}
+    }
+  ],
+  "indexes": [
+    "CREATE UNIQUE INDEX `idx_tier_badges_user_token` ON `tier_badges` (`user`, `token_id`)",
+    "CREATE INDEX `idx_tier_badges_contract` ON `tier_badges` (`contract_address`)",
+    "CREATE INDEX `idx_tier_badges_tx_hash` ON `tier_badges` (`tx_hash`)"
+  ],
+  "listRule": "@request.auth.id != \"\" && user = @request.auth.id",
+  "viewRule": "@request.auth.id != \"\" && user = @request.auth.id",
+  "createRule": "@request.auth.id != \"\"",
+  "updateRule": "",
+  "deleteRule": "",
+  "options": {}
+}
