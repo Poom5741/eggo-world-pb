@@ -12,6 +12,8 @@ import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { TierSection } from '@/components/dashboard/tier-section'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -47,7 +49,7 @@ export default function DashboardPage() {
     
     // Check 1: Immediately authenticated?
     if (pb.authStore.token && pb.authStore.record?.id) {
-      console.warn('✓ User authenticated immediately:', userRecord.id)
+      console.warn('✓ User authenticated immediately:', userRecord?.id)
       setUser(userRecord)
       setAuthReady(true)
       setLoading(false)
@@ -372,18 +374,27 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Card 3: Referral Earnings */}
-        <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:-translate-y-2 transition-transform">
-            <span className="material-symbols-outlined text-5xl text-secondary">groups</span>
-          </div>
-          <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">Referral Earnings</p>
-          <h3 className="pixel-font text-4xl text-secondary">{totalReferralEarnings.toFixed(2)}</h3>
-          <p className="text-xs font-bold text-on-surface-variant/60 mt-2">
-            {referralLevels.reduce((sum, lvl) => sum + lvl.count, 0)} active buddies
-          </p>
-        </div>
+        {/* Card 3: Tier Progress */}
+        <TierSection userId={user?.id} compact />
       </div>
+
+      {/* Referral Earnings Summary */}
+      <Card className="bg-surface-container-lowest p-6 rounded-xl clay-card mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">
+              Referral Earnings
+            </p>
+            <h3 className="pixel-font text-3xl text-secondary">
+              {totalReferralEarnings.toFixed(2)} USDT
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span className="material-symbols-outlined text-2xl">groups</span>
+            <span>{referralLevels.reduce((sum, lvl) => sum + lvl.count, 0)} buddies</span>
+          </div>
+        </div>
+      </Card>
 
       {/* Split Section: Quick Actions + Buddy Chain */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-8">
