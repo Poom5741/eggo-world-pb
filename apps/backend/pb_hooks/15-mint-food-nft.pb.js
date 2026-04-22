@@ -99,8 +99,8 @@ routerAdd("POST", "/api/v2/mint-food", (e) => {
         }
         
         // Get contract addresses from settings
-        const foodNftAddress = $app.settings().meta("foodNftContractAddress");
-        const eggNftAddress = $app.settings().meta("eggNftContractAddress");
+        const foodNftAddress = $os.getenv('FOOD_NFT_CONTRACT_ADDRESS') || '0xbb0E0FcB40E209f7751A784F6b8d63E9C127D8fC';
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
         
         if (!foodNftAddress) {
             return e.json(500, { 

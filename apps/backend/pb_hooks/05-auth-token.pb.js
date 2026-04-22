@@ -33,7 +33,8 @@ routerAdd('POST', '/api/auth/line-user', (c) => {
                 id: user.id + '',
                 email: user.get('email') + '',
                 name: user.get('name') + '',
-                wallet: user.get('wallet') || null
+                wallet: user.get('wallet') || null,
+                daccPublickey: user.get('daccPublickey') || null
             }
         });
 

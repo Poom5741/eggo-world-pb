@@ -160,6 +160,7 @@ This project uses the GSD framework for structured agentic development. All 79 G
 ### Available Commands
 
 79 slash commands available:
+
 - `/gsd-new-project` - Initialize projects
 - `/gsd-plan-phase` - Create phase plans
 - `/gsd-execute-phase` - Execute plans
@@ -348,33 +349,43 @@ flux task create "<task>" --depends-on <task-id>
 
 **CRITICAL:** Read this section BEFORE deploying to production to avoid costly mistakes.
 
+### Production Architecture
+
+**IMPORTANT:** Production PocketBase runs in **Docker Compose**, NOT as a binary process.
+
+- **Production Server:** `root@204.168.144.14`
+- **SSH Key:** `~/.ssh/poom-server`
+- **Production Path:** `/root/eggo-world-pb`
+- **Container Name:** `eggo-pb`
+- **Docker Compose File:** `/root/eggo-world-pb/docker-compose.yml`
+
+**PocketBase Version:** 0.23.4 (running in Docker container)
+
 ### Common Deployment Mistakes
 
-**1. Wrong Directory**
+**1. Wrong Deployment Method**
+
+- ❌ **WRONG:** Running PocketBase as binary process (`./pocketbase serve`)
+- ✅ **CORRECT:** Use Docker Compose (`docker compose up -d pocketbase`)
+- Production uses Docker container, not standalone binary
+
+**2. Wrong Directory**
 
 - Production is at `/root/eggo-world-pb` NOT `/root/eggo-pocketbase`
-- Verify: `ssh root@host "find /root -name 'pb_hooks' -type d"`
-
-**2. PocketBase Runs as Process, NOT Docker**
-
-- Production uses binary: `./pocketbase serve` (not Docker)
-- Check: `ps aux | grep 'pocketbase serve'`
-- Don't: Try `docker-compose restart pocketbase` (doesn't exist)
+- Verify: `ssh root@204.168.144.14 "find /root -name 'pb_hooks' -type d"`
 
 **3. Hook Loading Location**
 
-- PocketBase loads `pb_hooks/` from CURRENT WORKING DIRECTORY
-- MUST `cd /root/eggo-world-pb/apps/backend` before starting
-- NOT from `/root` or project root!
+- PocketBase loads `pb_hooks/` from Docker image (baked in during build)
+- Hooks are NOT mounted as volumes - they're copied into the image
+- MUST rebuild Docker image to update hooks
 
 **4. SSH Configuration**
 
 - Set BEFORE deployment:
 
 ```bash
-export SSH_USER="root"
-export SSH_KEY="~/.ssh/id_rsa"
-export REGISTRY="ghcr.io"
+export SSH_KEY="~/.ssh/poom-server"
 export SSH_HOST="204.168.144.14"
 ```
 
@@ -399,44 +410,42 @@ export SSH_HOST="204.168.144.14"
 - [ ] Set SSH environment variables
 - [ ] Backup: `ssh root@host "cp -r pb_hooks pb_hooks.backup"`
 
-#### Upload Files
+### Production Deployment Workflow
+
+#### Upload and Deploy Hooks
 
 ```bash
-# Upload new hooks
-scp -o StrictHostKeyChecking=no apps/backend/pb_hooks/NN-*.pb.js \
+# 1. Upload new hook file
+scp -i ~/.ssh/poom-server -o StrictHostKeyChecking=no apps/backend/pb_hooks/NN-*.pb.js \
   root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/
 
-# Upload new collections
-scp -o StrictHostKeyChecking=no apps/backend/collections/*.json \
-  root@204.168.144.14:/root/eggo-world-pb/apps/backend/collections/
-
-# Verify uploaded
-ssh root@host "ls -la /root/eggo-world-pb/apps/backend/pb_hooks/"
-ssh root@host "head -5 /root/eggo-world-pb/apps/backend/pb_hooks/12-*.pb.js"
-```
-
-#### Restart PocketBase
-
-```bash
-# Kill existing
-ssh root@204.168.144.14 "pkill -f 'pocketbase serve'"
-
-# Start from correct directory
-ssh root@204.168.144.14 "
-  sleep 3 &&
-  cd /root/eggo-world-pb/apps/backend &&
-  ./pocketbase serve --http=0.0.0.0:8090 > /tmp/pocketbase.log 2>&1 &
+# 2. Rebuild Docker image (hooks are baked into image)
+ssh -i ~/.ssh/poom-server -o StrictHostKeyChecking=no root@204.168.144.14 "
+  cd /root/eggo-world-pb && \
+  docker compose build pocketbase && \
+  docker compose up -d pocketbase
 "
+
+# 3. Verify deployment
+ssh -i ~/.ssh/poom-server root@204.168.144.14 "docker compose -f /root/eggo-world-pb/docker-compose.yml logs --tail=20 pocketbase | grep 'endpoint registered'"
 ```
 
-#### Verify
+**IMPORTANT:**
+
+- Hooks are copied into Docker image during build, NOT mounted as volumes
+- Must rebuild image with `docker compose build pocketbase` to update hooks
+- Cannot just restart container - must rebuild
+
+#### Verify Deployment
 
 ```bash
 # Health check
 curl -s https://pb.eggoworld.io/api/health
 
 # Check logs for hook loading
-ssh root@host "tail -50 /tmp/pocketbase.log | grep -E 'endpoint|hook|registered'"
+ssh -i ~/.ssh/poom-server root@204.168.144.14 "
+  docker compose -f /root/eggo-world-pb/docker-compose.yml logs --tail=50 pocketbase | grep -E 'endpoint|hook|registered'
+"
 
 # Test endpoint with auth
 TOKEN="your-auth-token"
@@ -446,6 +455,19 @@ curl -X POST https://pb.eggoworld.io/api/v2/hot-wallet/balance \
   -d '{"user_address":"0x..."}'
 ```
 
+#### Check Container Status
+
+```bash
+# Check if container is running
+ssh -i ~/.ssh/poom-server root@204.168.144.14 "docker ps | grep eggo-pb"
+
+# Check container logs
+ssh -i ~/.ssh/poom-server root@204.168.144.14 "docker logs eggo-pb --tail=50"
+
+# Check container details
+ssh -i ~/.ssh/poom-server root@204.168.144.14 "docker inspect eggo-pb | grep -i status"
+```
+
 ---
 
 ### Quick Reference
@@ -453,31 +475,38 @@ curl -X POST https://pb.eggoworld.io/api/v2/hot-wallet/balance \
 **SSH Access**
 
 ```bash
-ssh -o StrictHostKeyChecking=no root@204.168.144.14
+ssh -i ~/.ssh/poom-server -o StrictHostKeyChecking=no root@204.168.144.14
 ```
 
 **Upload Hook**
 
 ```bash
-scp -o StrictHostKeyChecking=no apps/backend/pb_hooks/12-*.pb.js \
+scp -i ~/.ssh/poom-server -o StrictHostKeyChecking=no apps/backend/pb_hooks/NN-*.pb.js \
   root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/
 ```
 
-**Restart PocketBase**
+**Deploy Hook (Rebuild & Restart)**
 
 ```bash
-ssh root@204.168.144.14 "
-  pkill -f 'pocketbase serve' &&
-  sleep 3 &&
-  cd /root/eggo-world-pb/apps/backend &&
-  ./pocketbase serve --http=0.0.0.0:8090 > /tmp/pocketbase.log 2>&1 &
+ssh -i ~/.ssh/poom-server -o StrictHostKeyChecking=no root@204.168.144.14 "
+  cd /root/eggo-world-pb && \
+  docker compose build pocketbase && \
+  docker compose up -d pocketbase
 "
 ```
 
 **Check Logs**
 
 ```bash
-ssh root@204.168.144.14 "tail -50 /tmp/pocketbase.log | grep -E 'endpoint|hook'"
+ssh -i ~/.ssh/poom-server root@204.168.144.14 "
+  docker compose -f /root/eggo-world-pb/docker-compose.yml logs --tail=50 pocketbase | grep -E 'endpoint|hook|error'
+"
+```
+
+**Run Commands in Container**
+
+```bash
+ssh -i ~/.ssh/poom-server root@204.168.144.14 "docker exec eggo-pb <command>"
 ```
 
 ---
@@ -485,23 +514,479 @@ ssh root@204.168.144.14 "tail -50 /tmp/pocketbase.log | grep -E 'endpoint|hook'"
 ### Common Errors & Solutions
 
 **Error:** `address already in use`
-**Fix:** `pkill -f 'pocketbase serve'` then restart
+**Fix:** `docker compose -f /root/eggo-world-pb/docker-compose.yml down pocketbase && docker compose up -d pocketbase`
 
 **Error:** `No such container`
-**Cause:** Using Docker when binary runs directly
-**Fix:** Use `ps aux | grep pocketbase` instead
+**Cause:** Container not running
+**Fix:** `docker compose -f /root/eggo-world-pb/docker-compose.yml up -d pocketbase`
 
 **Error:** `pb_hooks: No such file`
-**Cause:** Wrong path
-**Fix:** `find /root -name 'pb_hooks' -type d`
+**Cause:** Wrong path or hooks not copied to image
+**Fix:** `find /root -name 'pb_hooks' -type d` and rebuild image
 
 **Error:** Hooks not loading
-**Cause:** Wrong working directory
-**Fix:** `cd apps/backend` before starting PocketBase
+**Cause:** Hooks not baked into Docker image
+**Fix:** Rebuild image with `docker compose build pocketbase`
 
 **Error:** 400/401/403 on endpoint
-**Cause:** Missing auth
-**Fix:** Add `Authorization: Bearer <token>` header
+**Cause:** Missing auth or wrong auth method
+**Fix:** Add `Authorization: Bearer <token>` header, use `e.requestInfo().auth` in hooks
+
+**Error:** `sql: no rows in result set`
+**Cause:** Database query returned empty result
+**Fix:** Check if record exists, verify field names match collection schema
+
+---
+
+## POCKETBASE HOOK DEVELOPMENT PATTERNS (v0.23.4)
+
+**CRITICAL:** These patterns were discovered through extensive debugging. ALWAYS follow these patterns.
+
+### 1. Authentication in Router Hooks
+
+**✅ CORRECT:** Use `e.requestInfo().auth` to get authenticated user
+
+```javascript
+routerAdd("POST", "/api/v2/mint-egg", (e) => {
+  try {
+    const requestInfo = e.requestInfo()
+    const userId = requestInfo.auth?.id
+    const collectionId = requestInfo.auth?.collectionId
+
+    if (!userId) {
+      return e.json(401, {
+        success: false,
+        error: { message: "Authentication required", code: "AUTH_REQUIRED" },
+      })
+    }
+
+    // Get user record
+    const user = $app.findRecordById("users", userId)
+    if (!user) {
+      return e.json(401, {
+        success: false,
+        error: { message: "User not found", code: "USER_NOT_FOUND" },
+      })
+    }
+
+    // ... rest of logic
+  } catch (err) {
+    return e.json(500, { success: false, error: { message: err.message, code: "MINT_FAILED" } })
+  }
+})
+```
+
+**❌ WRONG:** These DO NOT work in PocketBase 0.23.4:
+
+```javascript
+// DON'T USE - doesn't exist in v0.23.4
+const user = $apis.requireAuth(e)
+
+// DON'T USE - doesn't exist in v0.23.4
+const { users } = e.requireAuth()
+
+// DON'T USE - $security.parseUnverifiedJWT uses atob which doesn't exist
+const tokenData = $security.parseUnverifiedJWT(token)
+```
+
+### 2. Database Queries
+
+**✅ CORRECT:** Use `$app.findFirstRecordByData()` for simple field lookups
+
+```javascript
+// Find user_wallets record by user_id
+const wallet = $app.findFirstRecordByData("user_wallets", "user_id", user.id)
+
+if (!wallet) {
+  return e.json(400, {
+    success: false,
+    error: { message: "Wallet not found", code: "WALLET_NOT_FOUND" },
+  })
+}
+```
+
+**❌ WRONG:** These DON'T work:
+
+```javascript
+// DON'T USE - parameterized queries don't work this way
+const wallet = $app.findFirstRecordByFilter("user_wallets", "user_id = {:userId}", {
+  "@userId": user.id,
+})
+
+// DON'T USE - $app.dao() doesn't exist in v0.23.4
+const wallet = $app.dao().findFirstRecordByData("user_wallets", "user_id", user.id)
+```
+
+### 3. Record Operations
+
+**✅ CORRECT API methods in v0.23.4:**
+
+```javascript
+// Find record by ID
+const user = $app.findRecordById("users", userId)
+
+// Find collection
+const collection = $app.findCollectionByNameOrId("user_wallets")
+
+// Create new record
+const newRecord = $app.newRecord(collection)
+
+// Set fields
+newRecord.set("user_id", userId)
+newRecord.set("wallet_address", "0x...")
+
+// Save record
+$app.save(newRecord)
+```
+
+**❌ WRONG:** These DON'T exist:
+
+```javascript
+// DON'T USE - $app.dao() doesn't exist
+$app.dao().findRecordById("users", userId)
+$app.dao().saveRecord(record)
+$app.dao().createRecord(collection, data)
+```
+
+### 4. Accessing Record Fields
+
+**✅ CORRECT:** Use `.get()` method
+
+```javascript
+const walletAddress = user.get("wallet")
+const daccPublicKey = user.get("daccPublickey")
+const pin = user.get("pin")
+const usdtBalance = wallet.get("usdt_balance")
+```
+
+**⚠️ CAUTION:** `user.get()` can return `null` but may appear truthy in some contexts. Always check explicitly:
+
+```javascript
+const pin = user.get("pin")
+if (!pin || pin === null || pin === "") {
+  // Handle missing pin
+}
+```
+
+### 5. Collection Schema
+
+**`users` collection stores:**
+
+- `wallet` - EVM wallet address (0x...)
+- `daccPublickey` - DACC public key (daccPublickey*0x...*...)
+- `pin` - Encrypted wallet password (random, NOT user's login password)
+- `referral_chain` - Array of referrer user IDs
+
+**`user_wallets` collection stores:**
+
+- `user_id` - Relation to users collection (required, cascadeDelete)
+- `wallet_address` - Same as users.wallet (for easier queries)
+- `usdt_balance` - Current USDT balance (number)
+- `total_earned` - Lifetime USDT earned
+- `total_spent` - Lifetime USDT spent
+- Indexes: `idx_user_wallets_user_id` (unique), `idx_user_wallets_wallet_address`
+
+### 6. Response Format
+
+**✅ Standard response format:**
+
+```javascript
+// Success
+return e.json(200, {
+    success: true,
+    data: { ... }
+});
+
+// Error
+return e.json(400, {
+    success: false,
+    error: {
+        message: 'Descriptive error message',
+        code: 'ERROR_CODE'
+    }
+});
+```
+
+### 7. Environment Variables
+
+```javascript
+// Access environment variables
+const walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
+const lineChannelId = $os.getenv("LINE_CHANNEL_ID")
+```
+
+### 8. HTTP Requests to External APIs
+
+```javascript
+const response = $http.send({
+  url: "https://api.example.com/endpoint",
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ key: "value" }),
+})
+
+// Parse response
+let responseData
+if (response.json && typeof response.json === "object") {
+  responseData = response.json
+} else if (response.body) {
+  let responseBody = response.body
+  if (Array.isArray(response.body)) {
+    responseBody = ""
+    for (let i = 0; i < response.body.length; i++) {
+      responseBody += String.fromCharCode(response.body[i])
+    }
+  }
+  responseData = JSON.parse(responseBody)
+}
+
+if (response.statusCode < 200 || response.statusCode >= 300) {
+  throw new Error("API returned status " + response.statusCode)
+}
+```
+
+### 9. Logging
+
+```javascript
+// Standard logging
+console.log("Info message")
+console.error("Error message")
+
+// PocketBase logger
+$app.logger().info("Operation completed", { userId: user.id })
+$app.logger().error("Operation failed", err)
+```
+
+---
+
+## DEBUGGING SESSION LEARNINGS (April 2026)
+
+### Mint Flow Debugging Session
+
+**Issue:** Mint page was calling wallet-api directly instead of going through PocketBase.
+
+**Root Cause:**
+
+- Frontend was calling `http://localhost:3001/api/v1/wallet/mint-egg` directly
+- Should call PocketBase endpoint: `${pb.baseURL}/api/v2/mint-egg`
+- PocketBase hook handles: balance validation, referral logic, wallet-api calls, record creation
+
+**Fix:**
+
+- Changed mint page to call PocketBase hook with Authorization header
+- Hook validates USDT balance, builds referral chain, calls wallet-api internally
+- **Architecture:** Frontend → PocketBase → wallet-api → blockchain
+
+**Files Modified:**
+
+- `apps/web/app/mint/page.tsx` - Changed API endpoint and added auth header
+- `apps/backend/pb_hooks/13-mint-egg-nft.pb.js` - Fixed authentication and database queries
+
+---
+
+### Authentication Debugging Session
+
+**Issue:** PocketBase hook couldn't authenticate user - multiple authentication methods failed.
+
+**Failed Attempts:**
+
+1. **`$apis.requireAuth(e)`** - Returns function name as string "pbRequireAuth" in v0.23.4 ❌
+2. **`e.requireAuth()`** - Method doesn't exist in v0.23.4 ❌
+3. **`$security.parseUnverifiedJWT(token)`** - Uses `atob` which doesn't exist in PocketBase JSVM ❌
+4. **`e.auth.record`** - Undefined in router hooks ❌
+
+**Working Solution:**
+
+```javascript
+const requestInfo = e.requestInfo()
+const userId = requestInfo.auth?.id
+const collectionId = requestInfo.auth?.collectionId
+
+if (!userId) {
+  return e.json(401, { success: false, error: { message: "Auth required", code: "AUTH_REQUIRED" } })
+}
+
+const user = $app.findRecordById("users", userId)
+```
+
+**Key Learning:** PocketBase v0.23.4 parses auth token automatically and makes it available via `e.requestInfo().auth`. DO NOT try to parse JWT manually.
+
+---
+
+### Database Query Debugging Session
+
+**Issue:** `sql: no rows in result set` error when looking up user_wallets record.
+
+**Failed Attempts:**
+
+1. **`$app.findFirstRecordByFilter('user_wallets', 'user_id = {:userId}', {'@userId': user.id})`**
+   - Error: "invalid filter expression: unexpected character '{'"
+   - Parameter syntax doesn't work with this API ❌
+
+2. **`$app.findFirstRecordByData('user_wallets', 'user_id', user.id)` with wrong user.id**
+   - Was passing `pbRequireAuth` string instead of actual user ID ❌
+   - Fixed by using correct auth method first
+
+**Working Solution:**
+
+```javascript
+// After getting correct userId from e.requestInfo().auth
+const wallet = $app.findFirstRecordByData("user_wallets", "user_id", userId)
+
+if (!wallet) {
+  return e.json(400, { success: false, error: { message: "Wallet not found" } })
+}
+```
+
+**Key Learning:** `findFirstRecordByData` works for simple field lookups, but user.id must be valid. Always verify auth first.
+
+---
+
+### Wallet Fields Debugging Session
+
+**Issue:** User login fails with "Wallet setup incomplete. Please contact support. (Error: DACC_KEY_MISSING)"
+
+**Root Cause:**
+
+- User record had `wallet` and `daccPublickey` but `pin` was `null`
+- Frontend checks `if (!user.daccPublickey)` in `line-callback.html`
+- `onRecordCreate` hook (01-create-wallet.pb.js) only fires on NEW user creation
+- Existing users created before hook was added don't have wallet fields
+
+**Debugging Process:**
+
+1. Checked user record via API - found `pin: null`
+2. Tried to update pin via hook - hook read pin as truthy even though it was null
+3. **Issue:** `user.get('pin')` may return undefined which is coerced to truthy in some contexts
+
+**Solution:**
+
+- Created temporary fix endpoint (`99-fix-user-wallet.pb.js`) to manually set missing fields
+- For new users: LINE OAuth triggers `onRecordCreate` hook which creates wallet automatically
+- For existing users: Must manually populate wallet fields or re-register
+
+**Key Learnings:**
+
+1. **Pin field location:** `users` collection (NOT `user_wallets`)
+2. **Pin generation:** Random password generated by wallet-api, stored in `users.pin`
+3. **NEVER use user's login password** - it's hashed by PocketBase before storage
+4. **Hook execution:** `onRecordCreate` only fires once on user creation, not on subsequent logins
+5. **Field truthiness:** `user.get('field')` can return values that appear truthy but are actually null/undefined in database
+
+---
+
+### Production Deployment Debugging
+
+**Issue:** Tried to restart PocketBase as binary process in production.
+
+**User Feedback:** "you doing wrong thing again you need to run pocketbase on server with docker compose not binary build"
+
+**Root Cause:**
+
+- AGENTS.md had outdated info saying production uses binary process
+- Actually uses Docker Compose with container `eggo-pb`
+- Hooks are baked into Docker image, not mounted as volumes
+
+**Correct Deployment:**
+
+```bash
+# Upload hook
+scp -i ~/.ssh/poom-server apps/backend/pb_hooks/NN-*.pb.js root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/
+
+# Rebuild and restart
+ssh -i ~/.ssh/poom-server root@204.168.144.14 "
+  cd /root/eggo-world-pb && \
+  docker compose build pocketbase && \
+  docker compose up -d pocketbase
+"
+```
+
+**Key Learning:** ALWAYS verify deployment architecture before making changes. Check if Docker is being used:
+
+```bash
+ssh root@host "docker ps | grep pocketbase"
+```
+
+---
+
+### JWT Token Structure
+
+**PocketBase auth JWT contains:**
+
+```json
+{
+  "collectionId": "_pb_users_auth_",
+  "exp": 1767374651,
+  "id": "1r3su033r736n5o",
+  "refreshable": true,
+  "type": "auth"
+}
+```
+
+**Key Points:**
+
+- `id` is the user record ID
+- `collectionId` is always `_pb_users_auth_` for users
+- Token is automatically parsed by PocketBase and available via `e.requestInfo().auth`
+- DO NOT manually parse JWT - use the built-in auth parsing
+
+---
+
+### Collection ID vs Collection Name
+
+**Important:** PocketBase has both collection names and collection IDs:
+
+- **Collection Name:** `users`, `user_wallets`, `egg_nfts` (human-readable)
+- **Collection ID:** `_pb_users_auth_` (system ID for users collection)
+
+**When to use which:**
+
+```javascript
+// Use collection NAME for most operations
+const user = $app.findRecordById("users", userId)
+const wallet = $app.findFirstRecordByData("user_wallets", "user_id", userId)
+
+// Collection ID from JWT token can also work
+const user = $app.findRecordById("_pb_users_auth_", userId)
+```
+
+---
+
+### General Debugging Tips
+
+1. **Always check server logs first:**
+
+   ```bash
+   ssh -i ~/.ssh/poom-server root@204.168.144.14 "docker compose -f /root/eggo-world-pb/docker-compose.yml logs --tail=50 pocketbase"
+   ```
+
+2. **Add debug logging to hooks:**
+
+   ```javascript
+   console.log("[Mint] Step 1 - User ID:", userId)
+   console.log("[Mint] Step 2 - Wallet:", wallet ? wallet.id : "NULL")
+   console.error("[Mint] ERROR:", err)
+   console.error("[Mint] ERROR stack:", err.stack)
+   ```
+
+3. **Verify database state:**
+   - Use PocketBase Admin UI at `https://pb.eggoworld.io/_/`
+   - Or query via API with admin token
+
+4. **Test endpoints with curl:**
+
+   ```bash
+   curl -X POST https://pb.eggoworld.io/api/v2/mint-egg \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"referrer_id":null}'
+   ```
+
+5. **Check if user exists and has required fields:**
+   ```bash
+   curl "https://pb.eggoworld.io/api/collections/users/records/$USER_ID" \
+     -H "Authorization: Bearer $TOKEN" | jq '{wallet, daccPublickey, pin}'
+   ```
 
 ---
 
@@ -588,6 +1073,14 @@ ssh root@pb_host 'curl -s -X POST "http://localhost:8090/api/collections/users/r
 - ❌ Don't skip reading reference implementations
 - ❌ Don't assume production infrastructure will work (always test end-to-end)
 - ❌ Don't debug Docker networking if binary process exists
+- ❌ Don't call wallet-api directly from frontend - always go through PocketBase hooks
+- ❌ Don't use `$apis.requireAuth(e)` or `e.requireAuth()` in PocketBase v0.23.4
+- ❌ Don't use `$app.dao()` methods - they don't exist in v0.23.4
+- ❌ Don't try to parse JWT manually with `$security.parseUnverifiedJWT()`
+- ❌ Don't run PocketBase as binary in production - use Docker Compose
+- ❌ Don't assume `user.get('field')` returning truthy means it's not null in DB
+- ❌ Don't mount `pb_hooks/` as Docker volume - they're baked into image
+- ❌ Don't use parameterized queries with `{:` syntax in `findFirstRecordByFilter`
 
 **Success Criteria:**
 

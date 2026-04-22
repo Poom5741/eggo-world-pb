@@ -34,7 +34,21 @@ export function useFoodNft() {
       });
 
       if (!response.success) {
-        throw new Error(response.error?.message || 'Failed to mint food');
+        let errorMessage = 'Failed to mint food'
+        if (response.error) {
+          if (typeof response.error === 'string') {
+            errorMessage = response.error
+          } else if (typeof response.error === 'object' && response.error !== null) {
+            if (typeof response.error.message === 'string') {
+              errorMessage = response.error.message
+            } else if (response.error.message && typeof response.error.message === 'object') {
+              errorMessage = JSON.stringify(response.error.message)
+            } else {
+              errorMessage = JSON.stringify(response.error)
+            }
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       return response.data;
@@ -62,7 +76,21 @@ export function useFoodNft() {
       });
 
       if (!response.success) {
-        throw new Error(response.error?.message || 'Failed to feed egg');
+        let errorMessage = 'Failed to feed egg'
+        if (response.error) {
+          if (typeof response.error === 'string') {
+            errorMessage = response.error
+          } else if (typeof response.error === 'object' && response.error !== null) {
+            if (typeof response.error.message === 'string') {
+              errorMessage = response.error.message
+            } else if (response.error.message && typeof response.error.message === 'object') {
+              errorMessage = JSON.stringify(response.error.message)
+            } else {
+              errorMessage = JSON.stringify(response.error)
+            }
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       return response.data;

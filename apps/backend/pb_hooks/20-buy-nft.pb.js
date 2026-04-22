@@ -192,7 +192,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         
         console.log("Calling wallet-api for on-chain purchase: listingId=" + nftId)
         
-        const walletApiResponse = await $http.send({
+        const walletApiResponse = $http.send({
             url: walletApiUrl + "/api/wallet/buy-nft",
             method: "POST",
             body: formatter.bytes({
@@ -268,7 +268,8 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         $app.save(nft);
         
         // Record transaction
-        const transaction = $app.newRecord('transactions');
+        const transactionsCollection = $app.findCollectionByNameOrId('transactions');
+        const transaction = new Record(transactionsCollection);
         transaction.set('user', buyer.id);
         transaction.set('type', 'purchase');
         transaction.set('amount', price);

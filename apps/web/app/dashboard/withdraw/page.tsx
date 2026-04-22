@@ -103,7 +103,21 @@ export default function WithdrawPage() {
       const data = await response.json()
       
       if (!data.success) {
-        throw new Error(data.error?.message || "Withdrawal failed")
+        let errorMessage = "Withdrawal failed"
+        if (data.error) {
+          if (typeof data.error === 'string') {
+            errorMessage = data.error
+          } else if (typeof data.error === 'object' && data.error !== null) {
+            if (typeof data.error.message === 'string') {
+              errorMessage = data.error.message
+            } else if (data.error.message && typeof data.error.message === 'object') {
+              errorMessage = JSON.stringify(data.error.message)
+            } else {
+              errorMessage = JSON.stringify(data.error)
+            }
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       setSuccess(`Withdrawal successful! ${amount} USDT sent to ${formData.external_wallet_address}`)

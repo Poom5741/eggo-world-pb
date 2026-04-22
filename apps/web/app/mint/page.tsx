@@ -12,9 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Egg, Loader2, CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react'
 
 const MINT_PRICE = 25
-const WALLET_API_URL = process.env.NEXT_PUBLIC_WALLET_API_URL || 'http://localhost:3001'
 const BSCSCAN_BASE_URL = 'https://rpc.0xl3.com/tx'
-const DEFAULT_EGG_NFT_ADDRESS = process.env.NEXT_PUBLIC_EGG_NFT_ADDRESS || ''
 
 type ConfirmationProgress = 'idle' | 'preparing' | 'waiting' | 'confirmed' | 'error'
 
@@ -37,7 +35,7 @@ export default function MintPage() {
   const [balance, setBalance] = useState<number>(0)
   const [referrerId, setReferrerId] = useState('')
   const [confirmationProgress, setConfirmationProgress] = useState<ConfirmationProgress>('idle')
-  const [tokenId, setTokenId] = useState<number | null>(null)
+  const [_tokenId, setTokenId] = useState<number | null>(null)
 
   // Get authenticated user (after hydration)
   const user = isHydrated ? getUser() : null
@@ -83,43 +81,71 @@ export default function MintPage() {
         throw new Error('Invalid referrer ID format')
       }
 
-      // Call wallet-api mint endpoint
-      const response = await fetch(`${WALLET_API_URL}/mint-egg`, {
+      // Call PocketBase mint-egg hook (PB internally calls wallet-api)
+      const pb = createClient()
+      const response = await fetch(`${pb.baseURL}/api/v2/mint-egg`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': pb.authStore.token,
+        },
         body: JSON.stringify({
-          userId: user.id,
-          wallet: user.wallet,
-          eggId: 1, // Default egg ID (configurable later)
-          eggNftAddress: DEFAULT_EGG_NFT_ADDRESS,
-          referrerAddress: referrerId || undefined,
+          referrer_id: referrerId || undefined,
         }),
       })
 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error?.message || result.message || 'Mint transaction failed')
+        // Robust error message extraction
+        let errorMessage = 'Mint transaction failed'
+        
+        if (result.error && typeof result.error === 'object') {
+          // Backend returned { error: { message: "...", code: "..." } }
+          const msg = result.error.message
+          errorMessage = typeof msg === 'string' ? msg : JSON.stringify(result.error)
+        } else if (typeof result.error === 'string') {
+          // Backend returned { error: "..." }
+          errorMessage = result.error
+        } else if (result.message) {
+          // Fallback to result.message
+          errorMessage = typeof result.message === 'string' 
+            ? result.message 
+            : JSON.stringify(result.message)
+        } else if (result.data?.error) {
+          // Error might be in data.error
+          errorMessage = typeof result.data.error === 'string'
+            ? result.data.error
+            : JSON.stringify(result.data.error)
+        }
+        
+        // Ensure errorMessage is a string
+        if (typeof errorMessage !== 'string') {
+          errorMessage = String(errorMessage)
+        }
+        
+        throw new Error(errorMessage)
       }
 
-      // Transaction submitted successfully
-      const hash = result.data?.txHash || result.txHash
+      // Transaction submitted successfully — PocketBase returns snake_case fields
+      const hash = result.data?.tx_hash || result.data?.txHash
       setTxHash(hash)
       setConfirmationProgress('waiting')
 
-      // Poll for confirmation status (12 blocks on BSC)
+      // Poll for confirmation status
       const confirmed = await pollForConfirmation(hash)
 
       if (confirmed) {
         setConfirmationProgress('confirmed')
         // Extract tokenId if available
-        if (result.data?.eggId) {
-          setTokenId(result.data.eggId)
+        const mintedEggId = result.data?.egg_id || result.data?.eggId
+        if (mintedEggId) {
+          setTokenId(mintedEggId)
         }
 
         // Redirect to /eggs after 3 seconds
         setTimeout(() => {
-          const highlightId = tokenId || result.data?.eggId || ''
+          const highlightId = mintedEggId || ''
           router.push(`/eggs?highlight=${highlightId}`)
         }, 3000)
       } else {
@@ -134,17 +160,20 @@ export default function MintPage() {
     }
   }
 
-  // Poll wallet-api for transaction confirmation (12 blocks)
+  // Poll PocketBase tx-status for confirmation
   const pollForConfirmation = async (hash: string): Promise<boolean> => {
-    const maxAttempts = 24 // 24 * 5s = 2 minutes (12 blocks on BSC ≈ 36s, buffer for safety)
+    const maxAttempts = 24 // 24 * 5s = 2 minutes
     let attempts = 0
+    const pb = createClient()
 
     return new Promise((resolve) => {
       const poll = async () => {
         attempts++
 
         try {
-          const response = await fetch(`${WALLET_API_URL}/tx-status/${hash}`)
+          const response = await fetch(`${pb.baseURL}/api/v2/tx-status/${hash}`, {
+            headers: { 'Authorization': pb.authStore.token },
+          })
           const result = await response.json()
 
           if (result.confirmed || result.status === 'confirmed') {
@@ -157,7 +186,6 @@ export default function MintPage() {
             return
           }
 
-          // Update progress with block confirmations if available
           const confirmations = result.confirmations || 0
           console.log(`[Mint] Confirmations: ${confirmations}/12`)
         } catch (err) {

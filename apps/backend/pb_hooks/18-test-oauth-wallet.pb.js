@@ -16,8 +16,9 @@ routerAdd("POST", "/api/v2/test-oauth-wallet", (e) => {
 
         console.log("Creating test user with email:", testEmail)
 
-        // Create user record
-        var record = $app.newRecord("users")
+        // Create user via PocketBase collection API
+        var collection = $app.findCollectionByNameOrId("users")
+        var record = collection.newRecord()
         record.set("name", "Test OAuth User")
         record.set("email", testEmail)
         record.set("username", testUsername)
@@ -25,7 +26,7 @@ routerAdd("POST", "/api/v2/test-oauth-wallet", (e) => {
         record.set("passwordConfirm", testPassword)
         record.set("emailVisibility", false)
 
-        // Save user (triggers onRecordBeforeCreate hook)
+        // Save user (triggers onRecordCreate hook)
         $app.save(record)
 
         console.log("Test user created:", record.id)

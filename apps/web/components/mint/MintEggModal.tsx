@@ -51,7 +51,21 @@ export function MintEggModal({ isOpen, onClose, onSuccess }: MintEggModalProps) 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error?.message || 'Mint failed')
+        let errorMessage = 'Mint failed'
+        if (result.error) {
+          if (typeof result.error === 'string') {
+            errorMessage = result.error
+          } else if (typeof result.error === 'object' && result.error !== null) {
+            if (typeof result.error.message === 'string') {
+              errorMessage = result.error.message
+            } else if (result.error.message && typeof result.error.message === 'object') {
+              errorMessage = JSON.stringify(result.error.message)
+            } else {
+              errorMessage = JSON.stringify(result.error)
+            }
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       onSuccess()

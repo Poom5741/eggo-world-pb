@@ -114,7 +114,21 @@ export function useDailyCheckin(userId: string | undefined): UseDailyCheckinRetu
       })
 
       if (!response.success) {
-        throw new Error(response.error?.message || 'Check-in failed')
+        let errorMessage = 'Check-in failed'
+        if (response.error) {
+          if (typeof response.error === 'string') {
+            errorMessage = response.error
+          } else if (typeof response.error === 'object' && response.error !== null) {
+            if (typeof response.error.message === 'string') {
+              errorMessage = response.error.message
+            } else if (response.error.message && typeof response.error.message === 'object') {
+              errorMessage = JSON.stringify(response.error.message)
+            } else {
+              errorMessage = JSON.stringify(response.error)
+            }
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       // Refresh check-in status

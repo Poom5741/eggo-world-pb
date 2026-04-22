@@ -58,14 +58,14 @@
     {
       "name": "is_hatched",
       "type": "bool",
-      "required": true,
+      "required": false,
       "unique": false,
       "options": {}
     },
     {
       "name": "is_breeding_egg",
       "type": "bool",
-      "required": true,
+      "required": false,
       "unique": false,
       "options": {
         "default": false
@@ -104,7 +104,7 @@
     {
       "name": "generation",
       "type": "number",
-      "required": true,
+      "required": false,
       "unique": false,
       "options": {
         "min": 0,

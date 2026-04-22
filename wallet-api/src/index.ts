@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import compression from 'compression'
 import dotenv from 'dotenv'
 import { createWalletRouter } from './routes/createWallet.js'
+import { mintEggRouter } from './routes/mintEgg.js'
 import type { Request, Response, NextFunction } from 'express'
 import { env } from './env.js'
 
@@ -34,6 +35,7 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes - keeping backward compatible path /api/wallet/create
 app.use('/api/wallet', createWalletRouter)
+app.use('/api/wallet', mintEggRouter)
 
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
