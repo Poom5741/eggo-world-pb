@@ -29,26 +29,9 @@ export default function Animals() {
 
   const user = isHydrated ? pb.authStore.record : null
 
-  const [userWallet, setUserWallet] = useState<string | undefined>(undefined)
-
-  useEffect(() => {
-    if (isHydrated && user?.id) {
-      pb.collection('users').getOne(user.id).then((userData: any) => {
-        const wallet = userData.wallet
-        if (wallet && typeof wallet === 'string' && wallet !== 'null') {
-          setUserWallet(wallet)
-        } else {
-          setUserWallet('')
-        }
-      }).catch(console.error)
-    }
-  }, [isHydrated, user?.id])
-
-  const effectiveWalletAddress = userWallet !== undefined
-    ? (userWallet && userWallet !== 'null' ? userWallet : '')
-    : (user?.wallet && user.wallet !== 'null' ? user.wallet : '')
-
-  const { animals, loading, refresh, polling } = useAnimalPoll(effectiveWalletAddress, 30000)
+  // Use user ID for querying animal_nfts (owner field is a relation to users collection)
+  const effectiveUserId = user?.id || ''
+  const { animals, loading, refresh, polling } = useAnimalPoll(effectiveUserId, 30000)
 
   useEffect(() => {
     if (isHydrated && !user) {
