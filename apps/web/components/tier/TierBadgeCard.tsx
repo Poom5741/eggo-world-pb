@@ -6,12 +6,15 @@ import { cn } from "@/lib/utils"
 
 export interface TierBadge {
     name: string
-    tokenId: number
+    tokenId?: number
     threshold: number
-    usdtReward: number
+    usdtReward?: number
+    usdt_reward?: number
     claimed: boolean
-    isNext: boolean
-    canClaim: boolean
+    isNext?: boolean
+    is_next?: boolean
+    canClaim?: boolean
+    can_claim?: boolean
     progress: number
 }
 
@@ -50,6 +53,9 @@ const tierColors: Record<string, { bg: string; border: string; text: string; bad
 export function TierBadgeCard({ badge, className }: TierBadgeCardProps) {
     const iconName = tierIcons[badge.name] || "emoji_events"
     const colors = tierColors[badge.name] || tierColors.seedling
+    const isNext = badge.isNext ?? badge.is_next ?? false
+    const canClaim = badge.canClaim ?? badge.can_claim ?? false
+    const usdtReward = badge.usdtReward ?? badge.usdt_reward ?? 0
     
     return (
         <Card 
@@ -57,8 +63,8 @@ export function TierBadgeCard({ badge, className }: TierBadgeCardProps) {
                 "relative overflow-hidden transition-all duration-300",
                 badge.claimed && "shadow-clay-lg border-2",
                 badge.claimed && colors.border,
-                !badge.claimed && badge.isNext && "border-dashed border-2 border-muted-foreground/30",
-                !badge.claimed && !badge.isNext && "opacity-60 grayscale",
+                !badge.claimed && isNext && "border-dashed border-2 border-muted-foreground/30",
+                !badge.claimed && !isNext && "opacity-60 grayscale",
                 className
             )}
         >
@@ -95,13 +101,13 @@ export function TierBadgeCard({ badge, className }: TierBadgeCardProps) {
                         </Badge>
                     )}
                     
-                    {badge.isNext && !badge.claimed && badge.canClaim && (
+                    {isNext && !badge.claimed && canClaim && (
                         <Badge variant="clay" className="font-[var(--font-pixel)] text-xs animate-pulse">
                             READY
                         </Badge>
                     )}
                     
-                    {badge.isNext && !badge.claimed && !badge.canClaim && (
+                    {isNext && !badge.claimed && !canClaim && (
                         <Badge variant="secondary" className="font-[var(--font-pixel)] text-xs">
                             NEXT
                         </Badge>
@@ -116,7 +122,7 @@ export function TierBadgeCard({ badge, className }: TierBadgeCardProps) {
                         "text-2xl font-bold",
                         badge.claimed ? colors.text : "text-muted-foreground"
                     )}>
-                        ${badge.usdtReward}
+                        ${usdtReward}
                     </span>
                     <span className="text-sm text-muted-foreground">USDT</span>
                 </div>
@@ -127,7 +133,7 @@ export function TierBadgeCard({ badge, className }: TierBadgeCardProps) {
                 </div>
                 
                 {/* Progress bar for next tier */}
-                {badge.isNext && !badge.claimed && (
+                {isNext && !badge.claimed && (
                     <div className="space-y-1">
                         <div className="flex justify-between text-xs text-muted-foreground">
                             <span>Progress</span>
@@ -137,7 +143,7 @@ export function TierBadgeCard({ badge, className }: TierBadgeCardProps) {
                             <div 
                                 className={cn(
                                     "h-full transition-all duration-500 rounded-full",
-                                    badge.canClaim ? "bg-primary" : "bg-muted-foreground/50"
+                                    canClaim ? "bg-primary" : "bg-muted-foreground/50"
                                 )}
                                 style={{ width: `${badge.progress}%` }}
                             />
@@ -167,9 +173,13 @@ export function TierBadgeGrid({ badges, className }: TierBadgeGridProps) {
     const sortedBadges = [...badges].sort((a, b) => {
         if (a.claimed && !b.claimed) return -1
         if (!a.claimed && b.claimed) return 1
-        if (a.isNext && !b.isNext) return -1
-        if (!a.isNext && b.isNext) return 1
-        return a.tokenId - b.tokenId
+        const aIsNext = a.isNext ?? a.is_next ?? false
+        const bIsNext = b.isNext ?? b.is_next ?? false
+        if (aIsNext && !bIsNext) return -1
+        if (!aIsNext && bIsNext) return 1
+        const aTokenId = a.tokenId ?? 0
+        const bTokenId = b.tokenId ?? 0
+        return aTokenId - bTokenId
     })
     
     return (
