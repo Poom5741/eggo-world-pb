@@ -24,17 +24,17 @@ progress:
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** Phase 19 — Real NFT Mint Flow & Marketplace Integration (COMPLETE)
+**Current Focus:** Phase 20 — NFT Flow Polish & UAT Execution (PLANNED)
 
 ---
 
 ## Current Position
 
-**v0.0.7 Progress:** 8/8 phases complete (100%)  
-**Milestone:** READY FOR ARCHIVE
+**v0.0.7 Progress:** 8/8 phases complete (100%), Phase 20 added  
+**Milestone:** READY FOR ARCHIVE (pending Phase 20 planning)
 
 ```
-Progress: [██████████] 7/7 phases complete
+Progress: [██████████] 8/8 phases complete + Phase 20 added
           Phase 12 → ✅ COMPLETE (wallet-api contract integration)
           Phase 13 → ✅ COMPLETE (USDT deposit tracking)
           Phase 14 → ✅ COMPLETE (mobile responsive polish)
@@ -43,6 +43,7 @@ Progress: [██████████] 7/7 phases complete
           Phase 17 → ✅ COMPLETE (UAT & verification gap closure)
           Phase 18 → ✅ COMPLETE (fix LINE OAuth wallet auto-creation)
           Phase 19 → ✅ COMPLETE (real NFT mint flow & marketplace integration)
+          Phase 20 → 🚧 PLANNED (NFT flow polish & UAT execution)
 ```
 
 **Completed Phase 12 Goals:**
@@ -140,7 +141,19 @@ Progress: [██████████] 7/7 phases complete
 
 **REMAINING:**
 
-- None — v0.0.7 milestone complete, ready for archive
+- Phase 20: NFT Flow Polish & UAT Execution (gaps from Phase 12 + 19 + deferred UAT)
+
+---
+
+### Deferred Items
+
+Items acknowledged and deferred at milestone close on 2026-04-22:
+
+| Category     | Item                                                        | Status                                         |
+| ------------ | ----------------------------------------------------------- | ---------------------------------------------- |
+| UAT          | Phase 10: 10 UAT scenarios (feed/hatch/polling/empty state) | Deferred to Phase 20 - requires manual testing |
+| Verification | Phase 12: feed-egg foodCount validation gap                 | Moved to Phase 20 - real bug fix needed        |
+| Verification | Phase 19: gas sponsorship documentation + human tests       | Moved to Phase 20 - MVP decision + testing     |
 
 ---
 
@@ -192,27 +205,25 @@ Progress: [██████████] 7/7 phases complete
 **Session Notes:**
 
 - v0.0.6 milestone archived with final audit (19/19 requirements complete)
-- v0.0.7 MILESTONE: 7/7 phases complete (100%), Phase 19 added
+- v0.0.7 MILESTONE: 8/8 phases complete (100%), Phase 20 added for gap closure
 - Phase 17 COMPLETED — All UAT & verification gaps closed
 - Phase 18 COMPLETED — LINE OAuth wallet auto-creation fixed
-- Phase 08 marked complete (all 3 plans executed with summaries)
-- Phase 12 gap (foodCount validation) re-verified and confirmed closed
-- Phase 19 Plan 01 COMPLETED — Mint-egg PocketBase callback integration
-- Phase 19 Plan 04 COMPLETED — Gas sponsorship system with relayer wallet
-- Phase 19 Plan 02 COMPLETED — Dedicated Mint Egg page & navigation integration
-- Phase 19 Plan 03 COMPLETED — On-chain buy flow & marketplace integration
-- Phase 19 Plan 05 COMPLETED — E2E test suite & verification checklist
+- Phase 19 COMPLETED — Real NFT mint flow & marketplace integration
+- Phase 20 PLANNED — Combines Phase 12 + 19 verification gaps + deferred UAT
+- UAT gaps (Phase 10/17) documented and deferred to Phase 20
+- Debug session (LINE OAuth daccPublickey) resolved
+- Phase 08 open questions (Material Symbols) closed
 
 **Next Session Actions:**
 
 1. Archive v0.0.7 milestone using /gsd-complete-milestone
-2. Plan v0.0.8 milestone (if needed)
+2. Plan Phase 20 (or start v0.0.8 milestone)
 
 **Context Handoff:**
 
 - v0.0.6 ARCHIVED — All scoped requirements satisfied, final audit complete
-- v0.0.7 IN PROGRESS — 8/8 phases complete (100%), ready for archive
-- Phase 17 COMPLETED — All UAT & verification gaps closed
+- v0.0.7 IN PROGRESS — 8/8 phases complete (100%), Phase 20 added, ready for archive
+- Phase 17 COMPLETED — All UAT & verification gaps documented and deferred
 - Phase 18 COMPLETED — LINE OAuth wallet auto-creation fixed
 - Phase 19 COMPLETED — Real NFT mint flow & marketplace integration
   - Mint endpoint with PocketBase callback (19-01)
@@ -220,6 +231,10 @@ Progress: [██████████] 7/7 phases complete
   - Mint Egg page (/mint) with navigation (19-02)
   - On-chain marketplace buy flow integration (19-03)
   - E2E test suite + verification checklist (19-05)
+- Phase 20 PLANNED — NFT flow polish & UAT execution
+  - Phase 12 gap: feed-egg foodCount validation
+  - Phase 19 gap: gas sponsorship documentation + human verification tests
+  - Phase 10/17: deferred UAT scenarios (10 tests)
 - All P0 security issues FIXED (Phases 12, 13)
 - All P1 quality issues FIXED (Phases 14, 15, 16)
 - Mobile responsive complete with WCAG 2.2 AA compliance
@@ -227,6 +242,8 @@ Progress: [██████████] 7/7 phases complete
 - Play feature complete with daily check-in, streak rewards, and balance modal
 - Test infrastructure fixed, 80%+ coverage achieved
 - Buy Now flow implemented and verified (Phase 17)
+- Debug session resolved: LINE OAuth daccPublickey format fix (Phase 18)
+- Open questions closed: Phase 08 Material Symbols integration (answered during implementation)
 
 ---
 

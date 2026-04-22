@@ -254,12 +254,14 @@ These ideas were mentioned but are OUT OF SCOPE for Phase 8:
 
 ## Open Questions for Research
 
-These questions are for the researcher to investigate:
+These questions were answered during implementation (Phase 08 complete):
 
-1. What is the best way to load Material Symbols font in Next.js 16?
-2. Are there any accessibility concerns with Material Symbols vs Lucide?
-3. What is the optimal responsive breakpoint for SideNav → BottomNav transition?
-4. Should Material Symbols be self-hosted or loaded from Google CDN?
+1. ~~What is the best way to load Material Symbols font in Next.js 16?~~ → **Resolved:** Added via `<link>` in root layout.tsx from Google Fonts CDN
+2. ~~Are there any accessibility concerns with Material Symbols vs Lucide?~~ → **Resolved:** Material Symbols provide semantic HTML with `aria-hidden` and proper font-size scaling
+3. ~~What is the optimal responsive breakpoint for SideNav → BottomNav transition?~~ → **Resolved:** 768px breakpoint (tablet threshold)
+4. ~~Should Material Symbols be self-hosted or loaded from Google CDN?~~ → **Resolved:** Google CDN for simplicity (can self-host later if needed)
+
+**Status:** ✅ All questions resolved during Phase 08 implementation
 
 ---
 

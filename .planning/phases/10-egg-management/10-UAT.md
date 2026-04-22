@@ -1,5 +1,5 @@
 ---
-status: testing
+status: deferred
 phase: 10-egg-management
 source:
   - 10-01-SUMMARY.md
@@ -7,7 +7,8 @@ source:
   - 10-03-SUMMARY.md
   - 10-04-SUMMARY.md
 started: "2026-04-05T14:15:00Z"
-  updated: "2026-04-05T14:50:00Z"
+updated: "2026-04-22T00:00:00Z"
+decision: "Deferred to Phase 20 at v0.0.7 milestone close - requires manual human testing with real backend"
 ---
 
 ## Current Test
@@ -101,9 +102,26 @@ pending: 10
 skipped: 0
 blocked: 0
 
+## Deferral Note
+
+**Deferred at:** 2026-04-22 during v0.0.7 milestone close
+
+**Reason:** All 10 UAT scenarios require manual human execution with real backend infrastructure (PocketBase + wallet-api + blockchain). Automated code-level verification completed in Phase 17 showed infrastructure is in place but visual/behavioral tests need human validation.
+
+**What needs testing:**
+
+- Feed flow (scenarios 2-3): Manual interaction with egg cards and dialogs
+- Hatch flow (scenarios 4-6): Animation sequence and visual feedback
+- Polling badge (scenario 7): Visual "Updating..." indicator during 30s polling
+- Error boundary (scenario 8): Network failure simulation and retry
+- Empty state (scenario 9): UX for users with no eggs
+- Wallet check (scenario 10): ✅ Already passed automated verification
+
+**Next phase:** Phase 20 will include dedicated UAT execution wave
+
 ## Gaps
 
-[none — backend fully operational]
+[none — backend fully operational, UAT deferred for manual testing]
 
 ## Blockers
 

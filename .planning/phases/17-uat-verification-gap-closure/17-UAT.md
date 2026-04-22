@@ -1,9 +1,10 @@
 ---
-status: partial
+status: deferred
 phase: 17-uat-verification-gap-closure
 source: 10-UAT.md
 started: "2026-04-21T12:18:00Z"
-updated: "2026-04-21T12:18:00Z"
+updated: "2026-04-22T00:00:00Z"
+decision: "Deferred to Phase 20 at v0.0.7 milestone close - manual UAT execution required"
 ---
 
 ## Phase 10 UAT Re-Execution Results
@@ -220,8 +221,25 @@ manual_pending: 6 (Scenarios 2-6, 8)
 
 2. **"Updating..." Badge Text (Scenarios 1, 7):** Polling infrastructure exists but "Updating..." text badge not found in code. May use icon-only approach.
 
+## Deferral Note
+
+**Deferred at:** 2026-04-22 during v0.0.7 milestone close
+
+**Summary:** Phase 17 re-verified Phase 10 UAT scenarios through automated code analysis. Found:
+
+- 1 automated pass (wallet check)
+- 2 partial (polling infrastructure exists, visual badge needs verification)
+- 1 fail (empty state UI missing - needs implementation)
+- 6 manual pending (require human execution with real backend)
+
+**Action items for Phase 20:**
+
+1. Implement empty state UI for /eggs page (Scenario 9)
+2. Execute manual UAT scenarios 2-6, 8 with real backend
+3. Verify "Updating..." badge visual appearance during polling
+
 ## Next Steps
 
-1. Execute manual scenarios 2-6, 8 with real backend
-2. Fix empty state UI gap (add to eggs page)
-3. Verify "Updating..." badge visual appearance during polling
+1. ~~Execute manual scenarios 2-6, 8 with real backend~~ → Deferred to Phase 20
+2. ~~Fix empty state UI gap (add to eggs page)~~ → Deferred to Phase 20
+3. ~~Verify "Updating..." badge visual appearance during polling~~ → Deferred to Phase 20
