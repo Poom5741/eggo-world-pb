@@ -9,6 +9,8 @@ import { type MarketplaceListing } from '@/lib/pocketbase/marketplace'
 import { ListingCard } from '@/components/marketplace/ListingCard'
 import { MarketplaceFilters, type FilterState } from '@/components/marketplace/MarketplaceFilters'
 import { useMarketplaceSync } from '@/hooks/use-marketplace-sync'
+import { AnimalListingsSection } from '@/components/marketplace/AnimalListingsSection'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 /**
  * Marketplace page - หน้าตลาดซื้อขาย NFT
@@ -179,7 +181,7 @@ export default function Marketplace() {
           <div>
             <h1 className="text-5xl font-pixel-style text-primary mb-2">Marketplace</h1>
             <p className="text-on-surface-variant max-w-md">
-              Discover and purchase unique Egg NFTs from the marketplace.
+              Discover and purchase unique Eggs and Animals from the marketplace.
             </p>
             {/* Sync status indicator - ตัวบ่งชี้สถานะ sync */}
             {syncing && (
@@ -214,51 +216,71 @@ export default function Marketplace() {
                 </button>
               </div>
         </div>
-        
-        {/* Filters Section - ส่วนกรองข้อมูล */}
-        <div className="mb-8">
-          <MarketplaceFilters 
-            onChange={handleFilterChange}
-            initialFilters={filters}
-            variant="clay"
-          />
-        </div>
-        
-        {/* Empty State - กรณีไม่มีรายการ */}
-        {filteredListings.length === 0 ? (
-          <div className="bg-surface-container-low rounded-xl p-12 clay-card text-center">
-            <span className="material-symbols-outlined text-6xl text-on-surface-variant mb-4">inventory_2</span>
-            <h2 className="text-2xl font-pixel-style text-on-surface-variant mb-2">No Listings Available</h2>
-            <p className="text-on-surface-variant mb-6">
-              There are no listings matching your filters. Try adjusting your filter criteria or check back later.
-            </p>
-            {filters.types.length > 0 || filters.rarities.length > 0 || filters.sortBy !== 'newest' ? (
-              <button
-                onClick={() => handleFilterChange({ types: [], rarities: [], sortBy: 'newest' })}
-                className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
-              >
-                Clear Filters
-              </button>
-            ) : null}
-          </div>
-        ) : (
-          /* Listings Grid - ตารางแสดงรายการสินค้า */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredListings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                id={listing.id}
-                image={listing.image_url || '/placeholder-egg.png'}
-                name={listing.name}
-                rarity={listing.rarity as any}
-                price={listing.price}
-                seller={listing.seller_name || listing.seller}
-                polling={syncing}
-                onClick={() => router.push(`/marketplace/${listing.id}`)}
+
+        {/* Marketplace Tabs */}
+        <Tabs defaultValue="eggs" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="eggs" className="font-[var(--font-pixel)]">
+              Eggs
+            </TabsTrigger>
+            <TabsTrigger value="animals" className="font-[var(--font-pixel)]">
+              Animals
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Eggs Tab - existing listings */}
+          <TabsContent value="eggs">
+            {/* Filters Section - ส่วนกรองข้อมูล */}
+            <div className="mb-8">
+              <MarketplaceFilters 
+                onChange={handleFilterChange}
+                initialFilters={filters}
+                variant="clay"
               />
-            ))}
-          </div>
-        )}
+            </div>
+            
+            {/* Empty State - กรณีไม่มีรายการ */}
+            {filteredListings.length === 0 ? (
+              <div className="bg-surface-container-low rounded-xl p-12 clay-card text-center">
+                <span className="material-symbols-outlined text-6xl text-on-surface-variant mb-4">inventory_2</span>
+                <h2 className="text-2xl font-pixel-style text-on-surface-variant mb-2">No Listings Available</h2>
+                <p className="text-on-surface-variant mb-6">
+                  There are no listings matching your filters. Try adjusting your filter criteria or check back later.
+                </p>
+                {filters.types.length > 0 || filters.rarities.length > 0 || filters.sortBy !== 'newest' ? (
+                  <button
+                    onClick={() => handleFilterChange({ types: [], rarities: [], sortBy: 'newest' })}
+                    className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
+                  >
+                    Clear Filters
+                  </button>
+                ) : null}
+              </div>
+            ) : (
+              /* Listings Grid - ตารางแสดงรายการสินค้า */
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredListings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    id={listing.id}
+                    image={listing.image_url || '/placeholder-egg.png'}
+                    name={listing.name}
+                    rarity={listing.rarity as any}
+                    price={listing.price}
+                    seller={listing.seller_name || listing.seller}
+                    polling={syncing}
+                    onClick={() => router.push(`/marketplace/${listing.id}`)}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Animals Tab - new section */}
+          <TabsContent value="animals">
+            <AnimalListingsSection />
+          </TabsContent>
+        </Tabs>
       </div>
     </LayoutWithoutNav>
   )

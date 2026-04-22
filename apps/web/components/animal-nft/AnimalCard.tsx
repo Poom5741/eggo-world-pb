@@ -20,6 +20,10 @@ export interface AnimalCardProps {
   showCooldown?: boolean
   /** Cooldown duration in hours (default: 48) */
   cooldownHours?: number
+  /** Show "Listed by [user]" badge for marketplace context */
+  listedBy?: string
+  /** Marketplace price display */
+  listingPrice?: number
 }
 
 const speciesConfig: Record<string, { icon: string; color: string }> = {
@@ -59,6 +63,8 @@ export function AnimalCard({
   showBreedButton = false,
   showCooldown = false,
   cooldownHours = 48,
+  listedBy,
+  listingPrice,
 }: AnimalCardProps) {
   const species = speciesConfig[animal.species] || { icon: '🐾', color: 'text-primary' }
   const rarity = rarityConfig[animal.rarity] || { label: 'COMMON', color: 'text-primary' }
@@ -95,6 +101,22 @@ export function AnimalCard({
           <Badge variant="clay" className="bg-warning/20 text-warning">
             +{animal.rarity_upgrade_count} 🌟
           </Badge>
+        )}
+        {/* Listed by badge (D-14) - for marketplace context */}
+        {listedBy && (
+          <Badge variant="outline" className="text-xs mt-2">
+            Listed by {listedBy}
+          </Badge>
+        )}
+        
+        {/* Marketplace price display */}
+        {listingPrice && (
+          <div className="flex items-baseline gap-1 mb-4">
+            <span className="text-2xl font-bold text-primary">
+              ${listingPrice.toFixed(2)}
+            </span>
+            <span className="text-sm text-muted-foreground">USDT</span>
+          </div>
         )}
       </div>
 
