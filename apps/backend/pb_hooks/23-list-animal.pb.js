@@ -53,7 +53,8 @@ routerAdd("POST", "/api/v2/list-animal", (e) => {
   try {
     const user = $apis.requireAuth(e)
 
-    const body = e.parseBody()
+    const requestInfo = e.requestInfo()
+    const body = requestInfo.body || {}
     const { animal_id, price } = body
 
     // Validate animal_id (RESALE-01)
