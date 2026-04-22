@@ -216,4 +216,52 @@ SELL / HOLD / BREED on Marketplace
 
 ---
 
-_Last updated: 2026-04-18 — Milestone v0.0.7 Security & Quality started_
+## Current State (v0.0.7 Shipped)
+
+**Shipped:** 2026-04-22  
+**Duration:** 5 days (2026-04-18 → 2026-04-22)  
+**Commits:** 119
+
+### What Shipped
+
+- ✅ Real smart contract integration (4 endpoints, 0xl3 testnet deployment)
+- ✅ Complete NFT mint flow (contract → PocketBase → marketplace → Buy Now)
+- ✅ LINE OAuth wallet auto-creation fix
+- ✅ 80%+ test coverage (49 new tests)
+- ✅ Feed & play features with daily check-in
+- ✅ Gas sponsorship system with relayer wallet
+- ✅ Mobile responsive + WCAG 2.2 AA compliance
+
+### Known Gaps (Phase 20)
+
+- Feed-egg foodCount validation
+- 10 UAT scenarios (manual testing required)
+- Gas sponsorship documentation
+- Empty state UI for /eggs page
+
+### Next Milestone Goals (v0.0.8)
+
+1. **Close Phase 20 gaps** — UAT execution, validation fixes, documentation
+2. **Production hardening** — Error boundaries, monitoring, performance optimization
+3. **User onboarding** — Tutorial flow, empty states, better UX for new users
+4. **Marketplace enhancements** — Auctions, offers, collection views
+
+<details>
+<summary>Previous State (v0.0.6 Archived)</summary>
+
+## Previous State
+
+**v0.0.6 Frontend Migration & Integration** (Shipped: 2026-04-18)
+
+- Claymorphism UI migration with Material Symbols icons
+- Real-time wallet with exponential backoff polling
+- Buddy Chain referral visualization
+- Egg management with feed/hatch flows
+- NFT marketplace with complete buy/sell flows
+- Mobile responsive polish with WCAG 2.2 AA compliance
+
+</details>
+
+---
+
+_Last updated: 2026-04-22 — v0.0.7 Security & Quality milestone shipped_

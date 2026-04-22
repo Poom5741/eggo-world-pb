@@ -1,56 +1,43 @@
-# Milestones
+# Project Milestones
 
-## v0.0.6 Frontend Migration & Integration (Shipped: 2026-04-18)
+## v0.0.7 — Security & Quality
 
-**Phases completed:** 7 phases, 14 plans, 25 tasks
+**Shipped:** 2026-04-22  
+**Phases:** 8 (12-19) | **Plans:** 20 | **Commits:** 119
 
-**Key accomplishments:**
+### What Was Built
 
-- None
-- Total: 16 tests passing across 3 components
-- Landing page, Join page, and OAuth callback handler with claymorphism design, Material Symbols icons, and full TDD test coverage (18 tests)
-- Completed:
-- None
-- Purpose:
-- FeaturedEggHero Component (`apps/web/components/eggs/featured-egg-hero.tsx`):
-- Phase 10 Plan 03: Hatch Flow Implementation
-- Part A - HatchRevealModal (`apps/web/components/eggs/hatch-reveal-modal.tsx`):
-- One-liner:
-- None
-- One-liner:
-- Completed:
+- Replaced 4 mock blockchain endpoints with real ethers.js contract calls (mint-egg, mint-food, claim-commission, feed-egg)
+- Deployed full contract infrastructure to 0xl3 testnet (Chain ID: 7117): MockUSDT, CommissionDistribution, AnimalNFT, EggNFT, FoodNFT
+- Implemented complete NFT mint flow: smart contract → PocketBase → marketplace → Buy Now
+- Fixed LINE OAuth wallet auto-creation bug (onRecordCreate → onRecordBeforeCreate)
+- Achieved 80%+ test coverage with 49 new tests
+- Implemented feed & play features with daily check-in and streak rewards
+- Gas sponsorship system with platform relayer wallet
+- Mobile responsive polish with WCAG 2.2 AA compliance
 
----
+### Key Decisions
 
-## v2.0 Contract Interactions & Game Features (Planned)
+1. **0xl3 testnet priority** — Chain ID 7117 over legacy BSC testnet (97)
+2. **ethers.js v6** — Already installed, better docs than web3.js
+3. **12-block confirmation** — Standard for BSC security
+4. **onRecordBeforeCreate** — Fixes OAuth wallet creation without auth token
+5. **Non-blocking PB callback on mint** — PB failure logs error but doesn't fail mint
+6. **Daily check-in (off-chain)** — Database only for MVP, skip complex mini-games
 
-**Status:** Planning
+### Known Gaps (Deferred to Phase 20)
 
-**Priority Issues:**
+- Feed-egg foodCount validation (prevent feeding beyond max)
+- Gas sponsorship documentation + 5 human verification tests
+- 10 UAT scenarios requiring manual execution (feed/hatch/polling/empty state)
+- Empty state UI for /eggs page
 
-- **P0:** Mock contract interactions (4 wallet-api endpoints)
-- **P1:** RED PHASE test (track-deposit hook)
-- **P2:** Feed feature (UI + backend + wallet-api)
-- **P2:** Play feature (game design needed)
+### Tech Debt
 
-**Phases:** 5 planned (see .planning/milestones/v2.0/ROADMAP.md)
-
-**Dependencies:** Contract deployment must complete before wallet-api implementation
-
----
-
-## v0.0.5 Claymorphism UI Launch (Shipped: 2026-04-05)
-
-**Phases completed:** 7 phases, 26 plans, 40 tasks
-
-**Key accomplishments:**
-
-- **Smart Contracts Foundation:** Deployed 5 contracts to 0XL3 testnet (MockUSDT, CommissionDistribution, AnimalNFT, EggNFT, FoodNFT) with cross-contract wiring
-- **Backend Integration:** Built PocketBase event sync hook with block polling, crash recovery, and 5 event handlers
-- **Frontend Marketplace:** Delivered 5 plans covering hatch flow, wallet page, product detail, referral dashboard, and polling integration
-- **LINE Wallet Integration:** Migrated wallet API to TypeScript + dacc-js v0.0.5, integrated with LINE OAuth signup flow
-- **Testing & Launch:** Security fixes, integration tests, production deployment, and UI polish (63 tests passing)
-- **Auth Flow Revamp:** Fixed double-click OAuth issue, enhanced header with user info/navigation, unified redirect to `/dashboard`
-- **Claymorphism Redesign:** Complete UI redesign with hybrid "Clay Frames, Pixel Content" aesthetic — 12+ components, 14+ pages, WCAG AA compliant
+- Mint uses user wallet for gas (MVP), buy uses relayer (inconsistent)
+- POST /create-listing endpoint with relayer not implemented
+- "Updating..." polling badge visual not verified
 
 ---
+
+_Last updated: 2026-04-22_

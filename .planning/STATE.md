@@ -2,13 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.0.7
 milestone_name: Security & Quality
-status: active
-last_updated: "2026-04-21T08:17:00.000Z"
+status: archived
+last_updated: "2026-04-22T09:47:00.000Z"
+archived: "2026-04-22T09:47:00.000Z"
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 15
-  completed_plans: 15
+  total_phases: 8
+  completed_phases: 8
+  total_plans: 20
+  completed_plans: 20
 ---
 
 # STATE.md — Project Memory
@@ -24,17 +25,17 @@ progress:
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** Phase 20 — NFT Flow Polish & UAT Execution (PLANNED)
+**Current Focus:** v0.0.8 milestone planning (or Phase 20 execution)
 
 ---
 
 ## Current Position
 
-**v0.0.7 Progress:** 8/8 phases complete (100%), Phase 20 added  
-**Milestone:** READY FOR ARCHIVE (pending Phase 20 planning)
+**v0.0.7 Milestone:** ✅ ARCHIVED 2026-04-22  
+**Next:** v0.0.8 milestone planning OR Phase 20 execution
 
 ```
-Progress: [██████████] 8/8 phases complete + Phase 20 added
+Milestone: [██████████] 8/8 phases complete + archived
           Phase 12 → ✅ COMPLETE (wallet-api contract integration)
           Phase 13 → ✅ COMPLETE (USDT deposit tracking)
           Phase 14 → ✅ COMPLETE (mobile responsive polish)
@@ -44,6 +45,9 @@ Progress: [██████████] 8/8 phases complete + Phase 20 added
           Phase 18 → ✅ COMPLETE (fix LINE OAuth wallet auto-creation)
           Phase 19 → ✅ COMPLETE (real NFT mint flow & marketplace integration)
           Phase 20 → 🚧 PLANNED (NFT flow polish & UAT execution)
+
+Archive: .planning/milestones/v0.0.7-ROADMAP.md
+Summary: .planning/MILESTONES.md
 ```
 
 **Completed Phase 12 Goals:**
