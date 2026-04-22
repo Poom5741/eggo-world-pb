@@ -95,14 +95,18 @@ routerAdd('POST', '/api/users/register', (e) => {
     // Create referral records in referrals collection
     createReferralRecords(referrer.id, user.id, referralChain);
     
-    // Update referrer's direct recruit count
-    const currentCount = referrer.getNumber('total_direct_recruits') || 0;
-    referrer.set('total_direct_recruits', currentCount + 1);
-    $app.save(referrer);
-    console.log("Updated direct recruits for referrer:", referrer.id, "count:", currentCount + 1);
-    
-    // Emit UserRegistered event
-    emitUserRegisteredEvent(user, referralChain);
+// Update referrer's direct recruit count
+const currentCount = referrer.getNumber('total_direct_recruits') || 0;
+const newCount = currentCount + 1;
+referrer.set('total_direct_recruits', newCount);
+$app.save(referrer);
+
+console.log("Updated direct recruits for referrer:", referrer.id, "count:", newCount);
+
+checkRecruitmentMilestones(referrer, newCount, currentCount);
+
+// Emit UserRegistered event
+emitUserRegisteredEvent(user, referralChain);
     
     return e.json(201, {
         success: true,
@@ -171,6 +175,64 @@ function emitUserRegisteredEvent(user, referralChain) {
 function generateRandomPassword() {
     // Use PocketBase's built-in $security API instead of Node.js crypto
     return $security.randomString(32)
+}
+
+function checkRecruitmentMilestones(user, newCount, currentCount) {
+    // Define recruitment thresholds
+    const thresholds = [
+        { recruits: 10, foodItems: 10 },
+        { recruits: 100, foodItems: 50 },
+        { recruits: 1000, foodItems: 100 },
+        { recruits: 10000, foodItems: 200 },
+    ];
+    
+    // Check if new count crosses any threshold
+    for (const threshold of thresholds) {
+        // Only process if the new count crosses the threshold and current count was below it
+        if (newCount >= threshold.recruits && currentCount < threshold.recruits) {
+            console.log("Check if new count crosses any threshold for user ", user.id);
+            
+            // Grant Food NFTs
+            grantFoodNFTs(user.id, threshold.foodItems);
+        }
+    }
+}
+
+function grantFoodNFTs(userId, itemCount) {
+    try {
+        const foodTypes = ["grain", "fish", "insects", "herbs"];
+        const itemsPerType = Math.floor(itemCount / 4);
+        const remainder = itemCount % 4;
+        
+        // Get food NFT collection
+        const foodNftCollection = $app.findCollectionByNameOrId('food_nfts');
+        
+        for (let i = 0; i < 4; i++) {
+            const count = itemsPerType + (i < remainder ? 1 : 0);
+            if (count > 0) {
+                // Create food NFT record
+                const foodRecord = new Record(foodNftCollection);
+                foodRecord.set('user_id', userId);
+                foodRecord.set('food_type', foodTypes[i]);
+                foodRecord.set('quantity', count);
+                foodRecord.set('is_consumed', false);
+                foodRecord.set('minted_at', new Date().toISOString());
+                foodRecord.set('source', 'recruitment_bonus');
+                
+                $app.save(foodRecord);
+                console.log(`Granted ${count} ${foodTypes[i]} Food NFTs to user ${userId} for recruitment milestone`);
+            }
+        }
+        
+        // Update user's total_food_recruiting_bonus field
+        const updatedUser = $app.findRecordById('users', userId);
+        const currentBonus = updatedUser.getNumber('total_food_recruiting_bonus') || 0;
+        updatedUser.set('total_food_recruiting_bonus', currentBonus + itemCount);
+        $app.save(updatedUser);
+    } catch (error) {
+        console.error(`Error granting Food NFTs to user ${userId}:`, error);
+        // Don't fail if grant operation fails, it's not critical to registration processing
+    }
 }
 
 console.log("Register user endpoint registered");
