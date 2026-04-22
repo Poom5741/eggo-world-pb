@@ -38,7 +38,9 @@
   - [x] 22-01-PLAN.md - Smart Contract & Collections (TierBadge.sol ERC-5192, tier_claims, tier_badges collections)
   - [x] 22-02-PLAN.md - Backend Hook & Wallet-API (check-tier-reward endpoint, tier-claim API, UI components)
   - [x] 22-03-PLAN.md - Frontend Integration (dashboard tier section, /dashboard/tiers page)
-- [ ] Phase 23: Secondary Market & Royalties (0/2 plans)
+- [ ] Phase 23: Secondary Market & Royalties (2/2 plans)
+  - [ ] 23-01-PLAN.md — Backend: resale_listings collection, listing hook, purchase hook with royalty distribution
+  - [ ] 23-02-PLAN.md — Frontend: ListAnimalDialog, marketplace Animal tab, filters, "Listed by" badge
 - [ ] Phase 24: Polish & Launch Prep (0/2 plans)
 
 ## Progress
@@ -56,9 +58,9 @@
 | 20. Gap Closure & UAT    | v0.0.8    | 3/3            | Complete    | 2026-04-22 |
 | 21. Breeding System      | v0.0.8    | 5/6            | In Progress | 2026-04-22 |
 | 22. Tier Rewards         | v0.0.8    | 3/3            | Complete    | 2026-04-22 |
-| 23. Secondary Market     | v0.0.8    | 0/2            | Planned     | -          |
+| 23. Secondary Market     | v0.0.8    | 2/2            | Planned     | -          |
 | 24. Polish & Launch Prep | v0.0.8    | 0/2            | Planned     | -          |
 
 ---
 
-_Last updated: 2026-04-22 — Phase 22 complete (3/3 plans): TierBadge contract, backend hook & wallet-api integration, frontend dashboard integration_
+_Last updated: 2026-04-22 — Phase 23 planned (2/2 plans): Backend resale listings + royalty distribution, frontend marketplace integration_
