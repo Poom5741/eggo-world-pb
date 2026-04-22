@@ -100,6 +100,20 @@ routerAdd("POST", "/api/v2/feed-egg", (e) => {
             });
         }
         
+        // Check if egg is already full (fast-fail before calling wallet-api)
+        const preFeedFoodCount = egg.get('food_count') || 0;
+        const requestedFoodCount = food_ids.length;
+
+        if (preFeedFoodCount + requestedFoodCount > 10) {
+            return e.json(400, {
+                success: false,
+                error: {
+                    message: 'Cannot feed this egg — it is full and ready to hatch',
+                    code: 'EGG_FULL'
+                }
+            });
+        }
+        
         // Verify user owns all food NFTs and they're not consumed
         const foodCollection = $app.dao().getCollectionByNameOrId("food_nfts");
         const foodTypeDistribution = { grain: 0, fish: 0, insects: 0, herb: 0 };
