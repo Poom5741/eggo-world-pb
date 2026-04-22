@@ -344,11 +344,22 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         
         $app.dao().saveRecord(breedingEgg);
         
-        // Note: Blockchain breeding is now done synchronously above
-        // The old async call has been removed to ensure proper error handling
-        
         // Log breeding success for monitoring
         console.log(`Breeding completed: user=${user.id}, parent1=${parent1_animal_id}, parent2=${parent2_animal_id}, egg_token_id=${nextTokenId}, tx_hash=${txHash || 'N/A'}`);
+        
+        // Transaction logging for monitoring dashboard
+        try {
+            const transactionLogsCollection = $app.dao().getCollectionByNameOrId('transaction_logs');
+            const transactionLog = $app.dao().createRecord(transactionLogsCollection);
+            transactionLog.set('user', user.id);
+            transactionLog.set('tx_hash', txHash || '');
+            transactionLog.set('tx_type', 'breed');
+            transactionLog.set('status', 'success');
+            transactionLog.set('gas_used', null); // Not captured in this flow
+            $app.dao().saveRecord(transactionLog);
+        } catch (logErr) {
+            console.error("Failed to log breeding transaction:", logErr);
+        }
         
         return e.json(200, { 
             success: true, 
@@ -365,6 +376,21 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         
     } catch (error) {
         console.error("Breed animals failed:", error);
+        
+        // Log breeding failure for monitoring
+        try {
+            const transactionLogsCollection = $app.dao().getCollectionByNameOrId('transaction_logs');
+            const transactionLog = $app.dao().createRecord(transactionLogsCollection);
+            transactionLog.set('user', user ? user.id : null);
+            transactionLog.set('tx_hash', null);
+            transactionLog.set('tx_type', 'breed');
+            transactionLog.set('status', 'failed');
+            transactionLog.set('error_message', error.message || String(error));
+            $app.dao().saveRecord(transactionLog);
+        } catch (logErr) {
+            console.error("Failed to log breeding error transaction:", logErr);
+        }
+        
         return e.json(500, { 
             success: false, 
             error: { 

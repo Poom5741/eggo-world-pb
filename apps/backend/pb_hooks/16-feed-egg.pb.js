@@ -241,6 +241,20 @@ routerAdd("POST", "/api/v2/feed-egg", (e) => {
         user.set('total_food_consumed', currentTotalConsumed + food_ids.length);
         $app.dao().saveRecord(user);
         
+        // Transaction logging for monitoring dashboard - success case
+        try {
+            const transactionLogsCollection = $app.dao().getCollectionByNameOrId('transaction_logs');
+            const transactionLog = $app.dao().createRecord(transactionLogsCollection);
+            transactionLog.set('user', user.id);
+            transactionLog.set('tx_hash', txHash);
+            transactionLog.set('tx_type', 'feed');
+            transactionLog.set('status', 'success');
+            transactionLog.set('gas_used', null); // Not captured in this flow
+            $app.dao().saveRecord(transactionLog);
+        } catch (logErr) {
+            console.error('Failed to log feed transaction:', logErr);
+        }
+        
         const newFoodCount = egg.get('food_count');
         const readyToHatch = newFoodCount >= 10;
         
@@ -259,6 +273,21 @@ routerAdd("POST", "/api/v2/feed-egg", (e) => {
         
     } catch (error) {
         console.error("Feed egg error:", error);
+        
+        // Transaction logging for monitoring dashboard - error case
+        try {
+            const transactionLogsCollection = $app.dao().getCollectionByNameOrId('transaction_logs');
+            const transactionLog = $app.dao().createRecord(transactionLogsCollection);
+            transactionLog.set('user', e.requestInfo().auth?.id || null);
+            transactionLog.set('tx_hash', null);
+            transactionLog.set('tx_type', 'feed');
+            transactionLog.set('status', 'failed');
+            transactionLog.set('error_message', error.message || String(error));
+            $app.dao().saveRecord(transactionLog);
+        } catch (logErr) {
+            console.error('Failed to log feed error transaction:', logErr);
+        }
+        
         return e.json(500, { 
             success: false, 
             error: { 
