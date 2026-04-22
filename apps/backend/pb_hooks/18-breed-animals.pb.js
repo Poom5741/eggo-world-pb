@@ -260,11 +260,46 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
             createCommissionRecords(referralChain, BREEDING_FEE, null, 'breeding');
         }
         
-        // Get contract address from environment or use default
-        const contractAddress = process.env.EGG_NFT_CONTRACT_ADDRESS || '0x1234567890123456789012345678901234567890';
+        // Get contract addresses from environment
+        const eggContractAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
+        const animalContractAddress = $os.getenv('ANIMAL_NFT_CONTRACT_ADDRESS') || '0x1234567890123456789012345678901234567890';
         
-        // Generate tx hash (mock for now, should come from blockchain)
-        const txHash = `0x${Date.now().toString(16).padStart(64, '0')}`;
+        // Call wallet-api to execute breeding on blockchain
+        let txHash = null;
+        let blockchainResult = null;
+        
+        try {
+            const breedResponse = fetch(WALLET_SRV_URL + '/api/wallet/breed-animals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    parent1TokenId: parent1.get('token_id'),
+                    parent2TokenId: parent2.get('token_id'),
+                    animalNftAddress: animalContractAddress
+                })
+            });
+            
+            if (!breedResponse.ok) {
+                const errorData = breedResponse.json();
+                console.error("Wallet API breeding failed:", errorData);
+                // Log but don't rollback - egg record will be created without tx_hash
+                // This is intentional per requirements: "log but don't rollback"
+            } else {
+                blockchainResult = breedResponse.json();
+                if (blockchainResult.success) {
+                    txHash = blockchainResult.data.txHash;
+                    console.log("Blockchain breeding successful:", txHash);
+                } else {
+                    console.error("Blockchain breeding returned error:", blockchainResult.error);
+                }
+            }
+        } catch (apiError) {
+            // Comprehensive error handling - log but don't rollback
+            console.error("Wallet API breeding error (non-critical):", apiError.message);
+            // Continue with egg creation even if blockchain call fails
+            // This ensures the database state is consistent even if blockchain is temporarily unavailable
+        }
         
         // Generate token_id and egg_id
         const eggRecords = $app.dao().findRecordsByFilter('egg_nfts', 'token_id', 'DESC', 1, 1);
@@ -282,7 +317,7 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         breedingEgg.set('egg_id', nextTokenId - 1);
         breedingEgg.set('owner', user.id);
         breedingEgg.set('token_id', nextTokenId);
-        breedingEgg.set('contract_address', contractAddress);
+        breedingEgg.set('contract_address', eggContractAddress);
         breedingEgg.set('food_count', INITIAL_FOOD_COUNT);
         breedingEgg.set('is_hatched', false);
         breedingEgg.set('is_breeding_egg', true);
@@ -292,26 +327,28 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         breedingEgg.set('rarity_upgrade_count', 0);
         breedingEgg.set('rarity_seed', Math.floor(Math.random() * 1000000));
         breedingEgg.set('referral_chain', referralChain.filter(r => r !== null));
-        breedingEgg.set('tx_hash', txHash);
+        breedingEgg.set('tx_hash', txHash || '');
+        
+        // Store blockchain result metadata if available
+        if (blockchainResult && blockchainResult.data) {
+            breedingEgg.set('blockchain_parent1_token_id', blockchainResult.data.parent1TokenId);
+            breedingEgg.set('blockchain_parent2_token_id', blockchainResult.data.parent2TokenId);
+            if (blockchainResult.data.childTokenId) {
+                breedingEgg.set('blockchain_child_token_id', blockchainResult.data.childTokenId);
+            }
+            if (blockchainResult.data.childGeneration) {
+                breedingEgg.set('blockchain_child_generation', blockchainResult.data.childGeneration);
+            }
+        }
         breedingEgg.set('minted_at', now);
         
         $app.dao().saveRecord(breedingEgg);
         
-        // Call wallet-api to create breeding egg on blockchain (optional)
-        try {
-            fetchWithRetry(WALLET_SRV_URL + '/api/v1/breed-animals', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    parent1_token_id: parent1.get('token_id'),
-                    parent2_token_id: parent2.get('token_id'),
-                    referrer: referralChain[0] || null,
-                    user_address: wallet.get('wallet')
-                })
-            });
-        } catch (apiError) {
-            console.error("Wallet API breeding failed (non-critical):", apiError.message);
-        }
+        // Note: Blockchain breeding is now done synchronously above
+        // The old async call has been removed to ensure proper error handling
+        
+        // Log breeding success for monitoring
+        console.log(`Breeding completed: user=${user.id}, parent1=${parent1_animal_id}, parent2=${parent2_animal_id}, egg_token_id=${nextTokenId}, tx_hash=${txHash || 'N/A'}`);
         
         return e.json(200, { 
             success: true, 

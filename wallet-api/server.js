@@ -127,6 +127,15 @@ const MARKETPLACE_ABI = [
   "event NFTSold(uint256 indexed listingId, address indexed seller, address indexed buyer, uint256 price)"
 ];
 
+// Minimal ABI for AnimalNFT contract (breeding)
+const ANIMAL_NFT_ABI = [
+  "function breedAnimals(uint256 parent1Id, uint256 parent2Id) external returns (uint256)",
+  "function canBreed(uint256 tokenId) external view returns (bool)",
+  "function getLastBredTimestamp(uint256 tokenId) external view returns (uint256)",
+  "function BREED_COOLDOWN() external view returns (uint256)",
+  "event AnimalBred(uint256 indexed parent1Id, uint256 indexed parent2Id, uint256 indexed childId, uint256 childGeneration)"
+];
+
 app.use(cors());
 app.use(express.json());
 
@@ -1107,8 +1116,156 @@ app.post("/api/wallet/buy-nft", async (req, res) => {
   }
 });
 
+/**
+ * Breed Animals endpoint
+ * POST /api/wallet/breed-animals
+ * 
+ * Calls the AnimalNFT contract to breed two animals
+ * Requires relayer wallet for gas sponsorship
+ */
+app.post("/api/wallet/breed-animals", async (req, res) => {
+  try {
+    const {
+      userId,
+      parent1TokenId,
+      parent2TokenId,
+      animalNftAddress,
+    } = req.body
+
+    if (!userId || !parent1TokenId || !parent2TokenId || !animalNftAddress) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: "Missing required parameters: userId, parent1TokenId, parent2TokenId, animalNftAddress",
+          code: "MISSING_PARAMS",
+        },
+      })
+    }
+
+    console.log(`[Breed Animals] User: ${userId}, Parent1: ${parent1TokenId}, Parent2: ${parent2TokenId}`)
+
+    // Get platform relayer wallet (pays gas for user)
+    if (!relayerWallet) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Relayer wallet not configured", code: "RELAYER_NOT_CONFIGURED" },
+      })
+    }
+
+    // Connect to AnimalNFT contract
+    const animalContract = new ethers.Contract(
+      animalNftAddress,
+      ANIMAL_NFT_ABI,
+      relayerWallet
+    )
+
+    // Check if animals can breed (cooldown check)
+    try {
+      const canBreed1 = await animalContract.canBreed(parent1TokenId)
+      if (!canBreed1) {
+        return res.status(400).json({
+          success: false,
+          error: { message: "Parent 1 is on cooldown", code: "PARENT1_ON_COOLDOWN" },
+        })
+      }
+
+      const canBreed2 = await animalContract.canBreed(parent2TokenId)
+      if (!canBreed2) {
+        return res.status(400).json({
+          success: false,
+          error: { message: "Parent 2 is on cooldown", code: "PARENT2_ON_COOLDOWN" },
+        })
+      }
+    } catch (checkError) {
+      console.warn("[Breed Animals] Cooldown check failed:", checkError.message)
+      // Continue anyway - contract will enforce
+    }
+
+    // Estimate gas with 20% buffer
+    const gasEstimate = await animalContract.breedAnimals.estimateGas(
+      parent1TokenId,
+      parent2TokenId
+    )
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100)
+
+    console.log(`[Breed Animals] Gas estimate: ${gasEstimate}, Gas limit: ${gasLimit}`)
+
+    // Execute breedAnimals transaction with retry (relayer pays gas)
+    const tx = await withRetry(
+      async () => {
+        return await animalContract.breedAnimals(parent1TokenId, parent2TokenId, {
+          gasLimit: gasLimit,
+        })
+      },
+      3,
+      1000
+    )
+
+    console.log(`[Breed Animals] Transaction sent: ${tx.hash}`)
+
+    // Wait for confirmations
+    const receipt = await tx.wait(CONFIRMATIONS)
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted")
+    }
+
+    console.log(`[Breed Animals] Confirmed in block ${receipt.blockNumber}`)
+
+    // Extract child token ID from event logs
+    let childTokenId = null
+    let childGeneration = null
+    
+    if (receipt.logs) {
+      for (const log of receipt.logs) {
+        try {
+          if (log.fragment?.name === 'AnimalBred') {
+            childTokenId = log.args.childId?.toString()
+            childGeneration = log.args.childGeneration?.toString()
+            break
+          }
+        } catch {
+          // Skip logs that can't be parsed
+        }
+      }
+    }
+
+    // Log sponsored gas cost
+    logGasSponsorship('Breed Animals', userId, receipt)
+
+    res.json({
+      success: true,
+      data: {
+        txHash: tx.hash,
+        blockNumber: receipt.blockNumber,
+        status: "confirmed",
+        parent1TokenId: parent1TokenId,
+        parent2TokenId: parent2TokenId,
+        childTokenId: childTokenId,
+        childGeneration: childGeneration,
+      },
+    })
+  } catch (error) {
+    const errorMessage =
+      error.message.includes("private") || error.message.includes("key")
+        ? "Wallet operation failed"
+        : error.message
+
+    console.error("[Breed Animals] Error:", error.code || error.message)
+
+    res.status(500).json({
+      success: false,
+      error: {
+        message: errorMessage,
+        code: error.code || "BREEDING_FAILED",
+      },
+    })
+  }
+})
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Wallet API running on port ${PORT}`);
     console.log(`Health: http://localhost:${PORT}/health`);
     console.log(`Create wallet: POST http://localhost:${PORT}/api/wallet/create`);
+    console.log(`Breed animals: POST http://localhost:${PORT}/api/wallet/breed-animals`);
 });
