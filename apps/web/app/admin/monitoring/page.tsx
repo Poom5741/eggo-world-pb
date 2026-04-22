@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { createClient } from '@/lib/pocketbase/client'
 import LayoutWrapper from '@/components/LayoutWrapper'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -68,13 +68,13 @@ export default function MonitoringPage() {
         // Calculate metrics
         const totalCount = allLogs.length
         const successCount = allLogs.filter(log => log.status === 'success').length
-        const failCount = totalCount - successCount
-        const successRate = totalCount > 0 ? (successCount / totalCount) * 100 : 0
+        const _failCount = totalCount - successCount
+        const _successRate = totalCount > 0 ? (successCount / totalCount) * 100 : 0
 
         // Calculate type-specific success rates
-        const mintLogs = allLogs.filter(log => log.tx_type === 'mint')
-        const feedLogs = allLogs.filter(log => log.tx_type === 'feed')
-        const breedLogs = allLogs.filter(log => log.tx_type === 'breed')
+        const _mintLogs = allLogs.filter(log => log.tx_type === 'mint')
+        const _feedLogs = allLogs.filter(log => log.tx_type === 'feed')
+        const _breedLogs = allLogs.filter(log => log.tx_type === 'breed')
 
         const getRate = (type: string) => {
           const typeLogs = allLogs.filter(log => log.tx_type === type)
