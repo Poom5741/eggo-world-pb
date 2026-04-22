@@ -6,9 +6,9 @@ status: active
 last_updated: "2026-04-22T12:45:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 0
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 1
+  total_plans: 3
+  completed_plans: 3
 ---
 
 # STATE.md — Project Memory
@@ -44,9 +44,9 @@ Milestone v0.0.7: [██████████] 8/8 phases complete + archive
           Phase 18 → ✅ COMPLETE (fix LINE OAuth wallet auto-creation)
           Phase 19 → ✅ COMPLETE (real NFT mint flow & marketplace integration)
 
-Milestone v0.0.8: [██░░░░░░░░] 1/5 phases active
-          Phase 20 → 🚧 ACTIVE 2/3 plans complete (gap closure & UAT execution)
-          Phase 21 → 📋 PLANNED (breeding system)
+Milestone v0.0.8: [██░░░░░░░░] 1/5 phases complete
+          Phase 20 → ✅ COMPLETE (gap closure & UAT execution)
+          Phase 21 → 🚧 NEXT (breeding system)
           Phase 22 → 📋 PLANNED (tier rewards)
           Phase 23 → 📋 PLANNED (secondary market)
           Phase 24 → 📋 PLANNED (polish & launch prep)
@@ -214,7 +214,7 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 ## Session Continuity
 
-**Last Session:** 2026-04-22T12:45:00.000Z
+**Last Session:** 2026-04-22T12:50:00.000Z
 
 **Session Notes:**
 
@@ -223,24 +223,20 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 - Phase 17 COMPLETED — All UAT & verification gaps closed
 - Phase 18 COMPLETED — LINE OAuth wallet auto-creation fixed
 - Phase 19 COMPLETED — Real NFT mint flow & marketplace integration
-- Phase 20-01 COMPLETED — Code fixes and backend validation
-  - Empty state CTA routes to /marketplace (not /eggs self-loop)
-  - FeaturedEggHero FEED ME wired to FeedDialog with correct egg data
-  - PocketBase hook fast-fail validation: rejects feed when foodCount + requested > 10
-  - Hook returns 400 with code 'EGG_FULL' per D-11
-  - 12 unit tests pass (6 page tests + 6 hook tests)
-- Phase 20-03 COMPLETED — Gas sponsorship documentation
-  - docs/GAS_SPONSORSHIP.md created (503 lines, 11 sections)
-  - Documents relayer wallet funding, monitoring, key rotation, gas limits, cost tracking
-  - Includes 5 human verification tests for gas sponsorship
-  - References SSH key id_ed25519-dokcer per AGENTS.md
+- Phase 20 ✅ COMPLETED — All automated deliverables verified, UAT execution deferred by user request
+  - 20-01: Code fixes (empty state CTA → /marketplace, FEED ME wired, hook foodCount fast-fail)
+  - 20-02: UAT checklist (20-UAT.md) with 16 scenarios ready for manual execution
+  - 20-03: Gas sponsorship runbook (docs/GAS_SPONSORSHIP.md, 519 lines, 11 sections)
+  - 12 unit tests pass (6 page + 6 hook)
+  - Code review: 1 critical (pre-existing filter injection), 4 warnings, 3 info items noted
 - UAT gaps (Phase 10/17) documented and deferred to Phase 20
 - Debug session (LINE OAuth daccPublickey) resolved
 - Phase 08 open questions (Material Symbols) closed
 
 **Next Session Actions:**
 
-1. Execute 20-02-PLAN.md — UAT execution: 16 manual scenarios
+1. Plan Phase 21 (Breeding System) using `/gsd-discuss-phase 21` or `/gsd-plan-phase 21`
+2. Execute 20-UAT.md manually (16 UAT scenarios) using `/gsd-verify-work 20`
 
 **Context Handoff:**
 
@@ -259,7 +255,7 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
   - 4 gray areas discussed: UAT strategy, bug fixes, foodCount validation, gas docs
   - Phase 12 gap: feed-egg foodCount validation (dual-layer: hook + wallet-api)
   - Phase 19 gap: gas sponsorship documentation (operator runbook at docs/GAS_SPONSORSHIP.md)
-  - Phase 10/17: deferred UAT scenarios (16 total: 10 + 6)
+  - Phase 10/17: deferred UAT scenarios (16 total: 10 + 6) → tracked in 20-UAT.md
   - Bug fixes: empty state CTA → /marketplace, FeaturedEggHero FEED ME wired to FeedDialog
 - All P0 security issues FIXED (Phases 12, 13)
 - All P1 quality issues FIXED (Phases 14, 15, 16)
@@ -309,4 +305,4 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 ---
 
-_Last updated: 2026-04-22 — Phase 20 context gathered (gap closure & UAT execution)_
+_Last updated: 2026-04-22 — Phase 20 complete (code fixes, UAT checklist, gas sponsorship runbook)_
