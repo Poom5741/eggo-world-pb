@@ -93,7 +93,7 @@ export default function MonitoringPage() {
           breedRate,
           totalCount,
           successCount,
-          failCount
+          failCount: _failCount
         })
 
         // Get recent failures
