@@ -115,18 +115,20 @@ SELL / HOLD / BREED on Marketplace
 
 ---
 
-## Current Milestone: v0.0.7 Security & Quality
+## Current Milestone: v0.0.8 NFT Ecosystem Complete
 
-**Started:** 2026-04-18  
-**Status:** In Progress (3/5 phases complete)  
-**Goal:** Address technical debt, improve security, and complete remaining features
+**Started:** 2026-04-22  
+**Status:** In Progress (0/5 phases planned)  
+**Goal:** Complete NFT marketplace ecosystem with breeding, tier rewards, and full UAT
 
 **Target features:**
 
-- **Security (P0):** ✅ Replace 4 mock blockchain endpoints (Phase 12 complete)
-- **Quality (P1):** ⏸️ Fix 9 vi.mock test failures, implement USDT deposit tracking (Phase 13, 16)
-- **Mobile Polish (P2):** ✅ Responsive breakpoints, touch interactions, WCAG 2.2 AA (Phase 14 complete)
-- **Features (P2):** ✅ Feed feature complete (Phase 15), ⏸️ Play feature pending (Phase 16)
+- **Gap Closure (P0):** Phase 20 — UAT execution, validation fixes, documentation
+- **Breeding System (P1):** Animal breeding (Gen 1+), cooldown mechanics, breeding fees
+- **Tier Rewards (P1):** Seedling/Grower/Farmer badges with USDT rewards and soulbound NFTs
+- **Rarity Upgrades (P2):** Extra food feeding for improved hatch rarity odds
+- **Recruitment Bonuses (P2):** Downline rewards based on direct recruit count
+- **Secondary Market (P2):** Animal NFT resale with royalty distribution
 
 ---
 
@@ -232,19 +234,22 @@ SELL / HOLD / BREED on Marketplace
 - ✅ Gas sponsorship system with relayer wallet
 - ✅ Mobile responsive + WCAG 2.2 AA compliance
 
-### Known Gaps (Phase 20)
+### Known Gaps (Phase 20) → NOW v0.0.8
 
 - Feed-egg foodCount validation
 - 10 UAT scenarios (manual testing required)
 - Gas sponsorship documentation
 - Empty state UI for /eggs page
 
-### Next Milestone Goals (v0.0.8)
+### Active Milestone: v0.0.8 NFT Ecosystem Complete
 
-1. **Close Phase 20 gaps** — UAT execution, validation fixes, documentation
-2. **Production hardening** — Error boundaries, monitoring, performance optimization
-3. **User onboarding** — Tutorial flow, empty states, better UX for new users
-4. **Marketplace enhancements** — Auctions, offers, collection views
+**Phases:** 20-24 (5 phases planned)
+
+1. **Phase 20: Gap Closure & UAT** — Complete deferred validation, documentation, UAT execution
+2. **Phase 21: Breeding System** — Animal breeding mechanics, cooldowns, fees
+3. **Phase 22: Tier Rewards** — Seedling/Grower/Farmer badges with USDT rewards
+4. **Phase 23: Secondary Market** — Animal NFT resale with royalties
+5. **Phase 24: Polish & Launch Prep** — Production hardening, monitoring, onboarding
 
 <details>
 <summary>Previous State (v0.0.6 Archived)</summary>
@@ -264,4 +269,4 @@ SELL / HOLD / BREED on Marketplace
 
 ---
 
-_Last updated: 2026-04-22 — v0.0.7 Security & Quality milestone shipped_
+_Last updated: 2026-04-22 — v0.0.8 NFT Ecosystem Complete milestone started_

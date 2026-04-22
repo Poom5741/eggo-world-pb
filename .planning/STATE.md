@@ -1,21 +1,20 @@
 ---
 gsd_state_version: 1.0
-milestone: v0.0.7
-milestone_name: Security & Quality
-status: archived
-last_updated: "2026-04-22T09:47:00.000Z"
-archived: "2026-04-22T09:47:00.000Z"
+milestone: v0.0.8
+milestone_name: NFT Ecosystem Complete
+status: active
+last_updated: "2026-04-22T10:00:00.000Z"
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 20
-  completed_plans: 20
+  total_phases: 5
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # STATE.md — Project Memory
 
 **Project:** Egg × Food × Animal NFT Marketplace  
-**Milestone:** v0.0.7 Security & Quality  
+**Milestone:** v0.0.8 NFT Ecosystem Complete  
 **Network:** BNB SmartChain (BSC)  
 **Token:** USDT (BEP-20)
 
@@ -23,19 +22,19 @@ progress:
 
 ## Project Reference
 
-**Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
+**Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, breed new generations, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.0.8 milestone planning (or Phase 20 execution)
+**Current Focus:** v0.0.8 milestone execution — Phase 20 gap closure + breeding/tier rewards/secondary market
 
 ---
 
 ## Current Position
 
 **v0.0.7 Milestone:** ✅ ARCHIVED 2026-04-22  
-**Next:** v0.0.8 milestone planning OR Phase 20 execution
+**v0.0.8 Milestone:** 🚧 ACTIVE — Phase 20-24 planning
 
 ```
-Milestone: [██████████] 8/8 phases complete + archived
+Milestone v0.0.7: [██████████] 8/8 phases complete + archived
           Phase 12 → ✅ COMPLETE (wallet-api contract integration)
           Phase 13 → ✅ COMPLETE (USDT deposit tracking)
           Phase 14 → ✅ COMPLETE (mobile responsive polish)
@@ -44,7 +43,13 @@ Milestone: [██████████] 8/8 phases complete + archived
           Phase 17 → ✅ COMPLETE (UAT & verification gap closure)
           Phase 18 → ✅ COMPLETE (fix LINE OAuth wallet auto-creation)
           Phase 19 → ✅ COMPLETE (real NFT mint flow & marketplace integration)
-          Phase 20 → 🚧 PLANNED (NFT flow polish & UAT execution)
+
+Milestone v0.0.8: [░░░░░░░░░░] 0/5 phases planned
+          Phase 20 → 🚧 PLANNED (gap closure & UAT execution)
+          Phase 21 → 📋 PLANNED (breeding system)
+          Phase 22 → 📋 PLANNED (tier rewards)
+          Phase 23 → 📋 PLANNED (secondary market)
+          Phase 24 → 📋 PLANNED (polish & launch prep)
 
 Archive: .planning/milestones/v0.0.7-ROADMAP.md
 Summary: .planning/MILESTONES.md

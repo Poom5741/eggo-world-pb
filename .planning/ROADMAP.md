@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v0.0.7 Security & Quality** — Phases 12-19 (shipped 2026-04-22) — [Archive](milestones/v0.0.7-ROADMAP.md)
-- 🚧 **Phase 20: NFT Flow Polish & UAT Execution** — Gap closure from Phase 12 + 19 + deferred UAT
+- 🚧 **v0.0.8 NFT Ecosystem Complete** — Phases 20-24 (in planning) — Gap closure + breeding + tiers + secondary market
 
 ## Phases
 
@@ -21,9 +21,13 @@
 
 </details>
 
-### 🚧 Phase 20: NFT Flow Polish & UAT Execution (Planned)
+### 🚧 v0.0.8 NFT Ecosystem Complete (Planned)
 
-- [ ] Phase 20: NFT Flow Polish & UAT Execution (0/3 plans)
+- [ ] Phase 20: Gap Closure & UAT Execution (0/3 plans)
+- [ ] Phase 21: Breeding System (0/3 plans)
+- [ ] Phase 22: Tier Rewards & Badges (0/2 plans)
+- [ ] Phase 23: Secondary Market & Royalties (0/2 plans)
+- [ ] Phase 24: Polish & Launch Prep (0/2 plans)
 
 ## Progress
 
@@ -37,8 +41,12 @@
 | 17. UAT Verification     | v0.0.7    | 3/3            | Complete | 2026-04-21 |
 | 18. LINE OAuth Fix       | v0.0.7    | 2/2            | Complete | 2026-04-21 |
 | 19. NFT Mint Flow        | v0.0.7    | 5/5            | Complete | 2026-04-21 |
-| 20. Polish & UAT         | v0.0.7    | 0/3            | Planned  | -          |
+| 20. Gap Closure & UAT    | v0.0.8    | 0/3            | Planned  | -          |
+| 21. Breeding System      | v0.0.8    | 0/3            | Planned  | -          |
+| 22. Tier Rewards         | v0.0.8    | 0/2            | Planned  | -          |
+| 23. Secondary Market     | v0.0.8    | 0/2            | Planned  | -          |
+| 24. Polish & Launch Prep | v0.0.8    | 0/2            | Planned  | -          |
 
 ---
 
-_Last updated: 2026-04-22 — v0.0.7 MILESTONE SHIPPED, Phase 20 planned for gap closure_
+_Last updated: 2026-04-22 — v0.0.8 MILESTONE STARTED, Phases 20-24 planned_
