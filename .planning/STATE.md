@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v0.0.8
 milestone_name: NFT Ecosystem Complete
 status: active
-last_updated: "2026-04-22T12:45:00.000Z"
+last_updated: "2026-04-22T14:30:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 2
+  total_plans: 9
+  completed_plans: 9
 ---
 
 # STATE.md — Project Memory
@@ -44,10 +44,10 @@ Milestone v0.0.7: [██████████] 8/8 phases complete + archive
           Phase 18 → ✅ COMPLETE (fix LINE OAuth wallet auto-creation)
           Phase 19 → ✅ COMPLETE (real NFT mint flow & marketplace integration)
 
-Milestone v0.0.8: [██░░░░░░░░] 1/5 phases complete
+Milestone v0.0.8: [████████░░] 4/5 phases complete
           Phase 20 → ✅ COMPLETE (gap closure & UAT execution)
-          Phase 21 → 🚧 NEXT (breeding system)
-          Phase 22 → 📋 PLANNED (tier rewards)
+          Phase 21 → ✅ COMPLETE (breeding system - 6/6 plans complete)
+          - Phase 22 → 📋 CONTEXT GATHERED (tier rewards — ready for planning)
           Phase 23 → 📋 PLANNED (secondary market)
           Phase 24 → 📋 PLANNED (polish & launch prep)
 
@@ -242,7 +242,7 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 **Next Session Actions:**
 
-1. Plan Phase 21 (Breeding System) using `/gsd-discuss-phase 21` or `/gsd-plan-phase 21`
+1. Plan Phase 22 (Tier Rewards) using `/gsd-plan-phase 22`
 2. Execute 20-UAT.md manually (16 UAT scenarios) using `/gsd-verify-work 20`
 
 **Context Handoff:**
@@ -264,12 +264,26 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
   - Phase 19 gap: gas sponsorship documentation (operator runbook at docs/GAS_SPONSORSHIP.md)
   - Phase 10/17: deferred UAT scenarios (16 total: 10 + 6) → tracked in 20-UAT.md
   - Bug fixes: empty state CTA → /marketplace, FeaturedEggHero FEED ME wired to FeedDialog
-- **Phase 21 CONTEXT GATHERED** — Breeding system implementation decisions captured
-  - 12 decisions locked (D-01 through D-12)
-  - Dialog-based breeding flow (reuse FeedDialog pattern)
-  - Visual countdown timer + multi-layer validation
-  - Breeding eggs in /eggs page with badge
-  - Backend hook cooldown validation fast-fail
+- **Phase 21 COMPLETED** — Breeding system implementation (6/6 plans complete)
+- **Phase 22 CONTEXT GATHERED** — Tier rewards & badges context captured
+  - 23 implementation decisions locked (D-01 through D-23)
+  - 6 gray areas discussed: contract design, backend hook, thresholds, rewards, profile integration, frontend patterns
+  - ERC-5192 soulbound badge contract design
+  - Multi-layer validation for tier claims (hook → wallet-api → contract)
+  - Tier thresholds: Seedling (10), Grower (100), Farmer (1,000) items
+  - USDT rewards: $5, $50, $500 respectively from CoinStor reserve
+  - Wave 1 (21-01, 21-02): ✅ COMPLETE — Breeding Dialog UI, Animal Card Action Menu
+  - Wave 2 (21-03, 21-04, 21-05): ✅ COMPLETE — Cooldown Display, Egg Display, Backend Hook
+    - CooldownTimer component with visual countdown
+    - PARENT1_ON_COOLDOWN / PARENT2_ON_COOLDOWN error codes
+    - Multi-layer validation (frontend → backend → contract)
+    - Breeding badge and lineage display in EggCard
+    - Wallet-api breed-animals endpoint with gas sponsorship
+    - Comprehensive error handling (log but don't rollback)
+  - Wave 3 (21-06): ✅ COMPLETE — Success Animation & Flow
+    - BreedingSuccessModal with animated hearts and egg display
+    - BreedingAnimation component (2.5s CSS animation)
+    - Auto-redirect to /eggs page after breeding
   - Smart contracts already deployed (no changes needed)
 - All P0 security issues FIXED (Phases 12, 13)
 - All P1 quality issues FIXED (Phases 14, 15, 16)
@@ -319,4 +333,4 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 ---
 
-_Last updated: 2026-04-22 — Phase 20 complete (code fixes, UAT checklist, gas sponsorship runbook)_
+_Last updated: 2026-04-22 — Phase 21 complete (breeding system with dialog UI, cooldown validation, breeding egg display, success animation)_
