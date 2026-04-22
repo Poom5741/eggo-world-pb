@@ -86,8 +86,11 @@ export default function Eggs() {
   
   // Handle feed action
   const handleFeedEgg = (eggId: number) => {
-    // TODO: Implement feed flow
-    console.log('Feed egg:', eggId)
+    const egg = eggs.find(e => e.egg_id === eggId)
+    if (egg) {
+      setFeedingEgg(egg)
+      setFeedDialogOpen(true)
+    }
   }
   
   // Handle play action
@@ -177,7 +180,7 @@ export default function Eggs() {
             </p>
             <div className="flex gap-4 justify-center">
               <button
-                onClick={() => router.push('/eggs')}
+                onClick={() => router.push('/marketplace')}
                 className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
               >
                 Get Your First Egg
