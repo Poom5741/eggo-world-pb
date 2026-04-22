@@ -14,6 +14,12 @@ import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { TierSection } from '@/components/dashboard/tier-section'
+import dynamic from 'next/dynamic'
+
+// Dynamically import the onboarding tutorial to avoid SSR issues and reduce initial bundle
+const OnboardingTutorial = dynamic(() => import('@/components/tutorial/OnboardingTutorial'), {
+  loading: () => null,
+})
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -28,6 +34,17 @@ export default function DashboardPage() {
   const [referralLevels, setReferralLevels] = useState<Array<{ level: number; count: number; percentage: number; commissionRate: number }>>([])
   const [loading, setLoading] = useState(true)
   const [authReady, setAuthReady] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Initialize the tutorial on first visit
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const completed = localStorage.getItem("tutorial_completed");
+    if (!completed) {
+      setShowTutorial(true);
+    }
+  }, [isHydrated]);
 
   // Auto-polling for wallet balance (per D-11: 30 seconds)
   // user?.wallet_address or user?.wallet (support both field names for migration)
@@ -327,7 +344,11 @@ export default function DashboardPage() {
             {user?.picture ? (
               <img 
                 className="w-full h-full object-cover" 
-                src={user.picture} 
+                src={user?.picture?.includes('http') ? user.picture : `${pb.baseURL}/api/files/${user.collectionId}/${user.id}/${user.picture}`}
+                onError={({ currentTarget }) => {
+                  currentTarget.onerror = null // Prevent infinite retries
+                  currentTarget.src = '/default-avatar.png'
+                }} 
                 alt="Avatar"
               />
             ) : (
@@ -435,6 +456,11 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center py-12">
           <p className="pixel-font text-on-surface-variant">LOADING DASHBOARD...</p>
         </div>
+      )}
+
+      {/* Onboarding Tutorial - Appears on first visit */}
+      {showTutorial && (
+        <OnboardingTutorial onDismiss={() => setShowTutorial(false)} />
       )}
     </LayoutWithoutNav>
   )

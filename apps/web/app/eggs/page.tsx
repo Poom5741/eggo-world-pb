@@ -7,12 +7,38 @@ import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { useEggPoll, EggData } from '@/hooks/use-egg-poll'
 import { FeaturedEggHero } from '@/components/eggs/featured-egg-hero'
 import { EggCard } from '@/components/eggs/egg-card'
-import { HatchRevealModal } from '@/components/eggs/hatch-reveal-modal'
-import { FeedDialog } from '@/components/eggs/feed-dialog'
-import { MintEggModal } from '@/components/mint/MintEggModal'
-import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog'
 import { createClient } from '@/lib/pocketbase/client'
 import { Egg } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+// Dynamically import heavy modal components to reduce initial bundle size
+const HatchRevealModal = dynamic(
+  () => import('@/components/eggs/hatch-reveal-modal').then((mod) => mod.HatchRevealModal),
+  {
+    loading: () => null,
+  }
+)
+
+const FeedDialog = dynamic(
+  () => import('@/components/eggs/feed-dialog').then((mod) => mod.FeedDialog),
+  {
+    loading: () => null,
+  }
+)
+
+const MintEggModal = dynamic(
+  () => import('@/components/mint/MintEggModal').then((mod) => mod.MintEggModal),
+  {
+    loading: () => null,
+  }
+)
+
+const CreateListingDialog = dynamic(
+  () => import('@/components/marketplace/CreateListingDialog').then((mod) => mod.CreateListingDialog),
+  {
+    loading: () => null,
+  }
+)
 
 /**
  * My Eggs page - displays user's Egg NFT inventory
