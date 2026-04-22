@@ -228,8 +228,9 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 **Next Session Actions:**
 
-1. Archive v0.0.7 milestone using /gsd-complete-milestone
-2. Plan Phase 20 (or start v0.0.8 milestone)
+1. Plan Phase 20 using `/gsd-plan-phase 20`
+2. Execute Phase 20 plans using `/gsd-execute-phase 20`
+3. Archive v0.0.7 milestone using `/gsd-complete-milestone` (if not yet archived)
 
 **Context Handoff:**
 
@@ -243,10 +244,13 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
   - Mint Egg page (/mint) with navigation (19-02)
   - On-chain marketplace buy flow integration (19-03)
   - E2E test suite + verification checklist (19-05)
-- Phase 20 PLANNED — NFT flow polish & UAT execution
-  - Phase 12 gap: feed-egg foodCount validation
-  - Phase 19 gap: gas sponsorship documentation + human verification tests
-  - Phase 10/17: deferred UAT scenarios (10 tests)
+- Phase 20 CONTEXT GATHERED — Gap closure & UAT execution context captured
+  - 14 implementation decisions locked (D-01 through D-14)
+  - 4 gray areas discussed: UAT strategy, bug fixes, foodCount validation, gas docs
+  - Phase 12 gap: feed-egg foodCount validation (dual-layer: hook + wallet-api)
+  - Phase 19 gap: gas sponsorship documentation (operator runbook at docs/GAS_SPONSORSHIP.md)
+  - Phase 10/17: deferred UAT scenarios (16 total: 10 + 6)
+  - Bug fixes: empty state CTA → /marketplace, FeaturedEggHero FEED ME wired to FeedDialog
 - All P0 security issues FIXED (Phases 12, 13)
 - All P1 quality issues FIXED (Phases 14, 15, 16)
 - Mobile responsive complete with WCAG 2.2 AA compliance
@@ -295,4 +299,4 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 ---
 
-_Last updated: 2026-04-21 — Phase 19 Plan 05 complete (E2E tests & verification)_
+_Last updated: 2026-04-22 — Phase 20 context gathered (gap closure & UAT execution)_
