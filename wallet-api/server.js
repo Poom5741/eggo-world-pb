@@ -136,6 +136,15 @@ const ANIMAL_NFT_ABI = [
   "event AnimalBred(uint256 indexed parent1Id, uint256 indexed parent2Id, uint256 indexed childId, uint256 childGeneration)"
 ];
 
+// Minimal ABI for TierBadge contract
+const TIER_BADGE_ABI = [
+    "function mintTierBadge(address user, uint256 tokenId, uint256 lifetimeFoodItems) external returns (bool)",
+    "function canClaimTier(address user, uint256 tokenId, uint256 lifetimeFoodItems) external view returns (bool)",
+    "function tiers(uint256 tokenId) external view returns (string name, uint256 threshold, uint256 rewardAmount)",
+    "function userHighestTier(address user) external view returns (uint256)",
+    "event TierBadgeMinted(address indexed user, uint256 indexed tokenId, string tierName, uint256 rewardAmount, uint256 lifetimeFoodItems)"
+];
+
 app.use(cors());
 app.use(express.json());
 
@@ -1263,9 +1272,238 @@ app.post("/api/wallet/breed-animals", async (req, res) => {
   }
 })
 
+/**
+ * POST /api/wallet/tier-claim
+ * Claim tier badge and receive USDT reward
+ * Requires: wallet, daccPublicKey, pin, tier, tokenId, lifetimeFoodItems, tierBadgeAddress
+ */
+app.post('/api/wallet/tier-claim', async (req, res) => {
+    try {
+        const { 
+            wallet, 
+            daccPublicKey, 
+            pin, 
+            tier,
+            tokenId,
+            lifetimeFoodItems,
+            tierBadgeAddress 
+        } = req.body;
+
+        // Validate required fields
+        if (!wallet || !daccPublicKey || !pin || !tier || !tokenId || !lifetimeFoodItems || !tierBadgeAddress) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'Missing required fields: wallet, daccPublicKey, pin, tier, tokenId, lifetimeFoodItems, tierBadgeAddress',
+                    code: 'MISSING_FIELDS'
+                }
+            });
+        }
+
+        // Validate tier
+        const validTiers = ['seedling', 'grower', 'farmer'];
+        if (!validTiers.includes(tier)) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'Invalid tier. Must be: seedling, grower, or farmer',
+                    code: 'INVALID_TIER'
+                }
+            });
+        }
+
+        // Validate tokenId matches tier
+        const expectedTokenId = { seedling: 1, grower: 2, farmer: 3 }[tier];
+        if (parseInt(tokenId) !== expectedTokenId) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: `Token ID mismatch. Expected ${expectedTokenId} for ${tier}`,
+                    code: 'TOKEN_ID_MISMATCH'
+                }
+            });
+        }
+
+        // Decrypt user's private key
+        let userWallet;
+        try {
+            const privateKey = await decryptPrivateKey(daccPublicKey, pin);
+            const provider = new ethers.JsonRpcProvider(RPC_URL);
+            userWallet = new ethers.Wallet(privateKey, provider);
+        } catch (error) {
+            console.error('Failed to decrypt private key:', error.message);
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'Failed to decrypt wallet. Invalid credentials.',
+                    code: 'DECRYPTION_FAILED'
+                }
+            });
+        }
+
+        // Initialize TierBadge contract
+        const tierBadgeContract = new ethers.Contract(
+            tierBadgeAddress,
+            TIER_BADGE_ABI,
+            relayerWallet || userWallet
+        );
+
+        // Pre-check: verify user can claim this tier
+        try {
+            const canClaim = await tierBadgeContract.canClaimTier(
+                wallet,
+                tokenId,
+                lifetimeFoodItems
+            );
+            
+            if (!canClaim) {
+                return res.status(400).json({
+                    success: false,
+                    error: {
+                        message: 'Cannot claim tier. May already be claimed or threshold not met.',
+                        code: 'CANNOT_CLAIM'
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('TierBadge canClaimTier check failed:', error.message);
+            // Continue to attempt mint - contract will revert if invalid
+        }
+
+        // Execute tier badge mint with USDT reward
+        let tx;
+        try {
+            // Use relayer wallet if available (gas sponsorship)
+            const signer = relayerWallet || userWallet;
+            const contractWithSigner = tierBadgeContract.connect(signer);
+            
+            // Estimate gas with buffer
+            const gasEstimate = await contractWithSigner.mintTierBadge.estimateGas(
+                wallet,
+                tokenId,
+                lifetimeFoodItems
+            );
+            const gasLimit = Math.floor(gasEstimate * (100 + GAS_BUFFER_PERCENT) / 100);
+            
+            tx = await contractWithSigner.mintTierBadge(
+                wallet,
+                tokenId,
+                lifetimeFoodItems,
+                { gasLimit }
+            );
+            
+            console.log(`Tier claim transaction submitted: ${tx.hash}`);
+        } catch (error) {
+            console.error('TierBadge mintTierBadge failed:', error.message);
+            
+            // Parse common contract errors
+            let errorCode = 'MINT_FAILED';
+            let errorMessage = 'Tier badge minting failed';
+            
+            if (error.message.includes('Invalid tier')) {
+                errorCode = 'INVALID_TIER';
+                errorMessage = 'Invalid tier ID';
+            } else if (error.message.includes('Already claimed')) {
+                errorCode = 'ALREADY_CLAIMED';
+                errorMessage = 'Tier already claimed';
+            } else if (error.message.includes('Threshold not met')) {
+                errorCode = 'THRESHOLD_NOT_MET';
+                errorMessage = 'Lifetime food items threshold not met';
+            } else if (error.message.includes('Claim tiers in order')) {
+                errorCode = 'INVALID_ORDER';
+                errorMessage = 'Must claim tiers in sequential order';
+            } else if (error.message.includes('USDT transfer failed')) {
+                errorCode = 'REWARD_TRANSFER_FAILED';
+                errorMessage = 'USDT reward transfer failed. Badge may be minted without reward.';
+            }
+            
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: errorMessage,
+                    code: errorCode,
+                    details: error.message
+                }
+            });
+        }
+
+        // Wait for confirmations
+        let receipt;
+        try {
+            receipt = await tx.wait(CONFIRMATIONS);
+            console.log(`Tier claim confirmed: ${receipt.hash}, gas used: ${receipt.gasUsed}`);
+        } catch (error) {
+            console.error('Transaction confirmation failed:', error.message);
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: 'Transaction submitted but confirmation failed. Check blockchain for status.',
+                    code: 'CONFIRMATION_FAILED',
+                    tx_hash: tx.hash
+                }
+            });
+        }
+
+        // Log gas sponsorship if relayer was used
+        if (relayerWallet) {
+            const gasInfo = logGasSponsorship('tier-claim', wallet, receipt);
+            console.log(`Gas sponsored for tier claim: ${gasInfo.totalCostBNB} BNB`);
+        }
+
+        // Parse TierBadgeMinted event
+        let tierName = tier;
+        let rewardAmount = '0';
+        
+        try {
+            const eventSignature = 'TierBadgeMinted(address,uint256,string,uint256,uint256)';
+            const eventTopic = ethers.keccak256(ethers.toUtf8Bytes(eventSignature));
+            
+            const eventLog = receipt.logs.find(log => 
+                log.topics[0] === eventTopic
+            );
+            
+            if (eventLog) {
+                // Decode event data
+                const decodedData = ethers.AbiCoder.defaultAbiCoder().decode(
+                    ['string', 'uint256', 'uint256'],
+                    eventLog.data
+                );
+                tierName = decodedData[0];
+                rewardAmount = decodedData[1].toString();
+            }
+        } catch (error) {
+            console.error('Failed to parse TierBadgeMinted event:', error.message);
+        }
+
+        return res.json({
+            success: true,
+            data: {
+                txHash: receipt.hash,
+                tier: tierName,
+                tokenId: tokenId,
+                rewardAmount: ethers.formatUnits(rewardAmount, 18),
+                gasUsed: receipt.gasUsed.toString(),
+                blockNumber: receipt.blockNumber,
+                confirmations: CONFIRMATIONS
+            }
+        });
+
+    } catch (error) {
+        console.error('Tier claim endpoint error:', error);
+        return res.status(500).json({
+            success: false,
+            error: {
+                message: error.message || 'Internal server error',
+                code: 'INTERNAL_ERROR'
+            }
+        });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Wallet API running on port ${PORT}`);
     console.log(`Health: http://localhost:${PORT}/health`);
     console.log(`Create wallet: POST http://localhost:${PORT}/api/wallet/create`);
     console.log(`Breed animals: POST http://localhost:${PORT}/api/wallet/breed-animals`);
+    console.log(`Tier claim: POST http://localhost:${PORT}/api/wallet/tier-claim`);
 });
