@@ -12,7 +12,9 @@ import { cn } from '@/lib/utils'
 export interface AnimalCardProps {
   animal: AnimalData
   onSell?: (animal: AnimalData) => void
+  onBreed?: (animal: AnimalData) => void
   polling?: boolean
+  showBreedButton?: boolean
 }
 
 const speciesConfig: Record<string, { icon: string; color: string }> = {
@@ -33,7 +35,7 @@ const rarityConfig: Record<string, { label: string; color: string }> = {
   Legendary: { label: 'LEGENDARY', color: 'text-warning' },
 }
 
-export function AnimalCard({ animal, onSell, polling }: AnimalCardProps) {
+export function AnimalCard({ animal, onSell, onBreed, polling, showBreedButton = false }: AnimalCardProps) {
   const species = speciesConfig[animal.species] || { icon: '🐾', color: 'text-primary' }
   const rarity = rarityConfig[animal.rarity] || { label: 'COMMON', color: 'text-primary' }
 
@@ -79,6 +81,15 @@ export function AnimalCard({ animal, onSell, polling }: AnimalCardProps) {
 
       {/* Action Buttons - ปุ่มกด */}
       <div className="space-y-3">
+        {showBreedButton && onBreed && (
+          <button
+            onClick={() => onBreed(animal)}
+            className="w-full py-3 bg-primary text-on-primary rounded-full font-black text-sm hover:bg-primary/80 transition-colors flex items-center justify-center gap-2"
+          >
+            <span className="material-symbols-outlined text-base">favorite</span>
+            Breed
+          </button>
+        )}
         {onSell && (
           <button
             onClick={() => onSell(animal)}

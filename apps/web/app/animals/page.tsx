@@ -7,6 +7,8 @@ import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { useAnimalPoll, AnimalData } from '@/hooks/use-animal-poll'
 import { AnimalCard } from '@/components/animal-nft/AnimalCard'
 import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog'
+import { BreedingDialog } from '@/components/breeding/BreedingDialog'
+import { BreedingResult } from '@/hooks/use-breeding'
 import { createClient } from '@/lib/pocketbase/client'
 import { toast } from 'sonner'
 
@@ -20,6 +22,10 @@ export default function Animals() {
   const [sellingAnimal, setSellingAnimal] = useState<AnimalData | null>(null)
   const [sellDialogOpen, setSellDialogOpen] = useState(false)
   const [_isCreatingListing, setIsCreatingListing] = useState(false)
+
+  // State for breeding dialog
+  const [breedingDialogOpen, setBreedingDialogOpen] = useState(false)
+  const [breedingParent1, setBreedingParent1] = useState<AnimalData | null>(null)
 
   const user = isHydrated ? pb.authStore.record : null
 
@@ -55,6 +61,18 @@ export default function Animals() {
   const handleSell = (animal: AnimalData) => {
     setSellingAnimal(animal)
     setSellDialogOpen(true)
+  }
+
+  // Handler when user clicks breed button
+  const handleBreed = (animal: AnimalData) => {
+    setBreedingParent1(animal)
+    setBreedingDialogOpen(true)
+  }
+
+  // Handler when breeding is successful
+  const handleBreedingSuccess = (result: BreedingResult) => {
+    toast.success(`Breeding successful! New egg #${result.token_id} created`)
+    refresh()
   }
 
   // ฟังก์ชันจัดการเมื่อสร้างรายการสำเร็จ
@@ -174,6 +192,8 @@ export default function Animals() {
               key={animal.id}
               animal={animal}
               onSell={handleSell}
+              onBreed={handleBreed}
+              showBreedButton={animals.length >= 2}
               polling={polling}
             />
           ))}
@@ -190,6 +210,14 @@ export default function Animals() {
           onSuccess={handleListingSuccess}
         />
       )}
+
+      <BreedingDialog
+        animals={animals}
+        open={breedingDialogOpen}
+        onOpenChange={setBreedingDialogOpen}
+        onSuccess={handleBreedingSuccess}
+        initialParent1={breedingParent1}
+      />
     </LayoutWithoutNav>
   )
 }
