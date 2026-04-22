@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v0.0.8
 milestone_name: NFT Ecosystem Complete
 status: active
-last_updated: "2026-04-22T12:13:00.000Z"
+last_updated: "2026-04-22T12:45:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 0
@@ -45,7 +45,7 @@ Milestone v0.0.7: [██████████] 8/8 phases complete + archive
           Phase 19 → ✅ COMPLETE (real NFT mint flow & marketplace integration)
 
 Milestone v0.0.8: [██░░░░░░░░] 1/5 phases active
-          Phase 20 → 🚧 ACTIVE 1/3 plans complete (gap closure & UAT execution)
+          Phase 20 → 🚧 ACTIVE 2/3 plans complete (gap closure & UAT execution)
           Phase 21 → 📋 PLANNED (breeding system)
           Phase 22 → 📋 PLANNED (tier rewards)
           Phase 23 → 📋 PLANNED (secondary market)
@@ -214,7 +214,7 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 ## Session Continuity
 
-**Last Session:** 2026-04-22T12:13:00.000Z
+**Last Session:** 2026-04-22T12:45:00.000Z
 
 **Session Notes:**
 
@@ -229,6 +229,11 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
   - PocketBase hook fast-fail validation: rejects feed when foodCount + requested > 10
   - Hook returns 400 with code 'EGG_FULL' per D-11
   - 12 unit tests pass (6 page tests + 6 hook tests)
+- Phase 20-03 COMPLETED — Gas sponsorship documentation
+  - docs/GAS_SPONSORSHIP.md created (503 lines, 11 sections)
+  - Documents relayer wallet funding, monitoring, key rotation, gas limits, cost tracking
+  - Includes 5 human verification tests for gas sponsorship
+  - References SSH key id_ed25519-dokcer per AGENTS.md
 - UAT gaps (Phase 10/17) documented and deferred to Phase 20
 - Debug session (LINE OAuth daccPublickey) resolved
 - Phase 08 open questions (Material Symbols) closed
@@ -236,7 +241,6 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 **Next Session Actions:**
 
 1. Execute 20-02-PLAN.md — UAT execution: 16 manual scenarios
-2. Execute 20-03-PLAN.md — Gas sponsorship documentation
 
 **Context Handoff:**
 
