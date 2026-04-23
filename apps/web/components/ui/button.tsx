@@ -23,6 +23,13 @@ const buttonVariants = cva(
         clay: 'bg-primary text-primary-foreground shadow-clay-md hover:shadow-clay-lg active:shadow-clay-sm rounded-clay transition-shadow',
         'clay-secondary': 'bg-secondary text-secondary-foreground shadow-clay-md hover:shadow-clay-lg rounded-clay transition-shadow',
         'clay-outline': 'bg-background shadow-clay-md hover:shadow-clay-lg border border-primary/20 rounded-clay transition-shadow',
+        // LINE brand variant (for LINE OAuth buttons)
+        line: 'bg-[var(--color-line)] text-white hover:bg-[var(--color-line)]/90',
+        // Tier variants (for tier/badge related actions)
+        tier1: 'bg-[var(--color-tier-1)] text-white hover:bg-[var(--color-tier-1)]/90',
+        tier2: 'bg-[var(--color-tier-2)] text-white hover:bg-[var(--color-tier-2)]/90',
+        tier3: 'bg-[var(--color-tier-3)] text-white hover:bg-[var(--color-tier-3)]/90',
+        tier4: 'bg-[var(--color-tier-4)] text-white hover:bg-[var(--color-tier-4)]/90',
       },
       size: {
         default: 'h-9 px-4 py-2 has-[>svg]:px-3',

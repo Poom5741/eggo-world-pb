@@ -366,6 +366,24 @@
   --color-clay-card-shadow: var(--card-shadow);
   --color-clay-accent-highlight: var(--accent-highlight);
   --color-clay-accent-shadow: var(--accent-shadow);
+
+  /* ============================================
+     LINE BRAND COLOR (for LINE OAuth buttons)
+     ============================================ */
+  --color-line: #00c300;
+
+  /* ============================================
+     TIER COLORS (for tier badges and progress bars)
+     ============================================ */
+  --color-tier-1: #10b981; /* Emerald 500 - Seedling tier */
+  --color-tier-2: #f59e0b; /* Amber 500 - Grower tier */
+  --color-tier-3: #8b5cf6; /* Violet 500 - Farmer tier */
+  --color-tier-4: #ec4899; /* Pink 500 - Master tier */
+
+  /* Semantic warning colors (for status indicators) */
+  --color-warning: #f59e0b;
+  --color-warning-container: #fef3c7;
+  --color-on-warning-container: #92400e;
 }
 
 @layer base {
