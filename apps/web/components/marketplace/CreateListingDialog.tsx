@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/pocketbase/client'
+import { Egg as EggIcon, PawPrint, Wheat } from 'lucide-react'
 
 interface CreateListingDialogProps {
   open: boolean
@@ -119,12 +120,14 @@ export function CreateListingDialog({
 
   const commission = price ? calculateCommission(parseFloat(price)) : null
 
-  // NFT Icon mapping
-  const nftIcon = {
-    Egg: '🥚',
-    Food: '🍖',
-    Animal: '🐾',
-  }
+  // NFT Icon mapping (replaces emoji characters)
+  const nftIconComponent = {
+    Egg: EggIcon,
+    Food: Wheat,
+    Animal: PawPrint,
+  } as const
+
+  const NftIcon = nftIconComponent[nftType] || EggIcon
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -152,8 +155,8 @@ export function CreateListingDialog({
           <div className="space-y-4 py-4">
             {/* NFT Preview */}
             <div className="bg-surface-container p-4 rounded-lg flex items-center gap-4">
-              <div className="w-16 h-16 bg-surface-container-high rounded-lg flex items-center justify-center text-3xl">
-                {nftIcon[nftType]}
+              <div className="w-16 h-16 bg-surface-container-high rounded-lg flex items-center justify-center">
+                <NftIcon className="w-8 h-8" />
               </div>
               <div>
                 <p className="font-bold text-on-surface">{nftName}</p>
