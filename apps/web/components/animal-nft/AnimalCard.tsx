@@ -5,6 +5,7 @@ import { AnimalData } from '@/hooks/use-animal-poll'
 import { Badge } from '@/components/ui/badge'
 import { CooldownTimer } from '@/components/breeding/CooldownTimer'
 import { cn } from '@/lib/utils'
+import { SpeciesIcon } from '../icons/species-icons'
 
 /**
  * Props for AnimalCard component
@@ -26,15 +27,15 @@ export interface AnimalCardProps {
   listingPrice?: number
 }
 
-const speciesConfig: Record<string, { icon: string; color: string }> = {
-  Chicken: { icon: '🐔', color: 'text-orange-500' },
-  Duck: { icon: '🦆', color: 'text-blue-400' },
-  Pig: { icon: '🐷', color: 'text-pink-400' },
-  Cow: { icon: '🐄', color: 'text-brown-500' },
-  Sheep: { icon: '🐑', color: 'text-gray-300' },
-  Dog: { icon: '🐕', color: 'text-amber-600' },
-  Cat: { icon: '🐱', color: 'text-orange-300' },
-  Rabbit: { icon: '🐰', color: 'text-pink-300' },
+const speciesConfig: Record<string, { species: string; color: string }> = {
+  Chicken: { species: "Chicken", color: "text-orange-500" },
+  Duck: { species: "Duck", color: "text-blue-400" },
+  Pig: { species: "Pig", color: "text-pink-400" },
+  Cow: { species: "Cow", color: "text-brown-500" },
+  Sheep: { species: "Sheep", color: "text-gray-300" },
+  Dog: { species: "Dog", color: "text-amber-600" },
+  Cat: { species: "Cat", color: "text-orange-300" },
+  Rabbit: { species: "Rabbit", color: "text-pink-300" },
 }
 
 const rarityConfig: Record<string, { label: string; color: string }> = {
@@ -66,7 +67,7 @@ export function AnimalCard({
   listedBy,
   listingPrice,
 }: AnimalCardProps) {
-  const species = speciesConfig[animal.species] || { icon: '🐾', color: 'text-primary' }
+  const species = speciesConfig[animal.species] || { species: "Chicken", color: "text-primary" }
   const rarity = rarityConfig[animal.rarity] || { label: 'COMMON', color: 'text-primary' }
 
   return (
@@ -82,8 +83,8 @@ export function AnimalCard({
             Updating...
           </Badge>
         )}
-        <div className="text-7xl pixelated">
-          {species.icon}
+        <div className="flex items-center justify-center">
+          <SpeciesIcon species={species.species as any} size="lg" />
         </div>
       </div>
 
@@ -99,7 +100,7 @@ export function AnimalCard({
         </div>
         {animal.rarity_upgrade_count > 0 && (
           <Badge variant="clay" className="bg-warning/20 text-warning">
-            +{animal.rarity_upgrade_count} 🌟
+            +{animal.rarity_upgrade_count}
           </Badge>
         )}
         {/* Listed by badge (D-14) - for marketplace context */}
