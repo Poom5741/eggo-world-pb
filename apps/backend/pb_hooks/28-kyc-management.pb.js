@@ -27,13 +27,8 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             });
         }
         
-        const kycVerified = userRecord.get("kyc_verified") || false;
-        if (!kycVerified) {
-            return e.json(403, { 
-                success: false, 
-                error: { message: "KYC verification required for withdrawals. Please complete your KYC first.", code: "KYC_REQUIRED" } 
-            });
-        }
+        // KYC check disabled for MVP (D-08: KYC toggle optional, default false)
+        // TODO: Enable KYC check when KYC system is implemented
         
         const walletRecord = $app.findFirstRecordByData("user_wallets", "user_id", userRecord.id);
         

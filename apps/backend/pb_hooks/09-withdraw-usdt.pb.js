@@ -1,7 +1,7 @@
 routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
     const { users } = e.requireAuth();
     const body = e.parseBody();
-    const { user_address, amount, external_wallet } = body;
+    const { user_address, amount, external_wallet_address } = body;
     
     if (!user_address || !amount || amount <= 0) {
         return e.json(400, { 
@@ -10,7 +10,7 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
         });
     }
     
-    if (!external_wallet || !external_wallet.match(/^0x[a-fA-F0-9]{40}$/)) {
+    if (!external_wallet_address || !external_wallet_address.match(/^0x[a-fA-F0-9]{40}$/)) {
         return e.json(400, { 
             success: false, 
             error: { message: "Valid external wallet address required", code: "VALIDATION_ERROR" } 
@@ -18,6 +18,7 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
     }
     
     try {
+        // Get user record
         const userRecord = $app.findFirstRecordByData("users", "wallet", user_address);
         
         if (!userRecord) {
@@ -26,6 +27,16 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
                 error: { message: "Wallet not found", code: "WALLET_NOT_FOUND" } 
             });
         }
+        
+        // KYC check disabled for MVP (D-08: KYC toggle optional, default false)
+        // TODO: Enable KYC check when KYC system is implemented
+        // const kycVerified = userRecord.get("kyc_verified") || false;
+        // if (!kycVerified) {
+        //     return e.json(403, { 
+        //         success: false, 
+        //         error: { message: "KYC verification required for withdrawals. Please complete your KYC first.", code: "KYC_REQUIRED" } 
+        //     });
+        // }
         
         const walletRecord = $app.findFirstRecordByData("user_wallets", "user_id", userRecord.id);
         
@@ -36,11 +47,12 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             });
         }
         
+        // Get withdrawal fee
         let withdrawalFeeRate = 0.05;
         try {
             const configRecord = $app.findFirstRecordByData("wallet_configs", "key", "WITHDRAWAL_FEE");
             if (configRecord) {
-                withdrawalFeeRate = configRecord.getNumber("value");
+                withdrawalFeeRate = configRecord.getNumber("value") || 0.05;
             }
         } catch (configErr) {
             console.log("Using default withdrawal fee:", withdrawalFeeRate);
@@ -57,15 +69,78 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             });
         }
         
-        walletRecord.set("usdt_balance", balance - totalRequired);
+        // Attempt real blockchain transaction via wallet-api
+        const walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001";
+        const walletApiResponse = $http.send({
+            url: walletApiUrl + "/api/v1/wallet/transfer",
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                from_address: user_address,
+                to_address: external_wallet_address,
+                amount: amount,
+                fee: fee,
+                user_id: userRecord.id
+            })
+        });
+        
+        let txResponse;
+        if (walletApiResponse.json && typeof walletApiResponse.json === "object") {
+            txResponse = walletApiResponse.json;
+        } else {
+            // Handle response as text
+            let responseBody = walletApiResponse.body;
+            if (Array.isArray(walletApiResponse.body)) {
+                responseBody = "";
+                for (let i = 0; i < walletApiResponse.body.length; i++) {
+                    responseBody += String.fromCharCode(walletApiResponse.body[i]);
+                }
+            }
+            txResponse = JSON.parse(responseBody);
+        }
+        
+        if (walletApiResponse.statusCode < 200 || walletApiResponse.statusCode >= 300) {
+            return e.json(400, { 
+                success: false, 
+                error: { 
+                    message: txResponse.error || "Blockchain transfer failed", 
+                    code: txResponse.error?.code || "TRANSFER_FAILED" 
+                } 
+            });
+        }
+        
+        if (!txResponse.success) {
+            return e.json(400, { 
+                success: false, 
+                error: { 
+                    message: txResponse.error?.message || "Blockchain transfer failed", 
+                    code: txResponse.error?.code || "TRANSFER_FAILED" 
+                } 
+            });
+        }
+        
+        // If we get here, blockchain transaction succeeded. Update balances.
+        const newBalance = balance - totalRequired;
+        walletRecord.set("usdt_balance", newBalance);
         walletRecord.set("total_withdrawn", (walletRecord.getNumber("total_withdrawn") || 0) + amount);
         walletRecord.set("last_transaction_at", new Date().toISOString());
         $app.save(walletRecord);
         
-        userRecord.set("usdt_balance", walletRecord.getNumber("usdt_balance"));
+        userRecord.set("usdt_balance", newBalance);
         $app.save(userRecord);
         
-        console.log("Withdrawal:", user_address, "amount:", amount, "fee:", fee, "to:", external_wallet);
+        // Create withdrawal record for audit trail
+        const withdrawalRecord = $app.newRecord($app.findCollectionByNameOrId("withdrawals"));
+        withdrawalRecord.set("user_id", userRecord.id);
+        withdrawalRecord.set("amount", amount);
+        withdrawalRecord.set("fee", fee);
+        withdrawalRecord.set("external_wallet_address", external_wallet_address);
+        withdrawalRecord.set("status", "completed");
+        withdrawalRecord.set("tx_hash", txResponse.data?.txHash || null);
+        $app.save(withdrawalRecord);
+        
+        // Log withdrawal for monitoring
+        console.log("Successful withdrawal:", user_address, "amount:", amount, "fee:", fee, "to:", external_wallet_address, "tx:", txResponse.data?.txHash);
         
         e.json(200, {
             success: true,
@@ -73,9 +148,10 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
                 amount: amount,
                 fee: fee,
                 net_amount: amount,
-                new_balance: walletRecord.getNumber("usdt_balance"),
+                new_balance: newBalance,
                 total_withdrawn: walletRecord.getNumber("total_withdrawn"),
-                external_wallet: external_wallet
+                external_wallet_address: external_wallet_address,
+                tx_hash: txResponse.data?.txHash
             }
         });
     } catch (error) {
