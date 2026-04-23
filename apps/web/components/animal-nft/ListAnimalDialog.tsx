@@ -48,7 +48,7 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
   const [step, setStep] = useState<"input" | "confirm" | "success" | "error">("input")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [listingId, setListingId] = useState<string | null>(null)
+  const [_listingId, setListingId] = useState<string | null>(null)
 
   const pb = createClient()
 

@@ -90,10 +90,12 @@ export default function Join() {
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-on-surface ml-2">Username</label>
+                  <label htmlFor="username" className="block text-sm font-bold text-on-surface ml-2">Username</label>
                   <div className="relative group">
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" aria-hidden="true">person</span>
                     <input 
+                      id="username"
+                      aria-label="Username for registration"
                       className="w-full h-14 pl-12 bg-surface-container-highest rounded-full border-none focus:ring-4 focus:ring-primary-container transition-all clay-input placeholder:text-on-surface-variant/40 font-medium" 
                       placeholder="Your display name" 
                       type="text"
@@ -101,10 +103,12 @@ export default function Join() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="block text-sm font-bold text-on-surface ml-2">Referral Code (Optional)</label>
+                  <label htmlFor="referral-code" className="block text-sm font-bold text-on-surface ml-2">Referral Code (Optional)</label>
                   <div className="relative group">
                     <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" aria-hidden="true">confirmation_number</span>
                     <input 
+                      id="referral-code"
+                      aria-label="Referral code for bonus eggs (optional)"
                       className="w-full h-14 pl-12 bg-surface-container-highest rounded-full border-none focus:ring-4 focus:ring-primary-container transition-all clay-input placeholder:text-on-surface-variant/40 font-medium uppercase" 
                       placeholder="Enter code to get bonus eggs" 
                       type="text"
@@ -124,7 +128,7 @@ export default function Join() {
               </Link>
 
               <p className="text-center text-on-surface-variant text-sm font-medium">
-                By joining, you agree to the <Link href="#" className="text-secondary font-bold hover:underline">Hatchery Pact</Link>.
+                By joining, you agree to the <Link href="/coming-soon" aria-disabled="true" className="text-secondary font-bold hover:underline">Hatchery Pact</Link>.
               </p>
             </div>
 

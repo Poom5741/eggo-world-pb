@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { createClient, getUser, isAuthenticated } from "@/lib/pocketbase/client"
+import { getUser, isAuthenticated } from "@/lib/pocketbase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -24,8 +24,6 @@ export default function TiersPage() {
     
     useEffect(() => {
         setIsHydrated(true)
-        
-        const pb = createClient()
         
         if (isAuthenticated()) {
             const currentUser = getUser()

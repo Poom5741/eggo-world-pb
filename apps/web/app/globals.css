@@ -848,6 +848,25 @@ img, video, svg {
   height: auto;
 }
 
+/* Interaction polish utilities — cursor-pointer + transitions */
+@layer utilities {
+  .interactive-pointer {
+    @apply cursor-pointer transition-all duration-200;
+  }
+
+  .interactive-hover {
+    @apply hover:opacity-90 transition-opacity duration-200;
+  }
+
+  .interactive-scale {
+    @apply hover:scale-105 transition-transform duration-200;
+  }
+
+  .interactive-color {
+    @apply hover:bg-primary/10 transition-colors duration-200;
+  }
+}
+
 /* Container width constraints */
 .container-responsive {
   width: 100%;

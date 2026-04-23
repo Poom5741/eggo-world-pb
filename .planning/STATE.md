@@ -169,6 +169,26 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 ---
 
+## Blockers
+
+### Pre-commit Lint Errors (Phase 25 Accessibility Fixes)
+
+**Issue:** `lint-staged` config runs full-project ESLint (`bun run lint --fix`) on ALL `.ts/.tsx` files in `apps/web/`, not just staged files.
+
+**6 Pre-existing errors blocking commits:**
+- `app/dashboard/tiers/page.tsx:28:15` — `'pb' is assigned a value but never used`
+- `components/breeding/BreedingConfirmation.tsx:7:10` — `'TierBadgeCard' is defined but never used`
+- `components/dashboard/tier-section.tsx:34:11` — `'currentTierData' is assigned a value but never used`
+- `components/animal-nft/ListAnimalDialog.tsx:51:10` — `'listingId' is assigned a value but never used`
+- `components/marketplace/AnimalListingsSection.tsx:3:20` — `'useEffect' is defined but never used`
+- `components/marketplace/AnimalListingsSection.tsx:5:10` — `'createClient' is defined but never used`
+
+**Impact:** Cannot commit Phase 25 accessibility fixes (8 files staged, ready to go).
+
+**Resolution needed:** Fix unused variable errors OR update lint-staged config to run ESLint only on staged files.
+
+---
+
 ## Roadmap Evolution
 
 - Phase 26 added: Phase 23 UAT Gap Closure (fix rarity filter, listing UX, duplicates, route 404)
@@ -250,6 +270,43 @@ Items acknowledged and deferred at milestone close on 2026-04-22:
 
 1. Plan Phase 27 (Egg Rarity Upgrade) using `/gsd-plan-phase 27`
 2. Note: Phase 27 requires contract modification (increase max food limit, remove upgrade fee)
+
+---
+
+## Phase 25 Progress (In-Progress)
+
+**Status:** Partially complete — accessibility fixes done, documentation created, pre-commit blocker pending
+
+### Completed Tasks
+
+| Task | Description | Status |
+|------|-------------|--------|
+| Plan 25-01-01 | Icon mapper creation (species-icons.tsx) | ✅ Done (previous run) |
+| Plan 25-01-02 | Emoji → icon migration (16 files) | ✅ Done (previous run, 10 commits) |
+| Plan 25-01-03 | Hardcoded color migration | ✅ Done (LINE button colors, previous run) |
+| Plan 25-01-04a | Form label associations | ✅ Done (join/page.tsx — 2 inputs fixed) |
+| Plan 25-01-04b | Keyboard accessible interactive elements | ✅ Done (app/page.tsx — 3 div→button conversions) |
+| Plan 25-01-04c | Skip navigation link | ✅ Done (layout.tsx) |
+| Plan 25-01-04d | Dead link remediation | ✅ Done (9 links fixed, coming-soon page created) |
+| Plan 25-01-04e | Missing focus states | ✅ Done (social icons with focus ring) |
+| Plan 25-02-01 | Container width standards doc | ✅ Done (LAYOUT-STANDARDS.md) |
+| Plan 25-02-02 | Typography utility classes | ✅ Done (globals.css — font-heading, text-heading-xl/etc.) |
+| Plan 25-02-03 | Button component documentation | ✅ Done (BUTTON-VARIANTS.md — no code changes needed) |
+| Plan 25-02-04 | Card component documentation | ✅ Done (CARD-VARIANTS.md — no code changes needed) |
+
+### Pending Tasks
+
+| Task | Description | Notes |
+|------|-------------|-------|
+| Plan 25-03-01 | Shadow/border radius migration | ~55 files, requires manual review |
+| Plan 25-03-02 | LayoutStandard component + migration | Lower priority (P2) |
+| Plan 25-03-03 | Interaction polish batch fixes | Partially done via utility classes |
+
+### Blockers
+
+See "Blockers" section above — 6 pre-existing ESLint errors blocking all commits.
+
+**Staged files ready for commit:** 10 files (4 accessibility + 4 docs + globals.css + coming-soon)
 
 **Context Handoff:**
 

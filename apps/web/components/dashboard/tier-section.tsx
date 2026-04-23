@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { TierBadgeCard, TierBadgeGrid } from "@/components/tier/TierBadgeCard"
+import { TierBadgeGrid } from "@/components/tier/TierBadgeCard"
 import { TierProgressBar, TierProgressSummary } from "@/components/tier/TierProgressBar"
 import { TierClaimButton, TierClaimNotification } from "@/components/tier/TierClaimButton"
 import { useTierReward } from "@/hooks/use-tier-reward"
@@ -31,7 +31,6 @@ export function TierSection({ userId, className, compact = false }: TierSectionP
     
     // Get current tier
     const currentTier = status?.current_tier
-    const currentTierData = status?.tiers.find(t => t.name === currentTier)
     
     if (compact) {
         // Compact view for dashboard card
