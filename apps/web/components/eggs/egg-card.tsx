@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { BreedingBadge } from './BreedingEggTooltip'
 import { cn } from '@/lib/utils'
+import { Sparkles } from 'lucide-react'
 
 /**
  * Props for EggCard component
@@ -127,7 +128,7 @@ export function EggCard({ egg, onManage, onHatch, onSell, onPlay, polling }: Egg
           <span>FEEDING PROGRESS</span>
           <span>
             {egg.food_count >= 10 && !egg.is_hatched
-              ? "Ready to hatch! 🎉"
+              ? "Ready to hatch!"
               : `${egg.food_count}/10 food — ${10 - egg.food_count} more to hatch`}
           </span>
         </div>
@@ -168,7 +169,7 @@ export function EggCard({ egg, onManage, onHatch, onSell, onPlay, polling }: Egg
             onClick={() => onHatch && onHatch(egg)}
             className="w-full py-3 bg-primary text-on-primary rounded-full font-black text-lg hover:bg-primary-fixed-dim transition-colors shadow-lg"
           >
-            🎉 HATCH!
+            <Sparkles className="inline w-5 h-5 mr-1" /> HATCH!
           </button>
         )}
       </div>
