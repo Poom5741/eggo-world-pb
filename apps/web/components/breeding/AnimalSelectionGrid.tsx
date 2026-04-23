@@ -5,6 +5,7 @@ import { AnimalData } from '@/hooks/use-animal-poll'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { formatCooldownRemaining, calculateCooldownRemaining } from '@/hooks/use-breeding'
+import { SpeciesIcon } from '../icons/species-icons'
 
 /**
  * Props for AnimalSelectionGrid component
@@ -24,15 +25,15 @@ interface AnimalSelectionGridProps {
   excludeAnimalId?: number | null
 }
 
-const speciesConfig: Record<string, { icon: string; color: string }> = {
-  Chicken: { icon: '🐔', color: 'text-orange-500' },
-  Duck: { icon: '🦆', color: 'text-blue-400' },
-  Pig: { icon: '🐷', color: 'text-pink-400' },
-  Cow: { icon: '🐄', color: 'text-amber-700' },
-  Sheep: { icon: '🐑', color: 'text-gray-300' },
-  Dog: { icon: '🐕', color: 'text-amber-600' },
-  Cat: { icon: '🐱', color: 'text-orange-300' },
-  Rabbit: { icon: '🐰', color: 'text-pink-300' },
+const speciesConfig: Record<string, { speciesType: string; color: string }> = {
+  Chicken: { speciesType: "Chicken", color: "text-orange-500" },
+  Duck: { speciesType: "Duck", color: "text-blue-400" },
+  Pig: { speciesType: "Pig", color: "text-pink-400" },
+  Cow: { speciesType: "Cow", color: "text-amber-700" },
+  Sheep: { speciesType: "Sheep", color: "text-gray-300" },
+  Dog: { speciesType: "Dog", color: "text-amber-600" },
+  Cat: { speciesType: "Cat", color: "text-orange-300" },
+  Rabbit: { speciesType: "Rabbit", color: "text-pink-300" },
 }
 
 const rarityConfig: Record<string, { label: string; color: string; bgColor: string }> = {
@@ -97,7 +98,7 @@ export function AnimalSelectionGrid({
       aria-label="Available animals for breeding"
     >
       {filteredAnimals.map((animal) => {
-        const species = speciesConfig[animal.species] || { icon: '🐾', color: 'text-primary' }
+        const species = speciesConfig[animal.species] || { speciesType: "Chicken", color: "text-primary" }
         const rarity = rarityConfig[animal.rarity] || { label: 'COMMON', color: 'text-primary', bgColor: 'bg-primary/10' }
         const isSelected = selectedIds.includes(animal.animal_id)
         const canSelect = isSelected || selectedIds.length < maxSelection
@@ -148,9 +149,7 @@ export function AnimalSelectionGrid({
 
             {/* Animal icon */}
             <div className="flex items-center justify-center h-20 mb-3">
-              <span className={cn('text-5xl', species.color)}>
-                {species.icon}
-              </span>
+              <SpeciesIcon species={species.speciesType as any} size="lg" />
             </div>
 
             {/* Animal info */}
