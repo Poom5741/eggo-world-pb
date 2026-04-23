@@ -6,11 +6,12 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {CommissionDistribution} from "./CommissionDistribution.sol";
 import {FoodNFT, FoodType} from "./FoodNFT.sol";
 import {AnimalNFT, Rarity, Species} from "./AnimalNFT.sol";
 
-contract EggNFT is ERC721, ReentrancyGuard, Ownable {
+contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable {
     using SafeERC20 for IERC20;
     
     address public immutable commissionDistribution;
@@ -19,10 +20,10 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
     
     uint256 public constant MINT_PRICE = 25 * 10^18;
     uint256 public constant BREEDING_FEE = 5 * 10^18;
-    uint256 public constant UPGRADE_FEE = 5 * 10^18;
+    uint256 public constant UPGRADE_FEE = 0; // No fee — users already paid for food NFTs
     uint256 public constant MAX_FOOD_COUNT = 10;
     uint256 public constant INITIAL_FOOD_COUNT = 2;
-    uint256 public constant MAX_UPGRADE_FOOD = 10;
+    uint256 public constant MAX_UPGRADE_FOOD = 490; // Up to 500 total (10 base + 490 upgrade)
     uint256 public constant RARITY_BONUS_PER_FOOD = 2;
     
     address public foodNFTContract;
@@ -70,6 +71,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
     );
     event MintPriceUpdated(uint256 newPrice);
     event AnimalNFTContractSet(address indexed animalNFTContract);
+    event PauseStateChanged(bool paused);
     
     constructor(
         address _commissionDistribution,
@@ -84,14 +86,14 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         _nextEggId = 1;
     }
     
-    function mintEgg(address referrer) external nonReentrant returns (uint256) {
+    function mintEgg(address referrer) external nonReentrant whenNotPaused returns (uint256) {
         address[4] memory referralChain;
         referralChain[0] = referrer;
-        
+
         return _mintEggWithChain(msg.sender, referralChain);
     }
-    
-    function mintEggWithChain(address[4] calldata referralChain) external nonReentrant returns (uint256) {
+
+    function mintEggWithChain(address[4] calldata referralChain) external nonReentrant whenNotPaused returns (uint256) {
         return _mintEggWithChain(msg.sender, referralChain);
     }
     
@@ -239,16 +241,9 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         EggProperties storage props = _eggProperties[eggTokenId];
         require(!props.is_hatched, "Egg already hatched");
         require(props.food_count >= MAX_FOOD_COUNT, "Must feed 10 first");
-        require(props.food_count + foodIds.length <= MAX_FOOD_COUNT + MAX_UPGRADE_FOOD, "Max 20 food items");
-        
-        // Transfer upgrade fee (5 USDT per food item)
-        uint256 totalFee = UPGRADE_FEE * foodIds.length;
-        usdtToken.safeTransferFrom(msg.sender, commissionDistribution, totalFee);
-        
-        // Distribute commission
-        address[4] memory referralChain;
-        referralChain[0] = props.referral_chain[0];
-        CommissionDistribution(commissionDistribution).distributeCommission(referralChain, totalFee);
+        require(props.food_count + foodIds.length <= MAX_FOOD_COUNT + MAX_UPGRADE_FOOD, "Max 500 food items (10 base + 490 upgrade)");
+
+        // No upgrade fee — users already paid for food NFTs
         
         // Burn food NFTs and increment food count
         for (uint256 i = 0; i < foodIds.length; i++) {
@@ -395,7 +390,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
         address to,
         uint256 tokenId,
         address auth
-    ) internal override returns (address) {
+    ) internal override whenNotPaused returns (address) {
         address from = _ownerOf(tokenId);
         
         if (from != address(0)) {
@@ -407,6 +402,16 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
     
     function setMintPrice(uint256 newPrice) external onlyOwner {
         emit MintPriceUpdated(newPrice);
+    }
+
+    function pause() external onlyOwner whenNotPaused {
+        _pause();
+        emit PauseStateChanged(true);
+    }
+
+    function unpause() external onlyOwner paused {
+        _unpause();
+        emit PauseStateChanged(false);
     }
     
     function _calculateBreedingGeneration(uint256 parent1Id, uint256 parent2Id) internal view returns (uint256) {
@@ -441,6 +446,19 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable {
             roll = (roll + bonus) % 100;
         }
         
+        // Apply tier guaranteed minimums
+        if (upgradeCount >= 500) return Rarity.Legendary;           // 100% Legendary guaranteed
+        else if (upgradeCount >= 200) {                              // Cannot roll below Epic
+            if (roll < 97) return Rarity.Epic;                       // Force minimum Epic
+            return Rarity.Legendary;                                 // Standard Epic→Legendary
+        }
+        else if (upgradeCount >= 50) {                               // Cannot roll below Rare
+            if (roll < 85) return Rarity.Rare;                       // Force minimum Rare
+            else if (roll < 97) return Rarity.Epic;                  // Standard Epic
+            return Rarity.Legendary;                                 // Standard Legendary
+        }
+        
+        // No guarantee — standard roll below
         if (roll < 60) return Rarity.Common;
         else if (roll < 85) return Rarity.Rare;
         else if (roll < 97) return Rarity.Epic;
