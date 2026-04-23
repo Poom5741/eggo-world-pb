@@ -14,6 +14,7 @@ import { BreedingResult } from '@/hooks/use-breeding'
 import { AnimalData } from '@/hooks/use-animal-poll'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { Sparkles } from 'lucide-react'
 
 /**
  * Props for BreedingSuccessModal component
@@ -254,7 +255,7 @@ export function BreedingSuccessModal({
                 {/* Success Message */}
                 <div className="bg-primary-container/20 p-4 rounded-lg border-2 border-primary-container">
                   <p className="text-primary font-bold">
-                    🎉 Congratulations! Your new egg is ready to hatch!
+                    <Sparkles className="w-5 h-5 mr-2" /> Congratulations! Your new egg is ready to hatch!
                   </p>
                   <p className="text-sm text-on-surface-variant mt-1">
                     Feed it 10 times to see what creature emerges.
