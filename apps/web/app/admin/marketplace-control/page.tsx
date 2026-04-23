@@ -1,0 +1,183 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useIsHydrated } from '@/hooks/use-is-hydrated'
+import { createClient } from '@/lib/pocketbase/client'
+import LayoutWrapper from '@/components/LayoutWrapper'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
+import { Shield, Power, PowerOff, Loader2 } from 'lucide-react'
+
+const pb = createClient()
+
+export default function MarketplaceControlPage() {
+  const [isHydrated] = useIsHydrated()
+  const router = useRouter()
+  
+  const [platformPaused, setPlatformPaused] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [actionInProgress, setActionInProgress] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  
+  useEffect(() => {
+    if (!isHydrated) return
+    
+    const user = pb.authStore.record
+    if (!user || !user.get("admin")) {
+      router.push('/auth/login')
+      return
+    }
+    
+    loadPlatformStatus()
+  }, [isHydrated, router])
+
+  async function loadPlatformStatus() {
+    try {
+      const token = pb.authStore.token
+      const response = await fetch(`${pb.baseURL}/api/v2/platform/status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      
+      if (!response.ok) throw new Error('Failed to load status')
+      
+      const data = await response.json()
+      setPlatformPaused(data.data?.paused || false)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  async function togglePlatform(action: 'pause' | 'unpause') {
+    setActionInProgress(action)
+    setError(null)
+    
+    try {
+      const token = pb.authStore.token
+      const response = await fetch(`${pb.baseURL}/api/v2/platform/${action}`, {
+        method: 'POST',
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ action })
+      })
+      
+      if (!response.ok) throw new Error(`Failed to ${action} platform`)
+      
+      const data = await response.json()
+      
+      setPlatformPaused(action === 'pause')
+      
+      router.refresh()
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setActionInProgress(null)
+    }
+  }
+
+  if (!isHydrated || isLoading) {
+    return (
+      <LayoutWrapper>
+        <div className="flex items-center justify-center min-h-screen">
+          <Skeleton className="h-8 w-8 animate-spin" />
+        </div>
+      </LayoutWrapper>
+    )
+  }
+
+  const user = pb.authStore.record as any
+  
+  return (
+    <LayoutWrapper>
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Shield className="w-8 h-8" />
+            Marketplace Controls
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            Emergency platform management controls
+          </p>
+        </div>
+
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Platform Status</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Marketplace State</span>
+              <Badge variant={platformPaused ? "destructive" : "default"}>
+                {platformPaused ? "PAUSED" : "ACTIVE"}
+              </Badge>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Pause Marketplace</label>
+                <p className="text-xs text-muted-foreground">
+                  Temporarily disable all marketplace operations
+                </p>
+              </div>
+              
+              {actionInProgress ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Switch
+                  checked={platformPaused}
+                  onCheckedChange={(checked) => togglePlatform(checked ? 'pause' : 'unpause')}
+                  aria-label="Toggle marketplace pause state"
+                />
+              )}
+            </div>
+
+            {!actionInProgress && (
+              <div className="flex gap-2 pt-4 border-t">
+                {!platformPaused && (
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => togglePlatform('pause')}
+                  >
+                    <PowerOff className="w-4 h-4 mr-2" />
+                    Pause Now
+                  </Button>
+                )}
+                {platformPaused && (
+                  <Button 
+                    variant="default" 
+                    size="sm"
+                    onClick={() => togglePlatform('unpause')}
+                  >
+                    <Power className="w-4 h-4 mr-2" />
+                    Unpause Now
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Alert className="mt-6">
+          <AlertDescription className="text-sm">
+            These controls affect all users. Use with caution and only during emergencies or maintenance windows.
+          </AlertDescription>
+        </Alert>
+      </div>
+    </LayoutWrapper>
+  )
+}

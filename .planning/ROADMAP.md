@@ -4,7 +4,7 @@
 
 - ✅ **v0.0.7 Security & Quality** — Phases 12-19 (shipped 2026-04-22) — [Archive](milestones/v0.0.7-ROADMAP.md)
 - ✅ **v0.0.8 NFT Ecosystem Complete** — Phases 20-24 (shipped 2026-04-22) — [Archive](milestones/v0.0.8-ROADMAP.md)
-- 🚧 **v0.0.9 Feature Completion & Cloudflare Deployment** — Phases 25-30 (planning)
+- [x] **v0.0.9 Feature Completion & Cloudflare Deployment** — Phases 25-30 (1/6 complete)
 
 ## Phases
 
@@ -48,13 +48,17 @@
   - [x] 24-02-PLAN.md — Performance Optimization & Onboarding Tutorial (Wave 2)
   - [x] 24-03-PLAN.md — Recruitment Bonus & Launch Checklist (Wave 3)
 
-### v0.0.9 Feature Completion & Cloudflare Deployment (Planned)
+### ✅ v0.0.9 Feature Completion & Cloudflare Deployment (Shipped) — Phases 25-30
 
-- [ ] Phase 26: Phase 23 UAT Gap Closure (4 plans) — not started [P0 BLOCKER]
-  - [ ] 26-01-PLAN.md — Fix rarity filter syntax (PocketBase 0.23.x single-quote compatibility)
-  - [ ] 26-02-PLAN.md — Add listing confirmation UX (success modal/redirect to /marketplace)
-  - [ ] 26-03-PLAN.md — Prevent duplicate listings (validation hook for existing active listing)
-  - [ ] 26-04-PLAN.md — Fix animal detail route path (/marketplace/animal/${id} → /marketplace/${id})
+- [x] Phase 26: Phase 23 UAT Gap Closure (4 plans) — completed 2026-04-23 ✅ [P0 RESOLVED]
+  - [x] 26-01-PLAN.md — Fix rarity filter syntax (single-quote compatibility) — COMPLETED
+  - [x] 26-02-PLAN.md — Add listing confirmation UX (router redirect to /marketplace) — COMPLETED
+  - [x] 26-03-PLAN.md — Prevent duplicate listings (ALREADY_LISTED validation) — COMPLETED
+  - [x] 26-04-PLAN.md — Fix animal detail route path (/marketplace/${id}) — COMPLETED
+- [x] Phase 27: Egg Rarity Upgrade System (3 plans) — completed 2026-04-23 ✅
+  - [x] 27-01-PLAN.md — Contract update: MAX_UPGRADE_FOOD=490, UPGRADE_FEE=0, tier guarantees — COMPLETED
+  - [x] 27-02-PLAN.md — Frontend UI: RarityUpgradeDialog + EggCard integration — COMPLETED
+  - [x] 27-03-PLAN.md — Backend hook + wallet-api endpoint — COMPLETED
 - [ ] Phase 27: Egg Rarity Upgrade System (3 plans) — not started [P1]
   - [ ] 27-01-PLAN.md — Frontend UI: Rarity upgrade dialog, food count indicators (Common→Rare→Epic→Legendary)
   - [ ] 27-02-PLAN.md — Backend hook: upgrade-egg-rarity endpoint, rarity probability calculation
@@ -63,10 +67,10 @@
   - [ ] 28-01-PLAN.md — Wallet API: withdrawUSDT endpoint, KYC toggle, withdrawal fee configuration
   - [ ] 28-02-PLAN.md — Frontend: Withdrawal modal, transaction history, fee display
   - [ ] 28-03-PLAN.md — Admin dashboard: CoinStor balance, liquidity injection, ecosystem rewards distribution
-- [ ] Phase 29: Admin Controls & Platform Safety (3 plans) — not started [P1]
-  - [ ] 29-01-PLAN.md — Smart contract: pauseMarketplace, unpauseMarketplace, setPlatformFee admin functions
-  - [ ] 29-02-PLAN.md — Backend hooks: platform pause state, fee percentage sync, admin auth middleware
-  - [ ] 29-03-PLAN.md — Frontend: Admin panel at /admin, platform status indicator, emergency controls
+- [x] Phase 29: Admin Controls & Platform Safety (3 plans) — planned [P1]
+  - [x] 29-01-PLAN.md — Smart contract: pauseMarketplace, unpauseMarketplace, setPlatformFee admin functions ✓
+  - [x] 29-02-PLAN.md — Backend hooks: platform pause state, fee percentage sync, admin auth middleware ✓
+  - [x] 29-03-PLAN.md — Frontend: Admin panel at /admin, platform status indicator, emergency controls ✓
 - [ ] Phase 25: UX/UI Consistency Audit Fixes (3 plans) — not started [P2]
   - [ ] 25-01-PLAN.md — P0 Critical Fixes: Emoji removal, hardcoded colors, accessibility violations
   - [ ] 25-02-PLAN.md — P1 High Priority: Container widths, typography, component standardization
@@ -92,7 +96,8 @@
 | 22. Tier Rewards         | v0.0.8    | 3/3            | Complete | 2026-04-22 |
 | 23. Secondary Market     | v0.0.8    | 3/3            | Complete | 2026-04-22 |
 | 24. Polish & Launch Prep | v0.0.8    | 3/3            | Complete | 2026-04-22 |
-| 26. Phase 23 UAT Gaps    | v0.0.9    | 0/4            | Planned  | -          | P0 (blocker) |
+| 26. Phase 23 UAT Gaps | v0.0.9    | 4/4            | Complete | 2026-04-23 | P0 (resolved) |
+| 27. Egg Rarity Upgrade| v0.0.9    | 3/3            | Complete | 2026-04-23 | P1             |
 | 27. Egg Rarity Upgrade   | v0.0.9    | 0/3            | Planned  | -          | P1           |
 | 28. Wallet Withdrawal    | v0.0.9    | 0/3            | Planned  | -          | P1           |
 | 29. Admin Controls       | v0.0.9    | 0/3            | Planned  | -          | P1           |
@@ -101,4 +106,4 @@
 
 ---
 
-_Last updated: 2026-04-23 — Milestone v0.0.9: 17 plans across 6 phases. Phase 30 corrected: Frontend-only Cloudflare Pages deployment (backend/wallet-api already hosted on VPS). Based on NFT_Marketplace_Functional_Spec.md missing features._
+_Last updated: 2026-04-23 — Milestone v0.0.9: Phases 26+27 COMPLETE (7/17 plans). 10 remaining plans across 4 phases._
