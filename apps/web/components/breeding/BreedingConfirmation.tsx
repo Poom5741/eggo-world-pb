@@ -5,6 +5,7 @@ import { AnimalData } from '@/hooks/use-animal-poll'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { SpeciesIcon, Star } from '../icons/species-icons'
 
 /**
  * Props for BreedingConfirmation component
@@ -24,15 +25,15 @@ interface BreedingConfirmationProps {
   onBack: () => void
 }
 
-const speciesConfig: Record<string, { icon: string; color: string }> = {
-  Chicken: { icon: '🐔', color: 'text-orange-500' },
-  Duck: { icon: '🦆', color: 'text-blue-400' },
-  Pig: { icon: '🐷', color: 'text-pink-400' },
-  Cow: { icon: '🐄', color: 'text-amber-700' },
-  Sheep: { icon: '🐑', color: 'text-gray-300' },
-  Dog: { icon: '🐕', color: 'text-amber-600' },
-  Cat: { icon: '🐱', color: 'text-orange-300' },
-  Rabbit: { icon: '🐰', color: 'text-pink-300' },
+const speciesConfig: Record<string, { speciesType: string; color: string }> = {
+  Chicken: { speciesType: "Chicken", color: "text-orange-500" },
+  Duck: { speciesType: "Duck", color: "text-blue-400" },
+  Pig: { speciesType: "Pig", color: "text-pink-400" },
+  Cow: { speciesType: "Cow", color: "text-amber-700" },
+  Sheep: { speciesType: "Sheep", color: "text-gray-300" },
+  Dog: { speciesType: "Dog", color: "text-amber-600" },
+  Cat: { speciesType: "Cat", color: "text-orange-300" },
+  Rabbit: { speciesType: "Rabbit", color: "text-pink-300" },
 }
 
 const rarityConfig: Record<string, { label: string; color: string }> = {
@@ -76,15 +77,13 @@ export function BreedingConfirmation({
       )
     }
 
-    const species = speciesConfig[animal.species] || { icon: '🐾', color: 'text-primary' }
+    const species = speciesConfig[animal.species] || { speciesType: "Chicken", color: "text-primary" }
     const rarity = rarityConfig[animal.rarity] || { label: 'COMMON', color: 'text-primary' }
 
     return (
       <div className="bg-surface-container-low rounded-xl p-6 clay-card">
         <div className="flex items-center justify-center h-24 mb-4">
-          <span className={cn('text-6xl', species.color)}>
-            {species.icon}
-          </span>
+          <SpeciesIcon species={species.speciesType as any} size="lg" />
         </div>
         <div className="text-center space-y-2">
           <h4 className="font-pixel-style text-lg text-on-surface">
@@ -99,8 +98,8 @@ export function BreedingConfirmation({
             </span>
           </div>
           {animal.rarity_upgrade_count > 0 && (
-            <Badge variant="clay" className="bg-warning/20 text-warning text-xs">
-              +{animal.rarity_upgrade_count} ⭐
+            <Badge variant="clay" className="bg-warning/20 text-warning text-xs flex items-center gap-1">
+              <Star className="w-3 h-3" /> {animal.rarity_upgrade_count}
             </Badge>
           )}
         </div>
