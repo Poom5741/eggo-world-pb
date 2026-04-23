@@ -11,6 +11,21 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
+## Current Milestone: v0.0.9 Feature Completion & Cloudflare Deployment
+
+**Goal:** Complete remaining features from NFT_Marketplace_Functional_Spec.md and migrate deployment to Cloudflare Pages/Workers.
+
+**Target features:**
+
+- Phase 26: Fix Phase 23 UAT gaps (rarity filter, listing UX, duplicates, route 404)
+- Phase 27: Egg Rarity Upgrade System (feed extra food for better rarity)
+- Phase 28: Wallet Withdrawal & CoinStor Admin (withdrawUSDT, admin dashboard)
+- Phase 29: Admin Controls & Platform Safety (pause/unpause, fee settings, stats)
+- Phase 25: UX/UI Consistency Audit Fixes (93 violations)
+- Phase 30: Cloudflare Deployment Migration (Pages + Workers + CI/CD)
+
+**Spec reference:** docs/NFT_Marketplace_Functional_Spec.md
+
 ## Core Game Loop
 
 ```
