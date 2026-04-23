@@ -1,0 +1,81 @@
+name: Deploy Web Frontend to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/deploy-web.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: |
+          cd apps/web
+          bun install
+
+      - name: Build project
+        run: |
+          cd apps/web
+          bun run build
+        env:
+          NEXT_PUBLIC_POCKETBASE_URL: ${{ vars.NEXT_PUBLIC_POCKETBASE_URL || 'https://pb.eggoworld.io' }}
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: eggo-world-web
+          directory: apps/web/out
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Output deployment URL
+        run: |
+          echo "Deployment URL: https://eggo-world-web.pages.dev"
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "Preview URL: https://${{ github.head_ref }}.eggo-world-web.pages.dev"
+          fi
+
+  lint-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: |
+          cd apps/web
+          bun install
+
+      - name: Run lint
+        run: |
+          cd apps/web
+          bun run lint
+        continue-on-error: true
