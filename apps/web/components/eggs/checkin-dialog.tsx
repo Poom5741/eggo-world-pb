@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Flame, Star, Trophy } from 'lucide-react'
 import { useDailyCheckin } from '@/hooks/use-daily-checkin'
 
 interface CheckInDialogProps {
@@ -36,14 +37,14 @@ export function CheckInDialog({ open, onOpenChange, userId, eggId }: CheckInDial
     }
   }
 
-  // Calculate streak bonus
+  // Calculate streak bonus with icon component instead of emoji
   const getStreakBonus = () => {
     if (!checkInData) return null
     
     const streak = checkInData.streak
-    if (streak >= 30) return { days: 30, reward: 5, badge: '🏆', label: '30-Day Master' }
-    if (streak >= 7) return { days: 7, reward: 2, badge: '⭐', label: '7-Day Warrior' }
-    return { days: 1, reward: 1, badge: '🔥', label: `${streak}d Streak` }
+    if (streak >= 30) return { days: 30, reward: 5, badgeComponent: Trophy, label: '30-Day Master' }
+    if (streak >= 7) return { days: 7, reward: 2, badgeComponent: Star, label: '7-Day Warrior' }
+    return { days: 1, reward: 1, badgeComponent: Flame, label: `${streak}d Streak` }
   }
 
   const streakBonus = getStreakBonus()
@@ -77,12 +78,13 @@ export function CheckInDialog({ open, onOpenChange, userId, eggId }: CheckInDial
           {/* Streak Display - แสดง streak */}
           {checkInData && (
             <div className="text-center space-y-2">
-              <div className={`text-6xl font-black ${getStreakColorIntensity()}`}>
-                {checkInData.streak}d 🔥
+              <div className={`flex items-center gap-2 text-6xl font-black ${getStreakColorIntensity()}`}>
+                {checkInData.streak}d
+                <Flame className="w-8 h-8" />
               </div>
               {streakBonus && streakBonus.days > 1 && (
                 <Badge variant="clay" className="bg-warning/20 text-warning">
-                  {streakBonus.badge} {streakBonus.label} - Next bonus: {streakBonus.reward} Food NFTs
+                  <streakBonus.badgeComponent className="w-4 h-4 mr-1" /> {streakBonus.label} - Next bonus: {streakBonus.reward} Food NFTs
                 </Badge>
               )}
               <p className="text-xs text-on-surface-variant">
