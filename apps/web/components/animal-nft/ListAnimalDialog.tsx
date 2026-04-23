@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { createClient } from "@/lib/pocketbase/client"
 import { Loader2, AlertCircle, CheckCircle2, DollarSign } from "lucide-react"
+import { SpeciesIcon, type SpeciesType } from "@/components/icons/species-icons"
 
 export interface AnimalData {
   animal_id: number
@@ -25,15 +27,15 @@ interface ListAnimalDialogProps {
   onSuccess?: (listingId: string) => void
 }
 
-const speciesConfig: Record<string, { icon: string }> = {
-  Chicken: { icon: "🐔" },
-  Duck: { icon: "🦆" },
-  Pig: { icon: "🐷" },
-  Cow: { icon: "🐄" },
-  Sheep: { icon: "🐑" },
-  Dog: { icon: "🐕" },
-  Cat: { icon: "🐱" },
-  Rabbit: { icon: "🐰" },
+const speciesConfig: Record<string, SpeciesType> = {
+  Chicken: "Chicken",
+  Duck: "Duck",
+  Pig: "Pig",
+  Cow: "Cow",
+  Sheep: "Sheep",
+  Dog: "Dog",
+  Cat: "Cat",
+  Rabbit: "Rabbit",
 }
 
 const rarityConfig: Record<string, { label: string; color: string }> = {
@@ -49,12 +51,52 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [_listingId, setListingId] = useState<string | null>(null)
+  const [hasActiveListing, setHasActiveListing] = useState(false)
+  const [checkingListing, setCheckingListing] = useState(true)
 
   const pb = createClient()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!animal || !open) return
+    
+    const checkExistingListing = async () => {
+      setCheckingListing(true)
+      try {
+        const token = pb.authStore.token
+        if (!token) {
+          setCheckingListing(false)
+          return
+        }
+        
+        const response = await fetch(`/api/v2/list-animal?animal_id=${animal.animal_id}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': token
+          }
+        })
+        
+        if (response.ok) {
+          const result = await response.json()
+          // Check if any active listing exists for this animal
+          const hasActive = result.data?.some?.(
+            (listing: any) => listing.animal_id === animal.animal_id && listing.status === 'active'
+          )
+          setHasActiveListing(hasActive || false)
+        }
+      } catch (err) {
+        console.error('Failed to check existing listings:', err)
+      } finally {
+        setCheckingListing(false)
+      }
+    }
+    
+    checkExistingListing()
+  }, [animal, open, pb.authStore.token])
 
   if (!animal) return null
 
-  const species = speciesConfig[animal.species] || { icon: "🐾" }
+  const speciesType: SpeciesType | null = speciesConfig[animal.species] ?? null
   const rarity = rarityConfig[animal.rarity] || { label: "COMMON", color: "text-primary" }
 
   const handlePriceChange = (value: string) => {
@@ -116,11 +158,15 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
   }
 
   const handleClose = () => {
+    const wasSuccess = step === "success"
     setPrice("")
     setStep("input")
     setError(null)
     setListingId(null)
     onOpenChange(false)
+    if (wasSuccess) {
+      router.push('/marketplace')
+    }
   }
 
   const priceNum = parseFloat(price) || 0
@@ -132,7 +178,7 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-[var(--font-pixel)] flex items-center gap-2">
+          <DialogTitle className="font-body flex items-center gap-2">
             <DollarSign className="w-5 h-5" />
             List Animal for Sale
           </DialogTitle>
@@ -143,7 +189,11 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
 
         {/* Animal Info */}
         <div className="flex items-center gap-3 p-3 bg-surface-container rounded-lg">
-          <span className="text-3xl">{species.icon}</span>
+          {speciesType ? (
+            <SpeciesIcon species={speciesType} size="lg" />
+          ) : (
+            <span className="text-3xl">🐾</span>
+          )}
           <div>
             <p className="font-medium">{animal.species} #{animal.animal_id}</p>
             <p className={cn("text-xs font-bold", rarity.color)}>
@@ -156,7 +206,7 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
         {step === "input" && (
           <div className="space-y-4">
             <div>
-              <Label htmlFor="price" className="font-[var(--font-pixel)] text-xs">
+              <Label htmlFor="price" className="font-body text-xs">
                 Price (USDT)
               </Label>
               <Input
@@ -178,11 +228,17 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
 
             <Button
               onClick={handleSubmitPrice}
-              disabled={!price || parseFloat(price) <= 0}
-              className="w-full font-[var(--font-pixel)]"
+              disabled={!price || parseFloat(price) <= 0 || hasActiveListing || checkingListing}
+              className="w-full font-body"
             >
-              Continue to Confirmation
+              {hasActiveListing ? "Already Listed" : checkingListing ? "Checking..." : "Continue to Confirmation"}
             </Button>
+
+            {hasActiveListing && (
+              <p className="text-xs text-warning flex items-center gap-1 mt-2">
+                This animal already has an active listing on the marketplace.
+              </p>
+            )}
           </div>
         )}
 
@@ -190,7 +246,7 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
         {step === "confirm" && (
           <div className="space-y-4">
             <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
-              <h4 className="font-[var(--font-pixel)] text-sm mb-3">Fee Breakdown</h4>
+              <h4 className="font-body text-sm mb-3">Fee Breakdown</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span>Listed Price</span>
@@ -230,7 +286,7 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
               <Button
                 onClick={handleConfirmListing}
                 disabled={loading}
-                className="font-[var(--font-pixel)]"
+                className="font-body"
               >
                 {loading ? (
                   <>
@@ -249,14 +305,14 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
         {step === "success" && (
           <div className="text-center py-6 space-y-4">
             <CheckCircle2 className="w-12 h-12 text-primary mx-auto" />
-            <h3 className="font-[var(--font-pixel)] text-lg">Listing Created!</h3>
+            <h3 className="font-body text-lg">Listing Created!</h3>
             <p className="text-muted-foreground">
               Your {animal.species} #{animal.animal_id} is now listed for ${priceNum.toFixed(2)} USDT
             </p>
-            <Badge variant="clay" className="font-[var(--font-pixel)]">
+            <Badge variant="clay" className="font-body">
               Active on Marketplace
             </Badge>
-            <Button onClick={handleClose} className="w-full font-[var(--font-pixel)]">
+            <Button onClick={handleClose} className="w-full font-body">
               Done
             </Button>
           </div>
@@ -266,7 +322,7 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
         {step === "error" && (
           <div className="text-center py-6 space-y-4">
             <AlertCircle className="w-12 h-12 text-destructive mx-auto" />
-            <h3 className="font-[var(--font-pixel)] text-lg text-destructive">Listing Failed</h3>
+            <h3 className="font-body text-lg text-destructive">Listing Failed</h3>
             <p className="text-muted-foreground">{error}</p>
             <DialogFooter>
               <Button variant="outline" onClick={() => setStep("input")}>

@@ -13,8 +13,9 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { Egg, Flame, Sparkles, Hash, Calendar, DollarSign, AlertCircle } from 'lucide-react'
+import { Egg, Flame, Sparkles, Hash, Calendar, DollarSign, AlertCircle, Star } from 'lucide-react'
 import { ReferralChainDisplay } from './ReferralChainDisplay'
+import { RarityUpgradeDialog } from '../eggs/rarity-upgrade-dialog'
 import { cn } from '@/lib/utils'
 
 interface EggCardProps {
@@ -29,15 +30,18 @@ interface EggCardProps {
   }
   onHatch?: () => void
   showFeedButton?: boolean
+  showUpgradeButton?: boolean
   isOwner?: boolean
 }
 
-export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCardProps) {
+export function EggCard({ egg, onHatch, showFeedButton, showUpgradeButton, isOwner = false }: EggCardProps) {
   const [showReferralChain, setShowReferralChain] = useState(false)
   
   const [showSellDialog, setShowSellDialog] = useState(false)
   const [sellPrice, setSellPrice] = useState('')
   const [priceError, setPriceError] = useState('')
+
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
 
   const validatePrice = (price: string) => {
     const numPrice = parseFloat(price)
@@ -84,13 +88,13 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Egg className={`w-6 h-6 ${egg.is_hatched ? 'text-accent' : 'text-primary'}`} />
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
+            <span className="font-body text-xs text-foreground">
               #{egg.token_id}
             </span>
           </div>
           <Badge variant="clay" className={cn(
             rarity.color,
-            'text-foreground font-[var(--font-pixel)] text-xs',
+            'text-foreground font-body text-xs',
             'rounded-clay-full shadow-clay-sm'
           )}>
             {rarity.label}
@@ -129,44 +133,44 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
           'bg-secondary/20'
         )}>
           <div className="flex items-center justify-between">
-            <span className="font-[var(--font-pixel)] text-xs text-muted-foreground flex items-center gap-1">
+            <span className="font-body text-xs text-muted-foreground flex items-center gap-1">
               <Hash className="w-3 h-3" />
               EGG ID:
             </span>
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
+            <span className="font-body text-xs text-foreground">
               {egg.egg_id}
             </span>
           </div>
           
           <div className="flex items-center justify-between">
-            <span className="font-[var(--font-pixel)] text-xs text-muted-foreground flex items-center gap-1">
+            <span className="font-body text-xs text-muted-foreground flex items-center gap-1">
               <Sparkles className="w-3 h-3" />
               FOOD NFTs:
             </span>
-            <span className="font-[var(--font-pixel)] text-xs text-primary">
+            <span className="font-body text-xs text-primary">
               {egg.food_count} / 10
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="font-[var(--font-pixel)] text-xs text-muted-foreground flex items-center gap-1">
+            <span className="font-body text-xs text-muted-foreground flex items-center gap-1">
               <Calendar className="w-3 h-3" />
               MINTED:
             </span>
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
+            <span className="font-body text-xs text-foreground">
               {new Date(egg.minted_at).toLocaleDateString()}
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+            <span className="font-body text-xs text-muted-foreground">
               STATUS:
             </span>
             <Badge
               variant="clay"
               className={cn(
                 egg.is_hatched ? 'bg-accent' : 'bg-secondary',
-                'font-[var(--font-pixel)] text-xs',
+                'font-body text-xs',
                 'rounded-clay-full shadow-clay-sm'
               )}
             >
@@ -182,7 +186,7 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
               variant="clay-secondary"
               size="clay-sm"
               onClick={() => setShowReferralChain(!showReferralChain)}
-              className="w-full font-[var(--font-pixel)] text-xs"
+              className="w-full font-body text-xs"
             >
               {showReferralChain ? 'HIDE' : 'VIEW'} REFERRAL CHAIN
             </Button>
@@ -200,10 +204,21 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
             variant="clay-secondary"
             size="clay-md"
             onClick={() => setShowSellDialog(true)}
-            className="flex-1 font-[var(--font-pixel)] text-sm"
+            className="flex-1 font-body text-sm"
           >
             <DollarSign className="w-4 h-4 mr-2 pixelated" />
             SELL
+          </Button>
+        )}
+        {showUpgradeButton && egg.food_count >= 10 && !egg.is_hatched && (
+          <Button
+            variant="clay-secondary"
+            size="clay-md"
+            onClick={() => setShowUpgradeDialog(true)}
+            className="flex-1 font-body text-sm"
+          >
+            <Star className="w-4 h-4 mr-2 pixelated" />
+            UPGRADE
           </Button>
         )}
         {!egg.is_hatched && (
@@ -213,7 +228,7 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
                 variant="clay-secondary"
                 size="clay-md"
                 onClick={() => window.location.href = `/eggs/${egg.token_id}/feed`}
-                className="flex-1 font-[var(--font-pixel)] text-sm"
+                className="flex-1 font-body text-sm"
               >
                 <Sparkles className="w-4 h-4 mr-2 pixelated" />
                 FEED
@@ -225,7 +240,7 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
               onClick={onHatch}
               disabled={egg.food_count < 10}
               className={cn(
-                'flex-1 font-[var(--font-pixel)] text-sm',
+                'flex-1 font-body text-sm',
                 'disabled:opacity-50 disabled:cursor-not-allowed'
               )}
             >
@@ -239,7 +254,7 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
             disabled
             variant="clay-secondary"
             size="clay-lg"
-            className="w-full font-[var(--font-pixel)] text-sm"
+            className="w-full font-body text-sm"
           >
             ALREADY HATCHED
           </Button>
@@ -247,7 +262,7 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
       </CardFooter>
 
       <Dialog open={showSellDialog} onOpenChange={setShowSellDialog}>
-        <DialogContent variant="clay" className="font-[var(--font-pixel)]">
+        <DialogContent variant="clay" className="font-body">
           <DialogHeader variant="clay">
             <DialogTitle variant="clay">SELL EGG #{egg.token_id}</DialogTitle>
             <DialogDescription variant="clay">
@@ -273,7 +288,7 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
                     if (priceError) validatePrice(e.target.value)
                   }}
                   className={cn(
-                    'pl-10 font-[var(--font-pixel)]',
+                    'pl-10 font-body',
                     priceError && 'border-red-500 focus:ring-red-500'
                   )}
                 />
@@ -295,7 +310,7 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
                 setSellPrice('')
                 setPriceError('')
               }}
-              className="font-[var(--font-pixel)]"
+              className="font-body"
             >
               CANCEL
             </Button>
@@ -303,13 +318,30 @@ export function EggCard({ egg, onHatch, showFeedButton, isOwner = false }: EggCa
               variant="clay"
               onClick={handleSell}
               disabled={!sellPrice || !!priceError}
-              className="font-[var(--font-pixel)]"
+              className="font-body"
             >
               CONFIRM LISTING
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Rarity Upgrade Dialog */}
+      {showUpgradeButton && (
+        <RarityUpgradeDialog
+          egg={egg}
+          open={showUpgradeDialog}
+          onOpenChange={(open) => {
+            setShowUpgradeDialog(open)
+            if (!open) setShowUpgradeDialog(false)
+          }}
+          onSuccess={() => {
+            setShowUpgradeDialog(false)
+            // Refresh egg data after successful upgrade
+            window.location.reload()
+          }}
+        />
+      )}
     </Card>
   )
 }

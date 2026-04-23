@@ -62,10 +62,10 @@ function SignUpContent() {
                 />
               </div>
             </div>
-            <CardTitle className="font-[var(--font-pixel)] text-xl text-primary">
+            <CardTitle className="font-body text-xl text-primary">
               CREATE ACCOUNT
             </CardTitle>
-            <CardDescription className="font-[var(--font-pixel)] text-xs">
+            <CardDescription className="font-body text-xs">
               JOIN EGGOWORLD WITH LINE
             </CardDescription>
           </CardHeader>
@@ -75,7 +75,7 @@ function SignUpContent() {
                 'rounded-clay-sm bg-primary/10 p-3',
                 'shadow-clay-sm'
               )}>
-                <p className="font-[var(--font-pixel)] text-[10px] text-primary text-center">
+                <p className="font-body text-[10px] text-primary text-center">
                   REFERRER: {referrer.substring(0, 10)}...
                 </p>
               </div>
@@ -102,7 +102,7 @@ export default function Page() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     }>
       <SignUpContent />

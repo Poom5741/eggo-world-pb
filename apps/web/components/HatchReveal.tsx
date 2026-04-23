@@ -70,10 +70,10 @@ export function HatchReveal({ animal, onClaim }: HatchRevealProps) {
           <Badge className={`${rarityColors[animal.rarity]} text-white font-bold text-lg px-6 py-2`}>
             {rarityInfo.name}
           </Badge>
-          <CardTitle className="font-[var(--font-pixel)] text-2xl text-foreground">
+          <CardTitle className="font-body text-2xl text-foreground">
             CONGRATULATIONS!
           </CardTitle>
-          <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+          <CardDescription className="font-body text-xs text-muted-foreground">
             Your egg has hatched into a magnificent creature
           </CardDescription>
         </div>
@@ -89,10 +89,10 @@ export function HatchReveal({ animal, onClaim }: HatchRevealProps) {
           
           {/* Species Name */}
           <div className="space-y-2">
-            <h2 className={`font-[var(--font-pixel)] text-3xl ${rarityInfo.textColor}`}>
+            <h2 className={`font-body text-3xl ${rarityInfo.textColor}`}>
               {getSpeciesName(animal.species)}
             </h2>
-            <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+            <p className="font-body text-xs text-muted-foreground">
               Animal NFT #{animal.animalId}
             </p>
           </div>
@@ -100,18 +100,18 @@ export function HatchReveal({ animal, onClaim }: HatchRevealProps) {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-4 pt-4 border-t-2 border-primary/20">
             <div className="space-y-1">
-              <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+              <p className="font-body text-xs text-muted-foreground">
                 RARITY
               </p>
-              <p className={`font-[var(--font-pixel)] text-sm ${rarityInfo.textColor}`}>
+              <p className={`font-body text-sm ${rarityInfo.textColor}`}>
                 {getRarityName(animal.rarity)}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+              <p className="font-body text-xs text-muted-foreground">
                 GENERATION
               </p>
-              <p className="font-[var(--font-pixel)] text-sm text-foreground">
+              <p className="font-body text-sm text-foreground">
                 #{animal.generation}
               </p>
             </div>
@@ -120,10 +120,10 @@ export function HatchReveal({ animal, onClaim }: HatchRevealProps) {
 
         {/* Info */}
         <div className="bg-secondary/20 border-2 border-primary/30 p-4 space-y-2">
-          <h3 className="font-[var(--font-pixel)] text-xs text-primary">
+          <h3 className="font-body text-xs text-primary">
             WHAT&apos;S NEXT?
           </h3>
-          <ul className="space-y-1 font-[var(--font-pixel)] text-xs text-foreground">
+          <ul className="space-y-1 font-body text-xs text-foreground">
             <li>• Your Animal NFT has been minted to your wallet</li>
             <li>• View it in your inventory</li>
             <li>• List it for sale on the marketplace</li>
@@ -136,14 +136,14 @@ export function HatchReveal({ animal, onClaim }: HatchRevealProps) {
         <Button
           variant="outline"
           onClick={() => window.location.href = '/eggs'}
-          className="flex-1 font-[var(--font-pixel)] text-sm h-12 border-2 border-primary/50"
+          className="flex-1 font-body text-sm h-12 border-2 border-primary/50"
         >
           <Egg className="mr-2 h-4 w-4" />
           Back to Eggs
         </Button>
         <Button
           onClick={onClaim}
-          className="flex-1 font-[var(--font-pixel)] text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors"
+          className="flex-1 font-body text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors"
         >
           CLAIM TO INVENTORY
           <ArrowRight className="ml-2 h-4 w-4" />

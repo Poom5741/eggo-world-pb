@@ -75,10 +75,10 @@ export function WithdrawForm({ balance }: WithdrawFormProps) {
   return (
     <Card className="border-4 border-primary/50 bg-card">
       <CardHeader>
-        <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
+        <CardTitle className="font-body text-lg text-foreground">
           WITHDRAW USDT
         </CardTitle>
-        <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+        <CardDescription className="font-body text-xs text-muted-foreground">
           Request withdrawal to your external wallet
         </CardDescription>
       </CardHeader>
@@ -86,7 +86,7 @@ export function WithdrawForm({ balance }: WithdrawFormProps) {
         <CardContent className="space-y-4">
           {/* Amount Input */}
           <div className="space-y-2">
-            <Label htmlFor="amount" className="font-[var(--font-pixel)] text-xs text-foreground">
+            <Label htmlFor="amount" className="font-body text-xs text-foreground">
               AMOUNT (USDT)
             </Label>
             <Input
@@ -97,16 +97,16 @@ export function WithdrawForm({ balance }: WithdrawFormProps) {
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0.00"
               max={balance}
-              className="font-[var(--font-pixel)] text-xs border-2 border-primary/50 bg-background"
+              className="font-body text-xs border-2 border-primary/50 bg-background"
             />
-            <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+            <p className="font-body text-xs text-muted-foreground">
               Available: {balance} USDT
             </p>
           </div>
 
           {/* Address Input */}
           <div className="space-y-2">
-            <Label htmlFor="address" className="font-[var(--font-pixel)] text-xs text-foreground">
+            <Label htmlFor="address" className="font-body text-xs text-foreground">
               WITHDRAWAL ADDRESS
             </Label>
             <Input
@@ -115,9 +115,9 @@ export function WithdrawForm({ balance }: WithdrawFormProps) {
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="0x..."
-              className="font-[var(--font-pixel)] text-xs border-2 border-primary/50 bg-background"
+              className="font-body text-xs border-2 border-primary/50 bg-background"
             />
-            <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+            <p className="font-body text-xs text-muted-foreground">
               Enter your BSC wallet address (0x...)
             </p>
           </div>
@@ -126,7 +126,7 @@ export function WithdrawForm({ balance }: WithdrawFormProps) {
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="font-[var(--font-pixel)] text-xs">
+              <AlertDescription className="font-body text-xs">
                 {error}
               </AlertDescription>
             </Alert>
@@ -136,7 +136,7 @@ export function WithdrawForm({ balance }: WithdrawFormProps) {
           {success && (
             <Alert className="bg-primary/20 border-primary">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              <AlertDescription className="font-[var(--font-pixel)] text-xs">
+              <AlertDescription className="font-body text-xs">
                 Withdrawal request submitted! Processing time: 24-48 hours.
               </AlertDescription>
             </Alert>
@@ -146,7 +146,7 @@ export function WithdrawForm({ balance }: WithdrawFormProps) {
           <Button
             type="submit"
             disabled={loading || !amount || !address}
-            className="w-full font-[var(--font-pixel)] text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors"
+            className="w-full font-body text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors"
           >
             {loading ? (
               <>

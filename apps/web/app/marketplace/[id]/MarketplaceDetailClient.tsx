@@ -178,7 +178,7 @@ export default function MarketplaceDetailClient({ params }: MarketplaceDetailCli
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card variant="clay" className="shadow-clay-lg overflow-hidden">
             <CardHeader>
-              <CardTitle className="font-[var(--font-pixel)] text-lg">
+              <CardTitle className="font-body text-lg">
                 รูปภาพ NFT | NFT Image
               </CardTitle>
             </CardHeader>
@@ -255,7 +255,7 @@ export default function MarketplaceDetailClient({ params }: MarketplaceDetailCli
 
             <Card variant="clay" className="shadow-clay-md">
               <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-sm flex items-center gap-2">
+                <CardTitle className="font-body text-sm flex items-center gap-2">
                   <User className="h-5 w-5" />
                   เจ้าของ | Owner
                 </CardTitle>
@@ -287,7 +287,7 @@ export default function MarketplaceDetailClient({ params }: MarketplaceDetailCli
 
             <Card variant="clay" className="shadow-clay-md">
               <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-sm">
+                <CardTitle className="font-body text-sm">
                   ส่วนแบ่งและค่าธรรมเนียม | Commission Breakdown
                 </CardTitle>
                 <p className="text-xs text-on-surface-variant">
@@ -333,33 +333,33 @@ export default function MarketplaceDetailClient({ params }: MarketplaceDetailCli
 
             <Card variant="clay" className="shadow-clay-sm">
               <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-xs">
+                <CardTitle className="font-body text-xs">
                   ข้อมูลเพิ่มเติม | Additional Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-[var(--font-pixel)] text-xs flex items-center gap-2">
+                  <span className="text-muted-foreground font-body text-xs flex items-center gap-2">
                     <Tag className="h-4 w-4" />
                     ประเภท | Type
                   </span>
                   <span className="font-bold">{listing.nft_type}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-[var(--font-pixel)] text-xs flex items-center gap-2">
+                  <span className="text-muted-foreground font-body text-xs flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     อัพเดท | Updated
                   </span>
-                  <span className="font-[var(--font-pixel)] text-xs">
+                  <span className="font-body text-xs">
                     {new Date(listing.updated).toLocaleDateString('th-TH')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-[var(--font-pixel)] text-xs flex items-center gap-2">
+                  <span className="text-muted-foreground font-body text-xs flex items-center gap-2">
                     <Tag className="h-4 w-4" />
                     ID
                   </span>
-                  <span className="font-mono font-[var(--font-pixel)] text-xs truncate max-w-[200px]">
+                  <span className="font-mono font-body text-xs truncate max-w-[200px]">
                     {listing.id}
                   </span>
                 </div>

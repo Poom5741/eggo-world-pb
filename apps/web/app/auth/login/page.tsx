@@ -49,10 +49,10 @@ function LoginContent() {
                 />
               </div>
             </div>
-            <CardTitle className="font-[var(--font-pixel)] text-xl text-primary">
+            <CardTitle className="font-body text-xl text-primary">
               LOGIN
             </CardTitle>
-            <CardDescription className="font-[var(--font-pixel)] text-xs">
+            <CardDescription className="font-body text-xs">
               LOGIN WITH LINE
             </CardDescription>
           </CardHeader>
@@ -79,7 +79,7 @@ export default function Page() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     }>
       <LoginContent />

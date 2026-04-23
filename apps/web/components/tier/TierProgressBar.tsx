@@ -42,7 +42,7 @@ export function TierProgressBar({
                         )}
                     </span>
                     <span className={cn(
-                        "text-sm font-[var(--font-pixel)]",
+                        "text-sm font-body",
                         isComplete ? "text-primary" : "text-muted-foreground"
                     )}>
                         {progress}%

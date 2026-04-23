@@ -179,7 +179,7 @@ export default function HatchEggClient({ params }: HatchEggClientProps) {
   if (!isHydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     )
   }
@@ -216,10 +216,10 @@ export default function HatchEggClient({ params }: HatchEggClientProps) {
                   <div className="flex items-center gap-3">
                     <Egg className="w-12 h-12 text-primary animate-pulse" />
                     <div>
-                      <CardTitle className="font-[var(--font-pixel)] text-xl text-foreground">
+                      <CardTitle className="font-body text-xl text-foreground">
                         HATCH YOUR EGG
                       </CardTitle>
-                      <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                      <CardDescription className="font-body text-xs text-muted-foreground">
                         Egg #{egg?.token_id || params.id}
                       </CardDescription>
                     </div>
@@ -229,7 +229,7 @@ export default function HatchEggClient({ params }: HatchEggClientProps) {
                   {/* Food Count Progress */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-[var(--font-pixel)] text-xs text-foreground">
+                      <span className="font-body text-xs text-foreground">
                         FOOD CONSUMED
                       </span>
                       <Badge variant={canHatch ? 'default' : 'secondary'}>
@@ -246,7 +246,7 @@ export default function HatchEggClient({ params }: HatchEggClientProps) {
                   {!canHatch && (
                     <Alert variant="destructive">
                       <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="font-[var(--font-pixel)] text-xs">
+                      <AlertDescription className="font-body text-xs">
                         Your egg needs {MAX_FOOD_COUNT - foodCount} more food items before it can hatch.
                         Go feed it first!
                       </AlertDescription>
@@ -256,10 +256,10 @@ export default function HatchEggClient({ params }: HatchEggClientProps) {
                   {/* What Happens */}
                   {canHatch && (
                     <div className="bg-secondary/30 border-2 border-primary/30 p-4 space-y-3">
-                      <h3 className="font-[var(--font-pixel)] text-xs text-primary">
+                      <h3 className="font-body text-xs text-primary">
                         WHAT HAPPENS NEXT:
                       </h3>
-                      <ul className="space-y-2 font-[var(--font-pixel)] text-xs text-foreground">
+                      <ul className="space-y-2 font-body text-xs text-foreground">
                         <li className="flex items-start gap-2">
                           <CheckCircle2 className="w-3 h-3 text-primary mt-0.5" />
                           <span>Your egg will hatch into a random Animal NFT</span>
@@ -284,7 +284,7 @@ export default function HatchEggClient({ params }: HatchEggClientProps) {
                   {error && (
                     <Alert variant="destructive">
                       <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="font-[var(--font-pixel)] text-xs">
+                      <AlertDescription className="font-body text-xs">
                         {error}
                       </AlertDescription>
                     </Alert>

@@ -100,7 +100,7 @@ function AnimalListingCard({ listing, onClick }: AnimalListingCardProps) {
 
         {/* Buy button */}
         <Button
-          className="w-full font-[var(--font-pixel)] bg-primary text-on-primary"
+          className="w-full font-body bg-primary text-on-primary"
           onClick={(e) => {
             e.stopPropagation()
             onClick?.()
@@ -155,7 +155,7 @@ export function AnimalListingsSection({ className }: AnimalListingsSectionProps)
 
   const handleCardClick = (listing: any) => {
     // Navigate to detail page or open buy dialog
-    router.push(`/marketplace/animal/${listing.id}`)
+    router.push(`/marketplace/${listing.id}`)
   }
 
   if (loading) {
@@ -190,7 +190,7 @@ export function AnimalListingsSection({ className }: AnimalListingsSectionProps)
     <div className={cn("space-y-6", className)}>
       {/* Filters - only Rarity and Sort */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-        <h2 className="font-[var(--font-pixel)] text-lg text-on-surface">
+        <h2 className="font-body text-lg text-on-surface">
           Animal Listings ({sortedListings.length})
         </h2>
 
@@ -249,7 +249,7 @@ export function AnimalListingsSection({ className }: AnimalListingsSectionProps)
           </p>
           <Button
             onClick={() => router.push('/animals')}
-            className="font-[var(--font-pixel)]"
+            className="font-body"
           >
             View Your Animals
           </Button>

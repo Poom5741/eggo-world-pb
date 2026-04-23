@@ -220,10 +220,10 @@ export default function Marketplace() {
         {/* Marketplace Tabs */}
         <Tabs defaultValue="eggs" className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="eggs" className="font-[var(--font-pixel)]">
+            <TabsTrigger value="eggs" className="font-body">
               Eggs
             </TabsTrigger>
-            <TabsTrigger value="animals" className="font-[var(--font-pixel)]">
+            <TabsTrigger value="animals" className="font-body">
               Animals
             </TabsTrigger>
           </TabsList>

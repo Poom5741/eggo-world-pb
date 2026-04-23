@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { createClient } from "@/lib/pocketbase/client"
 import type { RarityType, SortOption } from "@/components/marketplace/MarketplaceFilters"
 
@@ -39,19 +39,21 @@ export function useAnimalMarketplace(
   const [listings, setListings] = useState<ResaleListing[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const pb = createClient()
+  const isMounted = useRef(true)
 
   const fetchListings = useCallback(async () => {
+    if (!isMounted.current) return
     setLoading(true)
     setError(null)
 
     try {
+      const pb = createClient()
+      
       // Build filter string for PocketBase
       let filter = 'status = "active"'
 
       if (rarities.length > 0) {
-        const rarityFilter = rarities.map((r) => `rarity = "${r}"`).join(" || ")
+        const rarityFilter = rarities.map((r) => `rarity = '${r}'`).join(" || ")
         filter = `(${filter}) && (${rarityFilter})`
       }
 
@@ -69,12 +71,15 @@ export function useAnimalMarketplace(
           break
       }
 
-      // Query resale_listings collection
+      // Query resale_listings collection with requestKey: null to disable auto-cancellation
       const result = await pb.collection("resale_listings").getList(1, 100, {
         filter: filter,
         sort: sort,
         expand: "seller_id", // Expand to get seller info
+        requestKey: null, // Disable auto-cancellation
       })
+
+      if (!isMounted.current) return
 
       // Transform results
       const transformedListings: ResaleListing[] = result.items.map((item: any) => ({
@@ -90,14 +95,32 @@ export function useAnimalMarketplace(
         listed_at: item.listed_at,
       }))
 
-      setListings(transformedListings)
+      if (isMounted.current) {
+        setListings(transformedListings)
+      }
     } catch (err: any) {
+      // Don't log auto-cancellation errors (expected on unmount/filter change)
+      if (err && typeof err === 'object' && 'isCanceled' in err && err.isCanceled) {
+        return
+      }
       console.error("Failed to fetch animal listings:", err)
-      setError(err.message || "Failed to load listings")
+      if (isMounted.current) {
+        setError(err.message || "Failed to load listings")
+      }
     } finally {
-      setLoading(false)
+      if (isMounted.current) {
+        setLoading(false)
+      }
     }
-  }, [rarities, sortBy, pb])
+  }, [rarities, sortBy])
+
+  // Cleanup on unmount
+  useEffect(() => {
+    isMounted.current = true
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
 
   // Initial fetch
   useEffect(() => {

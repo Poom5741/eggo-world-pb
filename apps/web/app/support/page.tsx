@@ -23,7 +23,7 @@ export default function SupportPage() {
   if (!isHydrated || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     )
   }
@@ -34,8 +34,8 @@ export default function SupportPage() {
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="space-y-8">
             <div className="space-y-2">
-              <h1 className="font-[var(--font-pixel)] text-3xl text-foreground">SUPPORT</h1>
-              <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+              <h1 className="font-body text-3xl text-foreground">SUPPORT</h1>
+              <p className="font-body text-xs text-muted-foreground">
                 Get help with your EggoWorld experience
               </p>
             </div>
@@ -47,15 +47,15 @@ export default function SupportPage() {
                   <div className="flex items-center gap-3">
                     <HelpCircle className="w-5 h-5 text-primary" />
                     <div>
-                      <CardTitle className="font-[var(--font-pixel)] text-lg">FAQ</CardTitle>
-                      <CardDescription className="font-[var(--font-pixel)] text-xs">
+                      <CardTitle className="font-body text-lg">FAQ</CardTitle>
+                      <CardDescription className="font-body text-xs">
                         Common questions answered
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="outline" className="font-[var(--font-pixel)] text-xs w-full">
+                  <Button variant="outline" className="font-body text-xs w-full">
                     View FAQ
                   </Button>
                 </CardContent>
@@ -67,15 +67,15 @@ export default function SupportPage() {
                   <div className="flex items-center gap-3">
                     <Book className="w-5 h-5 text-primary" />
                     <div>
-                      <CardTitle className="font-[var(--font-pixel)] text-lg">Guides</CardTitle>
-                      <CardDescription className="font-[var(--font-pixel)] text-xs">
+                      <CardTitle className="font-body text-lg">Guides</CardTitle>
+                      <CardDescription className="font-body text-xs">
                         Step-by-step tutorials
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="outline" className="font-[var(--font-pixel)] text-xs w-full">
+                  <Button variant="outline" className="font-body text-xs w-full">
                     Browse Guides
                   </Button>
                 </CardContent>
@@ -87,15 +87,15 @@ export default function SupportPage() {
                   <div className="flex items-center gap-3">
                     <MessageSquare className="w-5 h-5 text-primary" />
                     <div>
-                      <CardTitle className="font-[var(--font-pixel)] text-lg">Contact Us</CardTitle>
-                      <CardDescription className="font-[var(--font-pixel)] text-xs">
+                      <CardTitle className="font-body text-lg">Contact Us</CardTitle>
+                      <CardDescription className="font-body text-xs">
                         Submit a support ticket
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="outline" className="font-[var(--font-pixel)] text-xs w-full">
+                  <Button variant="outline" className="font-body text-xs w-full">
                     Submit Ticket
                   </Button>
                 </CardContent>
@@ -107,15 +107,15 @@ export default function SupportPage() {
                   <div className="flex items-center gap-3">
                     <LifeBuoy className="w-5 h-5 text-primary" />
                     <div>
-                      <CardTitle className="font-[var(--font-pixel)] text-lg">Community</CardTitle>
-                      <CardDescription className="font-[var(--font-pixel)] text-xs">
+                      <CardTitle className="font-body text-lg">Community</CardTitle>
+                      <CardDescription className="font-body text-xs">
                         Join our Discord server
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <Button className="font-[var(--font-pixel)] text-xs w-full">
+                  <Button className="font-body text-xs w-full">
                     Join Discord
                   </Button>
                 </CardContent>
@@ -128,8 +128,8 @@ export default function SupportPage() {
                 <div className="flex items-center gap-3">
                   <Mail className="w-5 h-5 text-primary" />
                   <div>
-                    <CardTitle className="font-[var(--font-pixel)] text-lg">Contact Information</CardTitle>
-                    <CardDescription className="font-[var(--font-pixel)] text-xs">
+                    <CardTitle className="font-body text-lg">Contact Information</CardTitle>
+                    <CardDescription className="font-body text-xs">
                       Reach out to us directly
                     </CardDescription>
                   </div>
@@ -138,11 +138,11 @@ export default function SupportPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-3">
                   <Mail className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-[var(--font-pixel)] text-xs">support@eggoworld.io</span>
+                  <span className="font-body text-xs">support@eggoworld.io</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-[var(--font-pixel)] text-xs">+1 (555) 123-4567</span>
+                  <span className="font-body text-xs">+1 (555) 123-4567</span>
                 </div>
               </CardContent>
             </Card>

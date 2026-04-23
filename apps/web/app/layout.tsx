@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Press_Start_2P, Geist } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import PlatformStatusBanner from '@/components/PlatformStatusBanner'
 import './globals.css'
 
 const pressStart = Press_Start_2P({ 
@@ -59,6 +60,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${pressStart.variable} ${geist.variable} font-sans antialiased`} suppressHydrationWarning>
+        <PlatformStatusBanner />
         {/* Skip Navigation Link — WCAG 2.2 AA compliance */}
         <a 
           href="#main-content" 

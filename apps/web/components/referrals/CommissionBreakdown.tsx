@@ -154,10 +154,10 @@ export function CommissionBreakdown({ userId, className }: CommissionBreakdownPr
         <CardContent className="py-12 text-center space-y-4">
           <Users className="w-16 h-16 mx-auto text-muted-foreground" />
           <div className="space-y-2">
-            <h3 className="font-[var(--font-pixel)] text-lg text-foreground">
+            <h3 className="font-body text-lg text-foreground">
               NO REFERRALS YET
             </h3>
-            <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+            <p className="font-body text-xs text-muted-foreground">
               Share your referral link to start earning
             </p>
           </div>
@@ -198,7 +198,7 @@ export function CommissionBreakdown({ userId, className }: CommissionBreakdownPr
                 <Badge
                   variant="outline"
                   className={cn(
-                    'font-[var(--font-pixel)] text-xs',
+                    'font-body text-xs',
                     level.label === 'G1' && 'border-primary text-primary',
                     level.label === 'G2' && 'border-accent text-accent',
                     level.label === 'G3' && 'border-secondary text-secondary',
@@ -207,7 +207,7 @@ export function CommissionBreakdown({ userId, className }: CommissionBreakdownPr
                 >
                   {level.label}
                 </Badge>
-                <span className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                <span className="font-body text-xs text-muted-foreground">
                   {level.percentage}%
                 </span>
               </div>
@@ -247,18 +247,18 @@ export function CommissionBreakdown({ userId, className }: CommissionBreakdownPr
               <div className="space-y-1">
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Users className="w-3 h-3" />
-                  <span className="font-[var(--font-pixel)] text-xs">
+                  <span className="font-body text-xs">
                     {level.count} {level.count === 1 ? 'Buddy' : 'Buddies'}
                   </span>
                 </div>
-                <div className="font-[var(--font-pixel)] text-sm text-foreground">
+                <div className="font-body text-sm text-foreground">
                   {level.earned.toFixed(2)} USDT
                 </div>
               </div>
 
               {/* Tooltip on hover */}
               <div className="group absolute inset-0 bg-background/95 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center p-4">
-                <p className="font-[var(--font-pixel)] text-xs text-center text-foreground">
+                <p className="font-body text-xs text-center text-foreground">
                   {level.label} earns {level.percentage}% of direct referrals
                   {level.level === 1 && ' (Direct referrals)'}
                   {level.level === 2 && ' (Level 2 network)'}

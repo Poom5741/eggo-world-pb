@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, ShoppingCart } from 'lucide-react';
+import { FoodIcon } from '@/components/icons/species-icons';
 
 const FOOD_PRICE = 0.50;
 const MAX_QUANTITY = 100;
@@ -136,32 +137,32 @@ function FoodMarketplaceContent() {
         {mintResult && (
           <Card variant="clay" className="shadow-clay-lg bg-primary/10">
             <CardHeader>
-              <CardTitle className="text-green-600 font-[var(--font-pixel)] text-sm">✓ Minting Successful!</CardTitle>
+              <CardTitle className="text-green-600 font-body text-sm">✓ Minting Successful!</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-clay-lg">
                 <div>
-                  <Label className="font-[var(--font-pixel)] text-xs">Food NFTs Minted</Label>
-                  <p className="text-2xl font-bold font-[var(--font-pixel)] text-primary">{mintResult.food_ids.length}</p>
+                  <Label className="font-body text-xs">Food NFTs Minted</Label>
+                  <p className="text-2xl font-bold font-body text-primary">{mintResult.food_ids.length}</p>
                 </div>
                 <div>
-                  <Label className="font-[var(--font-pixel)] text-xs">Total Cost</Label>
-                  <p className="text-2xl font-bold font-[var(--font-pixel)] text-primary">{mintResult.total_cost} USDT</p>
+                  <Label className="font-body text-xs">Total Cost</Label>
+                  <p className="text-2xl font-bold font-body text-primary">{mintResult.total_cost} USDT</p>
                 </div>
               </div>
 
               <div>
-                <Label className="font-[var(--font-pixel)] text-xs">Food Type Distribution</Label>
+                <Label className="font-body text-xs">Food Type Distribution</Label>
                 <div className="grid grid-cols-4 gap-clay-md mt-2">
-                  <Badge variant="clay" className="bg-yellow-500 shadow-clay-sm">🌾 {mintResult.food_type_distribution.grain} Grain</Badge>
-                  <Badge variant="clay" className="bg-blue-500 shadow-clay-sm">🐟 {mintResult.food_type_distribution.fish} Fish</Badge>
-                  <Badge variant="clay" className="bg-green-500 shadow-clay-sm">🦗 {mintResult.food_type_distribution.insects} Insects</Badge>
-                  <Badge variant="clay" className="bg-purple-500 shadow-clay-sm">🌿 {mintResult.food_type_distribution.herb} Herb</Badge>
+                  <Badge variant="clay" className="shadow-clay-sm"><FoodIcon food="Wheat" className="w-4 h-4 inline mr-1" />{mintResult.food_type_distribution.grain} Grain</Badge>
+                  <Badge variant="clay" className="shadow-clay-sm"><FoodIcon food="Fish" className="w-4 h-4 inline mr-1" />{mintResult.food_type_distribution.fish} Fish</Badge>
+                  <Badge variant="clay" className="shadow-clay-sm"><FoodIcon food="Bug" className="w-4 h-4 inline mr-1" />{mintResult.food_type_distribution.insects} Insects</Badge>
+                  <Badge variant="clay" className="shadow-clay-sm"><FoodIcon food="Leaf" className="w-4 h-4 inline mr-1" />{mintResult.food_type_distribution.herb} Herb</Badge>
                 </div>
               </div>
 
               <div>
-                <Label className="font-[var(--font-pixel)] text-xs">Transaction Hash</Label>
+                <Label className="font-body text-xs">Transaction Hash</Label>
                 <p className="text-xs font-mono break-all">{mintResult.tx_hash}</p>
               </div>
             </CardContent>

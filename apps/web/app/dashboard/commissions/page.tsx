@@ -196,7 +196,7 @@ export default function CommissionsDashboard() {
   if (!isHydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     )
   }
@@ -217,11 +217,11 @@ export default function CommissionsDashboard() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="space-y-2">
-                <h1 className="font-[var(--font-pixel)] text-2xl md:text-3xl text-foreground flex items-center gap-3">
+                <h1 className="font-heading text-heading-xl text-foreground flex items-center gap-3">
                   <Coins className="w-8 h-8 text-primary" />
                   COMMISSIONS
                 </h1>
-                <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                <p className="font-body text-xs text-muted-foreground">
                   EARN FROM YOUR REFERRAL CHAIN
                 </p>
               </div>
@@ -236,7 +236,7 @@ export default function CommissionsDashboard() {
                   disabled={updating}
                   variant="outline"
                   size="sm"
-                  className="font-[var(--font-pixel)] text-xs"
+                  className="font-body text-xs"
                 >
                   <RefreshCw className={`h-4 w-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
                   Refresh
@@ -251,10 +251,10 @@ export default function CommissionsDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="border-2 border-primary/30 bg-card">
                 <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                  <CardDescription className="font-body text-xs text-muted-foreground">
                     PENDING
                   </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-primary">
+                  <CardTitle className="font-heading text-section text-primary">
                     {stats.totalPending.toFixed(2)} USDT
                   </CardTitle>
                 </CardHeader>
@@ -268,10 +268,10 @@ export default function CommissionsDashboard() {
 
               <Card className="border-2 border-primary/30 bg-card">
                 <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                  <CardDescription className="font-body text-xs text-muted-foreground">
                     TOTAL EARNED
                   </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-2xl text-foreground">
+                  <CardTitle className="font-heading text-section text-foreground">
                     {usdtTotalEarned.toFixed(2)} USDT
                   </CardTitle>
                 </CardHeader>
@@ -285,10 +285,10 @@ export default function CommissionsDashboard() {
 
               <Card className="border-2 border-accent/30 bg-card">
                 <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                  <CardDescription className="font-body text-xs text-muted-foreground">
                     G1 EARNINGS (20%)
                   </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-xl text-accent">
+                  <CardTitle className="font-heading text-heading-md text-accent">
                     {stats.g1Earnings.toFixed(2)} USDT
                   </CardTitle>
                 </CardHeader>
@@ -301,10 +301,10 @@ export default function CommissionsDashboard() {
 
               <Card className="border-2 border-primary/30 bg-card">
                 <CardHeader className="pb-3">
-                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                  <CardDescription className="font-body text-xs text-muted-foreground">
                     G2-G4 EARNINGS
                   </CardDescription>
-                  <CardTitle className="font-[var(--font-pixel)] text-xl text-foreground">
+                  <CardTitle className="font-heading text-heading-md text-foreground">
                     {(stats.g2Earnings + stats.g3Earnings + stats.g4Earnings).toFixed(2)} USDT
                   </CardTitle>
                 </CardHeader>
@@ -319,10 +319,10 @@ export default function CommissionsDashboard() {
             {/* Claim Card */}
             <Card className="border-4 border-primary/50 bg-card">
               <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
+                <CardTitle className="font-body text-lg text-foreground">
                   CLAIM COMMISSIONS
                 </CardTitle>
-                <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                <CardDescription className="font-body text-xs text-muted-foreground">
                   Withdraw your earned commissions to your wallet
                 </CardDescription>
               </CardHeader>
@@ -330,10 +330,10 @@ export default function CommissionsDashboard() {
                 {stats.totalPending > 0 ? (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="font-[var(--font-pixel)] text-xs text-foreground">
+                      <span className="font-body text-xs text-foreground">
                         AVAILABLE TO CLAIM:
                       </span>
-                      <span className="font-[var(--font-pixel)] text-lg text-primary">
+                      <span className="font-body text-lg text-primary">
                         {stats.totalPending.toFixed(2)} USDT
                       </span>
                     </div>
@@ -341,7 +341,7 @@ export default function CommissionsDashboard() {
                   </>
                 ) : (
                   <div className="text-center py-4">
-                    <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                    <p className="font-body text-xs text-muted-foreground">
                       No commissions available to claim
                     </p>
                   </div>
@@ -350,7 +350,7 @@ export default function CommissionsDashboard() {
                 {claimSuccess && (
                   <Alert className="bg-primary/20 border-primary">
                     <CheckCircle2 className="h-4 w-4 text-primary" />
-                    <AlertDescription className="font-[var(--font-pixel)] text-xs">
+                    <AlertDescription className="font-body text-xs">
                       Successfully claimed {claimSuccess.claimed_amount} USDT!
                       <br />
                       TX: {claimSuccess.tx_hash?.slice(0, 10)}...{claimSuccess.tx_hash?.slice(-8)}
@@ -362,7 +362,7 @@ export default function CommissionsDashboard() {
                 <Button
                   onClick={handleClaim}
                   disabled={claiming || stats.totalPending === 0}
-                  className="w-full font-[var(--font-pixel)] text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors"
+                  className="w-full font-body text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors"
                 >
                   {claiming ? (
                     <>
@@ -382,10 +382,10 @@ export default function CommissionsDashboard() {
             {/* Commission Breakdown */}
             <Card className="border-2 border-primary/30 bg-card">
               <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
+                <CardTitle className="font-body text-lg text-foreground">
                   EARNINGS BREAKDOWN
                 </CardTitle>
-                <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                <CardDescription className="font-body text-xs text-muted-foreground">
                   Commission distribution by level
                 </CardDescription>
               </CardHeader>
@@ -393,53 +393,53 @@ export default function CommissionsDashboard() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-primary text-primary-foreground font-[var(--font-pixel)] text-xs">
+                      <Badge className="bg-primary text-primary-foreground font-body text-xs">
                         G1
                       </Badge>
-                      <span className="font-[var(--font-pixel)] text-xs text-foreground">
+                      <span className="font-body text-xs text-foreground">
                         Direct referrals (20%)
                       </span>
                     </div>
-                    <span className="font-[var(--font-pixel)] text-sm text-primary">
+                    <span className="font-body text-sm text-primary">
                       {stats.g1Earnings.toFixed(2)} USDT
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-secondary text-foreground font-[var(--font-pixel)] text-xs">
+                      <Badge className="bg-secondary text-foreground font-body text-xs">
                         G2
                       </Badge>
-                      <span className="font-[var(--font-pixel)] text-xs text-foreground">
+                      <span className="font-body text-xs text-foreground">
                         Level 2 (10%)
                       </span>
                     </div>
-                    <span className="font-[var(--font-pixel)] text-sm text-foreground">
+                    <span className="font-body text-sm text-foreground">
                       {stats.g2Earnings.toFixed(2)} USDT
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-secondary text-foreground font-[var(--font-pixel)] text-xs">
+                      <Badge className="bg-secondary text-foreground font-body text-xs">
                         G3
                       </Badge>
-                      <span className="font-[var(--font-pixel)] text-xs text-foreground">
+                      <span className="font-body text-xs text-foreground">
                         Level 3 (10%)
                       </span>
                     </div>
-                    <span className="font-[var(--font-pixel)] text-sm text-foreground">
+                    <span className="font-body text-sm text-foreground">
                       {stats.g3Earnings.toFixed(2)} USDT
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-secondary text-foreground font-[var(--font-pixel)] text-xs">
+                      <Badge className="bg-secondary text-foreground font-body text-xs">
                         G4
                       </Badge>
-                      <span className="font-[var(--font-pixel)] text-xs text-foreground">
+                      <span className="font-body text-xs text-foreground">
                         Level 4 (10%)
                       </span>
                     </div>
-                    <span className="font-[var(--font-pixel)] text-sm text-foreground">
+                    <span className="font-body text-sm text-foreground">
                       {stats.g4Earnings.toFixed(2)} USDT
                     </span>
                   </div>
@@ -450,17 +450,17 @@ export default function CommissionsDashboard() {
             {/* History */}
             {loading ? (
               <div className="flex items-center justify-center py-12">
-                <p className="font-[var(--font-pixel)] text-foreground">LOADING HISTORY...</p>
+                <p className="font-body text-foreground">LOADING HISTORY...</p>
               </div>
             ) : commissions.length === 0 ? (
               <Card variant="clay-lg" className="border-2 border-primary/30 bg-card shadow-clay-xl">
                 <CardContent className="py-12 text-center space-y-4">
                   <Coins className="w-16 h-16 mx-auto text-muted-foreground" />
                   <div className="space-y-2">
-                    <h3 className="font-[var(--font-pixel)] text-lg text-foreground">
+                    <h3 className="font-body text-lg text-foreground">
                       NO COMMISSIONS YET
                     </h3>
-                    <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                    <p className="font-body text-xs text-muted-foreground">
                       Share your referral link to start earning
                     </p>
                   </div>
@@ -469,7 +469,7 @@ export default function CommissionsDashboard() {
             ) : (
               <Card variant="clay-lg" className="border-2 border-primary/30 bg-card shadow-clay-xl">
                 <CardHeader>
-                  <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
+                  <CardTitle className="font-body text-lg text-foreground">
                     COMMISSION HISTORY
                   </CardTitle>
                 </CardHeader>
@@ -487,21 +487,21 @@ export default function CommissionsDashboard() {
                           <div className="flex items-center gap-2">
                             <Badge
                               variant={commission.level === 1 ? 'clay' : 'clay-secondary'}
-                              className="font-[var(--font-pixel)] text-xs"
+                              className="font-body text-xs"
                             >
                               G{commission.level}
                             </Badge>
-                            <span className="font-[var(--font-pixel)] text-xs text-foreground">
+                            <span className="font-body text-xs text-foreground">
                               {commission.amount} USDT
                             </span>
                           </div>
-                          <span className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                          <span className="font-body text-xs text-muted-foreground">
                             TX: {commission.tx_hash?.slice(0, 10)}...{commission.tx_hash?.slice(-8)}
                           </span>
                         </div>
                         <Badge
                           variant={commission.claimed ? 'clay' : 'clay-secondary'}
-                          className="font-[var(--font-pixel)] text-xs"
+                          className="font-body text-xs"
                         >
                           {commission.claimed ? 'CLAIMED' : 'PENDING'}
                         </Badge>

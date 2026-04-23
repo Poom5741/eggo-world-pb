@@ -88,7 +88,7 @@ export function TierBadgeCard({ badge, className }: TierBadgeCardProps) {
                             {iconName}
                         </span>
                         <CardTitle className={cn(
-                            "text-lg font-[var(--font-pixel)] capitalize",
+                            "text-lg font-body capitalize",
                             badge.claimed ? colors.text : "text-muted-foreground"
                         )}>
                             {badge.name}
@@ -96,19 +96,19 @@ export function TierBadgeCard({ badge, className }: TierBadgeCardProps) {
                     </div>
                     
                     {badge.claimed && (
-                        <Badge className={cn("font-[var(--font-pixel)] text-xs", colors.badge)}>
+                        <Badge className={cn("font-body text-xs", colors.badge)}>
                             CLAIMED
                         </Badge>
                     )}
                     
                     {isNext && !badge.claimed && canClaim && (
-                        <Badge variant="clay" className="font-[var(--font-pixel)] text-xs animate-pulse">
+                        <Badge variant="clay" className="font-body text-xs animate-pulse">
                             READY
                         </Badge>
                     )}
                     
                     {isNext && !badge.claimed && !canClaim && (
-                        <Badge variant="secondary" className="font-[var(--font-pixel)] text-xs">
+                        <Badge variant="secondary" className="font-body text-xs">
                             NEXT
                         </Badge>
                     )}

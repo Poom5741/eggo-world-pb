@@ -34,7 +34,7 @@ export function MintButton({ onMint, disabled = false, balance = 0, price = 25 }
     <Button
       onClick={handleClick}
       disabled={disabled || loading || !canAfford}
-      className="w-full font-[var(--font-pixel)] text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors disabled:opacity-50"
+      className="w-full font-body text-sm h-12 border-4 border-primary/50 hover:border-primary transition-colors disabled:opacity-50"
     >
       {loading ? (
         <>

@@ -96,7 +96,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         variant="clay"
-        className="w-full max-w-md font-[var(--font-pixel)]"
+        className="w-full max-w-md font-body"
         data-testid="modal-content"
       >
         <div
@@ -143,7 +143,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
           <div className="flex gap-3">
             <Button
               variant="clay"
-              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-[var(--font-pixel)] text-xs py-3"
+              className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-body text-xs py-3"
               onClick={handleDeposit}
               role="button"
               aria-label="deposit"
@@ -153,7 +153,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
             </Button>
             <Button
               variant="clay-outline"
-              className="flex-1 bg-background hover:bg-secondary/20 text-foreground font-[var(--font-pixel)] text-xs py-3 border-primary/30"
+              className="flex-1 bg-background hover:bg-secondary/20 text-foreground font-body text-xs py-3 border-primary/30"
               onClick={handleWithdraw}
               role="button"
               aria-label="withdraw"

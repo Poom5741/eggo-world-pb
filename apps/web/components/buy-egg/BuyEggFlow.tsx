@@ -91,7 +91,7 @@ export function BuyEggFlow({ onSuccess, onError }: BuyEggFlowProps) {
       <Button
         onClick={handlePurchase}
         disabled={loading || approving || !!success}
-        className="w-full font-[var(--font-pixel)] text-sm h-12 border-4 border-primary/50 hover:border-primary"
+        className="w-full font-body text-sm h-12 border-4 border-primary/50 hover:border-primary"
       >
         {approving ? (
           <>
@@ -119,7 +119,7 @@ export function BuyEggFlow({ onSuccess, onError }: BuyEggFlowProps) {
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription className="font-[var(--font-pixel)] text-xs">
+          <AlertDescription className="font-body text-xs">
             {error}
           </AlertDescription>
         </Alert>
@@ -128,7 +128,7 @@ export function BuyEggFlow({ onSuccess, onError }: BuyEggFlowProps) {
       {success && (
         <Alert className="bg-primary/20 border-primary">
           <CheckCircle2 className="h-4 w-4 text-primary" />
-          <AlertDescription className="font-[var(--font-pixel)] text-xs">
+          <AlertDescription className="font-body text-xs">
             Successfully purchased Egg NFT!
             <br />
             Egg ID: {success.eggId}

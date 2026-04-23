@@ -288,7 +288,7 @@ export default function DashboardPage() {
   if (!isHydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     )
   }
@@ -296,7 +296,7 @@ export default function DashboardPage() {
   if (!authReady) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING DASHBOARD...</p>
+        <p className="font-body text-foreground">LOADING DASHBOARD...</p>
       </div>
     )
   }
@@ -304,7 +304,7 @@ export default function DashboardPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">REDIRECTING TO LOGIN...</p>
+        <p className="font-body text-foreground">REDIRECTING TO LOGIN...</p>
       </div>
     )
   }

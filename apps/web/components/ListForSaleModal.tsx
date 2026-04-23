@@ -61,20 +61,20 @@ export function ListForSaleModal({ nftId, onSuccess }: ListForSaleModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="font-[var(--font-pixel)] text-sm border-2 border-primary/50 hover:border-primary">
+        <Button className="font-body text-sm border-2 border-primary/50 hover:border-primary">
           <Tag className="w-4 h-4 mr-2" />
           List for Sale
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="font-[var(--font-pixel)] text-lg text-foreground">
+          <DialogTitle className="font-body text-lg text-foreground">
             List NFT for Sale
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="price" className="font-[var(--font-pixel)] text-xs text-foreground">
+            <Label htmlFor="price" className="font-body text-xs text-foreground">
               Price (USDT)
             </Label>
             <Input
@@ -85,7 +85,7 @@ export function ListForSaleModal({ nftId, onSuccess }: ListForSaleModalProps) {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="0.00"
-              className="font-[var(--font-pixel)] text-xs border-2 border-primary/50 bg-background"
+              className="font-body text-xs border-2 border-primary/50 bg-background"
               disabled={loading}
             />
             <p className="text-xs text-muted-foreground">
@@ -96,7 +96,7 @@ export function ListForSaleModal({ nftId, onSuccess }: ListForSaleModalProps) {
           {success && (
             <Alert className="bg-primary/20 border-primary">
               <CheckCircle2 className="h-4 w-4 text-primary" />
-              <AlertDescription className="font-[var(--font-pixel)] text-xs">
+              <AlertDescription className="font-body text-xs">
                 NFT listed successfully!
               </AlertDescription>
             </Alert>
@@ -105,7 +105,7 @@ export function ListForSaleModal({ nftId, onSuccess }: ListForSaleModalProps) {
           {error && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="font-[var(--font-pixel)] text-xs">
+              <AlertDescription className="font-body text-xs">
                 {error}
               </AlertDescription>
             </Alert>

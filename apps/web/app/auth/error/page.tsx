@@ -62,10 +62,10 @@ function ErrorContent() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <CardTitle className="font-[var(--font-pixel)] text-xl text-accent">
+              <CardTitle className="font-body text-xl text-accent">
                 {getErrorTitle()}
               </CardTitle>
-              <CardDescription className="font-[var(--font-pixel)] text-[10px] leading-relaxed">
+              <CardDescription className="font-body text-[10px] leading-relaxed">
                 {getErrorMessage()}
               </CardDescription>
             </div>
@@ -103,7 +103,7 @@ export default function Page() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     }>
       <ErrorContent />

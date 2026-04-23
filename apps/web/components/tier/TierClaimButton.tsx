@@ -48,7 +48,7 @@ export function TierClaimButton({
         return (
             <div className={cn("flex items-center gap-2 text-primary", className)}>
                 <CheckCircle2 className="w-5 h-5" />
-                <span className="font-[var(--font-pixel)] text-sm">
+                <span className="font-body text-sm">
                     ${usdtReward} USDT Claimed!
                 </span>
             </div>
@@ -62,7 +62,7 @@ export function TierClaimButton({
                 disabled={!canClaim || isClaiming}
                 variant={variant}
                 className={cn(
-                    "relative font-[var(--font-pixel)]",
+                    "relative font-body",
                     canClaim && "animate-pulse hover:animate-none"
                 )}
             >
@@ -127,7 +127,7 @@ export function TierClaimNotification({
                     emoji_events
                 </span>
                 <div className="flex-1">
-                    <h4 className="font-[var(--font-pixel)] text-foreground mb-1">
+                    <h4 className="font-body text-foreground mb-1">
                         Tier Reward Available!
                     </h4>
                     <p className="text-sm text-muted-foreground mb-3">
@@ -141,7 +141,7 @@ export function TierClaimNotification({
                                 key={tier.name}
                                 size="sm"
                                 onClick={() => onClaimClick(tier.name)}
-                                className="font-[var(--font-pixel)] text-xs"
+                                className="font-body text-xs"
                             >
                                 <Gift className="w-3 h-3 mr-1" />
                                 Claim {tier.name}

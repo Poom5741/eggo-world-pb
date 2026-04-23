@@ -867,6 +867,44 @@ img, video, svg {
   }
 }
 
+/* Typography utilities — unified font system */
+@layer utilities {
+  /* Font family utilities */
+  .font-heading {
+    @apply font-headline;
+  }
+
+  .font-body {
+    @apply font-body;
+  }
+
+  .font-pixel {
+    @apply font-[var(--font-pixel)];
+  }
+
+  /* Responsive text sizes — headings */
+  .text-heading-xl {
+    @apply text-2xl md:text-3xl lg:text-4xl font-black;
+  }
+
+  .text-heading-lg {
+    @apply text-xl md:text-2xl lg:text-3xl font-black;
+  }
+
+  .text-heading-md {
+    @apply text-lg md:text-xl lg:text-2xl font-bold;
+  }
+
+  /* Section headers */
+  .text-section {
+    @apply text-xl md:text-2xl lg:text-3xl;
+  }
+
+  .text-subsection {
+    @apply text-lg md:text-xl lg:text-2xl;
+  }
+}
+
 /* Container width constraints */
 .container-responsive {
   width: 100%;

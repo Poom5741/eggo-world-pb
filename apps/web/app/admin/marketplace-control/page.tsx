@@ -5,24 +5,25 @@ import { useRouter } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { createClient } from '@/lib/pocketbase/client'
 import LayoutWrapper from '@/components/LayoutWrapper'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { Shield, Power, PowerOff, Loader2 } from 'lucide-react'
+import { Shield, Power, PowerOff, Loader2, TrendingUp, Link } from 'lucide-react'
 
 const pb = createClient()
 
 export default function MarketplaceControlPage() {
-  const [isHydrated] = useIsHydrated()
+  const isHydrated = useIsHydrated()
   const router = useRouter()
   
   const [platformPaused, setPlatformPaused] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [actionInProgress, setActionInProgress] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [revenue, setRevenue] = useState({ totalUsdt: 0, transactionCount: 0 })
   
   useEffect(() => {
     if (!isHydrated) return
@@ -34,7 +35,28 @@ export default function MarketplaceControlPage() {
     }
     
     loadPlatformStatus()
+    loadRevenueStats()
   }, [isHydrated, router])
+
+  async function loadRevenueStats() {
+    try {
+      const logs = await pb.collection('transaction_logs').getList(1, 1000, {
+        filter: 'status = "success"',
+        sort: '-created'
+      })
+      
+      const totalUsdt = logs.items.reduce((sum: number, log: any) => {
+        return sum + (log.amount || 0)
+      }, 0)
+      
+      setRevenue({
+        totalUsdt,
+        transactionCount: logs.items.length
+      })
+    } catch (err) {
+      console.error('Failed to load revenue stats:', err)
+    }
+  }
 
   async function loadPlatformStatus() {
     try {
@@ -71,7 +93,7 @@ export default function MarketplaceControlPage() {
       
       if (!response.ok) throw new Error(`Failed to ${action} platform`)
       
-      const data = await response.json()
+      const _data = await response.json()
       
       setPlatformPaused(action === 'pause')
       
@@ -93,7 +115,7 @@ export default function MarketplaceControlPage() {
     )
   }
 
-  const user = pb.authStore.record as any
+  const _user = pb.authStore.record as any
   
   return (
     <LayoutWrapper>
@@ -177,6 +199,35 @@ export default function MarketplaceControlPage() {
             These controls affect all users. Use with caution and only during emergencies or maintenance windows.
           </AlertDescription>
         </Alert>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              Revenue Stats
+            </CardTitle>
+            <CardDescription>Platform revenue from successful transactions</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-surface-container rounded-lg p-4">
+                <p className="text-sm text-muted-foreground">Total USDT Volume</p>
+                <p className="text-2xl font-bold text-green-600">{revenue.totalUsdt.toLocaleString()} USDT</p>
+              </div>
+              <div className="bg-surface-container rounded-lg p-4">
+                <p className="text-sm text-muted-foreground">Transactions</p>
+                <p className="text-2xl font-bold">{revenue.transactionCount}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="mt-6 flex gap-4">
+          <Button variant="outline" onClick={() => router.push('/admin/monitoring')}>
+            <Link className="w-4 h-4 mr-2" />
+            Monitoring Dashboard
+          </Button>
+        </div>
       </div>
     </LayoutWrapper>
   )

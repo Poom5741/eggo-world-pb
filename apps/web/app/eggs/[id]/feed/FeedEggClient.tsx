@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Egg, CheckCircle } from 'lucide-react';
 import { FoodCard, FoodType } from '@/components/food-nft/FoodCard';
+import { FoodIcon } from '@/components/icons/species-icons';
 import { cn } from '@/lib/utils';
 
 const MAX_FOOD_COUNT = 10;
@@ -182,10 +183,10 @@ export default function FeedEggClient({ params }: FeedEggClientProps) {
                   <div>
                     <Label>Food Type Distribution</Label>
                     <div className="grid grid-cols-4 gap-2 mt-2">
-                      <Badge className="bg-yellow-500">🌾 {feedResult.food_type_distribution.grain}</Badge>
-                      <Badge className="bg-blue-500">🐟 {feedResult.food_type_distribution.fish}</Badge>
-                      <Badge className="bg-green-500">🦗 {feedResult.food_type_distribution.insects}</Badge>
-                      <Badge className="bg-purple-500">🌿 {feedResult.food_type_distribution.herb}</Badge>
+                      <Badge><FoodIcon food="Wheat" className="w-4 h-4 inline mr-1" />{feedResult.food_type_distribution.grain}</Badge>
+                      <Badge><FoodIcon food="Fish" className="w-4 h-4 inline mr-1" />{feedResult.food_type_distribution.fish}</Badge>
+                      <Badge><FoodIcon food="Bug" className="w-4 h-4 inline mr-1" />{feedResult.food_type_distribution.insects}</Badge>
+                      <Badge><FoodIcon food="Leaf" className="w-4 h-4 inline mr-1" />{feedResult.food_type_distribution.herb}</Badge>
                     </div>
                   </div>
 
@@ -201,20 +202,20 @@ export default function FeedEggClient({ params }: FeedEggClientProps) {
           <div className="space-y-4">
             <Card variant="clay-lg" className="shadow-clay-xl">
               <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-sm">Your Food NFTs</CardTitle>
-                <CardDescription className="font-[var(--font-pixel)] text-xs">
+                <CardTitle className="font-body text-sm">Your Food NFTs</CardTitle>
+                <CardDescription className="font-body text-xs">
                   Select food items to feed ({selectedFoodIds.length} selected)
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 {error && (
                   <Alert variant="destructive" className="mb-4">
-                    <AlertDescription className="font-[var(--font-pixel)] text-xs">{error}</AlertDescription>
+                    <AlertDescription className="font-body text-xs">{error}</AlertDescription>
                   </Alert>
                 )}
 
                 {foodItems.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8 font-[var(--font-pixel)] text-xs">
+                  <p className="text-muted-foreground text-center py-8 font-body text-xs">
                     No Food NFTs available. Visit the{' '}
                     <a href="/marketplace/food" className="text-primary underline">
                       Food Marketplace

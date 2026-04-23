@@ -26,7 +26,7 @@ export default function SettingsPage() {
   if (!isHydrated || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     )
   }
@@ -37,8 +37,8 @@ export default function SettingsPage() {
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="space-y-8">
             <div className="space-y-2">
-              <h1 className="font-[var(--font-pixel)] text-3xl text-foreground">SETTINGS</h1>
-              <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+              <h1 className="font-heading text-heading-xl text-foreground">SETTINGS</h1>
+              <p className="font-body text-xs text-muted-foreground">
                 Manage your account settings and preferences
               </p>
             </div>
@@ -51,8 +51,8 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <User className="w-5 h-5 text-primary" />
                   <div>
-                    <CardTitle className="font-[var(--font-pixel)] text-lg">Profile</CardTitle>
-                    <CardDescription className="font-[var(--font-pixel)] text-xs">
+                    <CardTitle className="font-body text-lg">Profile</CardTitle>
+                    <CardDescription className="font-body text-xs">
                       Update your personal information
                     </CardDescription>
                   </div>
@@ -60,12 +60,12 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="font-[var(--font-pixel)] text-xs">Username</Label>
-                  <Input value={user?.name || ''} readOnly className="font-[var(--font-pixel)] text-xs" />
+                  <Label className="font-body text-xs">Username</Label>
+                  <Input value={user?.name || ''} readOnly className="font-body text-xs" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="font-[var(--font-pixel)] text-xs">Email</Label>
-                  <Input value={user?.email || ''} readOnly className="font-[var(--font-pixel)] text-xs" />
+                  <Label className="font-body text-xs">Email</Label>
+                  <Input value={user?.email || ''} readOnly className="font-body text-xs" />
                 </div>
               </CardContent>
             </Card>
@@ -76,8 +76,8 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <Wallet className="w-5 h-5 text-primary" />
                   <div>
-                    <CardTitle className="font-[var(--font-pixel)] text-lg">Wallet</CardTitle>
-                    <CardDescription className="font-[var(--font-pixel)] text-xs">
+                    <CardTitle className="font-body text-lg">Wallet</CardTitle>
+                    <CardDescription className="font-body text-xs">
                       Manage your connected wallet
                     </CardDescription>
                   </div>
@@ -85,14 +85,14 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="font-[var(--font-pixel)] text-xs">Connected Wallet</Label>
+                  <Label className="font-body text-xs">Connected Wallet</Label>
                   <Input 
                     value={user?.wallet || user?.wallet_address || 'Not connected'} 
                     readOnly 
-                    className="font-[var(--font-pixel)] text-xs font-mono" 
+                    className="font-body text-xs font-mono" 
                   />
                 </div>
-                <Button variant="outline" className="font-[var(--font-pixel)] text-xs">
+                <Button variant="outline" className="font-body text-xs">
                   Change Wallet
                 </Button>
               </CardContent>
@@ -104,8 +104,8 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <Bell className="w-5 h-5 text-primary" />
                   <div>
-                    <CardTitle className="font-[var(--font-pixel)] text-lg">Notifications</CardTitle>
-                    <CardDescription className="font-[var(--font-pixel)] text-xs">
+                    <CardTitle className="font-body text-lg">Notifications</CardTitle>
+                    <CardDescription className="font-body text-xs">
                       Manage your notification preferences
                     </CardDescription>
                   </div>
@@ -114,10 +114,10 @@ export default function SettingsPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="font-[var(--font-pixel)] text-xs">Email Notifications</Label>
+                    <Label className="font-body text-xs">Email Notifications</Label>
                     <p className="text-xs text-muted-foreground">Receive updates via email</p>
                   </div>
-                  <Button variant="outline" size="sm" className="font-[var(--font-pixel)] text-xs">
+                  <Button variant="outline" size="sm" className="font-body text-xs">
                     Manage
                   </Button>
                 </div>
@@ -130,8 +130,8 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <Palette className="w-5 h-5 text-primary" />
                   <div>
-                    <CardTitle className="font-[var(--font-pixel)] text-lg">Appearance</CardTitle>
-                    <CardDescription className="font-[var(--font-pixel)] text-xs">
+                    <CardTitle className="font-body text-lg">Appearance</CardTitle>
+                    <CardDescription className="font-body text-xs">
                       Customize how EggoWorld looks
                     </CardDescription>
                   </div>
@@ -140,10 +140,10 @@ export default function SettingsPage() {
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label className="font-[var(--font-pixel)] text-xs">Theme</Label>
+                    <Label className="font-body text-xs">Theme</Label>
                     <p className="text-xs text-muted-foreground">Choose your preferred theme</p>
                   </div>
-                  <Button variant="outline" size="sm" className="font-[var(--font-pixel)] text-xs">
+                  <Button variant="outline" size="sm" className="font-body text-xs">
                     Customize
                   </Button>
                 </div>
@@ -156,18 +156,18 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <Shield className="w-5 h-5 text-primary" />
                   <div>
-                    <CardTitle className="font-[var(--font-pixel)] text-lg">Security</CardTitle>
-                    <CardDescription className="font-[var(--font-pixel)] text-xs">
+                    <CardTitle className="font-body text-lg">Security</CardTitle>
+                    <CardDescription className="font-body text-xs">
                       Manage your account security
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button variant="outline" className="font-[var(--font-pixel)] text-xs w-full">
+                <Button variant="outline" className="font-body text-xs w-full">
                   Change Password
                 </Button>
-                <Button variant="outline" className="font-[var(--font-pixel)] text-xs w-full">
+                <Button variant="outline" className="font-body text-xs w-full">
                   Enable 2FA
                 </Button>
               </CardContent>
@@ -178,7 +178,7 @@ export default function SettingsPage() {
               <CardContent className="pt-6">
                 <Button 
                   variant="destructive" 
-                  className="font-[var(--font-pixel)] text-xs w-full"
+                  className="font-body text-xs w-full"
                   onClick={() => {
                     pb.authStore.clear()
                     router.push('/')

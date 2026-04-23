@@ -97,10 +97,10 @@ export default function WalletModal({ profile: _profile, onClose, onTransactionS
 
       <div className="relative w-full max-w-lg bg-card border-4 border-primary overflow-y-auto max-h-[90vh]">
         <div className="flex items-center justify-between px-6 py-4 border-b-4 border-primary/40">
-          <h2 className="font-[var(--font-pixel)] text-sm text-primary">PURCHASE EGG NFT</h2>
+          <h2 className="font-body text-sm text-primary">PURCHASE EGG NFT</h2>
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground font-[var(--font-pixel)] text-xs px-2 py-1 border-2 border-primary/30 hover:border-primary transition-all"
+            className="text-muted-foreground hover:text-foreground font-body text-xs px-2 py-1 border-2 border-primary/30 hover:border-primary transition-all"
           >
             X
           </button>
@@ -110,17 +110,17 @@ export default function WalletModal({ profile: _profile, onClose, onTransactionS
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <span className="step-indicator">1</span>
-              <p className="font-[var(--font-pixel)] text-xs text-foreground">SEND USDT TO THIS WALLET</p>
+              <p className="font-body text-xs text-foreground">SEND USDT TO THIS WALLET</p>
             </div>
 
             <div className="bg-background border-2 border-primary/40 p-4 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <span className="label">AMOUNT</span>
-                <span className="font-[var(--font-pixel)] text-sm text-primary font-bold">{REQUIRED_AMOUNT} USDT</span>
+                <span className="font-body text-sm text-primary font-bold">{REQUIRED_AMOUNT} USDT</span>
               </div>
               <div className="flex items-center justify-between gap-2">
                 <span className="label">NETWORK</span>
-                <span className="font-[var(--font-pixel)] text-xs text-foreground">BSC (BEP20)</span>
+                <span className="font-body text-xs text-foreground">BSC (BEP20)</span>
               </div>
               <div className="space-y-1">
                 <span className="label">DESTINATION WALLET</span>
@@ -131,7 +131,7 @@ export default function WalletModal({ profile: _profile, onClose, onTransactionS
                   <button
                     type="button"
                     onClick={handleCopy}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-[var(--font-pixel)] text-[9px] px-3 border-2 border-primary transition-all flex-shrink-0"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-body text-[9px] px-3 border-2 border-primary transition-all flex-shrink-0"
                   >
                     {copied ? 'COPIED' : 'COPY'}
                   </button>
@@ -140,7 +140,7 @@ export default function WalletModal({ profile: _profile, onClose, onTransactionS
             </div>
 
             <div className="info-warning">
-              <p className="font-[var(--font-pixel)] text-[9px] text-amber-400 leading-relaxed">
+              <p className="font-body text-[9px] text-amber-400 leading-relaxed">
                 ONLY SEND USDT ON BINANCE SMART CHAIN (BEP20). SENDING ON OTHER NETWORKS WILL RESULT IN LOSS OF FUNDS.
               </p>
             </div>
@@ -149,7 +149,7 @@ export default function WalletModal({ profile: _profile, onClose, onTransactionS
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center gap-3">
               <span className="step-indicator">2</span>
-              <p className="font-[var(--font-pixel)] text-xs text-foreground">SUBMIT YOUR TRANSACTION</p>
+              <p className="font-body text-xs text-foreground">SUBMIT YOUR TRANSACTION</p>
             </div>
 
             <div className="space-y-2">
@@ -178,20 +178,20 @@ export default function WalletModal({ profile: _profile, onClose, onTransactionS
                 disabled={isSubmitting || success}
                 className="input-field"
               />
-              <p className="font-[var(--font-pixel)] text-[8px] text-muted-foreground">
+              <p className="font-body text-[8px] text-muted-foreground">
                 THE NFT WILL BE SENT TO THIS ADDRESS AFTER VERIFICATION
               </p>
             </div>
 
             {error && (
               <div className="info-error">
-                <p className="font-[var(--font-pixel)] text-[9px] text-accent">{error}</p>
+                <p className="font-body text-[9px] text-accent">{error}</p>
               </div>
             )}
 
             {success && (
               <div className="info-success">
-                <p className="font-[var(--font-pixel)] text-[9px] text-green-400">
+                <p className="font-body text-[9px] text-green-400">
                   TRANSACTION SUBMITTED! OUR TEAM WILL VERIFY AND SEND YOUR NFT SHORTLY.
                 </p>
               </div>

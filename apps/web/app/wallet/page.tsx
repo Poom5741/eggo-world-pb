@@ -49,7 +49,7 @@ export default function WalletPage() {
   if (!isHydrated || loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     )
   }
@@ -66,11 +66,11 @@ export default function WalletPage() {
         <div className="container mx-auto px-4 max-w-4xl space-y-6">
           {/* Page Header */}
           <div className="space-y-2">
-            <h1 className="font-[var(--font-pixel)] text-2xl md:text-3xl text-foreground flex items-center gap-3">
+            <h1 className="font-body text-2xl md:text-3xl text-foreground flex items-center gap-3">
               <WalletIcon className="w-8 h-8 text-primary" />
               MY WALLET
             </h1>
-            <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+            <p className="font-body text-xs text-muted-foreground">
               Manage your USDT balance and withdrawals
             </p>
           </div>
@@ -81,20 +81,20 @@ export default function WalletPage() {
             'shadow-clay-2xl'
           )}>
             <CardHeader>
-              <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
+              <CardTitle className="font-body text-lg text-foreground">
                 USDT BALANCE
               </CardTitle>
-              <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+              <CardDescription className="font-body text-xs text-muted-foreground">
                 Real-time balance updated every 30 seconds
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Balance Display */}
               <div className="space-y-2">
-                <div className="text-4xl font-bold font-[var(--font-pixel)] text-primary">
+                <div className="text-4xl font-bold font-body text-primary">
                   {balance.usdt} USDT
                 </div>
-                <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                <p className="font-body text-xs text-muted-foreground">
                   ≈ ${(parseFloat(balance.usdt) * 1.00).toFixed(2)} USD
                 </p>
               </div>
@@ -113,7 +113,7 @@ export default function WalletPage() {
                 size="clay-md"
                 onClick={refresh}
                 disabled={polling}
-                className="font-[var(--font-pixel)] text-xs"
+                className="font-body text-xs"
               >
                 <RefreshCw className={cn("h-4 w-4 mr-2", polling && "animate-spin")} />
                 {polling ? 'Syncing...' : 'Sync Wallet'}
@@ -127,7 +127,7 @@ export default function WalletPage() {
               <CardContent className="pt-6">
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertDescription className="font-[var(--font-pixel)] text-xs">
+                  <AlertDescription className="font-body text-xs">
                     Failed to load balance.{' '}
                     <Button variant="link" onClick={refresh} className="p-0 h-auto">
                       Retry

@@ -10,6 +10,7 @@ import { FoodCard, FoodType } from '@/components/food-nft/FoodCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Flame, Tag } from 'lucide-react';
+import { FoodIcon } from '@/components/icons/species-icons';
 import { cn } from '@/lib/utils';
 import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog';
 
@@ -180,17 +181,17 @@ export default function FoodInventoryPage() {
         
         {/* Food Type Breakdown - แสดงประเภทอาหาร */}
         <div className="flex flex-wrap gap-2 mb-8">
-          <Badge variant="clay" className="bg-yellow-500 shadow-clay-sm font-[var(--font-pixel)] text-sm">
-            🌾 Grain: {foodByType['grain'] || 0}
+            <Badge variant="clay" className="shadow-clay-sm font-body text-sm">
+            <FoodIcon food="Wheat" className="w-4 h-4 inline mr-1" />Grain: {foodByType['grain'] || 0}
           </Badge>
-          <Badge variant="clay" className="bg-blue-500 shadow-clay-sm font-[var(--font-pixel)] text-sm">
-            🐟 Fish: {foodByType['fish'] || 0}
+          <Badge variant="clay" className="shadow-clay-sm font-body text-sm">
+            <FoodIcon food="Fish" className="w-4 h-4 inline mr-1" />Fish: {foodByType['fish'] || 0}
           </Badge>
-          <Badge variant="clay" className="bg-green-500 shadow-clay-sm font-[var(--font-pixel)] text-sm">
-            🦗 Insects: {foodByType['insects'] || 0}
+          <Badge variant="clay" className="shadow-clay-sm font-body text-sm">
+            <FoodIcon food="Bug" className="w-4 h-4 inline mr-1" />Insects: {foodByType['insects'] || 0}
           </Badge>
-          <Badge variant="clay" className="bg-purple-500 shadow-clay-sm font-[var(--font-pixel)] text-sm">
-            🌿 Herbs: {foodByType['herb'] || 0}
+          <Badge variant="clay" className="shadow-clay-sm font-body text-sm">
+            <FoodIcon food="Leaf" className="w-4 h-4 inline mr-1" />Herbs: {foodByType['herb'] || 0}
           </Badge>
         </div>
         
@@ -215,7 +216,7 @@ export default function FoodInventoryPage() {
                   size="clay-md"
                   onClick={() => handleSellClick(food)}
                   className={cn(
-                    'w-full mt-3 font-[var(--font-pixel)] text-sm',
+                    'w-full mt-3 font-body text-sm',
                     'flex items-center justify-center gap-2'
                   )}
                 >

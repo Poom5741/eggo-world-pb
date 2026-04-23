@@ -61,7 +61,7 @@ export function TierSection({ userId, className, compact = false }: TierSectionP
                         </div>
                         
                         {hasClaimableTier && (
-                            <Badge className="bg-primary text-primary-foreground font-[var(--font-pixel)] animate-bounce">
+                            <Badge className="bg-primary text-primary-foreground font-body animate-bounce">
                                 REWARD READY!
                             </Badge>
                         )}
@@ -76,7 +76,7 @@ export function TierSection({ userId, className, compact = false }: TierSectionP
                                 <span className="text-muted-foreground">
                                     Next: <span className="font-medium capitalize">{status.next_tier}</span>
                                 </span>
-                                <span className="font-[var(--font-pixel)] text-primary">
+                                <span className="font-body text-primary">
                                     {status.lifetime_food_items.toLocaleString()} / {status.tiers.find(t => t.is_next)?.threshold.toLocaleString()}
                                 </span>
                             </div>
@@ -109,7 +109,7 @@ export function TierSection({ userId, className, compact = false }: TierSectionP
                             />
                         ) : (
                             <Link href="/dashboard/tiers">
-                                <Button variant="outline" size="sm" className="font-[var(--font-pixel)]">
+                                <Button variant="outline" size="sm" className="font-body">
                                     View All Tiers
                                     <ArrowRight className="w-4 h-4 ml-2" />
                                 </Button>
@@ -142,7 +142,7 @@ export function TierSection({ userId, className, compact = false }: TierSectionP
             {/* Current status summary */}
             <Card className="border-2 border-primary/30">
                 <CardHeader>
-                    <CardTitle className="font-[var(--font-pixel)] flex items-center gap-2">
+                    <CardTitle className="font-body flex items-center gap-2">
                         <Sprout className="w-5 h-5 text-primary" />
                         Your Progress
                     </CardTitle>
@@ -168,7 +168,7 @@ export function TierSection({ userId, className, compact = false }: TierSectionP
             
             {/* All tier badges */}
             <div>
-                <h3 className="font-[var(--font-pixel)] text-xl mb-4 flex items-center gap-2">
+                <h3 className="font-body text-xl mb-4 flex items-center gap-2">
                     <Award className="w-5 h-5 text-secondary" />
                     Tier Badges
                 </h3>

@@ -84,7 +84,7 @@ export function TransactionHistory({ userId }: TransactionHistoryProps) {
       pending: 'secondary'
     }
     return (
-      <Badge variant={variants[status] || 'secondary'} className="font-[var(--font-pixel)] text-xs">
+      <Badge variant={variants[status] || 'secondary'} className="font-body text-xs">
         {status}
       </Badge>
     )
@@ -103,15 +103,15 @@ export function TransactionHistory({ userId }: TransactionHistoryProps) {
     return (
       <Card className="border-4 border-primary/50 bg-card">
         <CardHeader>
-          <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
+          <CardTitle className="font-body text-lg text-foreground">
             TRANSACTION HISTORY
           </CardTitle>
-          <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+          <CardDescription className="font-body text-xs text-muted-foreground">
             Loading transactions...
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="font-[var(--font-pixel)] text-xs text-muted-foreground text-center py-8">
+          <p className="font-body text-xs text-muted-foreground text-center py-8">
             LOADING...
           </p>
         </CardContent>
@@ -122,16 +122,16 @@ export function TransactionHistory({ userId }: TransactionHistoryProps) {
   return (
     <Card variant="clay-lg" className="border-4 border-primary/50 bg-card shadow-clay-xl">
       <CardHeader>
-        <CardTitle className="font-[var(--font-pixel)] text-lg text-foreground">
+        <CardTitle className="font-body text-lg text-foreground">
           TRANSACTION HISTORY
         </CardTitle>
-        <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+        <CardDescription className="font-body text-xs text-muted-foreground">
           Last 10 transactions
         </CardDescription>
       </CardHeader>
       <CardContent>
         {transactions.length === 0 ? (
-          <p className="font-[var(--font-pixel)] text-xs text-muted-foreground text-center py-8">
+          <p className="font-body text-xs text-muted-foreground text-center py-8">
             No transactions yet
           </p>
         ) : (
@@ -139,30 +139,30 @@ export function TransactionHistory({ userId }: TransactionHistoryProps) {
             <Table>
               <TableHeader>
                 <TableRow className="hover:shadow-clay-sm">
-                  <TableHead className="font-[var(--font-pixel)] text-xs">Date</TableHead>
-                  <TableHead className="font-[var(--font-pixel)] text-xs">Type</TableHead>
-                  <TableHead className="font-[var(--font-pixel)] text-xs">Amount</TableHead>
-                  <TableHead className="font-[var(--font-pixel)] text-xs">Status</TableHead>
-                  <TableHead className="font-[var(--font-pixel)] text-xs">TX Hash</TableHead>
+                  <TableHead className="font-body text-xs">Date</TableHead>
+                  <TableHead className="font-body text-xs">Type</TableHead>
+                  <TableHead className="font-body text-xs">Amount</TableHead>
+                  <TableHead className="font-body text-xs">Status</TableHead>
+                  <TableHead className="font-body text-xs">TX Hash</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {transactions.map((tx) => (
                   <TableRow key={tx.id} className="hover:shadow-clay-sm">
-                    <TableCell className="font-[var(--font-pixel)] text-xs">
+                    <TableCell className="font-body text-xs">
                       {new Date(tx.created).toLocaleDateString()}
                     </TableCell>
-                    <TableCell className="font-[var(--font-pixel)] text-xs">
+                    <TableCell className="font-body text-xs">
                       {getTypeLabel(tx.type)}
                     </TableCell>
-                    <TableCell className="font-[var(--font-pixel)] text-xs font-medium">
+                    <TableCell className="font-body text-xs font-medium">
                       {tx.type === 'commission' || tx.type === 'sell_nft' ? '+' : ''}
                       {tx.amount_usdt} USDT
                     </TableCell>
                     <TableCell>
                       {getStatusBadge(tx.status)}
                     </TableCell>
-                    <TableCell className="font-[var(--font-pixel)] text-xs">
+                    <TableCell className="font-body text-xs">
                       {tx.tx_hash ? (
                         <a
                           href={`https://bscscan.com/tx/${tx.tx_hash}`}

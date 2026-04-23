@@ -11,7 +11,7 @@ export function ReferralChainDisplay({ chain }: ReferralChainDisplayProps) {
   if (!chain || chain.length === 0) {
     return (
       <div className="text-center py-4">
-        <p className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+        <p className="font-body text-xs text-muted-foreground">
           No referral chain
         </p>
       </div>
@@ -30,7 +30,7 @@ export function ReferralChainDisplay({ chain }: ReferralChainDisplayProps) {
 
   return (
     <div className="space-y-clay-md">
-      <p className="font-[var(--font-pixel)] text-xs text-primary mb-2">
+      <p className="font-body text-xs text-primary mb-2">
         REFERRAL CHAIN:
       </p>
       <div className="grid grid-cols-2 gap-clay-md">
@@ -51,7 +51,7 @@ export function ReferralChainDisplay({ chain }: ReferralChainDisplayProps) {
                 'absolute -top-2 left-clay-md',
                 index === 0 ? 'bg-primary' : 'bg-secondary',
                 'rounded-clay-full shadow-clay-sm',
-                'font-[var(--font-pixel)] text-[10px]'
+                'font-body text-[10px]'
               )}
             >
               {labels[index]}
@@ -64,12 +64,12 @@ export function ReferralChainDisplay({ chain }: ReferralChainDisplayProps) {
                 'bg-secondary shadow-clay-sm',
                 'flex items-center justify-center'
               )}>
-                <span className="font-[var(--font-pixel)] text-[10px] text-foreground">
+                <span className="font-body text-[10px] text-foreground">
                   {referrer?.slice(2, 6)}
                 </span>
               </div>
               <div className="flex-1">
-                <span className="font-[var(--font-pixel)] text-xs text-foreground truncate block">
+                <span className="font-body text-xs text-foreground truncate block">
                   {referrer?.slice(0, 6)}...{referrer?.slice(-4)}
                 </span>
               </div>

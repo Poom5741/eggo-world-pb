@@ -58,7 +58,7 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
     >
       <CardHeader className="pb-2 relative z-10">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium font-[var(--font-pixel)] text-xs text-foreground">
+          <CardTitle className="text-sm font-medium font-body text-xs text-foreground">
             Food #{food.food_id}
           </CardTitle>
           <Badge 
@@ -66,7 +66,7 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
             className={cn(
               config.color,
               'rounded-clay-full shadow-clay-sm',
-              'font-[var(--font-pixel)] text-xs'
+              'font-body text-xs'
             )}
           >
             <FoodIcon food={config.foodIcon as any} /> {config.label}
@@ -91,7 +91,7 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
           </div>
 
           {/* Minted Date */}
-          <div className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+          <div className="font-body text-xs text-muted-foreground">
             Minted: {new Date(food.minted_at).toLocaleDateString()}
           </div>
           
@@ -122,7 +122,7 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
               />
               <label
                 htmlFor={`food-${food.food_id}`}
-                className="font-[var(--font-pixel)] text-xs peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="font-body text-xs peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 aria-hidden="true"
               >
                 {config.label} #{food.food_id}
@@ -135,7 +135,7 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
             <Button
               variant="clay"
               size="clay-sm"
-              className="w-full font-[var(--font-pixel)] text-xs rounded-clay-full"
+              className="w-full font-body text-xs rounded-clay-full"
               onClick={() => onSelect && onSelect(food.food_id)}
             >
               Use

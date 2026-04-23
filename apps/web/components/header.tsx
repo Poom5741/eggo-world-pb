@@ -95,7 +95,7 @@ export function Header() {
             loading="eager"
             className="pixelated"
           />
-          <span className="font-[var(--font-pixel)] text-primary text-xs md:text-sm tracking-wider">
+          <span className="font-body text-primary text-xs md:text-sm tracking-wider">
             EGGOWORLD
           </span>
         </Link>
@@ -109,7 +109,7 @@ export function Header() {
                 <AuthLink
                   key={item.href}
                   href={item.href}
-                  className="font-[var(--font-pixel)] text-[10px] text-foreground hover:text-primary px-3 py-2 border-2 border-transparent hover:border-primary/30 rounded transition-all flex items-center gap-1.5"
+                  className="font-body text-[10px] text-foreground hover:text-primary px-3 py-2 border-2 border-transparent hover:border-primary/30 rounded transition-all flex items-center gap-1.5"
                 >
                   <Icon className="w-3.5 h-3.5" />
                   {item.label}
@@ -141,7 +141,7 @@ export function Header() {
                     <User className="w-4 h-4 text-primary" />
                   )}
                   <div className="text-left">
-                    <div className="font-[var(--font-pixel)] text-[10px] text-foreground truncate max-w-[100px]">
+                    <div className="font-body text-[10px] text-foreground truncate max-w-[100px]">
                       {userName}
                     </div>
                     {walletAddress && (
@@ -155,7 +155,7 @@ export function Header() {
                 {userDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-surface border-2 border-primary/30 rounded shadow-sm z-50">
                     <div className="p-3 border-b-2 border-primary/10">
-                      <p className="font-[var(--font-pixel)] text-[10px] text-foreground truncate">
+                      <p className="font-body text-[10px] text-foreground truncate">
                         {userName}
                       </p>
                       {walletAddress && (
@@ -171,7 +171,7 @@ export function Header() {
                           <AuthLink
                             key={item.href}
                             href={item.href}
-                            className="flex items-center gap-2 px-3 py-2 text-[10px] font-[var(--font-pixel)] text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 text-[10px] font-body text-foreground hover:bg-primary/10 hover:text-primary transition-colors"
                             onClick={() => setUserDropdownOpen(false)}
                           >
                             <Icon className="w-3.5 h-3.5" />
@@ -204,14 +204,14 @@ export function Header() {
             <>
               <Link
                 href="/auth/login"
-                className="hidden sm:inline-flex font-[var(--font-pixel)] text-xs text-foreground hover:text-primary px-3 py-2 border-2 border-primary/30 hover:border-primary transition-all cursor-pointer"
+                className="hidden sm:inline-flex font-body text-xs text-foreground hover:text-primary px-3 py-2 border-2 border-primary/30 hover:border-primary transition-all cursor-pointer"
                 scroll={true}
               >
                 LOGIN
               </Link>
               <Link
                 href="/auth/sign-up"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-[var(--font-pixel)] text-xs px-4 py-2 border-2 border-primary transition-all cursor-pointer"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-body text-xs px-4 py-2 border-2 border-primary transition-all cursor-pointer"
                 scroll={true}
               >
                 SIGN UP
@@ -239,7 +239,7 @@ export function Header() {
                 <User className="w-6 h-6 text-primary" />
               )}
               <div>
-                <p className="font-[var(--font-pixel)] text-xs text-foreground">{userName}</p>
+                <p className="font-body text-xs text-foreground">{userName}</p>
                 {walletAddress && (
                   <p className="font-mono text-[10px] text-muted-foreground mt-0.5">
                     {walletAddress}
@@ -255,7 +255,7 @@ export function Header() {
                 <AuthLink
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-3 px-3 py-3 font-[var(--font-pixel)] text-xs text-foreground hover:text-primary hover:bg-primary/5 rounded transition-all border-2 border-transparent hover:border-primary/30"
+                  className="flex items-center gap-3 px-3 py-3 font-body text-xs text-foreground hover:text-primary hover:bg-primary/5 rounded transition-all border-2 border-transparent hover:border-primary/30"
                 >
                   <Icon className="w-4 h-4" />
                   {item.label}
