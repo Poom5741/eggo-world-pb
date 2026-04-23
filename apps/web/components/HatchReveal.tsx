@@ -1,10 +1,11 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Egg, Sparkles, ArrowRight } from 'lucide-react'
-import { Rarity, Species, getRarityName, getSpeciesName } from '@/lib/contracts/eggNft'
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Egg, Sparkles, ArrowRight } from "lucide-react"
+import { Rarity, Species, getRarityName, getSpeciesName } from "@/lib/contracts/eggNft"
+import { SpeciesIcon } from "./icons/species-icons"
 
 interface Animal {
   animalId: number
@@ -34,39 +35,30 @@ const rarityDisplay: Record<Rarity, { name: string; textColor: string }> = {
   [Rarity.Legendary]: { name: 'LEGENDARY', textColor: 'text-yellow-500' },
 }
 
-// Animal placeholder images by species type
-const getAnimalEmoji = (species: Species): string => {
-  switch (species) {
-    case Species.Chicken:
-    case Species.GoldenChicken:
-      return '🐔'
-    case Species.Quail:
-      return '🐦'
-    case Species.Duck:
-    case Species.SilverDuck:
-      return '🦆'
-    case Species.Peacock:
-      return '🦚'
-    case Species.Swan:
-      return '🦢'
-    case Species.Turkey:
-      return '🦃'
-    case Species.Phoenix:
-      return '🔥'
-    case Species.Dragon:
-      return '🐉'
-    case Species.Unicorn:
-      return '🦄'
-    case Species.Gryphon:
-      return '🦅'
-    default:
-      return '🥚'
-  }
+// Map contract Species enum to our species-icons type names
+const SPECIES_MAP: Record<Species, string> = {
+  [Species.Chicken]: "Chicken",
+  [Species.GoldenChicken]: "Chicken",
+  [Species.Quail]: "Quail",
+  [Species.Duck]: "Duck",
+  [Species.SilverDuck]: "Duck",
+  [Species.Peacock]: "Peacock",
+  [Species.Swan]: "Swan",
+  [Species.Turkey]: "Turkey",
+  [Species.Phoenix]: "Phoenix",
+  [Species.Dragon]: "Dragon",
+  [Species.Unicorn]: "Unicorn",
+  [Species.Gryphon]: "Gryphon",
+}
+
+// Animal icon component by species type (replaces emoji)
+const getAnimalIcon = (species: Species): string => {
+  return SPECIES_MAP[species] || "Chicken"
 }
 
 export function HatchReveal({ animal, onClaim }: HatchRevealProps) {
   const rarityInfo = rarityDisplay[animal.rarity]
-  const animalEmoji = getAnimalEmoji(animal.species)
+  const speciesName = getAnimalIcon(animal.species)
 
   return (
     <Card className="border-4 border-primary/50 bg-card max-w-2xl mx-auto">
@@ -90,9 +82,9 @@ export function HatchReveal({ animal, onClaim }: HatchRevealProps) {
       <CardContent className="space-y-6">
         {/* Animal Display */}
         <div className="bg-secondary/30 border-2 border-primary/30 rounded-lg p-8 text-center space-y-4">
-          {/* Animal Image/Emoji */}
-          <div className="text-8xl animate-bounce">
-            {animalEmoji}
+          {/* Animal Icon (replaces emoji) */}
+          <div className="flex justify-center animate-bounce">
+            <SpeciesIcon species={speciesName as any} size="lg" />
           </div>
           
           {/* Species Name */}

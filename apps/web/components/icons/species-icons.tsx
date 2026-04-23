@@ -19,6 +19,7 @@ import {
   Bug,
   Leaf,
   PawPrint,
+  Bird,
 } from "lucide-react"
 
 // ============================================================================
@@ -34,6 +35,15 @@ export type SpeciesType =
   | "Dog"
   | "Cat"
   | "Rabbit"
+  // Extended species for HatchReveal compatibility
+  | "Quail"
+  | "Peacock"
+  | "Swan"
+  | "Turkey"
+  | "Phoenix"
+  | "Dragon"
+  | "Unicorn"
+  | "Gryphon"
 
 export type FoodType = "Wheat" | "Fish" | "Bug" | "Leaf"
 
@@ -58,6 +68,15 @@ export const SPECIES_ICONS: Record<SpeciesType, React.ComponentType<{ className?
   Dog: PawPrint,
   Cat: Users,
   Rabbit: DollarSign,
+  // Extended species for HatchReveal compatibility
+  Quail: Bird,
+  Peacock: Trophy,
+  Swan: Egg,
+  Turkey: Flame,
+  Phoenix: Flame,
+  Dragon: Sparkles,
+  Unicorn: Star,
+  Gryphon: Bird,
 }
 
 export const FOOD_ICONS: Record<FoodType, React.ComponentType<{ className?: string }>> = {
