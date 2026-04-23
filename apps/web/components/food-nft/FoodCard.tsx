@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { FoodIcon } from '../icons/species-icons';
 
 export type FoodType = 'grain' | 'fish' | 'insects' | 'herb';
 
@@ -21,11 +22,11 @@ interface FoodCardProps {
   disableSelection?: boolean;
 }
 
-const foodTypeConfig: Record<FoodType, { label: string; color: string; icon: string }> = {
-  grain: { label: 'Grain', color: 'bg-yellow-500', icon: '🌾' },
-  fish: { label: 'Fish', color: 'bg-blue-500', icon: '🐟' },
-  insects: { label: 'Insects', color: 'bg-green-500', icon: '🦗' },
-  herb: { label: 'Herb', color: 'bg-purple-500', icon: '🌿' },
+const foodTypeConfig: Record<FoodType, { label: string; color: string; foodIcon: string }> = {
+  grain: { label: 'Grain', color: 'bg-yellow-500', foodIcon: 'Wheat' },
+  fish: { label: 'Fish', color: 'bg-blue-500', foodIcon: 'Fish' },
+  insects: { label: 'Insects', color: 'bg-green-500', foodIcon: 'Bug' },
+  herb: { label: 'Herb', color: 'bg-purple-500', foodIcon: 'Leaf' },
 };
 
 export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCardProps) {
@@ -68,7 +69,7 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
               'font-[var(--font-pixel)] text-xs'
             )}
           >
-            <span className="pixelated">{config.icon}</span> {config.label}
+            <FoodIcon food={config.foodIcon as any} /> {config.label}
           </Badge>
         </div>
       </CardHeader>
@@ -83,11 +84,9 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
           )}>
             <div className={cn(
               'w-20 h-20',
-              'flex items-center justify-center',
-              'text-4xl',
-              'pixelated' // CRITICAL: preserves pixel art rendering
+              'flex items-center justify-center'
             )}>
-              {config.icon}
+              <FoodIcon food={config.foodIcon as any} />
             </div>
           </div>
 
