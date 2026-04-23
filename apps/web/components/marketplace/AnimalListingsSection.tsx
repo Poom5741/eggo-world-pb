@@ -9,16 +9,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { useAnimalMarketplace } from "@/hooks/use-animal-marketplace"
 import type { RarityType, SortOption } from "@/components/marketplace/MarketplaceFilters"
+import { SpeciesIcon } from "../icons/species-icons"
 
-const speciesConfig: Record<string, { icon: string }> = {
-  Chicken: { icon: "🐔" },
-  Duck: { icon: "🦆" },
-  Pig: { icon: "🐷" },
-  Cow: { icon: "🐄" },
-  Sheep: { icon: "🐑" },
-  Dog: { icon: "🐕" },
-  Cat: { icon: "🐱" },
-  Rabbit: { icon: "🐰" },
+const speciesConfig: Record<string, { speciesType: string }> = {
+  Chicken: { speciesType: "Chicken" },
+  Duck: { speciesType: "Duck" },
+  Pig: { speciesType: "Pig" },
+  Cow: { speciesType: "Cow" },
+  Sheep: { speciesType: "Sheep" },
+  Dog: { speciesType: "Dog" },
+  Cat: { speciesType: "Cat" },
+  Rabbit: { speciesType: "Rabbit" },
 }
 
 const rarityConfig: Record<string, { label: string; color: string }> = {
@@ -45,7 +46,7 @@ interface AnimalListingCardProps {
 }
 
 function AnimalListingCard({ listing, onClick }: AnimalListingCardProps) {
-  const species = speciesConfig[listing.species] || { icon: "🐾" }
+  const species = speciesConfig[listing.species] || { speciesType: "Chicken" }
   const rarity = rarityConfig[listing.rarity] || { label: "COMMON", color: "text-primary" }
 
   return (
@@ -57,8 +58,8 @@ function AnimalListingCard({ listing, onClick }: AnimalListingCardProps) {
     >
       {/* Animal Image Section */}
       <div className="bg-surface-container h-48 rounded-lg mb-6 flex items-center justify-center inner-dip overflow-hidden relative">
-        <div className="text-7xl pixelated">
-          {species.icon}
+        <div className="flex items-center justify-center">
+          <SpeciesIcon species={species.speciesType as any} size="lg" />
         </div>
       </div>
 
