@@ -269,7 +269,7 @@ export default function Marketplace() {
                     price={listing.price}
                     seller={listing.seller_name || listing.seller}
                     polling={syncing}
-                    onClick={() => router.push(`/marketplace/${listing.id}`)}
+                    onClick={() => router.push(`/marketplace/detail?id=${listing.id}`)}
                   />
                 ))}
               </div>

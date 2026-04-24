@@ -17,13 +17,12 @@ import { BuyFlow } from '@/components/marketplace/BuyFlow'
 import { parseUnits } from 'ethers'
 
 interface MarketplaceDetailClientProps {
-  params: { id: string }
+  listingId: string
 }
 
-export default function MarketplaceDetailClient({ params }: MarketplaceDetailClientProps) {
+export default function MarketplaceDetailClient({ listingId }: MarketplaceDetailClientProps) {
   const router = useRouter()
   const isHydrated = useIsHydrated()
-  const listingId = params.id
 
   // Use marketplace sync hook for single listing - ใช้ hook สำหรับ listing เดียว
   const { 

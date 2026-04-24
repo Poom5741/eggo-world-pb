@@ -134,9 +134,11 @@ export function AnimalListingsSection({ className }: AnimalListingsSectionProps)
   })
 
   // Filter by rarity if selected (additional client-side filter)
+  // Use case-insensitive comparison since PocketBase stores lowercase ('common')
+  // but filter UI uses capitalized ('Common')
   const filteredListings = listings.filter(listing => {
     if (filters.rarities.length === 0) return true
-    return filters.rarities.includes(listing.rarity)
+    return filters.rarities.some(r => r.toLowerCase() === listing.rarity.toLowerCase())
   })
 
   // Sort listings (additional client-side sort)
@@ -154,8 +156,8 @@ export function AnimalListingsSection({ className }: AnimalListingsSectionProps)
   })
 
   const handleCardClick = (listing: any) => {
-    // Navigate to detail page or open buy dialog
-    router.push(`/marketplace/${listing.id}`)
+    // Navigate to detail page (static route with searchParams for static export compatibility)
+    router.push(`/marketplace/detail?id=${listing.id}`)
   }
 
   if (loading) {
