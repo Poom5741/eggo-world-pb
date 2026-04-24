@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { EggData } from '@/hooks/use-egg-poll'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -55,6 +55,35 @@ export function EggCard({ egg, onManage, onHatch, onSell, onPlay, onUpgrade, pol
   // State for upgrade dialog
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   
+  // State for polling badge with minimum display duration
+  const [showPollingBadge, setShowPollingBadge] = useState(false)
+  const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Minimum 2-second display duration for polling badge
+  useEffect(() => {
+    if (polling) {
+      setShowPollingBadge(true)
+      // Clear any existing timeout
+      if (pollingTimeoutRef.current) {
+        clearTimeout(pollingTimeoutRef.current)
+      }
+    } else if (showPollingBadge) {
+      // Delay hiding the badge by 2 seconds
+      pollingTimeoutRef.current = setTimeout(() => {
+        setShowPollingBadge(false)
+      }, 2000)
+    }
+  }, [polling, showPollingBadge])
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingTimeoutRef.current) {
+        clearTimeout(pollingTimeoutRef.current)
+      }
+    }
+  }, [])
+  
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -70,7 +99,7 @@ export function EggCard({ egg, onManage, onHatch, onSell, onPlay, onUpgrade, pol
       {/* Egg Image Section - ส่วนแสดงรูปภาพไข่ */}
       <div className="bg-surface-container h-48 rounded-lg mb-6 flex items-center justify-center inner-dip overflow-hidden relative">
         {/* "Updating..." badge during polling - ป้าย "Updating..." ขณะกำลังโพล */}
-        {polling && (
+        {showPollingBadge && (
           <Badge variant="clay" className="absolute top-2 right-2 animate-pulse gap-1">
             <span className="material-symbols-outlined text-xs animate-spin">sync</span>
             Updating...

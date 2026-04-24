@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { EggData } from '@/hooks/use-egg-poll'
 import { Badge } from '@/components/ui/badge'
 import { RarityUpgradeDialog } from './rarity-upgrade-dialog'
@@ -30,6 +30,35 @@ export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch, onUpgrade, polli
   // State for upgrade dialog
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   
+  // State for polling badge with minimum display duration
+  const [showPollingBadge, setShowPollingBadge] = useState(false)
+  const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Minimum 2-second display duration for polling badge
+  useEffect(() => {
+    if (polling) {
+      setShowPollingBadge(true)
+      // Clear any existing timeout
+      if (pollingTimeoutRef.current) {
+        clearTimeout(pollingTimeoutRef.current)
+      }
+    } else if (showPollingBadge) {
+      // Delay hiding the badge by 2 seconds
+      pollingTimeoutRef.current = setTimeout(() => {
+        setShowPollingBadge(false)
+      }, 2000)
+    }
+  }, [polling, showPollingBadge])
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingTimeoutRef.current) {
+        clearTimeout(pollingTimeoutRef.current)
+      }
+    }
+  }, [])
+  
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -49,7 +78,7 @@ export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch, onUpgrade, polli
           <div className="relative flex justify-center">
             <div className="w-72 h-96 bg-white/40 backdrop-blur-sm rounded-[5rem] clay-card flex items-center justify-center p-8 transform -rotate-3 hover:rotate-0 transition-transform duration-500">
               {/* "Updating..." badge during polling - ป้าย "Updating..." ขณะกำลังโพล */}
-              {polling && (
+              {showPollingBadge && (
                 <Badge variant="clay" className="absolute top-4 right-4 animate-pulse gap-1">
                   <span className="material-symbols-outlined text-xs animate-spin">sync</span>
                   Updating...
