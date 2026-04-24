@@ -150,6 +150,12 @@ export default function Eggs() {
     setSellDialogOpen(true)
   }
   
+  // Handle upgrade button click - จัดการการคลิกปุ่มอัปเกรดความหายาก
+  const handleUpgradeEgg = (_egg: EggData) => {
+    // Refresh egg list to show updated food_count after upgrade
+    refresh()
+  }
+  
   // Handle hatch success - จัดการฟักไข่สำเร็จ
   const handleHatchSuccess = () => {
     // Refresh egg list to show updated status
@@ -278,6 +284,7 @@ export default function Eggs() {
             onFeed={handleFeedEgg}
             onPlay={handlePlayEgg}
             onHatch={handleHatchEgg}
+            onUpgrade={handleUpgradeEgg}
             polling={polling}
           />
         )}
@@ -291,6 +298,7 @@ export default function Eggs() {
               onManage={handleManageEgg}
               onHatch={handleHatchEgg}
               onSell={handleSellEgg}
+              onUpgrade={handleUpgradeEgg}
               polling={polling}
             />
           ))}

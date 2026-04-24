@@ -1,8 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { EggData } from '@/hooks/use-egg-poll'
 import { Badge } from '@/components/ui/badge'
+import { RarityUpgradeDialog } from './rarity-upgrade-dialog'
+import { Star } from 'lucide-react'
 
 /**
  * Props for FeaturedEggHero component
@@ -13,6 +15,7 @@ export interface FeaturedEggHeroProps {
   onFeed?: (eggId: number) => void
   onPlay?: (eggId: number) => void
   onHatch?: (egg: EggData) => void
+  onUpgrade?: (egg: EggData) => void  // ฟังก์ชันอัปเกรดความหายาก
   polling?: boolean
 }
 
@@ -23,7 +26,10 @@ export interface FeaturedEggHeroProps {
  * Large card with egg image, details, progress bar, and action buttons
  * การ์ดใหญ่แสดงรูปภาพไข่ รายละเอียด แถบความคืบหน้า และปุ่มดำเนินการ
  */
-export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch, polling }: FeaturedEggHeroProps) {
+export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch, onUpgrade, polling }: FeaturedEggHeroProps) {
+  // State for upgrade dialog
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -103,14 +109,25 @@ export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch, polling }: Featu
             {/* Action Buttons - ปุ่มดำเนินการ */}
             <div className="grid grid-cols-2 gap-4">
               {egg.food_count >= 10 && !egg.is_hatched ? (
-                // แสดงปุ่ม HATCH เมื่อพร้อมฟัก
-                <button
-                  onClick={() => onHatch?.(egg)}
-                  className="col-span-2 clay-button bg-primary text-on-primary py-5 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:bg-primary-fixed-dim transition-colors shadow-lg"
-                >
-                  <span className="material-symbols-outlined">auto_fix_high</span>
-                  HATCH NOW!
-                </button>
+                // แสดงปุ่ม HATCH และ UPGRADE เมื่อพร้อมฟัก
+                <>
+                  <button
+                    onClick={() => onHatch?.(egg)}
+                    className="clay-button bg-primary text-on-primary py-5 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:bg-primary-fixed-dim transition-colors shadow-lg"
+                  >
+                    <span className="material-symbols-outlined">auto_fix_high</span>
+                    HATCH NOW!
+                  </button>
+                  {onUpgrade && (
+                    <button
+                      onClick={() => setShowUpgradeDialog(true)}
+                      className="clay-button bg-tertiary-container text-on-tertiary-container py-5 rounded-xl font-black text-lg flex items-center justify-center gap-3 hover:bg-tertiary transition-colors"
+                    >
+                      <Star className="w-5 h-5" />
+                      UPGRADE
+                    </button>
+                  )}
+                </>
               ) : (
                 // แสดงปุ่ม FEED และ PLAY ปกติ
                 <>
@@ -131,6 +148,19 @@ export function FeaturedEggHero({ egg, onFeed, onPlay, onHatch, polling }: Featu
                 </>
               )}
             </div>
+            
+            {/* Rarity Upgrade Dialog */}
+            {onUpgrade && egg.food_count >= 10 && !egg.is_hatched && (
+              <RarityUpgradeDialog
+                egg={egg}
+                open={showUpgradeDialog}
+                onOpenChange={setShowUpgradeDialog}
+                onSuccess={() => {
+                  setShowUpgradeDialog(false)
+                  onUpgrade(egg)
+                }}
+              />
+            )}
             
             {/* Eggo's Tip Box - กล่องคำแนะนำจาก Eggo */}
             <div className="bg-surface-container-highest/50 p-6 rounded-lg flex gap-4 items-start relative">

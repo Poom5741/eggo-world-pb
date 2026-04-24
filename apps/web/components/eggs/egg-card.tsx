@@ -1,12 +1,13 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { EggData } from '@/hooks/use-egg-poll'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { BreedingBadge } from './BreedingEggTooltip'
+import { RarityUpgradeDialog } from './rarity-upgrade-dialog'
 import { cn } from '@/lib/utils'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Star } from 'lucide-react'
 
 /**
  * Props for EggCard component
@@ -18,6 +19,7 @@ export interface EggCardProps {
   onHatch?: (egg: EggData) => void
   onSell?: (egg: EggData) => void  // ฟังก์ชันขาย NFT
   onPlay?: (egg: EggData) => void  // ฟังก์ชัน Play button
+  onUpgrade?: (egg: EggData) => void  // ฟังก์ชันอัปเกรดความหายาก
   polling?: boolean
 }
 
@@ -49,7 +51,10 @@ function getRarity(raritySeed?: number): { label: string; color: string } {
  * Displays egg image, name, rarity badge, element type,
  * feeding progress bar (X/10), and "Manage Egg" button
  */
-export function EggCard({ egg, onManage, onHatch, onSell, onPlay, polling }: EggCardProps) {
+export function EggCard({ egg, onManage, onHatch, onSell, onPlay, onUpgrade, polling }: EggCardProps) {
+  // State for upgrade dialog
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -172,7 +177,30 @@ export function EggCard({ egg, onManage, onHatch, onSell, onPlay, polling }: Egg
             <Sparkles className="inline w-5 h-5 mr-1" /> HATCH!
           </button>
         )}
+        
+        {/* UPGRADE button - shows when egg has 10 food items and not hatched */}
+        {egg.food_count >= 10 && !egg.is_hatched && onUpgrade && (
+          <button
+            onClick={() => setShowUpgradeDialog(true)}
+            className="w-full py-3 bg-tertiary-container text-on-tertiary-container rounded-full font-black text-sm hover:bg-tertiary transition-colors flex items-center justify-center gap-2"
+          >
+            <Star className="w-4 h-4" /> UPGRADE
+          </button>
+        )}
       </div>
+      
+      {/* Rarity Upgrade Dialog */}
+      {onUpgrade && egg.food_count >= 10 && !egg.is_hatched && (
+        <RarityUpgradeDialog
+          egg={egg}
+          open={showUpgradeDialog}
+          onOpenChange={setShowUpgradeDialog}
+          onSuccess={() => {
+            setShowUpgradeDialog(false)
+            onUpgrade(egg)
+          }}
+        />
+      )}
     </div>
   )
 }
