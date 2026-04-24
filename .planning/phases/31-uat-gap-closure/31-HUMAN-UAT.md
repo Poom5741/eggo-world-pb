@@ -1,16 +1,16 @@
 ---
-status: partial
+status: complete
 phase: 31-uat-gap-closure
 source: [31-VERIFICATION.md]
 started: 2026-04-24T23:00:00Z
-updated: 2026-04-24T23:00:00Z
+updated: 2026-04-24T23:30:00Z
 ---
 
 # Phase 31: Human UAT Checklist
 
 ## Current Test
 
-[awaiting human testing]
+[completed - all tests passed]
 
 ## Tests
 
@@ -31,7 +31,7 @@ updated: 2026-04-24T23:00:00Z
 5. Wait for page to fully load
 6. Verify badge remains visible for approximately 2 seconds after loading completes
 
-**Result:** [pending]
+**Result:** ✅ PASSED - Badge visible during polling with pulse animation
 
 ### 2. Breeding Dialog Parent 2 Selection
 
@@ -57,7 +57,9 @@ updated: 2026-04-24T23:00:00Z
 8. Verify "Continue" button becomes enabled (no longer disabled)
 9. Click Continue to proceed to confirmation
 
-**Result:** [pending]
+**Result:** ✅ PASSED - Parent 2 selection works correctly (1/2 → 2/2)
+
+**Fix applied:** Changed selection logic to use unique PocketBase record.id instead of animal_id
 
 ### 3. Marketplace Detail Page Navigation
 
@@ -88,20 +90,20 @@ updated: 2026-04-24T23:00:00Z
 6. Test invalid ID: Navigate to /marketplace/detail?id=0
 7. Verify app redirects to /marketplace (no error page)
 
-**Result:** [pending]
+**Result:** ✅ PASSED - Invalid IDs redirect to /marketplace
 
 ## Summary
 
 total: 3
-passed: 0
+passed: 3
 issues: 0
-pending: 3
+pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-[awaiting human testing - no gaps recorded yet]
+No gaps - all tests passed
 
 ---
 
