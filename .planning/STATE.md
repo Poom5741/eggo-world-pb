@@ -1,21 +1,22 @@
 ---
 gsd_state_version: 1.0
-milestone: v0.0.9
-milestone_name: Feature Completion & Cloudflare Pages
-status: complete
-last_updated: "2026-04-23T15:00:00.000Z"
+milestone: v0.1.0
+milestone_name: UAT Gap Closure
+status: active
+last_updated: "2026-04-24T23:00:00.000Z"
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 17
-  completed_plans: 16
-  deferred_plans: 1
+  total_phases: 1
+  completed_phases: 1
+  total_plans: 3
+  completed_plans: 3
+  deferred_plans: 0
+  deferred_uat: 3
 ---
 
 # STATE.md — Project Memory
 
 **Project:** Egg × Food × Animal NFT Marketplace  
-**Milestone:** v0.0.9 Feature Completion & Cloudflare Pages  
+**Milestone:** v0.1.0 UAT Gap Closure  
 **Network:** BNB SmartChain (BSC)  
 **Token:** USDT (BEP-20)
 
@@ -25,13 +26,13 @@ progress:
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, breed new generations, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.0.9 milestone — Complete missing features from functional spec + Cloudflare Pages frontend deployment (backend/wallet-api already hosted)
+**Current Focus:** v0.1.0 milestone — Fix 3 critical UAT bugs from browser agent testing (polling badge, breeding dialog, marketplace routing)
 
 ---
 
 ## Current Position
 
-**v0.0.9 Milestone:** ✅ COMPLETE — All 6 phases executed
+**v0.1.0 Milestone:** ✅ COMPLETE — Phase 31 executed
 
 ```
 Milestone v0.0.7: [██████████] 8/8 phases complete + archived
@@ -42,13 +43,17 @@ Milestone v0.0.8: [██████████] 5/5 phases complete + shipped
           Phase 23 → ⚠️ PARTIAL (4 UAT gaps deferred to Phase 26)
           Phase 24 → ✅ COMPLETE (UAT skipped by user)
 
-Milestone v0.0.9: [██████████] 6/6 phases complete ✓
+Milestone v0.0.9: [██████████] 6/6 phases complete + shipped
           Phase 26 → ✅ COMPLETE (4 UAT gaps closed)
           Phase 27 → ✅ COMPLETE (Rarity upgrade system)
           Phase 28 → ✅ COMPLETE (Wallet Withdrawal & CoinStor Admin)
           Phase 29 → ✅ COMPLETE (Admin Controls & Platform Safety)
           Phase 30 → ✅ COMPLETE (Cloudflare Pages Frontend Deployment)
           Phase 25 → ✅ COMPLETE (UX/UI Audit Fixes, 1 plan deferred for manual review)
+
+Milestone v0.1.0: [██████████] 1/1 phases complete ✓
+          Phase 31 → ✅ COMPLETE (3 UAT bug fixes: polling badge, breeding dialog, marketplace routing)
+                    Human UAT pending: 31-HUMAN-UAT.md (3 tests)
 ```
 
 Archive: .planning/milestones/v0.0.7-ROADMAP.md, v0.0.8-ROADMAP.md
@@ -91,6 +96,7 @@ Summary: .planning/MILESTONES.md
 | Task                | Date       | Description                                            | Status      |
 | ------------------- | ---------- | ------------------------------------------------------ | ----------- |
 | accessibility-fixes | 2026-04-19 | Fix critical WCAG 2.2 AA compliance issues in Phase 14 | ✅ Complete |
+| fast-commit         | 2026-04-24 | Atomic commit: error handling improvements across API calls | ✅ Complete |
 
 ## Accumulated Context
 
@@ -157,16 +163,27 @@ Summary: .planning/MILESTONES.md
 
 ### Deferred Items
 
-Items acknowledged and deferred at milestone close on 2026-04-22:
+Items acknowledged and deferred at milestone close on 2026-04-24:
 
-| Category     | Item                                                        | Status                                         |
-| ------------ | ----------------------------------------------------------- | ---------------------------------------------- |
-| UAT          | Phase 10: 10 UAT scenarios (feed/hatch/polling/empty state) | Deferred to Phase 20 - requires manual testing |
-| UAT          | Phase 17: UAT re-execution (6 manual scenarios)             | Deferred to Phase 20 - requires manual testing |
-| Verification | Phase 03: Frontend marketplace verification gaps            | Deferred to Phase 20 - legacy gaps             |
-| Verification | Phase 12: feed-egg foodCount validation gap                 | Moved to Phase 20 - real bug fix needed        |
-| Verification | Phase 19: gas sponsorship documentation + 5 human tests     | Moved to Phase 20 - MVP decision + testing     |
-| Context      | Phase 08: Material Symbols integration questions            | Resolved during implementation, documented     |
+| Category | Phase | Item | Status | Severity |
+|----------|-------|------|--------|----------|
+| UAT | 10 | Polling "Updating..." badge not displayed | deferred | major |
+| UAT | 10 | Feed/Hatch flow tests (blocked by data state) | deferred | blocked |
+| UAT | 21 | Breeding dialog Parent 2 selection bug | deferred | blocker |
+| UAT | 23 | Marketplace detail page "Product not found" | deferred | blocker |
+| UAT | 27 | Rarity upgrade tests (blocked by no eggs >= 10 food) | deferred | blocked |
+| UAT | 28 | Admin CoinStor dashboard (blocked by non-admin user) | deferred | blocked |
+| Plan | 25 | Shadow/border migration (~55 files) | deferred | P2 |
+
+**Root Causes Identified:**
+
+1. **Phase 10 Polling Badge**: API polling works (egg_nfts collection polled) but no visual "Updating..." badge rendered. Missing UI component for isPolling state.
+
+2. **Phase 21 Breeding Dialog**: All animals have animal_id=0 in database, causing filter logic to exclude ALL animals when Parent 1 selected. Data integrity issue.
+
+3. **Phase 23 Detail Page**: Static route /marketplace/detail?id=X shows "Product not found" - may be missing data or incorrect query.
+
+**Resolution Path:** Create Phase 31 for UAT Gap Closure to fix these issues post-archival.
 
 ---
 

@@ -8,21 +8,23 @@
 
 ## v0.1.0 — UAT Gap Closure (Current Milestone)
 
-### Phase 31: UAT Gap Closure (3 plans) — ready for execution
+### Phase 31: UAT Gap Closure (3 plans) — completed 2026-04-24
 
 **Goal:** Fix 3 critical UAT bugs identified during browser agent testing
 
-**Plans:** 3 plans in 1 wave (parallel execution)
+**Plans:** 3/3 plans complete
 
-- [ ] 31-01-PLAN.md — Fix polling badge visual indicator (Phase 10 Test 7 gap) — Wave 1
-  - Add minimum display duration (2s) to polling badge for visibility
+- [x] 31-01-PLAN.md — Fix polling badge visual indicator (Phase 10 Test 7 gap) — COMPLETED
+  - Added minimum display duration (2s) to polling badge for visibility
   - Files: egg-card.tsx, featured-egg-hero.tsx
-- [ ] 31-02-PLAN.md — Fix breeding dialog Parent 2 selection (Phase 21 Test 1 blocker) — Wave 1
-  - Fix filter logic to use unique record.id when animal_id=0
+- [x] 31-02-PLAN.md — Fix breeding dialog Parent 2 selection (Phase 21 Test 1 blocker) — COMPLETED
+  - Fixed filter logic to use unique record.id when animal_id=0
   - Files: AnimalSelectionGrid.tsx
-- [ ] 31-03-PLAN.md — Fix marketplace detail page routing (Phase 23 Test 5 blocker) — Wave 1
-  - Validate listing.id before navigation, handle invalid IDs gracefully
+- [x] 31-03-PLAN.md — Fix marketplace detail page routing (Phase 23 Test 5 blocker) — COMPLETED
+  - Validated listing.id before navigation, handle invalid IDs gracefully
   - Files: AnimalListingsSection.tsx, detail/page.tsx
+
+**Human UAT pending:** 3 tests in 31-HUMAN-UAT.md
 
 ## Phases
 
@@ -120,8 +122,8 @@
 | 29. Admin Controls       | v0.0.9    | 3/3            | Complete | 2026-04-23 | P1            |
 | 25. UX/UI Consistency    | v0.0.9    | 2/3            | Complete | 2026-04-23 | P2            | (deferred: shadow/border migration) |
 | 30. Cloudflare Pages     | v0.0.9    | 2/2            | Complete | 2026-04-23 | P0 (deploy)   |
-| 31. UAT Gap Closure      | v0.1.0    | 0/3            | Planned  | —          | P0 (blockers) |
+| 31. UAT Gap Closure      | v0.1.0    | 3/3            | Complete | 2026-04-24 | P0 (blockers) | human UAT pending                   |
 
 ---
 
-_Last updated: 2026-04-24 — Phase 31 planned: 3 UAT bug fix plans ready for execution._
+_Last updated: 2026-04-24 — Phase 31 complete: 3/3 UAT bug fixes implemented, human UAT pending._
