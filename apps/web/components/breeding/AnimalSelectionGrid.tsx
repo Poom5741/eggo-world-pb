@@ -56,7 +56,12 @@ export function AnimalSelectionGrid({
   loading = false,
   excludeAnimalId = null,
 }: AnimalSelectionGridProps) {
-  const filteredAnimals = animals.filter(a => a.animal_id !== excludeAnimalId)
+  // Find the animal to exclude by its animal_id
+  // Note: All animals currently have animal_id=0 in database (data integrity issue)
+  // So we find the specific animal by animal_id first, then exclude by unique id
+  const excludedAnimal = animals.find(a => a.animal_id === excludeAnimalId)
+  const excludeRecordId = excludedAnimal?.id
+  const filteredAnimals = animals.filter(a => a.id !== excludeRecordId)
 
   if (loading) {
     return (
