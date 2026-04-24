@@ -156,6 +156,12 @@ export function AnimalListingsSection({ className }: AnimalListingsSectionProps)
   })
 
   const handleCardClick = (listing: any) => {
+    // Validate listing.id before navigation
+    if (!listing?.id || listing.id === '0' || listing.id === '') {
+      console.error('Invalid listing ID:', listing?.id)
+      router.push('/marketplace')
+      return
+    }
     // Navigate to detail page (static route with searchParams for static export compatibility)
     router.push(`/marketplace/detail?id=${listing.id}`)
   }
