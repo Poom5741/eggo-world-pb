@@ -228,6 +228,7 @@
   --font-sans: var(--font-geist), 'Geist', 'Geist Fallback';
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --font-pixel: var(--font-pixel), 'Press Start 2P', monospace;
+  --font-headline: var(--font-pixel), 'Press Start 2P', monospace;
   
   /* ============================================
      JULES DESIGN SYSTEM - COMPLETE COLOR TOKENS
@@ -871,11 +872,11 @@ img, video, svg {
 @layer utilities {
   /* Font family utilities */
   .font-heading {
-    @apply font-headline;
+    font-family: var(--font-headline);
   }
 
   .font-body {
-    @apply font-body;
+    font-family: var(--font-sans);
   }
 
   .font-pixel {

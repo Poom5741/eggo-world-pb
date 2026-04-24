@@ -4,25 +4,32 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, CheckCircle2, AlertCircle, Egg } from 'lucide-react'
+import { createClient } from '@/lib/pocketbase/client'
 
 interface BuyEggFlowProps {
   onSuccess?: (data: { eggId: number; txHash: string }) => void
   onError?: (error: Error) => void
 }
 
+const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'https://pb.eggoworld.io'
+
 export function BuyEggFlow({ onSuccess, onError }: BuyEggFlowProps) {
   const [loading, setLoading] = useState(false)
   const [approving, setApproving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<{ eggId: number; txHash: string } | null>(null)
+  const pb = createClient()
 
   const handleApproveUSDT = async (): Promise<boolean> => {
     setApproving(true)
     try {
-      // Mock USDT approval - in real implementation, this would call wallet API
-      const response = await fetch('/api/wallet/approve-usdt', {
+      // USDT approval via PocketBase backend
+      const response = await fetch(`${pbUrl}/api/v2/wallet/approve-usdt`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': pb.authStore.token || ''
+        },
       })
       
       const result = await response.json()
@@ -50,15 +57,23 @@ export function BuyEggFlow({ onSuccess, onError }: BuyEggFlowProps) {
       const approved = await handleApproveUSDT()
       if (!approved) return
 
-      // Step 2: Purchase egg
-      const response = await fetch('/api/v2/mint-egg', {
+      // Step 2: Purchase egg via PocketBase backend
+      const response = await fetch(`${pbUrl}/api/v2/mint-egg`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': pb.authStore.token || ''
+        },
       })
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
 
       const result = await response.json()
 
-      if (!response.ok) {
+      if (!result.success) {
         let errorMessage = 'Purchase failed'
         if (result.error) {
           if (typeof result.error === 'string') {

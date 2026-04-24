@@ -5,7 +5,8 @@ import { AnimalData } from '@/hooks/use-animal-poll'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { SpeciesIcon, Star } from '../icons/species-icons'
+import { SpeciesIcon } from '../icons/species-icons'
+import { Star } from 'lucide-react'
 
 /**
  * Props for BreedingConfirmation component

@@ -79,3 +79,4 @@ contracts/lib/
 .qoder.flux/
 .qoder
 .flux.env.production
+*.png

@@ -76,6 +76,11 @@ export default function WithdrawPage() {
         body: JSON.stringify({ user_address: walletAddress })
       })
 
+      if (!response.ok) {
+        console.error('Balance fetch failed:', response.status)
+        return
+      }
+
       const data = await response.json()
       if (data.success) {
         setBalance({
@@ -142,6 +147,11 @@ export default function WithdrawPage() {
           external_wallet_address: formData.external_wallet_address
         })
       })
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
 
       const data = await response.json()
       

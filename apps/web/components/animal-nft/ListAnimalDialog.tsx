@@ -27,6 +27,8 @@ interface ListAnimalDialogProps {
   onSuccess?: (listingId: string) => void
 }
 
+const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'https://pb.eggoworld.io'
+
 const speciesConfig: Record<string, SpeciesType> = {
   Chicken: "Chicken",
   Duck: "Duck",
@@ -69,7 +71,7 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
           return
         }
         
-        const response = await fetch(`/api/v2/list-animal?animal_id=${animal.animal_id}`, {
+        const response = await fetch(`${pbUrl}/api/v2/list-animal?animal_id=${animal.animal_id}`, {
           method: 'GET',
           headers: {
             'Authorization': token
@@ -127,7 +129,7 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
         throw new Error("Not authenticated")
       }
 
-      const response = await fetch("/api/v2/list-animal", {
+      const response = await fetch(`${pbUrl}/api/v2/list-animal`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -139,9 +141,14 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
         })
       })
 
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
+
       const result = await response.json()
 
-      if (!response.ok || !result.success) {
+      if (!result.success) {
         throw new Error(result.error?.message || "Listing failed")
       }
 

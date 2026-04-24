@@ -184,9 +184,14 @@ export function BuyFlow({
         })
       })
       
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
+      
       const data = await response.json()
       
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         let errorMessage = 'Purchase failed'
         if (data.error) {
           if (typeof data.error === 'string') {

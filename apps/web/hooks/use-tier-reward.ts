@@ -3,6 +3,8 @@
 import { useState, useCallback } from "react"
 import { createClient } from "@/lib/pocketbase/client"
 
+const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'https://pb.eggoworld.io'
+
 export interface TierStatus {
     lifetime_food_items: number
     highest_tier_reached: string | null
@@ -63,16 +65,21 @@ export function useTierReward(): UseTierRewardReturn {
                 throw new Error("Not authenticated")
             }
             
-            const response = await fetch('/api/v2/check-tier-reward', {
+            const response = await fetch(`${pbUrl}/api/v2/check-tier-reward`, {
                 method: 'GET',
                 headers: {
                     'Authorization': token
                 }
             })
             
+            if (!response.ok) {
+                const text = await response.text()
+                throw new Error(text || `HTTP ${response.status}`)
+            }
+            
             const result = await response.json()
             
-            if (!response.ok) {
+            if (!result.success) {
                 throw new Error(result.error?.message || 'Failed to fetch tier status')
             }
             
@@ -97,7 +104,7 @@ export function useTierReward(): UseTierRewardReturn {
                 throw new Error("Not authenticated")
             }
             
-            const response = await fetch('/api/v2/check-tier-reward', {
+            const response = await fetch(`${pbUrl}/api/v2/check-tier-reward`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -106,9 +113,14 @@ export function useTierReward(): UseTierRewardReturn {
                 body: JSON.stringify({ tier })
             })
             
+            if (!response.ok) {
+                const text = await response.text()
+                throw new Error(text || `HTTP ${response.status}`)
+            }
+            
             const result = await response.json()
             
-            if (!response.ok) {
+            if (!result.success) {
                 throw new Error(result.error?.message || 'Tier claim failed')
             }
             

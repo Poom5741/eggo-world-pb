@@ -53,7 +53,7 @@ export function useAnimalMarketplace(
       let filter = 'status = "active"'
 
       if (rarities.length > 0) {
-        const rarityFilter = rarities.map((r) => `rarity = '${r}'`).join(" || ")
+        const rarityFilter = rarities.map((r) => `rarity = '${r.toLowerCase()}'`).join(" || ")
         filter = `(${filter}) && (${rarityFilter})`
       }
 

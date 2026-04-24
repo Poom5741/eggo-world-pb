@@ -54,6 +54,11 @@ export default function DepositPage() {
         }
       )
 
+      if (!response.ok) {
+        console.error('Fetch deposits failed:', response.status)
+        return
+      }
+
       const data = await response.json()
       if (data.items) {
         setDeposits(data.items)
@@ -111,17 +116,19 @@ export default function DepositPage() {
           body: JSON.stringify({ user_address: user.wallet })
         })
 
-        // Handle auth errors (401/403)
-        if (response.status === 401 || response.status === 403) {
-          setError("Session expired. Please login again.")
-          window.location.href = "/auth/login"
-          return
-        }
-
-        // Handle endpoint not found (backend not deployed)
-        if (response.status === 404) {
-          console.warn("Deposit polling endpoint not available")
-          setPollingStatus("Polling unavailable (endpoint not deployed)")
+        // Handle non-OK responses (including auth errors and endpoint not found)
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            setError("Session expired. Please login again.")
+            window.location.href = "/auth/login"
+            return
+          }
+          if (response.status === 404) {
+            console.warn("Deposit polling endpoint not available")
+            setPollingStatus("Polling unavailable (endpoint not deployed)")
+            return
+          }
+          console.error('Deposit poll failed:', response.status)
           return
         }
 
@@ -169,9 +176,13 @@ export default function DepositPage() {
         body: JSON.stringify({ user_address: walletAddress })
       })
 
-      // Handle auth errors
-      if (response.status === 401 || response.status === 403) {
-        window.location.href = "/auth/login"
+      // Handle non-OK responses
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          window.location.href = "/auth/login"
+          return
+        }
+        console.error('Initial deposit fetch failed:', response.status)
         return
       }
 

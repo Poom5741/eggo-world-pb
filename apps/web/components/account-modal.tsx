@@ -56,6 +56,12 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
             body: JSON.stringify({ user_address: user.wallet }),
           }
         )
+        
+        if (!response.ok) {
+          console.error('Balance fetch failed:', response.status)
+          return
+        }
+        
         const data = await response.json()
         if (data.success && data.data) {
           setBalance(data.data)

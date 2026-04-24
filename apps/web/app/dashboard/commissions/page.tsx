@@ -152,9 +152,14 @@ export default function CommissionsDashboard() {
         }
       })
 
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
+
       const result = await response.json()
 
-      if (!response.ok) {
+      if (!result.success) {
         let errorMessage = 'Claim failed'
         if (result.error) {
           if (typeof result.error === 'string') {
