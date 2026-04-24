@@ -29,7 +29,7 @@ export default function MarketplaceControlPage() {
     if (!isHydrated) return
     
     const user = pb.authStore.record
-    if (!user || !user.get("admin")) {
+    if (!user || !user?.admin) {
       router.push('/auth/login')
       return
     }

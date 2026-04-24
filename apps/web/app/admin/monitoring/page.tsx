@@ -56,13 +56,17 @@ export default function MonitoringPage() {
   const router = useRouter()
   const isHydrated = useIsHydrated()
   const pb = createClient()
-  const isAuthorized = isHydrated && pb.authStore.isValid
+  const user = pb.authStore.record
+  const isAdmin = user?.admin === true
+  const isAuthorized = isHydrated && pb.authStore.isValid && isAdmin
 
   useEffect(() => {
     if (!isHydrated) return
 
     const fetchData = async () => {
-      if (!isHydrated || !pb?.authStore?.isValid) {
+      const user = pb.authStore.record
+      const isAdmin = user?.admin === true
+      if (!isHydrated || !pb?.authStore?.isValid || !isAdmin) {
         router.push('/auth/login')
         return
       }
@@ -137,6 +141,13 @@ export default function MonitoringPage() {
         }
       })
       
+      if (!response.ok) {
+        setCoinStorError(`HTTP ${response.status} - failed to retrieve balance`)
+        setCoinStorMessage('')
+        setCoinStorLoading(false)
+        return
+      }
+      
       const data = await response.json()
       if (data.success) {
         setCoinStorBalance(data.data.balance)
@@ -172,6 +183,13 @@ export default function MonitoringPage() {
         },
         body: JSON.stringify({ amount: amountNum })
       })
+      
+      if (!response.ok) {
+        setCoinStorError(`HTTP ${response.status} - failed to inject liquidity`)
+        setCoinStorMessage('')
+        setCoinStorLoading(false)
+        return
+      }
       
       const data = await response.json()
       if (data.success) {
@@ -231,6 +249,13 @@ export default function MonitoringPage() {
           amount: Number(recipient.amount) 
         }))})
       })
+      
+      if (!response.ok) {
+        setCoinStorError(`HTTP ${response.status} - failed to distribute rewards`)
+        setCoinStorMessage('')
+        setCoinStorLoading(false)
+        return
+      }
       
       const data = await response.json()
       if (data.success) {
@@ -334,8 +359,8 @@ export default function MonitoringPage() {
       <LayoutWrapper>
         <div className="max-w-6xl mx-auto py-12">
           <div className="bg-surface-container-low rounded-xl p-12 clay-card text-center">
-            <h2 className="text-2xl font-pixel-style mb-4">Access Denied</h2>
-            <p className="mb-6">Please log in to access the monitoring dashboard.</p>
+            <h2 className="text-2xl font-pixel-style mb-4">Admin Access Required</h2>
+            <p className="mb-6">This dashboard is restricted to admin users only.</p>
             <Button onClick={() => router.push('/auth/login')}>Go to Login</Button>
           </div>
         </div>
