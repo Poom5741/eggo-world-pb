@@ -57,7 +57,7 @@ export function BreedingDialog({
 }: BreedingDialogProps) {
   const { breedAnimals, loading } = useBreeding()
   const [step, setStep] = useState<BreedingStep>('selection')
-  const [selectedParentIds, setSelectedParentIds] = useState<number[]>([])
+  const [selectedParentIds, setSelectedParentIds] = useState<string[]>([])
   const [breedingResult, setBreedingResult] = useState<BreedingResult | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
 
@@ -67,9 +67,10 @@ export function BreedingDialog({
       setStep('selection')
       setBreedingResult(null)
       setShowSuccessModal(false)
-      // If initialParent1 is provided, pre-select it
+      // If initialParent1 is provided, pre-select it using its unique PocketBase record ID
+      // Note: Using id instead of animal_id to handle data integrity issue
       if (initialParent1) {
-        setSelectedParentIds([initialParent1.animal_id])
+        setSelectedParentIds([initialParent1.id])
       } else {
         setSelectedParentIds([])
       }
@@ -81,18 +82,18 @@ export function BreedingDialog({
     }
   }, [open, initialParent1])
 
-  // Get selected parent objects
+  // Get selected parent objects by their unique PocketBase record IDs
   const parent1 = selectedParentIds[0] 
-    ? animals.find(a => a.animal_id === selectedParentIds[0]) || null
+    ? animals.find(a => a.id === selectedParentIds[0]) || null
     : null
   const parent2 = selectedParentIds[1] 
-    ? animals.find(a => a.animal_id === selectedParentIds[1]) || null
+    ? animals.find(a => a.id === selectedParentIds[1]) || null
     : null
 
   /**
    * Toggle animal selection
    */
-  const handleSelectAnimal = useCallback((animalId: number) => {
+  const handleSelectAnimal = useCallback((animalId: string) => {
     setSelectedParentIds(prev => {
       // If already selected, remove it
       if (prev.includes(animalId)) {

@@ -13,16 +13,16 @@ import { SpeciesIcon } from '../icons/species-icons'
 interface AnimalSelectionGridProps {
   /** List of user's animals */
   animals: AnimalData[]
-  /** Currently selected animal IDs */
-  selectedIds: number[]
+  /** Currently selected animal record IDs (PocketBase unique IDs) */
+  selectedIds: string[]
   /** Callback when an animal is selected/deselected */
-  onSelect: (animalId: number) => void
+  onSelect: (animalId: string) => void
   /** Maximum number of animals that can be selected */
   maxSelection?: number
   /** Whether the grid is loading */
   loading?: boolean
-  /** ID of animal to exclude from selection (e.g., already selected as parent1) */
-  excludeAnimalId?: number | null
+  /** Record ID of animal to exclude from selection (e.g., already selected as parent1) */
+  excludeAnimalId?: string | null
 }
 
 const speciesConfig: Record<string, { speciesType: string; color: string }> = {
@@ -56,12 +56,10 @@ export function AnimalSelectionGrid({
   loading = false,
   excludeAnimalId = null,
 }: AnimalSelectionGridProps) {
-  // Find the animal to exclude by its animal_id
-  // Note: All animals currently have animal_id=0 in database (data integrity issue)
-  // So we find the specific animal by animal_id first, then exclude by unique id
-  const excludedAnimal = animals.find(a => a.animal_id === excludeAnimalId)
-  const excludeRecordId = excludedAnimal?.id
-  const filteredAnimals = animals.filter(a => a.id !== excludeRecordId)
+  // Filter out the excluded animal by its unique PocketBase record ID
+  // Note: Using record.id instead of animal_id to handle data integrity issue
+  // where all animals have animal_id=0 in database
+  const filteredAnimals = animals.filter(a => a.id !== excludeAnimalId)
 
   if (loading) {
     return (
@@ -105,7 +103,7 @@ export function AnimalSelectionGrid({
       {filteredAnimals.map((animal) => {
         const species = speciesConfig[animal.species] || { speciesType: "Chicken", color: "text-primary" }
         const rarity = rarityConfig[animal.rarity] || { label: 'COMMON', color: 'text-primary', bgColor: 'bg-primary/10' }
-        const isSelected = selectedIds.includes(animal.animal_id)
+        const isSelected = selectedIds.includes(animal.id)
         const canSelect = isSelected || selectedIds.length < maxSelection
         
         // Check cooldown status
@@ -127,7 +125,7 @@ export function AnimalSelectionGrid({
             onClick={() => {
               if (onCooldown) return
               if (isSelected || canSelect) {
-                onSelect(animal.animal_id)
+                onSelect(animal.id)
               }
             }}
             aria-pressed={isSelected}
