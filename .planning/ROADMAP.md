@@ -24,7 +24,7 @@
 | 36    | NFT Burn & KYC Toggle     | BURN-01, KYC-01, SPEND-01    | P2/P3    | ✅ Complete   |
 | 37    | Smart Contract Updates    | VRF, Burn, AdminConfig       | P0       | ○ Not Started |
 | 38    | Wallet API Endpoints      | 7 new endpoints              | P0       | ○ Not Started |
-| 39    | Collection Schema Updates | 10 new fields                | P0       | ○ Not Started |
+| 39    | Collection Schema Updates | 10 new fields                | P0       | ● 1/1 plans   |
 | 40    | Frontend Components       | 4 UI components              | P1       | ○ Not Started |
 
 ---
@@ -58,13 +58,8 @@
 - [ ] Phase 38: Wallet API Endpoints (P0) — 2/2 plans
   - [ ] 38-01-PLAN.md — claim-recruitment-bonus, hatch-egg-vrf, check-vrf-fulfillment
   - [ ] 38-02-PLAN.md — admin/\* (set-platform-fee, set-breed-cooldown, update-rarity-weights, add-species, set-kyc-required), burn-nft, game-config
-- [ ] Phase 39: Collection Schema Updates (P0)
-  - [ ] `users.claimed_recruitment_tier` (number, default: 0)
-  - [ ] `users.kyc_required_globally` (bool, default: false)
-  - [ ] `egg_nfts.is_hatching`, `egg_nfts.vrf_request_id`, `egg_nfts.vrf_transaction_hash`
-  - [ ] `egg_nfts.is_burned`, `egg_nfts.burned_at`
-  - [ ] `food_nfts.is_burned`, `food_nfts.burned_at`
-  - [ ] `animal_nfts.is_burned`, `animal_nfts.burned_at`
+- [ ] Phase 39: Collection Schema Updates (P0) — 1/1 plan
+  - [x] 39-01-PLAN.md — Add 10 fields to 4 collections (users, egg_nfts, food_nfts, animal_nfts)
 - [ ] Phase 40: Frontend Components (P1)
   - [ ] `RecruitmentBonusCard.tsx`
   - [ ] Admin game config page at `/admin/game-config`
