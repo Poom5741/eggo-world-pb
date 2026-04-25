@@ -60,11 +60,10 @@
   - [ ] 38-02-PLAN.md — admin/\* (set-platform-fee, set-breed-cooldown, update-rarity-weights, add-species, set-kyc-required), burn-nft, game-config
 - [ ] Phase 39: Collection Schema Updates (P0) — 1/1 plan
   - [x] 39-01-PLAN.md — Add 10 fields to 4 collections (users, egg_nfts, food_nfts, animal_nfts)
-- [ ] Phase 40: Frontend Components (P1)
-  - [ ] `RecruitmentBonusCard.tsx`
-  - [ ] Admin game config page at `/admin/game-config`
-  - [ ] `BurnNFTDialog.tsx`
-  - [ ] `KYCStatusBadge.tsx`
+- [ ] Phase 40: Frontend Components (P1) — 3/3 plans
+  - [x] 40-01-PLAN.md — RecruitmentBonusCard + KYCStatusBadge components
+  - [x] 40-02-PLAN.md — Admin game config page at /admin/game-config
+  - [x] 40-03-PLAN.md — BurnNFTDialog component
 
 ---
 
