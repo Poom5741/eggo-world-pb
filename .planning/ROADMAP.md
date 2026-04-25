@@ -6,25 +6,25 @@
 - ✅ **v0.0.8 NFT Ecosystem Complete** — Phases 20-24 (shipped 2026-04-22) — [Archive](milestones/v0.0.8-ROADMAP.md)
 - ✅ **v0.0.9 Feature Completion & Cloudflare Deployment** — Phases 25-30 (shipped 2026-04-24) — [Archive](milestones/v0.0.9-ROADMAP.md)
 
-## v0.1.0 — UAT Gap Closure (Current Milestone)
+- ✅ **v0.1.0 UAT Gap Closure** — Phase 31 (shipped 2026-04-25) — [Archive](milestones/v0.1.0-ROADMAP.md)
 
-### Phase 31: UAT Gap Closure (3 plans) — completed 2026-04-24
+## Current Milestone: Planning Next Version
 
-**Goal:** Fix 3 critical UAT bugs identified during browser agent testing
+No active milestone. Run `/gsd-new-milestone` to start the next milestone cycle.
 
-**Plans:** 3/3 plans complete
+---
 
-- [x] 31-01-PLAN.md — Fix polling badge visual indicator (Phase 10 Test 7 gap) — COMPLETED
-  - Added minimum display duration (2s) to polling badge for visibility
-  - Files: egg-card.tsx, featured-egg-hero.tsx
-- [x] 31-02-PLAN.md — Fix breeding dialog Parent 2 selection (Phase 21 Test 1 blocker) — COMPLETED
-  - Fixed filter logic to use unique record.id when animal_id=0
-  - Files: AnimalSelectionGrid.tsx
-- [x] 31-03-PLAN.md — Fix marketplace detail page routing (Phase 23 Test 5 blocker) — COMPLETED
-  - Validated listing.id before navigation, handle invalid IDs gracefully
-  - Files: AnimalListingsSection.tsx, detail/page.tsx
+## Completed Milestones (Archived)
 
-**Human UAT pending:** 3 tests in 31-HUMAN-UAT.md
+<details>
+<summary>✅ v0.1.0 UAT Gap Closure — Phase 31 — SHIPPED 2026-04-25</summary>
+
+- [x] Phase 31: UAT Gap Closure (3/3 plans) — completed 2026-04-25
+  - [x] 31-01: Fix polling badge visual indicator
+  - [x] 31-02: Fix breeding dialog Parent 2 selection
+  - [x] 31-03: Fix marketplace detail page routing
+
+</details>
 
 ## Phases
 
@@ -122,8 +122,8 @@
 | 29. Admin Controls       | v0.0.9    | 3/3            | Complete | 2026-04-23 | P1            |
 | 25. UX/UI Consistency    | v0.0.9    | 2/3            | Complete | 2026-04-23 | P2            | (deferred: shadow/border migration) |
 | 30. Cloudflare Pages     | v0.0.9    | 2/2            | Complete | 2026-04-23 | P0 (deploy)   |
-| 31. UAT Gap Closure      | v0.1.0    | 3/3            | Complete | 2026-04-24 | P0 (blockers) | human UAT pending                   |
+| 31. UAT Gap Closure      | v0.1.0    | 3/3            | Complete | 2026-04-25 | P0 (blockers) | human UAT pending                   |
 
 ---
 
-_Last updated: 2026-04-24 — Phase 31 complete: 3/3 UAT bug fixes implemented, human UAT pending._
+_Last updated: 2026-04-25 — v0.1.0 milestone archived, ready for next milestone._

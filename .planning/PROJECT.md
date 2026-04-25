@@ -11,99 +11,89 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Current Milestone: v0.0.9 Feature Completion & Cloudflare Deployment
+## Current Milestone: No Active Milestone
 
-**Goal:** Complete remaining features from NFT_Marketplace_Functional_Spec.md and migrate deployment to Cloudflare Pages/Workers.
+**Status:** Ready for next milestone planning
 
-**Target features:**
+Run `/gsd-new-milestone` to start the next milestone cycle.
 
-- Phase 26: Fix Phase 23 UAT gaps (rarity filter, listing UX, duplicates, route 404)
-- Phase 27: Egg Rarity Upgrade System (feed extra food for better rarity)
-- Phase 28: Wallet Withdrawal & CoinStor Admin (withdrawUSDT, admin dashboard)
-- Phase 29: Admin Controls & Platform Safety (pause/unpause, fee settings, stats)
-- Phase 25: UX/UI Consistency Audit Fixes (93 violations)
-- Phase 30: Cloudflare Deployment Migration (Pages + Workers + CI/CD)
-
-**Spec reference:** docs/NFT_Marketplace_Functional_Spec.md
-
-## Core Game Loop
-
-```
-BUY EGG NFT (25 USDT)
-      │
-      ▼
-RECEIVE 2× FOOD NFTs (bonus)
-      │
-      ▼
-BUY MORE FOOD NFTs (0.50 USDT each)
-      │
-      ▼
-FEED EGG 10 FOOD ITEMS → HATCH
-      │
-      ▼
-RECEIVE ANIMAL NFT (random rarity)
-      │
-      ▼
-SELL / HOLD / BREED on Marketplace
-```
-
-## Key Features
-
-### NFT Types
-
-1. **Egg NFT** (25 USDT) — Comes with 2 Food NFTs bonus, requires 10 food to hatch
-2. **Food NFT** (0.50 USDT) — Consumable to feed eggs, 4 types (Grain, Fish, Insects, Herbs)
-3. **Animal NFT** — Hatched from eggs, 4 rarity tiers (Common 60%, Rare 25%, Epic 12%, Legendary 3%)
-
-### Referral System (4-Level MLM)
-
-- **G1** (Direct referrer): 20% commission
-- **G2**: 10% commission
-- **G3**: 10% commission
-- **G4**: 10% commission
-- **Total payout**: 50% of Egg NFT sale ($12.50 from $25)
-
-### CoinStor Reserve
-
-- 4% of every transaction goes to platform reserve
-- Used for: liquidity, ecosystem rewards, emergency payouts
-
-## Technical Stack
-
-**Frontend:** Next.js 16 (Bun runtime, static export for Cloudflare Pages)
-
-- shadcn/ui components, Tailwind CSS 4
-- PocketBase client for auth
-- Ethers v6 / dacc-js for wallet interactions
-
-**Backend:** PocketBase
-
-- LINE OAuth authentication
-- Auto-wallet creation hooks
-- User and NFT metadata storage
-
-**Wallet API:** Express.js (TypeScript, Bun runtime)
-
-- Wallet generation with dacc-js v0.0.5
-- USDT balance management
-- Transaction signing
-
-**Smart Contracts:** Foundry (Solidity 0.8.20)
-
-- ERC-1155 NFT contracts (Egg, Food, Animal)
-- Marketplace contract with escrow
-- Commission distribution engine
-- USDT (BEP-20) integration
-
-**Infrastructure:**
-
-- Docker for PocketBase
-- Nginx reverse proxy
-- BSC testnet/mainnet deployment
+**Previous Milestone:** v0.1.0 UAT Gap Closure (shipped 2026-04-25)
 
 ---
 
 ## Milestone Archive
+
+### v0.1.0 — UAT Gap Closure ✅ ARCHIVED
+
+**Shipped:** 2026-04-25  
+**Duration:** 1 day  
+**Phases:** 1 (Phase 31)  
+**Plans:** 3
+
+**What Was Delivered:**
+
+- ✅ Fixed polling badge visibility (minimum 2-second display duration)
+- ✅ Fixed breeding dialog Parent 2 selection bug (defensive ID filtering)
+- ✅ Fixed marketplace detail page routing (ID validation + server-side redirect)
+
+**Human UAT Pending:** 3 tests in 31-HUMAN-UAT.md
+
+**Key Patterns:**
+
+- Minimum display duration: useState + useRef + useEffect for timeout management
+- Defensive ID filtering: Use PocketBase record.id when blockchain token_id unreliable
+- Server-side redirect: Next.js redirect() for invalid route params
+
+---
+
+### v0.0.9 — Feature Completion & Cloudflare Deployment ✅ ARCHIVED
+
+**Shipped:** 2026-04-24  
+**Duration:** 2 days  
+**Phases:** 6 (25-30)
+
+**What Was Delivered:**
+
+- ✅ Rarity upgrade system (MAX_UPGRADE_FOOD=490, RarityUpgradeDialog)
+- ✅ Wallet withdrawal (withdrawUSDT endpoint, withdrawal modal)
+- ✅ Admin controls (platform pause/unpause, fee configuration)
+- ✅ Cloudflare Pages deployment (static export, CI/CD)
+- ✅ UAT bug fixes (Phase 26, 31)
+
+---
+
+### v0.0.8 — NFT Ecosystem Complete ✅ ARCHIVED
+
+**Shipped:** 2026-04-22  
+**Phases:** 5 (20-24)
+
+**What Was Delivered:**
+
+- ✅ Breeding system: Animal selection dialog, cooldown validation
+- ✅ Tier rewards & badges: TierBadge.sol (ERC-5192), dashboard integration
+- ✅ Secondary market: resale_listings, royalty distribution
+- ✅ Admin dashboard: Error boundaries, monitoring
+- ✅ Onboarding tutorial: Walkthrough overlay
+
+---
+
+### v0.0.7 — Security & Quality ✅ ARCHIVED
+
+**Shipped:** 2026-04-22  
+**Phases:** 8 (12-19)  
+**Commits:** 119
+
+**What Was Delivered:**
+
+- ✅ Real smart contract integration (4 endpoints, 0xl3 testnet deployment)
+- ✅ Complete NFT mint flow (contract → PocketBase → marketplace → Buy Now)
+- ✅ LINE OAuth wallet auto-creation fix
+- ✅ 80%+ test coverage (49 new tests)
+- ✅ Feed & play features with daily check-in
+- ✅ Gas sponsorship system with relayer wallet
+- ✅ Mobile responsive + WCAG 2.2 AA compliance
+
+---
 
 ### v0.0.6 — Frontend Migration & Integration ✅ ARCHIVED
 
@@ -127,23 +117,6 @@ SELL / HOLD / BREED on Marketplace
 **Requirements Satisfied:** 19/19 scoped (100%)  
 **Phases Completed:** 5/5 (8, 9, 10, 11, 13)  
 **Final Audit:** `.planning/milestones/v0.0.6-FINAL-AUDIT.md`
-
----
-
-## Current Milestone: v0.0.8 NFT Ecosystem Complete
-
-**Started:** 2026-04-22  
-**Status:** In Progress (0/5 phases planned)  
-**Goal:** Complete NFT marketplace ecosystem with breeding, tier rewards, and full UAT
-
-**Target features:**
-
-- **Gap Closure (P0):** Phase 20 — UAT execution, validation fixes, documentation
-- **Breeding System (P1):** Animal breeding (Gen 1+), cooldown mechanics, breeding fees
-- **Tier Rewards (P1):** Seedling/Grower/Farmer badges with USDT rewards and soulbound NFTs
-- **Rarity Upgrades (P2):** Extra food feeding for improved hatch rarity odds
-- **Recruitment Bonuses (P2):** Downline rewards based on direct recruit count
-- **Secondary Market (P2):** Animal NFT resale with royalty distribution
 
 ---
 

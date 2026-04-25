@@ -2,21 +2,21 @@
 gsd_state_version: 1.0
 milestone: v0.1.0
 milestone_name: UAT Gap Closure
-status: active
-last_updated: "2026-04-24T23:00:00.000Z"
+status: archived
+last_updated: "2026-04-25T00:00:00.000Z"
 progress:
   total_phases: 1
   completed_phases: 1
   total_plans: 3
   completed_plans: 3
   deferred_plans: 0
-  deferred_uat: 3
+  deferred_uat: 16
 ---
 
 # STATE.md — Project Memory
 
 **Project:** Egg × Food × Animal NFT Marketplace  
-**Milestone:** v0.1.0 UAT Gap Closure  
+**Milestone:** v0.1.0 UAT Gap Closure — ARCHIVED 2026-04-25  
 **Network:** BNB SmartChain (BSC)  
 **Token:** USDT (BEP-20)
 
@@ -26,40 +26,58 @@ progress:
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, breed new generations, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.1.0 milestone — Fix 3 critical UAT bugs from browser agent testing (polling badge, breeding dialog, marketplace routing)
+**Current Focus:** No active milestone. Ready for `/gsd-new-milestone` to start next version.
 
 ---
 
 ## Current Position
 
-**v0.1.0 Milestone:** ✅ COMPLETE — Phase 31 executed
+**v0.1.0 Milestone:** ✅ ARCHIVED — Phase 31 shipped
 
 ```
-Milestone v0.0.7: [██████████] 8/8 phases complete + archived
-Milestone v0.0.8: [██████████] 5/5 phases complete + shipped
-          Phase 20 → ✅ COMPLETE (gap closure & UAT)
-          Phase 21 → ✅ COMPLETE (breeding system)
-          Phase 22 → ✅ COMPLETE (tier rewards & badges)
-          Phase 23 → ⚠️ PARTIAL (4 UAT gaps deferred to Phase 26)
-          Phase 24 → ✅ COMPLETE (UAT skipped by user)
-
-Milestone v0.0.9: [██████████] 6/6 phases complete + shipped
-          Phase 26 → ✅ COMPLETE (4 UAT gaps closed)
-          Phase 27 → ✅ COMPLETE (Rarity upgrade system)
-          Phase 28 → ✅ COMPLETE (Wallet Withdrawal & CoinStor Admin)
-          Phase 29 → ✅ COMPLETE (Admin Controls & Platform Safety)
-          Phase 30 → ✅ COMPLETE (Cloudflare Pages Frontend Deployment)
-          Phase 25 → ✅ COMPLETE (UX/UI Audit Fixes, 1 plan deferred for manual review)
-
-Milestone v0.1.0: [██████████] 1/1 phases complete ✓
-          Phase 31 → ✅ COMPLETE (3 UAT bug fixes: polling badge, breeding dialog, marketplace routing)
+Milestone v0.1.0: [██████████] 1/1 phases complete + archived
+          Phase 31 → ✅ COMPLETE (3 UAT bug fixes)
                     Human UAT pending: 31-HUMAN-UAT.md (3 tests)
 ```
 
-Archive: .planning/milestones/v0.0.7-ROADMAP.md, v0.0.8-ROADMAP.md
-Summary: .planning/MILESTONES.md
+**Archive:** .planning/milestones/v0.1.0-ROADMAP.md
+**Summary:** .planning/MILESTONES.md
 
 ```
+
+**All Milestones Archived:**
+
+- v0.0.7 Security & Quality (shipped 2026-04-22)
+- v0.0.8 NFT Ecosystem Complete (shipped 2026-04-22)
+- v0.0.9 Feature Completion & Cloudflare Deployment (shipped 2026-04-24)
+- v0.1.0 UAT Gap Closure (shipped 2026-04-25)
+
+---
+
+## Deferred Items (Acknowledged at Milestone Close)
+
+Items acknowledged and deferred at v0.1.0 milestone close on 2026-04-25:
+
+| Category | Phase | Item | Status | Source |
+|----------|-------|------|--------|----------|
+| UAT | 10 | Polling badge UAT scenarios | deferred | v0.0.7 |
+| UAT | 17 | UAT & verification gaps | deferred | v0.0.7 |
+| UAT | 20 | UAT execution scenarios | deferred | v0.0.8 |
+| UAT | 21 | Breeding system UAT | deferred | v0.0.8 |
+| UAT | 22 | Tier rewards UAT | deferred | v0.0.8 |
+| UAT | 23 | Secondary market UAT | deferred | v0.0.8 |
+| UAT | 26 | Phase 23 UAT gaps (resolved) | deferred | v0.0.9 |
+| UAT | 27 | Rarity upgrade UAT | deferred | v0.0.9 |
+| UAT | 28 | Wallet withdrawal UAT | deferred | v0.0.9 |
+| UAT | 29 | Admin controls UAT | deferred | v0.0.9 |
+| UAT | 30 | Cloudflare deployment UAT | deferred | v0.0.9 |
+| Verification | 03 | VERIFICATION gaps_found | deferred | v0.0.5 |
+| Verification | 12 | VERIFICATION gaps_found | deferred | v0.0.7 |
+| Verification | 19 | VERIFICATION human_needed | deferred | v0.0.7 |
+| Verification | 20 | VERIFICATION human_needed | deferred | v0.0.8 |
+| Context | 08 | Open questions (resolved) | deferred | v0.0.6 |
+
+**Note:** Phase 31 fixed the 3 critical UAT bugs from v0.0.9 deferred items (polling badge, breeding dialog, marketplace routing).
 
 **Completed Phase 12 Goals:**
 
