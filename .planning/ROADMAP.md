@@ -22,8 +22,8 @@
 | 34    | VRF Integration           | VRF-01                       | P1       | ✅ Complete   |
 | 35    | Admin Game Config         | ADMIN-01 through ADMIN-04    | P2       | ✅ Complete   |
 | 36    | NFT Burn & KYC Toggle     | BURN-01, KYC-01, SPEND-01    | P2/P3    | ✅ Complete   |
-| 37    | Smart Contract Updates    | VRF, Burn, AdminConfig       | P0       | ○ Not Started |
-| 38    | Wallet API Endpoints      | 7 new endpoints              | P0       | ○ Not Started |
+| 37    | Smart Contract Updates    | VRF, Burn, AdminConfig       | P0       | ✅ Complete   |
+| 38    | Wallet API Endpoints      | 7 new endpoints              | P0       | ✅ Complete   |
 | 39    | Collection Schema Updates | 10 new fields                | P0       | ● 1/1 plans   |
 | 40    | Frontend Components       | 4 UI components              | P1       | ○ Not Started |
 
@@ -55,9 +55,9 @@
 - [ ] Phase 37: Smart Contract Updates (P0) — 2/2 plans
   - [x] 37-01-PLAN.md — VRF integration (VRFConsumerBaseV2Plus), two-phase hatching, burnNFT, admin setters
   - [x] 37-02-PLAN.md — Test updates (VRF mock, burn tests, admin tests), deployment scripts for BSC
-- [ ] Phase 38: Wallet API Endpoints (P0) — 2/2 plans
-  - [ ] 38-01-PLAN.md — claim-recruitment-bonus, hatch-egg-vrf, check-vrf-fulfillment
-  - [ ] 38-02-PLAN.md — admin/\* (set-platform-fee, set-breed-cooldown, update-rarity-weights, add-species, set-kyc-required), burn-nft, game-config
+- [x] Phase 38: Wallet API Endpoints (P0) — 2/2 plans ✅ EXECUTED
+  - [x] 38-01-PLAN.md — claim-recruitment-bonus, hatch-egg-vrf, check-vrf-fulfillment
+  - [x] 38-02-PLAN.md — admin/\* (set-platform-fee, set-breed-cooldown, update-rarity-weights, add-species, set-kyc-required), burn-nft, game-config
 - [ ] Phase 39: Collection Schema Updates (P0) — 1/1 plan
   - [x] 39-01-PLAN.md — Add 10 fields to 4 collections (users, egg_nfts, food_nfts, animal_nfts)
 - [ ] Phase 40: Frontend Components (P1) — 3/3 plans
@@ -176,7 +176,9 @@
 | 25. UX/UI Consistency    | v0.0.9    | 2/3            | Complete | 2026-04-23 | P2            | (deferred: shadow/border migration) |
 | 30. Cloudflare Pages     | v0.0.9    | 2/2            | Complete | 2026-04-23 | P0 (deploy)   |
 | 31. UAT Gap Closure      | v0.1.0    | 3/3            | Complete | 2026-04-25 | P0 (blockers) | human UAT pending                   |
+| 37. Smart Contract Upd.  | v0.2.0    | 2/2            | Complete | 2026-04-25 | P0            |
+| 38. Wallet API Endpoints | v0.2.0    | 2/2            | Complete | 2026-04-25 | P0            |
 
 ---
 
-_Last updated: 2026-04-25 — v0.1.0 milestone archived, ready for next milestone._
+_Last updated: 2026-04-25 — v0.2.0 Phase 38 complete, Phase 39 pending._
