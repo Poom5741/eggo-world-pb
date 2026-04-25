@@ -55,14 +55,9 @@
 - [ ] Phase 37: Smart Contract Updates (P0) — 2/2 plans
   - [x] 37-01-PLAN.md — VRF integration (VRFConsumerBaseV2Plus), two-phase hatching, burnNFT, admin setters
   - [x] 37-02-PLAN.md — Test updates (VRF mock, burn tests, admin tests), deployment scripts for BSC
-- [ ] Phase 38: Wallet API Endpoints (P0)
-  - [ ] `/api/v1/wallet/claim-recruitment-bonus`
-  - [ ] `/api/v1/wallet/hatch-egg-vrf`
-  - [ ] `/api/v1/wallet/check-vrf-fulfillment`
-  - [ ] `/api/v1/wallet/admin/*` (set-platform-fee, set-breed-cooldown, etc.)
-  - [ ] `/api/v1/wallet/burn-nft`
-  - [ ] `/api/v1/wallet/admin/set-kyc-required`
-  - [ ] `/api/v1/wallet/game-config`
+- [ ] Phase 38: Wallet API Endpoints (P0) — 2/2 plans
+  - [ ] 38-01-PLAN.md — claim-recruitment-bonus, hatch-egg-vrf, check-vrf-fulfillment
+  - [ ] 38-02-PLAN.md — admin/\* (set-platform-fee, set-breed-cooldown, update-rarity-weights, add-species, set-kyc-required), burn-nft, game-config
 - [ ] Phase 39: Collection Schema Updates (P0)
   - [ ] `users.claimed_recruitment_tier` (number, default: 0)
   - [ ] `users.kyc_required_globally` (bool, default: false)
