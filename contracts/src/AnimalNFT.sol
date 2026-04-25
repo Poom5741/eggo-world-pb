@@ -196,6 +196,11 @@ contract AnimalNFT is ERC721, Ownable {
         emit EggNFTContractSet(_eggNFTContract);
     }
     
+    function burnAnimal(uint256 tokenId) external {
+        require(msg.sender == eggNFTContract, "Only EggNFT contract can burn");
+        _burn(tokenId);
+    }
+    
     function _update(
         address to,
         uint256 tokenId,

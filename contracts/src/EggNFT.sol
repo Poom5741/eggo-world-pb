@@ -7,11 +7,13 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 import {CommissionDistribution} from "./CommissionDistribution.sol";
 import {FoodNFT, FoodType} from "./FoodNFT.sol";
 import {AnimalNFT, Rarity, Species} from "./AnimalNFT.sol";
 
-contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable {
+contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable, VRFConsumerBaseV2Plus {
     using SafeERC20 for IERC20;
     
     address public immutable commissionDistribution;
@@ -73,10 +75,39 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable {
     event AnimalNFTContractSet(address indexed animalNFTContract);
     event PauseStateChanged(bool paused);
     
+    // VRF v2.5 events
+    event VRFRequested(uint256 indexed tokenId, uint256 indexed requestId, address indexed requester);
+    event VRFulfilled(uint256 indexed requestId, uint256 randomWord);
+    event VRFConfigUpdated(uint256 subscriptionId, bytes32 keyHash);
+    
+    // VRF v2.5 state
+    uint256 public s_subscriptionId;
+    bytes32 public s_keyHash;
+    uint32 public s_callbackGasLimit = 500000;
+    uint16 public s_requestConfirmations = 3;
+    uint32 public s_numWords = 1;
+    
+    // Pending hatches: requestId → hatch data
+    struct PendingHatch {
+        address requester;
+        uint256 tokenId;
+        uint256 raritySeed;
+        uint256 foodCount;
+        bool isBreedingEgg;
+        uint256 parent1AnimalId;
+        uint256 parent2AnimalId;
+        uint256 rarityUpgradeCount;
+        uint256 generation;
+    }
+    mapping(uint256 => PendingHatch) public pendingHatches;
+    mapping(uint256 => uint256) private hatchRandomness; // requestId → random word
+    mapping(uint256 => uint256) private tokenToRequestId; // tokenId → requestId
+    
     constructor(
         address _commissionDistribution,
-        address _usdtToken
-    ) ERC721("EggNFT", "EGG") Ownable(msg.sender) {
+        address _usdtToken,
+        address _vrfCoordinator
+    ) ERC721("EggNFT", "EGG") Ownable(msg.sender) VRFConsumerBaseV2Plus(_vrfCoordinator) {
         require(_commissionDistribution != address(0), "CommissionDistribution address cannot be zero");
         require(_usdtToken != address(0), "USDT token address cannot be zero");
         
@@ -171,26 +202,75 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable {
         );
     }
     
-    function hatchEgg(uint256 tokenId) external nonReentrant returns (uint256) {
+    // ==================== VRF TWO-PHASE HATCHING ====================
+    
+    function hatchEgg(uint256 tokenId) external nonReentrant whenNotPaused returns (uint256 requestId) {
         require(ownerOf(tokenId) == msg.sender, "Not token owner");
         
         EggProperties storage props = _eggProperties[tokenId];
         require(!props.is_hatched, "Egg already hatched");
+        require(!props.is_breeding_egg, "Breeding eggs use direct rarity");
         require(props.food_count >= MAX_FOOD_COUNT, "Not enough food consumed");
         require(animalNFTContract != address(0), "AnimalNFT contract not set");
+        require(s_subscriptionId != 0, "VRF subscription not set");
         
+        // Request VRF randomness
+        requestId = s_vrfCoordinator.requestRandomWords(VRFV2PlusClient.RandomWordsRequest({
+            keyHash: s_keyHash,
+            subId: s_subscriptionId,
+            requestConfirmations: s_requestConfirmations,
+            callbackGasLimit: s_callbackGasLimit,
+            numWords: s_numWords,
+            extraArgs: VRFV2PlusClient._argsToBytes(
+                VRFV2PlusClient.ExtraArgsV1({nativePayment: true})
+            )
+        }));
+        
+        // Store pending hatch data AFTER getting requestId
+        pendingHatches[requestId] = PendingHatch({
+            requester: msg.sender,
+            tokenId: tokenId,
+            raritySeed: props.rarity_seed,
+            foodCount: props.food_count,
+            isBreedingEgg: false,
+            parent1AnimalId: 0,
+            parent2AnimalId: 0,
+            rarityUpgradeCount: props.rarity_upgrade_count,
+            generation: props.generation
+        });
+        
+        tokenToRequestId[tokenId] = requestId;
+        
+        emit VRFRequested(tokenId, requestId, msg.sender);
+        return requestId;
+    }
+    
+    function fulfillRandomWords(uint256 requestId, uint256[] calldata randomWords) internal override {
+        // Store randomness — do NOT revert even if hatch data missing (D-06)
+        hatchRandomness[requestId] = randomWords[0];
+        emit VRFulfilled(requestId, randomWords[0]);
+    }
+    
+    function claimHatch(uint256 tokenId) external nonReentrant whenNotPaused returns (uint256 animalTokenId) {
+        require(ownerOf(tokenId) == msg.sender, "Not token owner");
+        
+        EggProperties storage props = _eggProperties[tokenId];
+        require(!props.is_hatched, "Egg already hatched");
+        
+        uint256 requestId = tokenToRequestId[tokenId];
+        require(requestId != 0, "No VRF request found for this egg");
+        
+        uint256 randomWord = hatchRandomness[requestId];
+        require(randomWord != 0, "VRF randomness not yet fulfilled");
+        
+        // Calculate final seed using VRF randomness
         uint256 finalSeed = uint256(keccak256(abi.encodePacked(
             props.rarity_seed,
-            block.prevrandao,
-            block.timestamp
+            randomWord
         )));
         
-        Rarity rarity;
-        if (props.is_breeding_egg) {
-            rarity = Rarity(props.rarity_seed);
-        } else {
-            rarity = _calculateRarity(finalSeed, props.rarity_upgrade_count);
-        }
+        // Determine rarity and species
+        Rarity rarity = _calculateRarity(finalSeed, props.rarity_upgrade_count);
         
         FoodType[] memory foodHistory = new FoodType[](props.food_count);
         for (uint256 i = 0; i < props.food_count; i++) {
@@ -208,7 +288,60 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable {
             else if (ft == FoodType.Herb) foodDistribution[3]++;
         }
         
-        uint256 generation = props.is_breeding_egg ? _calculateBreedingGeneration(props.parent1_animal_id, props.parent2_animal_id) : 0;
+        // Mint AnimalNFT
+        animalTokenId = AnimalNFT(animalNFTContract).mintAnimal(
+            msg.sender,
+            props.egg_id,
+            rarity,
+            species,
+            props.generation,
+            foodDistribution,
+            props.parent1_animal_id,
+            props.parent2_animal_id,
+            props.rarity_upgrade_count
+        );
+        
+        // Mark as hatched
+        props.is_hatched = true;
+        props.animal_token_id = animalTokenId;
+        
+        // Clean up pending hatch
+        delete pendingHatches[requestId];
+        delete hatchRandomness[requestId];
+        delete tokenToRequestId[tokenId];
+        
+        emit EggHatched(tokenId, animalTokenId, rarity, species);
+        return animalTokenId;
+    }
+    
+    function hatchBreedingEgg(uint256 tokenId) external nonReentrant whenNotPaused returns (uint256) {
+        require(ownerOf(tokenId) == msg.sender, "Not token owner");
+        
+        EggProperties storage props = _eggProperties[tokenId];
+        require(!props.is_hatched, "Egg already hatched");
+        require(props.is_breeding_egg, "Not a breeding egg");
+        require(animalNFTContract != address(0), "AnimalNFT contract not set");
+        
+        // Breeding eggs use the pre-determined rarity seed
+        Rarity rarity = Rarity(props.rarity_seed);
+        
+        FoodType[] memory foodHistory = new FoodType[](props.food_count);
+        for (uint256 i = 0; i < props.food_count; i++) {
+            foodHistory[i] = _foodTypeHistory[tokenId][i];
+        }
+        
+        Species species = _determineSpecies(props.rarity_seed, foodHistory, rarity);
+        
+        uint256[4] memory foodDistribution;
+        for (uint256 i = 0; i < props.food_count; i++) {
+            FoodType ft = foodHistory[i];
+            if (ft == FoodType.Grain) foodDistribution[0]++;
+            else if (ft == FoodType.Fish) foodDistribution[1]++;
+            else if (ft == FoodType.Insects) foodDistribution[2]++;
+            else if (ft == FoodType.Herb) foodDistribution[3]++;
+        }
+        
+        uint256 generation = _calculateBreedingGeneration(props.parent1_animal_id, props.parent2_animal_id);
         
         uint256 animalTokenId = AnimalNFT(animalNFTContract).mintAnimal(
             msg.sender,
@@ -225,10 +358,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable {
         props.is_hatched = true;
         props.animal_token_id = animalTokenId;
         
-        if (props.is_breeding_egg) {
-            emit AnimalsBred(props.parent1_animal_id, props.parent2_animal_id, animalTokenId, generation);
-        }
-        
+        emit AnimalsBred(props.parent1_animal_id, props.parent2_animal_id, animalTokenId, generation);
         emit EggHatched(tokenId, animalTokenId, rarity, species);
         
         return animalTokenId;
@@ -357,6 +487,39 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable {
         
         return history;
     }
+    
+    // ==================== NFT BURNING ====================
+    
+    enum NFTType { Egg, Animal }
+    
+    event EggBurned(uint256 indexed tokenId, uint256 indexed egg_id, address indexed owner);
+    event AnimalBurned(uint256 indexed tokenId, address indexed owner);
+    
+    function burnNFT(uint256 tokenId, NFTType nftType) external onlyOwner {
+        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        
+        if (nftType == NFTType.Egg) {
+            EggProperties storage props = _eggProperties[tokenId];
+            require(!props.is_hatched, "Cannot burn hatched egg - animal already exists");
+            
+            emit EggBurned(tokenId, props.egg_id, props.owner);
+            
+            _burn(tokenId);
+            
+            delete _eggProperties[tokenId];
+            
+        } else if (nftType == NFTType.Animal) {
+            require(animalNFTContract != address(0), "AnimalNFT contract not set");
+            
+            require(AnimalNFT(animalNFTContract).canBreed(tokenId), "Animal in breeding cooldown");
+            
+            emit AnimalBurned(tokenId, AnimalNFT(animalNFTContract).ownerOf(tokenId));
+            
+            AnimalNFT(animalNFTContract).burnAnimal(tokenId);
+        }
+    }
+    
+    // ==================== AUTHORIZED FOOD NFT ====================
     
     modifier onlyAuthorizedFoodNFTContract() {
         require(authorizedFoodNFTContracts[msg.sender], "Not authorized");
@@ -533,5 +696,12 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable {
         require(_foodNFT != address(0), "FoodNFT address cannot be zero");
         foodNFTContract = _foodNFT;
         authorizedFoodNFTContracts[_foodNFT] = true;
+    }
+    
+    function setVRFConfig(uint256 subscriptionId, bytes32 keyHash) external onlyOwner {
+        require(subscriptionId != 0, "Invalid subscription ID");
+        s_subscriptionId = subscriptionId;
+        s_keyHash = keyHash;
+        emit VRFConfigUpdated(subscriptionId, keyHash);
     }
 }
