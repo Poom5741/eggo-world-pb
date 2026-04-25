@@ -123,6 +123,45 @@
       }
     },
     {
+      "name": "is_hatching",
+      "type": "bool",
+      "required": false,
+      "unique": false,
+      "options": {
+        "default": false
+      }
+    },
+    {
+      "name": "vrf_request_id",
+      "type": "text",
+      "required": false,
+      "unique": false,
+      "options": {}
+    },
+    {
+      "name": "vrf_transaction_hash",
+      "type": "text",
+      "required": false,
+      "unique": false,
+      "options": {}
+    },
+    {
+      "name": "is_burned",
+      "type": "bool",
+      "required": false,
+      "unique": false,
+      "options": {
+        "default": false
+      }
+    },
+    {
+      "name": "burned_at",
+      "type": "date",
+      "required": false,
+      "unique": false,
+      "options": {}
+    },
+    {
       "name": "referral_chain",
       "type": "json",
       "required": false,
