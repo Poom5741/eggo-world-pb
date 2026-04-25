@@ -1700,6 +1700,363 @@ app.post('/api/wallet/tier-claim', async (req, res) => {
 });
 
 // ============================================================
+// Phase 38: Recruitment Bonus Claim
+// ============================================================
+
+// POST /api/v1/wallet/claim-recruitment-bonus
+app.post("/api/v1/wallet/claim-recruitment-bonus", async (req, res) => {
+  try {
+    const { user_address, tier, food_count, usdt_bonus } = req.body;
+
+    if (!user_address || !tier || !food_count || !usdt_bonus) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Missing required fields", code: "MISSING_FIELDS" },
+      });
+    }
+
+    if (!relayerWallet) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Relayer wallet not configured", code: "RELAYER_NOT_CONFIGURED" },
+      });
+    }
+
+    const foodNftAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.foodNft;
+    const usdtAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.usdt;
+    if (!foodNftAddress || !usdtAddress) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Contract addresses not configured", code: "CONTRACT_NOT_CONFIGURED" },
+      });
+    }
+
+    // Validate tier range
+    if (tier < 1 || tier > 4) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Tier must be 1-4", code: "INVALID_TIER" },
+      });
+    }
+
+    // Step 1: Mint food NFTs (relayer pays gas)
+    const foodNftAbi = [
+      "function mint(address to, uint256 foodType, uint256 quantity) external payable returns (uint256[])",
+      "function mintPrice() external view returns (uint256)",
+    ];
+    const foodContract = new ethers.Contract(foodNftAddress, foodNftAbi, relayerWallet);
+
+    // Calculate total mint cost
+    const mintPrice = await foodContract.mintPrice();
+    const totalCost = mintPrice * BigInt(food_count);
+
+    // Estimate gas for food mint
+    const foodGasEstimate = await foodContract.mint.estimateGas(user_address, 1, food_count, {
+      value: totalCost,
+    });
+    const foodGasLimit = (foodGasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+    const foodTx = await foodContract.mint(user_address, 1, food_count, {
+      value: totalCost,
+      gasLimit: foodGasLimit,
+    });
+
+    const foodReceipt = await foodTx.wait(CONFIRMATIONS);
+    if (foodReceipt.status !== 1) {
+      throw new Error("Food NFT mint transaction reverted");
+    }
+
+    // Step 2: Transfer USDT bonus (relayer pays gas)
+    const usdtAbi = [
+      "function transfer(address to, uint256 amount) external returns (bool)",
+      "function decimals() external view returns (uint8)",
+    ];
+    const usdtContract = new ethers.Contract(usdtAddress, usdtAbi, relayerWallet);
+
+    const usdtAmount = ethers.parseUnits(usdt_bonus.toString(), 18);
+    const usdtGasEstimate = await usdtContract.transfer.estimateGas(user_address, usdtAmount);
+    const usdtGasLimit = (usdtGasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+    const usdtTx = await usdtContract.transfer(user_address, usdtAmount, { gasLimit: usdtGasLimit });
+    const usdtReceipt = await usdtTx.wait(CONFIRMATIONS);
+    if (usdtReceipt.status !== 1) {
+      throw new Error("USDT transfer transaction reverted");
+    }
+
+    // Log gas sponsorship
+    logGasSponsorship("claim-recruitment-bonus", user_address, foodReceipt);
+    logGasSponsorship("claim-recruitment-bonus-usdt", user_address, usdtReceipt);
+
+    res.json({
+      success: true,
+      data: {
+        tier,
+        food_count,
+        usdt_bonus,
+        food_tx_hash: foodReceipt.transactionHash,
+        usdt_tx_hash: usdtReceipt.transactionHash,
+        block_number: foodReceipt.blockNumber,
+      },
+    });
+  } catch (error) {
+    console.error("[Claim Recruitment Bonus] Error:", error.message);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "CLAIM_RECRUITMENT_BONUS_FAILED" },
+    });
+  }
+});
+
+// ============================================================
+// Phase 38: VRF Hatching - Request & Fulfillment
+// ============================================================
+
+// POST /api/v1/wallet/hatch-egg-vrf
+app.post("/api/v1/wallet/hatch-egg-vrf", async (req, res) => {
+  try {
+    const { user_id, egg_id } = req.body;
+
+    if (!user_id || !egg_id) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Missing required fields: user_id, egg_id", code: "MISSING_FIELDS" },
+      });
+    }
+
+    // Fetch user's encrypted private key from PocketBase
+    const { encryptedPrivateKey } = await getUserPrivateKey(user_id);
+    const privateKey = await decryptPrivateKey(encryptedPrivateKey, MASTER_KEY + user_id);
+
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
+    const signer = new ethers.Wallet(privateKey, provider);
+
+    const eggNftAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.eggNft;
+    if (!eggNftAddress) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "EggNFT contract not configured", code: "CONTRACT_NOT_CONFIGURED" },
+      });
+    }
+
+    // ABI for VRF hatching functions
+    const eggNftVrfAbi = [
+      "function hatchEgg(uint256 tokenId) external returns (uint256 requestId)",
+      "function claimHatch(uint256 tokenId) external returns (uint256 animalTokenId)",
+      "function ownerOf(uint256 tokenId) external view returns (address)",
+      "function pendingHatches(uint256 requestId) external view returns (address requester, uint256 tokenId, uint256 raritySeed, uint256 foodCount, bool isBreedingEgg, uint256 parent1AnimalId, uint256 parent2AnimalId, uint256 rarityUpgradeCount, uint256 generation)",
+    ];
+
+    const eggContract = new ethers.Contract(eggNftAddress, eggNftVrfAbi, signer);
+
+    // Verify ownership
+    const owner = await eggContract.ownerOf(egg_id);
+    if (owner.toLowerCase() !== (await signer.getAddress()).toLowerCase()) {
+      return res.status(403).json({
+        success: false,
+        error: { message: "User does not own this egg", code: "NOT_OWNER" },
+      });
+    }
+
+    // Estimate gas for hatchEgg (VRF request)
+    const gasEstimate = await eggContract.hatchEgg.estimateGas(egg_id);
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+    // Execute VRF request (user pays gas)
+    const tx = await eggContract.hatchEgg(egg_id, { gasLimit });
+    const receipt = await tx.wait(CONFIRMATIONS);
+
+    if (receipt.status !== 1) {
+      throw new Error("VRF hatch transaction reverted");
+    }
+
+    // Extract requestId from event logs
+    let requestId = null;
+    if (receipt.logs) {
+      for (const log of receipt.logs) {
+        try {
+          if (log.fragment?.name === "VRFRequested") {
+            requestId = log.args.requestId?.toString();
+            break;
+          }
+        } catch {
+          /* skip unparseable logs */
+        }
+      }
+    }
+
+    console.log(
+      `[VRF Hatch] VRF requested for egg ${egg_id}, requestId: ${requestId}, tx: ${tx.hash}`
+    );
+
+    res.json({
+      success: true,
+      data: {
+        request_id: requestId,
+        egg_id,
+        tx_hash: tx.hash,
+        block_number: receipt.blockNumber,
+        status: "vrf_requested",
+        message: "VRF randomness requested. Animal will be minted in 1-3 minutes.",
+      },
+    });
+  } catch (error) {
+    console.error("[VRF Hatch] Error:", error.message);
+    const errorMessage =
+      error.message.includes("private") || error.message.includes("key")
+        ? "Wallet operation failed"
+        : error.message;
+    res.status(500).json({
+      success: false,
+      error: { message: errorMessage, code: error.code || "VRF_HATCH_FAILED" },
+    });
+  }
+});
+
+// POST /api/v1/wallet/check-vrf-fulfillment
+app.post("/api/v1/wallet/check-vrf-fulfillment", async (req, res) => {
+  try {
+    const { user_id, egg_id } = req.body;
+
+    if (!egg_id) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "egg_id is required", code: "MISSING_FIELDS" },
+      });
+    }
+
+    const eggNftAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.eggNft;
+    if (!eggNftAddress) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "EggNFT contract not configured", code: "CONTRACT_NOT_CONFIGURED" },
+      });
+    }
+
+    const eggNftVrfAbi = [
+      "function hatchEgg(uint256 tokenId) external returns (uint256 requestId)",
+      "function claimHatch(uint256 tokenId) external returns (uint256 animalTokenId)",
+      "function ownerOf(uint256 tokenId) external view returns (address)",
+      "function getEggProperties(uint256 tokenId) external view returns (uint256, address, uint256, bool, uint256, address[4], uint256, uint256, uint256, bool, uint256, uint256)",
+      "function pendingHatches(uint256 requestId) external view returns (address requester, uint256 tokenId, uint256 raritySeed, uint256 foodCount, bool isBreedingEgg, uint256 parent1AnimalId, uint256 parent2AnimalId, uint256 rarityUpgradeCount, uint256 generation)",
+    ];
+
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
+    const eggContract = new ethers.Contract(eggNftAddress, eggNftVrfAbi, provider);
+
+    // Check if egg is already hatched via getEggProperties
+    let isHatched = false;
+    try {
+      const props = await eggContract.getEggProperties(egg_id);
+      // The is_hatched field varies by contract version; check if props array is long enough
+      isHatched = props.length >= 4 ? props[3] : false;
+    } catch {
+      // If getEggProperties doesn't exist yet (pre-Phase 37), skip this check
+      console.log(`[VRF Fulfillment] getEggProperties not available for egg ${egg_id}, skipping hatched check`);
+    }
+
+    if (isHatched) {
+      return res.json({
+        success: true,
+        data: {
+          egg_id,
+          status: "hatched",
+          message: "Egg already hatched",
+        },
+      });
+    }
+
+    // If user_id provided, attempt to claim the hatch (user pays gas)
+    if (user_id) {
+      const { encryptedPrivateKey } = await getUserPrivateKey(user_id);
+      const privateKey = await decryptPrivateKey(encryptedPrivateKey, MASTER_KEY + user_id);
+      const signer = new ethers.Wallet(privateKey, provider);
+      const userContract = eggContract.connect(signer);
+
+      try {
+        const gasEstimate = await userContract.claimHatch.estimateGas(egg_id);
+        const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+        const tx = await userContract.claimHatch(egg_id, { gasLimit });
+        const receipt = await tx.wait(CONFIRMATIONS);
+
+        if (receipt.status !== 1) {
+          throw new Error("Claim hatch transaction reverted");
+        }
+
+        // Extract animal_token_id from event
+        let animalTokenId = null;
+        if (receipt.logs) {
+          for (const log of receipt.logs) {
+            try {
+              if (log.fragment?.name === "EggHatched") {
+                animalTokenId = log.args.animal_id?.toString();
+                break;
+              }
+            } catch {
+              /* skip */
+            }
+          }
+        }
+
+        console.log(
+          `[VRF Fulfillment] Egg ${egg_id} hatched! Animal: ${animalTokenId}, tx: ${tx.hash}`
+        );
+
+        return res.json({
+          success: true,
+          data: {
+            egg_id,
+            status: "hatched",
+            animal_token_id: animalTokenId,
+            tx_hash: tx.hash,
+            block_number: receipt.blockNumber,
+          },
+        });
+      } catch (claimError) {
+        // VRF not ready yet or claim failed — return pending status
+        if (
+          claimError.message.includes("VRF randomness not yet fulfilled") ||
+          claimError.message.includes("No VRF request found") ||
+          claimError.message.includes("VRF") ||
+          claimError.message.includes("fulfilled") ||
+          claimError.message.includes("not ready")
+        ) {
+          return res.json({
+            success: true,
+            data: {
+              egg_id,
+              status: "vrf_pending",
+              message: "VRF randomness not yet fulfilled. Please check again in 1-3 minutes.",
+            },
+          });
+        }
+        throw claimError;
+      }
+    }
+
+    // No user_id — just return pending status
+    return res.json({
+      success: true,
+      data: {
+        egg_id,
+        status: "pending_hatch",
+        message: "Egg not yet hatched. Call with user_id to attempt claim.",
+      },
+    });
+  } catch (error) {
+    console.error("[VRF Fulfillment] Error:", error.message);
+    const errorMessage =
+      error.message.includes("private") || error.message.includes("key")
+        ? "Wallet operation failed"
+        : error.message;
+    res.status(500).json({
+      success: false,
+      error: { message: errorMessage, code: error.code || "VRF_FULFILLMENT_FAILED" },
+    });
+  }
+});
+
+// ============================================================
 // Phase 29: Admin Controls - Platform Pause/Unpause Operations
 // ============================================================
 
@@ -1814,6 +2171,479 @@ app.get('/api/v1/admin/status', async (req, res) => {
             }
         });
     }
+});
+
+// ============================================================
+// Phase 38: Admin Config Setters & Game Config Reader
+// ============================================================
+
+// Extended EggNFT ABI for admin config functions (Phase 37/38)
+function getEggNFTConfigContract() {
+  if (!ADMIN_PRIVATE_KEY) {
+    throw new Error('ADMIN_PRIVATE_KEY environment variable is required for admin operations');
+  }
+  const provider = new ethers.JsonRpcProvider(RPC_URL);
+  const wallet = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
+  const contractAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.eggNft;
+  if (!contractAddress) {
+    throw new Error('EggNFT contract address not configured');
+  }
+
+  // Extended ABI for admin config + burn + view functions
+  const abi = [
+    "function setPlatformFee(uint256 feePercent) external",
+    "function setBreedCooldown(uint256 cooldownSeconds) external",
+    "function updateRarityWeights(uint256 common, uint256 rare, uint256 epic, uint256 legendary) external",
+    "function addNewSpecies(uint256 speciesId, string calldata name, uint256 weight) external",
+    "function setKYCRequired(bool required) external",
+    "function platformFee() external view returns (uint256)",
+    "function breedCooldown() external view returns (uint256)",
+    "function getRarityWeights() external view returns (uint256 common, uint256 rare, uint256 epic, uint256 legendary)",
+    "function getSpecies(uint256 speciesId) external view returns (string name, uint256 weight)",
+    "function kycRequired() external view returns (bool)",
+    "function burnNFT(uint256 tokenId, uint8 nftType) external",
+    "function ownerOf(uint256 tokenId) external view returns (address)",
+    "function pause() external",
+    "function unpause() external",
+    "function paused() external view returns (bool)",
+  ];
+
+  return new ethers.Contract(contractAddress, abi, wallet);
+}
+
+// POST /api/v1/wallet/admin/set-platform-fee
+app.post("/api/v1/wallet/admin/set-platform-fee", async (req, res) => {
+  try {
+    const { fee_percent } = req.body;
+
+    if (fee_percent === undefined || fee_percent === null) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "fee_percent is required", code: "MISSING_FIELD" },
+      });
+    }
+
+    const fee = parseInt(fee_percent);
+    if (isNaN(fee) || fee < 0 || fee > 2000) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Fee must be 0-2000 basis points (0-20%)", code: "INVALID_FEE" },
+      });
+    }
+
+    if (!ADMIN_PRIVATE_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Admin wallet not configured", code: "ADMIN_NOT_CONFIGURED" },
+      });
+    }
+
+    const contract = getEggNFTConfigContract();
+    const gasEstimate = await contract.setPlatformFee.estimateGas(fee);
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+    const tx = await contract.setPlatformFee(fee, { gasLimit });
+    const receipt = await tx.wait(CONFIRMATIONS);
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted");
+    }
+
+    console.log(`[Admin] Platform fee set to ${fee} basis points, tx: ${tx.hash}`);
+
+    res.json({
+      success: true,
+      data: {
+        fee_percent: fee,
+        transaction_hash: tx.hash,
+        block_number: receipt.blockNumber,
+      },
+    });
+  } catch (error) {
+    console.error("[Admin] Set platform fee error:", error.message);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "SET_FEE_FAILED" },
+    });
+  }
+});
+
+// POST /api/v1/wallet/admin/set-breed-cooldown
+app.post("/api/v1/wallet/admin/set-breed-cooldown", async (req, res) => {
+  try {
+    const { cooldown_seconds } = req.body;
+
+    if (cooldown_seconds === undefined || cooldown_seconds === null) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "cooldown_seconds is required", code: "MISSING_FIELD" },
+      });
+    }
+
+    const cooldown = parseInt(cooldown_seconds);
+    if (isNaN(cooldown) || cooldown < 3600 || cooldown > 604800) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: "Cooldown must be 3600-604800 seconds (1hr-7days)",
+          code: "INVALID_COOLDOWN",
+        },
+      });
+    }
+
+    const contract = getEggNFTConfigContract();
+    const gasEstimate = await contract.setBreedCooldown.estimateGas(cooldown);
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+    const tx = await contract.setBreedCooldown(cooldown, { gasLimit });
+    const receipt = await tx.wait(CONFIRMATIONS);
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted");
+    }
+
+    console.log(`[Admin] Breed cooldown set to ${cooldown}s, tx: ${tx.hash}`);
+
+    res.json({
+      success: true,
+      data: {
+        cooldown_seconds: cooldown,
+        transaction_hash: tx.hash,
+        block_number: receipt.blockNumber,
+      },
+    });
+  } catch (error) {
+    console.error("[Admin] Set breed cooldown error:", error.message);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "SET_COOLDOWN_FAILED" },
+    });
+  }
+});
+
+// POST /api/v1/wallet/admin/update-rarity-weights
+app.post("/api/v1/wallet/admin/update-rarity-weights", async (req, res) => {
+  try {
+    const { weights } = req.body;
+
+    if (!weights || !weights.common || !weights.rare || !weights.epic || !weights.legendary) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: "All weights required: common, rare, epic, legendary",
+          code: "MISSING_WEIGHTS",
+        },
+      });
+    }
+
+    const common = parseInt(weights.common);
+    const rare = parseInt(weights.rare);
+    const epic = parseInt(weights.epic);
+    const legendary = parseInt(weights.legendary);
+    const total = common + rare + epic + legendary;
+
+    if (total !== 10000) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Weights must sum to 10000 (100%)", code: "INVALID_WEIGHTS" },
+      });
+    }
+
+    const contract = getEggNFTConfigContract();
+    const gasEstimate = await contract.updateRarityWeights.estimateGas(
+      common,
+      rare,
+      epic,
+      legendary
+    );
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+    const tx = await contract.updateRarityWeights(common, rare, epic, legendary, { gasLimit });
+    const receipt = await tx.wait(CONFIRMATIONS);
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted");
+    }
+
+    console.log(
+      `[Admin] Rarity weights updated: C=${common}, R=${rare}, E=${epic}, L=${legendary}, tx: ${tx.hash}`
+    );
+
+    res.json({
+      success: true,
+      data: {
+        weights: { common, rare, epic, legendary },
+        transaction_hash: tx.hash,
+        block_number: receipt.blockNumber,
+      },
+    });
+  } catch (error) {
+    console.error("[Admin] Update rarity weights error:", error.message);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "UPDATE_WEIGHTS_FAILED" },
+    });
+  }
+});
+
+// POST /api/v1/wallet/admin/add-species
+app.post("/api/v1/wallet/admin/add-species", async (req, res) => {
+  try {
+    const { species_id, name, weight } = req.body;
+
+    if (!species_id || !name) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "species_id and name are required", code: "MISSING_FIELDS" },
+      });
+    }
+
+    const id = parseInt(species_id);
+    const w = parseInt(weight) || 100;
+
+    const contract = getEggNFTConfigContract();
+    const gasEstimate = await contract.addNewSpecies.estimateGas(id, name, w);
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+    const tx = await contract.addNewSpecies(id, name, w, { gasLimit });
+    const receipt = await tx.wait(CONFIRMATIONS);
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted");
+    }
+
+    console.log(`[Admin] New species added: ID=${id}, Name=${name}, Weight=${w}, tx: ${tx.hash}`);
+
+    res.json({
+      success: true,
+      data: {
+        species_id: id,
+        name,
+        weight: w,
+        transaction_hash: tx.hash,
+        block_number: receipt.blockNumber,
+      },
+    });
+  } catch (error) {
+    console.error("[Admin] Add species error:", error.message);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "ADD_SPECIES_FAILED" },
+    });
+  }
+});
+
+// POST /api/v1/wallet/admin/set-kyc-required
+app.post("/api/v1/wallet/admin/set-kyc-required", async (req, res) => {
+  try {
+    const { kyc_required } = req.body;
+
+    if (kyc_required === undefined || kyc_required === null) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "kyc_required is required (boolean)", code: "MISSING_FIELD" },
+      });
+    }
+
+    if (!ADMIN_PRIVATE_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Admin wallet not configured", code: "ADMIN_NOT_CONFIGURED" },
+      });
+    }
+
+    const contract = getEggNFTConfigContract();
+    const gasEstimate = await contract.setKYCRequired.estimateGas(kyc_required);
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+    const tx = await contract.setKYCRequired(kyc_required, { gasLimit });
+    const receipt = await tx.wait(CONFIRMATIONS);
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted");
+    }
+
+    console.log(`[Admin] KYC required set to ${kyc_required}, tx: ${tx.hash}`);
+
+    res.json({
+      success: true,
+      data: {
+        kyc_required: kyc_required,
+        transaction_hash: tx.hash,
+        block_number: receipt.blockNumber,
+      },
+    });
+  } catch (error) {
+    console.error("[Admin] Set KYC required error:", error.message);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "SET_KYC_FAILED" },
+    });
+  }
+});
+
+// POST /api/v1/wallet/burn-nft
+app.post("/api/v1/wallet/burn-nft", async (req, res) => {
+  try {
+    const { user_address, nft_id, nft_type } = req.body;
+
+    if (!user_address || !nft_id || !nft_type) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: "user_address, nft_id, and nft_type are required",
+          code: "MISSING_FIELDS",
+        },
+      });
+    }
+
+    // Map nft_type to contract enum: 0=Egg, 1=Animal
+    let nftTypeEnum;
+    if (nft_type === "egg") {
+      nftTypeEnum = 0;
+    } else if (nft_type === "animal") {
+      nftTypeEnum = 1;
+    } else if (nft_type === "food") {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Use burn-food endpoint for food NFTs", code: "INVALID_NFT_TYPE" },
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: { message: 'nft_type must be "egg" or "animal"', code: "INVALID_NFT_TYPE" },
+      });
+    }
+
+    if (!ADMIN_PRIVATE_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Admin wallet not configured", code: "ADMIN_NOT_CONFIGURED" },
+      });
+    }
+
+    const contract = getEggNFTConfigContract();
+
+    // Verify ownership for animal burns
+    if (nftTypeEnum === 1) {
+      try {
+        const owner = await contract.ownerOf(nft_id);
+        if (owner.toLowerCase() !== user_address.toLowerCase()) {
+          return res.status(403).json({
+            success: false,
+            error: { message: "User does not own this NFT", code: "NOT_OWNER" },
+          });
+        }
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          error: { message: "NFT does not exist", code: "NFT_NOT_FOUND" },
+        });
+      }
+    }
+
+    const gasEstimate = await contract.burnNFT.estimateGas(nft_id, nftTypeEnum);
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+    const tx = await contract.burnNFT(nft_id, nftTypeEnum, { gasLimit });
+    const receipt = await tx.wait(CONFIRMATIONS);
+
+    if (receipt.status !== 1) {
+      throw new Error("Burn transaction reverted");
+    }
+
+    console.log(`[Burn NFT] ${nft_type} #${nft_id} burned, tx: ${tx.hash}`);
+
+    res.json({
+      success: true,
+      data: {
+        nft_id,
+        nft_type,
+        transaction_hash: tx.hash,
+        block_number: receipt.blockNumber,
+      },
+    });
+  } catch (error) {
+    console.error("[Burn NFT] Error:", error.message);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "BURN_NFT_FAILED" },
+    });
+  }
+});
+
+// GET /api/v1/wallet/game-config
+app.get("/api/v1/wallet/game-config", async (req, res) => {
+  try {
+    const eggNftAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.eggNft;
+    if (!eggNftAddress) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "EggNFT contract not configured", code: "CONTRACT_NOT_CONFIGURED" },
+      });
+    }
+
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
+
+    // ABI for config view functions
+    const configAbi = [
+      "function platformFee() external view returns (uint256)",
+      "function breedCooldown() external view returns (uint256)",
+      "function getRarityWeights() external view returns (uint256 common, uint256 rare, uint256 epic, uint256 legendary)",
+      "function kycRequired() external view returns (bool)",
+      "function paused() external view returns (bool)",
+      "function MINT_PRICE() external view returns (uint256)",
+      "function MAX_FOOD_COUNT() external view returns (uint256)",
+      "function MAX_UPGRADE_FOOD() external view returns (uint256)",
+    ];
+
+    const contract = new ethers.Contract(eggNftAddress, configAbi, provider);
+
+    const [
+      platformFee,
+      breedCooldown,
+      rarityWeights,
+      kycRequired,
+      paused,
+      mintPrice,
+      maxFoodCount,
+      maxUpgradeFood,
+    ] = await Promise.all([
+      contract.platformFee(),
+      contract.breedCooldown(),
+      contract.getRarityWeights(),
+      contract.kycRequired(),
+      contract.paused(),
+      contract.MINT_PRICE(),
+      contract.MAX_FOOD_COUNT(),
+      contract.MAX_UPGRADE_FOOD(),
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        platform_fee: Number(platformFee),
+        breed_cooldown_seconds: Number(breedCooldown),
+        rarity_weights: {
+          common: Number(rarityWeights.common),
+          rare: Number(rarityWeights.rare),
+          epic: Number(rarityWeights.epic),
+          legendary: Number(rarityWeights.legendary),
+        },
+        kyc_required: kycRequired,
+        paused: paused,
+        mint_price: ethers.formatUnits(mintPrice, 18),
+        max_food_count: Number(maxFoodCount),
+        max_upgrade_food: Number(maxUpgradeFood),
+      },
+    });
+  } catch (error) {
+    console.error("[Game Config] Error:", error.message);
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "GET_CONFIG_FAILED" },
+    });
+  }
 });
 
 // Get CoinStor balance from smart contract
@@ -1938,4 +2768,14 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`Breed animals: POST http://localhost:${PORT}/api/wallet/breed-animals`);
     console.log(`Tier claim: POST http://localhost:${PORT}/api/wallet/tier-claim`);
     console.log(`Admin control: POST http://localhost:${PORT}/api/v1/admin/control [requires ADMIN_PRIVATE_KEY]`);
+    console.log(`Claim recruitment bonus: POST http://localhost:${PORT}/api/v1/wallet/claim-recruitment-bonus`);
+    console.log(`VRF hatch: POST http://localhost:${PORT}/api/v1/wallet/hatch-egg-vrf`);
+    console.log(`VRF fulfillment: POST http://localhost:${PORT}/api/v1/wallet/check-vrf-fulfillment`);
+    console.log(`Admin set-platform-fee: POST http://localhost:${PORT}/api/v1/wallet/admin/set-platform-fee`);
+    console.log(`Admin set-breed-cooldown: POST http://localhost:${PORT}/api/v1/wallet/admin/set-breed-cooldown`);
+    console.log(`Admin update-rarity-weights: POST http://localhost:${PORT}/api/v1/wallet/admin/update-rarity-weights`);
+    console.log(`Admin add-species: POST http://localhost:${PORT}/api/v1/wallet/admin/add-species`);
+    console.log(`Admin set-kyc-required: POST http://localhost:${PORT}/api/v1/wallet/admin/set-kyc-required`);
+    console.log(`Burn NFT: POST http://localhost:${PORT}/api/v1/wallet/burn-nft`);
+    console.log(`Game config: GET http://localhost:${PORT}/api/v1/wallet/game-config`);
 });
