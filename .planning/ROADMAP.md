@@ -10,7 +10,7 @@
 
 ## Current Milestone: v0.2.0 Functional Spec 100% Completion
 
-**Status:** 🔄 Active — 5/9 phases complete, 4 remaining
+**Status:** ✅ COMPLETE — 9/9 phases complete
 **Goal:** Implement all 12 missing spec functions + integration layers (85% → 100%)
 
 ### Phase Structure
@@ -24,8 +24,8 @@
 | 36    | NFT Burn & KYC Toggle     | BURN-01, KYC-01, SPEND-01    | P2/P3    | ✅ Complete   |
 | 37    | Smart Contract Updates    | VRF, Burn, AdminConfig       | P0       | ✅ Complete   |
 | 38    | Wallet API Endpoints      | 7 new endpoints              | P0       | ✅ Complete   |
-| 39    | Collection Schema Updates | 10 new fields                | P0       | ● 1/1 plans   |
-| 40    | Frontend Components       | 4 UI components              | P1       | ○ Not Started |
+| 39    | Collection Schema Updates | 10 new fields                | P0       | ✅ Complete   |
+| 40    | Frontend Components       | 4 UI components              | P1       | ✅ Complete   |
 
 ---
 
@@ -50,17 +50,17 @@
   - [x] 36-01-PLAN.md — burnNFT, setKYCRequired, spendUSDT
   - [x] Hook: `36-burn-kyc-spend.pb.js` — 4 endpoints
 
-## v0.2.0 Phases (Remaining Implementation)
+## v0.2.0 Phases (Complete — 100% Spec Coverage)
 
-- [ ] Phase 37: Smart Contract Updates (P0) — 2/2 plans
+- [x] Phase 37: Smart Contract Updates (P0) — 2/2 plans ✅ EXECUTED
   - [x] 37-01-PLAN.md — VRF integration (VRFConsumerBaseV2Plus), two-phase hatching, burnNFT, admin setters
   - [x] 37-02-PLAN.md — Test updates (VRF mock, burn tests, admin tests), deployment scripts for BSC
 - [x] Phase 38: Wallet API Endpoints (P0) — 2/2 plans ✅ EXECUTED
   - [x] 38-01-PLAN.md — claim-recruitment-bonus, hatch-egg-vrf, check-vrf-fulfillment
-  - [x] 38-02-PLAN.md — admin/\* (set-platform-fee, set-breed-cooldown, update-rarity-weights, add-species, set-kyc-required), burn-nft, game-config
-- [ ] Phase 39: Collection Schema Updates (P0) — 1/1 plan
+  - [x] 38-02-PLAN.md — admin/* (set-platform-fee, set-breed-cooldown, update-rarity-weights, add-species, set-kyc-required), burn-nft, game-config
+- [x] Phase 39: Collection Schema Updates (P0) — 1/1 plan ✅ EXECUTED
   - [x] 39-01-PLAN.md — Add 10 fields to 4 collections (users, egg_nfts, food_nfts, animal_nfts)
-- [ ] Phase 40: Frontend Components (P1) — 3/3 plans
+- [x] Phase 40: Frontend Components (P1) — 3/3 plans ✅ EXECUTED
   - [x] 40-01-PLAN.md — RecruitmentBonusCard + KYCStatusBadge components
   - [x] 40-02-PLAN.md — Admin game config page at /admin/game-config
   - [x] 40-03-PLAN.md — BurnNFTDialog component

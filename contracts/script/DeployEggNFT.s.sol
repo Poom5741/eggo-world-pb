@@ -7,12 +7,22 @@ import {EggNFT} from "../src/EggNFT.sol";
 import {FoodNFT} from "../src/FoodNFT.sol";
 import {AnimalNFT} from "../src/AnimalNFT.sol";
 import {MockUSDT} from "../test/MockUSDT.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract DeployEggNFT is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address coinStorReserve = vm.envAddress("COINSTOR_RESERVE_ADDRESS");
         bool deployMockUSDT = vm.envBool("DEPLOY_MOCK_USDT");
+        
+        address vrfCoordinator;
+        if (block.chainid == 97) {
+            vrfCoordinator = 0xDA3b641D438362C440Ac5458c57e00a712b66700;
+        } else if (block.chainid == 56) {
+            vrfCoordinator = 0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9;
+        } else {
+            vrfCoordinator = address(new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18));
+        }
         
         vm.startBroadcast(deployerPrivateKey);
         
@@ -33,7 +43,7 @@ contract DeployEggNFT is Script {
         AnimalNFT animalNFT = new AnimalNFT();
         console.log("AnimalNFT deployed at:", address(animalNFT));
         
-        EggNFT eggNFT = new EggNFT(address(commissionDistribution), usdtAddress);
+        EggNFT eggNFT = new EggNFT(address(commissionDistribution), usdtAddress, vrfCoordinator);
         console.log("EggNFT deployed at:", address(eggNFT));
         
         FoodNFT foodNFT = new FoodNFT(address(commissionDistribution), usdtAddress, address(eggNFT));
