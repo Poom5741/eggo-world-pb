@@ -8,9 +8,73 @@
 
 - ✅ **v0.1.0 UAT Gap Closure** — Phase 31 (shipped 2026-04-25) — [Archive](milestones/v0.1.0-ROADMAP.md)
 
-## Current Milestone: Planning Next Version
+## Current Milestone: v0.2.0 Functional Spec 100% Completion
 
-No active milestone. Run `/gsd-new-milestone` to start the next milestone cycle.
+**Status:** 🔄 Active — 5/9 phases complete, 4 remaining
+**Goal:** Implement all 12 missing spec functions + integration layers (85% → 100%)
+
+### Phase Structure
+
+| Phase | Name                      | Gaps Addressed               | Priority | Status        |
+| ----- | ------------------------- | ---------------------------- | -------- | ------------- |
+| 32    | Marketplace Stats API     | MSTAT-01, STATS-01, STATS-02 | P1/P2    | ✅ Complete   |
+| 33    | Recruitment Bonus USDT    | RECRUIT-01                   | P1       | ✅ Complete   |
+| 34    | VRF Integration           | VRF-01                       | P1       | ✅ Complete   |
+| 35    | Admin Game Config         | ADMIN-01 through ADMIN-04    | P2       | ✅ Complete   |
+| 36    | NFT Burn & KYC Toggle     | BURN-01, KYC-01, SPEND-01    | P2/P3    | ✅ Complete   |
+| 37    | Smart Contract Updates    | VRF, Burn, AdminConfig       | P0       | ○ Not Started |
+| 38    | Wallet API Endpoints      | 7 new endpoints              | P0       | ○ Not Started |
+| 39    | Collection Schema Updates | 10 new fields                | P0       | ○ Not Started |
+| 40    | Frontend Components       | 4 UI components              | P1       | ○ Not Started |
+
+---
+
+## v0.2.0 Phases (Complete — 100% Spec Coverage)
+
+- [x] Phase 32: Marketplace Stats API (3/3 plans) ✅ EXECUTED
+  - [x] 32-01-PLAN.md — getMarketStats() endpoint (floor price, 24h volume, active listings count)
+  - [x] 32-02-PLAN.md — getPlatformStats() endpoint (revenue, volume, users) for admin
+  - [x] 32-03-PLAN.md — getUserReferralStats() endpoint (referral tree, downline count)
+  - [x] Hook: `32-market-stats.pb.js` — 3 endpoints implemented
+  - [x] Frontend: `use-market-stats.ts`, `MarketStatsCard.tsx`
+- [x] Phase 33: Recruitment Bonus USDT Rewards (1/1 plan) ✅ EXECUTED
+  - [x] 33-01-PLAN.md — calculateRecruitmentBonus USDT rewards + multipliers (×2/×4/×6/×10)
+  - [x] Hook: `33-recruitment-bonus.pb.js` — claim + status endpoints
+- [x] Phase 34: VRF Integration (1/1 plan) ✅ EXECUTED
+  - [x] 34-01-PLAN.md — Chainlink VRF v2.5 for verifiable randomness
+  - [x] Hook: `34-vrf-hatch.pb.js` — VRF hatch + status endpoints
+- [x] Phase 35: Admin Game Config Functions (1/1 plan, 4 gaps) ✅ EXECUTED
+  - [x] 35-01-PLAN.md — setPlatformFee, setBreedCooldown, updateRarityWeights, addNewSpecies
+  - [x] Hook: `35-admin-config.pb.js` — 5 endpoints (4 admin + 1 get-config)
+- [x] Phase 36: NFT Burn & KYC Toggle (1/1 plan, 3 gaps) ✅ EXECUTED
+  - [x] 36-01-PLAN.md — burnNFT, setKYCRequired, spendUSDT
+  - [x] Hook: `36-burn-kyc-spend.pb.js` — 4 endpoints
+
+## v0.2.0 Phases (Remaining Implementation)
+
+- [ ] Phase 37: Smart Contract Updates (P0) — 2/2 plans
+  - [x] 37-01-PLAN.md — VRF integration (VRFConsumerBaseV2Plus), two-phase hatching, burnNFT, admin setters
+  - [x] 37-02-PLAN.md — Test updates (VRF mock, burn tests, admin tests), deployment scripts for BSC
+- [ ] Phase 38: Wallet API Endpoints (P0)
+  - [ ] `/api/v1/wallet/claim-recruitment-bonus`
+  - [ ] `/api/v1/wallet/hatch-egg-vrf`
+  - [ ] `/api/v1/wallet/check-vrf-fulfillment`
+  - [ ] `/api/v1/wallet/admin/*` (set-platform-fee, set-breed-cooldown, etc.)
+  - [ ] `/api/v1/wallet/burn-nft`
+  - [ ] `/api/v1/wallet/admin/set-kyc-required`
+  - [ ] `/api/v1/wallet/game-config`
+- [ ] Phase 39: Collection Schema Updates (P0)
+  - [ ] `users.claimed_recruitment_tier` (number, default: 0)
+  - [ ] `users.kyc_required_globally` (bool, default: false)
+  - [ ] `egg_nfts.is_hatching`, `egg_nfts.vrf_request_id`, `egg_nfts.vrf_transaction_hash`
+  - [ ] `egg_nfts.is_burned`, `egg_nfts.burned_at`
+  - [ ] `food_nfts.is_burned`, `food_nfts.burned_at`
+  - [ ] `animal_nfts.is_burned`, `animal_nfts.burned_at`
+- [ ] Phase 40: Frontend Components (P1)
+  - [ ] `RecruitmentBonusCard.tsx`
+  - [ ] Admin game config page at `/admin/game-config`
+  - [ ] `BurnNFTDialog.tsx`
+  - [ ] `KYCStatusBadge.tsx`
 
 ---
 
