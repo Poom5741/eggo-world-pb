@@ -59,7 +59,8 @@ describe("RecruitmentBonusCard", () => {
   it("Test 1: renders loading skeleton when fetching status and not hydrated", async () => {
     mockUseIsHydrated.mockReturnValue(false)
     render(<RecruitmentBonusCard />)
-    expect(screen.getByText(/Loading/i)).toBeInTheDocument()
+    // Should show skeleton placeholders instead of real data
+    expect(screen.getByTestId("recruitment-skeleton")).toBeInTheDocument()
   })
 
   it("Test 2: shows current tier label, direct recruit count, and progress to next tier", async () => {
@@ -193,15 +194,16 @@ describe("RecruitmentBonusCard", () => {
     render(<RecruitmentBonusCard />)
 
     await waitFor(() => {
-      expect(screen.getByText(/Error/i)).toBeInTheDocument()
+      const errorElements = screen.getAllByText(/Error/i)
+      expect(errorElements.length).toBeGreaterThan(0)
     })
   })
 
   it("Test 7: hydration-safe — shows loading until hydrated", async () => {
     mockUseIsHydrated.mockReturnValue(false)
     render(<RecruitmentBonusCard />)
-    // Should show loading skeleton, not attempt to fetch
-    expect(screen.getByText(/Loading/i)).toBeInTheDocument()
+    // Should show skeleton placeholders, not attempt to fetch
+    expect(screen.getByTestId("recruitment-skeleton")).toBeInTheDocument()
   })
 
   it("Test 8: shows 'Max tier reached!' when at tier 4", async () => {
