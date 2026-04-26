@@ -3,13 +3,14 @@ status: diagnosed
 phase: 27-egg-rarity-upgrade
 source: 27-SUMMARY.md
 started: 2026-04-24T10:00:00Z
-updated: 2026-04-24T15:00:00Z
+updated: 2026-04-25T16:50:00Z
 fix_applied: true
+re_verified: 2026-04-25
 ---
 
 ## Current Test
 
-[testing complete - fix applied]
+[re-verified 2026-04-25 - UPGRADE button blocked by test data, critical bug found in dialog]
 
 ## Tests
 

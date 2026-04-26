@@ -2,8 +2,9 @@
 phase: 20-gap-closure-uat-execution
 plan: 02
 name: "UAT Execution — 16 Manual Scenarios"
-status: in-progress
+status: complete
 total_scenarios: 16
+executed_at: "2026-04-25T16:30:00Z"
 requirement_ids:
   - GAPS-02
   - GAPS-05
@@ -753,10 +754,11 @@ notes:
 | Metric              | Count |
 | ------------------- | ----- |
 | **Total Scenarios** | 16    |
-| **Passed**          | \_    |
-| **Failed**          | \_    |
-| **Blocked**         | \_    |
-| **Skipped**         | \_    |
+| **Passed**          | 4     |
+| **Partial**         | 4     |
+| **Issues**          | 3     |
+| **Blocked**         | 4     |
+| **Skipped**         | 1     |
 
 ### Results by Phase
 
@@ -775,8 +777,8 @@ For any scenario marked FAIL, document below:
 
 ### Sign-off
 
-**Tested by:** ********\_\_\_\_********  
-**Date:** ********\_\_\_\_********  
+**Tested by:** **\*\*\*\***\_\_\_\_**\*\*\*\***  
+**Date:** **\*\*\*\***\_\_\_\_**\*\*\*\***  
 **Environment(s):** ☐ Local ☐ Production ☐ Both
 
 **Declaration:**

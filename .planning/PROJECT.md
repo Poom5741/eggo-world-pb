@@ -11,17 +11,58 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Current Milestone: No Active Milestone
+## Current Milestone: v0.2.0 Functional Spec 100% Completion
 
-**Status:** Ready for next milestone planning
-
-Run `/gsd-new-milestone` to start the next milestone cycle.
+**Status:** Active — Gap analysis complete, planning ready
+**Goal:** Implement all 12 missing spec functions (85% → 100%)
 
 **Previous Milestone:** v0.1.0 UAT Gap Closure (shipped 2026-04-25)
+
+### Spec Gap Summary
+
+| Category    | Implemented | Missing                                                                  | Coverage |
+| ----------- | ----------- | ------------------------------------------------------------------------ | -------- |
+| Core NFT    | 8/8         | 0                                                                        | 100%     |
+| Marketplace | 5/6         | 1 (getMarketStats)                                                       | 83%      |
+| Commission  | 4/4         | 0                                                                        | 100%     |
+| Wallet      | 6/7         | 1 (getUserReferralStats)                                                 | 86%      |
+| Tier        | 2/2         | 0                                                                        | 100%     |
+| Admin       | 7/11        | 4 (setPlatformFee, setBreedCooldown, updateRarityWeights, addNewSpecies) | 64%      |
+| Game        | 3/4         | 1 (VRF)                                                                  | 75%      |
+| Recruitment | 1/2         | 1 (USDT rewards)                                                         | 50%      |
+| Utility     | 3/4         | 1 (burnNFT)                                                              | 75%      |
+
+**Total:** 40/47 functions implemented (85%)
+
+### Phase Structure
+
+| Phase | Focus                  | Gaps                         | Priority |
+| ----- | ---------------------- | ---------------------------- | -------- |
+| 32    | Marketplace Stats API  | MSTAT-01, STATS-01, STATS-02 | P1/P2    |
+| 33    | Recruitment Bonus USDT | RECRUIT-01                   | P1       |
+| 34    | VRF Integration        | VRF-01                       | P1       |
+| 35    | Admin Game Config      | ADMIN-01 through ADMIN-04    | P2       |
+| 36    | NFT Burn & KYC Toggle  | BURN-01, KYC-01, SPEND-01    | P2/P3    |
 
 ---
 
 ## Milestone Archive
+
+### v0.2.0 — Functional Spec 100% Completion 🔄 ACTIVE
+
+**Started:** 2026-04-25
+**Phases:** 5 (32-36) planned
+**Gaps:** 12 spec functions to implement
+
+**What's Planned:**
+
+- 📊 Marketplace stats API (floor price, 24h volume, active listings)
+- 💰 Recruitment bonus USDT rewards with multipliers
+- 🔀 VRF integration for verifiable randomness
+- ⚙️ Admin game config (fee %, cooldown, rarity weights, species)
+- 🔥 NFT burn function + KYC toggle
+
+---
 
 ### v0.1.0 — UAT Gap Closure ✅ ARCHIVED
 

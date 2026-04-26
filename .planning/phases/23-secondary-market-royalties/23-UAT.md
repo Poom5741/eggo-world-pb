@@ -1,15 +1,15 @@
 ---
-status: partial
+status: diagnosed
 phase: 23-secondary-market-royalties
 source: 23-01-SUMMARY.md, 23-02-A-SUMMARY.md, 23-02-B-SUMMARY.md
 started: 2026-04-22T00:00:00Z
-updated: 2026-04-23T00:00:00Z
-completed: 2026-04-23T00:00:00Z
+updated: 2026-04-25T16:45:00Z
+test_method: browser_agent_localhost:3000
 ---
 
 ## Current Test
 
-[testing paused — 4 issues need fix plans]
+[re-verified 2026-04-25 — 2 critical issues persist despite Phase 26/31 fixes]
 
 ## Tests
 
@@ -22,8 +22,10 @@ result: pass
 
 expected: Click rarity filter buttons (Common/Rare/Epic/Legendary) to filter listings by rarity type
 result: issue
-reported: "clicking rarity filter buttons shows nothing - sort logic may be broken or cards don't have rarity info"
-severity: major
+reported: "Epic filter shows COMMON Pig #999003, Legendary filter shows COMMON Pig #999003 - filter logic completely broken despite Phase 26 case-insensitive fix"
+severity: blocker
+verified_by: browser_agent_2026-04-25
+note: Case-insensitive comparison fix did NOT resolve. All non-Common filters still return Common animals.
 
 ### 3. Price Sorting
 
@@ -41,8 +43,9 @@ severity: major
 
 expected: Click on listing card, see detail page with BuyFlow. Purchase distributes 85% to seller, 10% to referral chain (G1:2%, G2-G4:1% each), 5% platform
 result: issue
-reported: "clicking card leads to detail page with 404 not found crash"
+reported: "Both valid and invalid ID navigation causes auth redirect to /auth/login/ - Phase 31 server-side redirect fix did NOT resolve. View Details button causes listings to disappear and switches to Eggs tab."
 severity: blocker
+verified_by: browser_agent_2026-04-25
 
 ### 6. Royalty Distribution
 
@@ -54,11 +57,24 @@ reason: "Blocked by Test 5 404 crash - cannot test purchase flow until route fix
 ## Summary
 
 total: 6
-passed: 2
-issues: 3
+passed: 3
+issues: 2
 pending: 0
 skipped: 0
 blocked: 1
+
+## Re-Verification Summary (2026-04-25)
+
+**Browser Agent Results:**
+
+- Test 1: Animals Tab Display - PASS (listings show with species icons, rarity badges, prices)
+- Test 2: Rarity Filter - ISSUE (Epic/Legendary filters show COMMON animals)
+- Test 3: Price Sorting - PASS (Low/High sorting works)
+- Test 4: Detail Page Navigation - ISSUE (auth redirect on all navigation)
+- Test 5: Buy Flow Preview - BLOCKED (depends on Test 4)
+- Test 6: Platform Status Banner - PASS (no pause banner when active)
+
+**Critical Finding:** Phase 26 case-insensitive fix and Phase 31 redirect fix did NOT resolve the underlying issues. Need deeper investigation.
 
 ## Gaps
 
