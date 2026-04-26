@@ -5,6 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
 import {EggNFT} from "../src/EggNFT.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract CommissionDistributionIntegrationTest is Test {
     CommissionDistribution public commissionDist;
@@ -40,7 +41,8 @@ contract CommissionDistributionIntegrationTest is Test {
         
         mockUSDT = new MockUSDT();
         commissionDist = new CommissionDistribution(coinStor, address(mockUSDT));
-        eggNFT = new EggNFT(address(commissionDist), address(mockUSDT));
+        VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
+        eggNFT = new EggNFT(address(commissionDist), address(mockUSDT), address(vrfMock));
         
         commissionDist.setEggNFTContract(address(eggNFT));
         

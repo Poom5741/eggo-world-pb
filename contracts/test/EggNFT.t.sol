@@ -6,11 +6,13 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {EggNFT} from "../src/EggNFT.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract EggNFTTest is Test {
     EggNFT public eggNFT;
     CommissionDistribution public commissionDistribution;
     MockUSDT public mockUSDT;
+    VRFCoordinatorV2_5Mock public vrfCoordinatorMock;
     
     address public owner;
     address public buyer;
@@ -22,6 +24,8 @@ contract EggNFTTest is Test {
     
     uint256 public constant MINT_PRICE = 25 * 10^18;
     uint256 public constant INITIAL_BALANCE = 1000 * 10^18;
+    uint256 public vrfSubscriptionId;
+    bytes32 public vrfKeyHash = bytes32(uint256(0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26));
     
     event EggMinted(uint256 indexed egg_id, address indexed buyer, address indexed referrer);
     
@@ -36,9 +40,22 @@ contract EggNFTTest is Test {
         
         mockUSDT = new MockUSDT();
         commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT));
-        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT));
+        
+        // Deploy mock VRF coordinator (LINK address = 0 for test, baseFee = 1e18, gasPrice = 1e9)
+        vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
+        
+        // Deploy EggNFT with mock VRF coordinator
+        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT), address(vrfCoordinatorMock));
         
         commissionDistribution.setEggNFTContract(address(eggNFT));
+        
+        // Create and fund VRF subscription
+        vrfSubscriptionId = vrfCoordinatorMock.createSubscription();
+        vrfCoordinatorMock.addConsumer(vrfSubscriptionId, address(eggNFT));
+        vrfCoordinatorMock.fundSubscription(vrfSubscriptionId, 100 ether);
+        
+        // Set VRF config on EggNFT
+        eggNFT.setVRFConfig(vrfSubscriptionId, vrfKeyHash);
         
         mockUSDT.mint(buyer, INITIAL_BALANCE);
         mockUSDT.mint(referrerG1, INITIAL_BALANCE);

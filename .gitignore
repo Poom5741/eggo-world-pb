@@ -80,3 +80,4 @@ contracts/lib/
 .qoder
 .flux.env.production
 *.png
+*.webp

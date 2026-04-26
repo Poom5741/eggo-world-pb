@@ -5,7 +5,6 @@ import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
@@ -13,7 +12,7 @@ import {CommissionDistribution} from "./CommissionDistribution.sol";
 import {FoodNFT, FoodType} from "./FoodNFT.sol";
 import {AnimalNFT, Rarity, Species} from "./AnimalNFT.sol";
 
-contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable, VRFConsumerBaseV2Plus {
+contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     using SafeERC20 for IERC20;
     
     address public immutable commissionDistribution;
@@ -107,7 +106,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable, VRFConsumerBaseV2
         address _commissionDistribution,
         address _usdtToken,
         address _vrfCoordinator
-    ) ERC721("EggNFT", "EGG") Ownable(msg.sender) VRFConsumerBaseV2Plus(_vrfCoordinator) {
+    ) ERC721("EggNFT", "EGG") VRFConsumerBaseV2Plus(_vrfCoordinator) {
         require(_commissionDistribution != address(0), "CommissionDistribution address cannot be zero");
         require(_usdtToken != address(0), "USDT token address cannot be zero");
         
@@ -572,7 +571,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Ownable, Pausable, VRFConsumerBaseV2
         emit PauseStateChanged(true);
     }
 
-    function unpause() external onlyOwner paused {
+    function unpause() external onlyOwner whenPaused {
         _unpause();
         emit PauseStateChanged(false);
     }

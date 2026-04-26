@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
@@ -44,15 +44,11 @@ export default function Marketplace() {
     sortBy: 'newest',
   })
   
-  // Get authenticated user (after hydration)
-  const user = isHydrated ? pb.authStore.record : null
+  // Get authenticated user (after hydration) - for future use
+  const _user = isHydrated ? pb.authStore.record : null
   
-  // Auth guard - redirect to login if not authenticated
-  useEffect(() => {
-    if (isHydrated && !user) {
-      router.push('/auth/login')
-    }
-  }, [isHydrated, user, router])
+  // No auth guard - marketplace browsing is public
+  // Auth is only required for purchase actions (handled in detail page/buttons)
   
   /**
    * Handle filter changes - จัดการการเปลี่ยน filter
@@ -134,10 +130,8 @@ export default function Marketplace() {
     )
   }
 
-  // Not authenticated - จะถูก redirect ไป login
-  if (!user) {
-    return null
-  }
+  // Allow browsing without auth - user can view listings
+  // Purchase buttons will show login prompt if not authenticated
   
   // Error state - แสดงสถานะข้อผิดพลาด
   if (error) {

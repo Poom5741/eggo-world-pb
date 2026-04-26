@@ -52,6 +52,8 @@ export function useAnimalMarketplace(
       // Build filter string for PocketBase
       let filter = 'status = "active"'
 
+      // PocketBase schema defines capitalized values but actual data is stored lowercase
+      // So we convert filter to lowercase to match the stored data
       if (rarities.length > 0) {
         const rarityFilter = rarities.map((r) => `rarity = '${r.toLowerCase()}'`).join(" || ")
         filter = `(${filter}) && (${rarityFilter})`

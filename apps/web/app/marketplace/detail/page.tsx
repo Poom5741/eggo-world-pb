@@ -1,21 +1,10 @@
-// Server Component wrapper for static export
-// Uses searchParams pattern to avoid generateStaticParams requirement
-// The listingId is passed to client component for client-side data fetching
+// Marketplace Detail Page - Static Export Compatible
+// Uses client-side searchParams via useSearchParams() hook
+// This is required for Next.js 16 with output: 'export' (static export)
 
-import { redirect } from 'next/navigation'
-import MarketplaceDetailClient from '../[id]/MarketplaceDetailClient'
+import MarketplaceDetailWrapper from './MarketplaceDetailWrapper'
 
-interface MarketplaceDetailPageProps {
-  searchParams: { id?: string }
-}
-
-export default function MarketplaceDetailPage({ searchParams }: MarketplaceDetailPageProps) {
-  const id = searchParams.id
-
-  // Redirect to marketplace for invalid IDs instead of showing error
-  if (!id || id === '0' || id === '' || id === 'undefined') {
-    redirect('/marketplace')
-  }
-
-  return <MarketplaceDetailClient listingId={id} />
+// For static export, we export a client component that handles searchParams client-side
+export default function MarketplaceDetailPage() {
+  return <MarketplaceDetailWrapper />
 }

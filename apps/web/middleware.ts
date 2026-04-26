@@ -3,8 +3,13 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  const publicPaths = ['/', '/join', '/auth/login', '/auth/sign-up', '/auth/sign-up-success', '/auth/error', '/auth/line', '/auth/callback']
-  const isPublicPath = publicPaths.includes(pathname)
+  // Marketplace pages should be accessible to browse listings without auth
+  // Detail page requires auth for purchase but should allow viewing
+  // Next.js config has trailingSlash: true, so normalize pathname for comparison
+  const publicPaths = ['/', '/join', '/auth/login', '/auth/sign-up', '/auth/sign-up-success', '/auth/error', '/auth/line', '/auth/callback', '/marketplace', '/marketplace/detail']
+  // Normalize pathname - remove trailing slash (except for root '/')
+  const normalizedPathname = pathname === '/' ? '/' : pathname.replace(/\/$/, '')
+  const isPublicPath = publicPaths.includes(normalizedPathname)
 
   const pbAuth = request.cookies.get('pb_auth')
   const isAuthenticated = !!pbAuth

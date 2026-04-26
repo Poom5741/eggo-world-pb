@@ -7,6 +7,7 @@ import {EggNFT} from "../src/EggNFT.sol";
 import {FoodNFT} from "../src/FoodNFT.sol";
 import {AnimalNFT} from "../src/AnimalNFT.sol";
 import {MockUSDT} from "../test/MockUSDT.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 /**
  * @title Deploy.s.sol
@@ -29,10 +30,24 @@ contract Deploy is Script {
         address coinStorReserve = vm.envAddress("COINSTOR_RESERVE_ADDRESS");
         bool deployMockUSDT = vm.envBool("DEPLOY_MOCK_USDT");
         
+        // VRF Coordinator addresses
+        address vrfCoordinator;
+        if (block.chainid == 97) {
+            // BSC Testnet
+            vrfCoordinator = 0xDA3b641D438362C440Ac5458c57e00a712b66700;
+        } else if (block.chainid == 56) {
+            // BSC Mainnet
+            vrfCoordinator = 0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9;
+        } else {
+            // Local/other — deploy mock
+            vrfCoordinator = address(new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18));
+        }
+        
         console.log("Starting deployment...");
         console.log("Network Chain ID:", block.chainid);
         console.log("Deployer:", vm.addr(deployerPrivateKey));
         console.log("CoinStor Reserve:", coinStorReserve);
+        console.log("VRF Coordinator:", vrfCoordinator);
         
         vm.startBroadcast(deployerPrivateKey);
         
@@ -58,12 +73,14 @@ contract Deploy is Script {
         AnimalNFT animalNFT = new AnimalNFT();
         console.log("[OK] AnimalNFT deployed at:", address(animalNFT));
         
-        // Deploy EggNFT
+        // Deploy EggNFT with VRF coordinator
         EggNFT eggNFT = new EggNFT(
             address(commissionDistribution),
-            usdtAddress
+            usdtAddress,
+            vrfCoordinator
         );
         console.log("[OK] EggNFT deployed at:", address(eggNFT));
+        console.log("[OK] VRF Coordinator:", vrfCoordinator);
         
         // Deploy FoodNFT
         FoodNFT foodNFT = new FoodNFT(
@@ -110,6 +127,20 @@ contract Deploy is Script {
         console.log("Egg Mint Price: 25 USDT");
         console.log("Food Mint Price: 0.50 USDT");
         console.log("========================================\n");
+        
+        // Post-deployment VRF instructions
+        if (block.chainid == 97 || block.chainid == 56) {
+            console.log("=== Post-Deployment VRF Steps ===");
+            console.log("1. Create VRF subscription at https://vrf.chain.link");
+            console.log("2. Add EggNFT as consumer to subscription");
+            console.log("3. Fund subscription with LINK or BNB");
+            console.log("4. Call setVRFConfig(subscriptionId, keyHash) on EggNFT");
+            if (block.chainid == 97) {
+                console.log("   Testnet keyHash: 0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26");
+            } else {
+                console.log("   Mainnet keyHash: 0x130dba50ad435d4ecc214aad0d5820474137bd68e7e77724144f27c3c377d3d4");
+            }
+        }
         
         // Output JSON for automated parsing
         console.log("DEPLOYMENT_ADDRESSES_START");

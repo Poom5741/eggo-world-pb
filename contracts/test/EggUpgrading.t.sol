@@ -7,6 +7,7 @@ import {EggNFT} from "../src/EggNFT.sol";
 import {AnimalNFT} from "../src/AnimalNFT.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract EggUpgradingTest is Test {
     FoodNFT public foodNFT;
@@ -33,7 +34,8 @@ contract EggUpgradingTest is Test {
         
         mockUSDT = new MockUSDT();
         commissionDistribution = new CommissionDistribution(address(0x4), address(mockUSDT));
-        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT));
+        VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
+        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT), address(vrfMock));
         animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
             address(commissionDistribution),

@@ -47,7 +47,9 @@ interface AnimalListingCardProps {
 
 function AnimalListingCard({ listing, onClick }: AnimalListingCardProps) {
   const species = speciesConfig[listing.species] || { speciesType: "Chicken" }
-  const rarity = rarityConfig[listing.rarity] || { label: "COMMON", color: "text-primary" }
+  // Normalize rarity to capitalized for config lookup (API returns lowercase)
+  const normalizedRarity = listing.rarity.charAt(0).toUpperCase() + listing.rarity.slice(1).toLowerCase()
+  const rarity = rarityConfig[normalizedRarity] || { label: "COMMON", color: "text-primary" }
 
   return (
     <Card
@@ -162,8 +164,8 @@ export function AnimalListingsSection({ className }: AnimalListingsSectionProps)
       router.push('/marketplace')
       return
     }
-    // Navigate to detail page (static route with searchParams for static export compatibility)
-    router.push(`/marketplace/detail?id=${listing.id}`)
+    // Navigate to detail page with type parameter for resale listings
+    router.push(`/marketplace/detail?id=${listing.id}&type=animal`)
   }
 
   if (loading) {

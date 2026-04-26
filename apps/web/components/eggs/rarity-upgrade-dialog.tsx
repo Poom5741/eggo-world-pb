@@ -149,7 +149,7 @@ export function RarityUpgradeDialog({ egg, open, onOpenChange, onSuccess }: Rari
         prev.includes(foodId)
           ? prev.filter((id) => id !== foodId)
           : prev.length < 490
-            ? [...prev, 10] // Cap at 490 extra items
+            ? [...prev, foodId] // Add the actual foodId, not hardcoded 10
             : prev
     )
   }
