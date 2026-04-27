@@ -101,7 +101,7 @@ migrate((app) => {
         "deleteRule": null
   }, collection)
 
-  return app.createCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const collection = app.findCollectionByNameOrId("food_nfts")
 

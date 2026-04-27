@@ -54,7 +54,7 @@ migrate((app) => {
         "deleteRule": "@request.auth.id != \"\" && egg.owner = @request.auth.id"
   }, collection)
 
-  return app.createCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const collection = app.findCollectionByNameOrId("egg_consumption_logs")
 

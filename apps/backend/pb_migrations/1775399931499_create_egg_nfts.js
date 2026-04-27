@@ -163,7 +163,7 @@ migrate((app) => {
         "options": {}
   }, collection)
 
-  return app.createCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const collection = app.findCollectionByNameOrId("egg_nfts")
 

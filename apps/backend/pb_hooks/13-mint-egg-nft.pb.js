@@ -357,45 +357,6 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
                 code: 'MINT_FAILED'
             } 
         });
-    } catch (err) {
-        console.error('[Mint] ERROR:', err);
-        console.error('[Mint] ERROR stack:', err.stack);
-        $app.logger().error('Mint egg NFT failed', err);
-        
-        // Safely extract error message
-        let errorMessage = 'Mint failed';
-        if (err && typeof err === 'object') {
-            const msg = err.message || err.error || String(err);
-            errorMessage = typeof msg === 'string' ? msg : String(msg);
-        } else if (typeof err === 'string') {
-            errorMessage = err;
-        } else {
-            errorMessage = String(err);
-        }
-        
-        // Transaction logging for monitoring dashboard - error case
-        try {
-            const transactionLogsCollection = $app.findCollectionByNameOrId('transaction_logs');
-            const transactionLog = new Record(transactionLogsCollection);
-            transactionLog.set('user', user ? user.id : null);
-            transactionLog.set('tx_hash', null);
-            transactionLog.set('tx_type', 'mint');
-            transactionLog.set('status', 'failed');
-            transactionLog.set('error_message', errorMessage);
-            $app.save(transactionLog);
-        } catch (logErr) {
-            console.error('Failed to log mint error transaction:', logErr);
-        }
-
-        return e.json(500, { 
-            success: false, 
-            error: { 
-                message: errorMessage,
-                code: 'MINT_FAILED'
-            } 
-        });
-    }
-        });
     }
 });
 
