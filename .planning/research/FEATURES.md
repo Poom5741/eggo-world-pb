@@ -1,414 +1,438 @@
-# Features Research — v0.0.7 Security & Quality
+# Feature Research: E2E Flow Testing for Blockchain/NFT Applications
 
-**Domain:** NFT Gaming Platform (BSC + USDT)
-**Researched:** 2026-04-18
-**Overall confidence:** MEDIUM
+**Domain:** E2E Testing Patterns for NFT/Blockchain Marketplace
+**Researched:** 2026-04-27
+**Confidence:** HIGH (based on official docs, industry patterns, existing project context)
 
----
+## Executive Summary
 
-## Real Contract Interactions
-
-### Table Stakes
-
-| Feature                      | Complexity | Why Expected                                  | Notes                                                                                               |
-| ---------------------------- | ---------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| **Transaction signing flow** | Medium     | Users must sign blockchain transactions       | Current pattern in vfat-tools: `contract.function().then(t => provider.waitForTransaction(t.hash))` |
-| **Gas estimation**           | Medium     | BSC gas fees vary by congestion               | Use `estimateGas()` before sending, add 20% buffer for safety                                       |
-| **Pending state display**    | Low        | Users need feedback during confirmation       | Show loading spinner + tx hash with block explorer link                                             |
-| **Confirmed state**          | Low        | Transaction success confirmation              | Display after `tx.wait()` completes, show success toast                                             |
-| **Error handling**           | Medium     | Transactions fail (reverts, insufficient gas) | Catch errors, show user-friendly messages (not stack traces)                                        |
-| **Block explorer link**      | Low        | Users want to verify on-chain                 | Link to BscScan: `https://bscscan.com/tx/${tx.hash}`                                                |
-
-**Industry Pattern (from vfat-tools):**
-
-```javascript
-// Standard transaction flow
-contract
-  .mintEgg(eggId, { gasLimit: 250000 })
-  .then((tx) => {
-    showLoading()
-    return provider.waitForTransaction(tx.hash)
-  })
-  .then((receipt) => {
-    hideLoading()
-    toast.success("Minted successfully!")
-  })
-  .catch((error) => {
-    hideLoading()
-    toast.error("Transaction failed: " + error.message)
-  })
-```
-
-### Differentiators
-
-| Feature                          | Complexity | Value Proposition                | Implementation Notes                      |
-| -------------------------------- | ---------- | -------------------------------- | ----------------------------------------- |
-| **Gas sponsorship (gasless tx)** | High       | Remove gas complexity for users  | Requires meta-transaction relayer service |
-| **Batch operations**             | High       | Mint multiple NFTs in one tx     | Contract must support batch minting       |
-| **Gas price prediction**         | Medium     | Help users optimize gas costs    | Use historical gas data API               |
-| **Transaction simulation**       | Medium     | Preview tx result before signing | Use `eth_call` to simulate                |
-
-### Anti-Features
-
-| Anti-Feature                       | Why Avoid                           | Alternative                             |
-| ---------------------------------- | ----------------------------------- | --------------------------------------- |
-| **Hiding gas fees**                | Users feel deceived when charged    | Show estimated gas cost upfront in USDT |
-| **Auto-retry failed transactions** | May charge multiple times           | Show error, let user manually retry     |
-| **Hardcoded gas limits**           | Transactions fail during congestion | Use `estimateGas()` + buffer            |
-| **No error messages**              | Users don't know what went wrong    | Decode contract revert reasons          |
+E2E testing for blockchain/NFT applications requires fundamentally different patterns than traditional web apps. The key challenges are: **transaction timing**, **on-chain state verification**, **test data isolation**, and **OAuth simulation**. This research maps table stakes features (what all blockchain testing must have) and differentiators (patterns that provide competitive advantage in test reliability).
 
 ---
 
-## USDT Deposit Tracking
-
-### Table Stakes
-
-| Feature                 | Complexity | Why Expected                    | Implementation Pattern                     |
-| ----------------------- | ---------- | ------------------------------- | ------------------------------------------ |
-| **Event polling**       | Medium     | Detect incoming USDT transfers  | Poll `Transfer` events every 30-60 seconds |
-| **Block confirmations** | Medium     | Prevent reorg issues            | Wait 15 confirmations (BSC standard)       |
-| **Duplicate detection** | Low        | Prevent double-crediting        | Track processed transaction hashes         |
-| **User notifications**  | Low        | Inform users of deposit success | Push notification + UI update              |
-
-**Industry Standard (from Bitquery, Tatum docs):**
-
-```javascript
-// USDTcontract on BSC: 0x55d398326f99059fF775485246999027B3197955
-const usdtContract = new ethers.Contract(USDT_ADDRESS, ERC20_ABI, provider)
-
-// Poll for Transfer events
-const filter = usdtContract.filters.Transfer(null, userAddress)
-const events = await usdtContract.queryFilter(filter, fromBlock, toBlock)
-
-// Each event contains:
-// - event.transactionHash
-// - event.args.from (sender)
-// - event.args.to (recipient)
-// - event.args.value (amount in wei)
-```
-
-### Complexity Notes
-
-| Concern                 | Trade-off                      | Recommendation                                      |
-| ----------------------- | ------------------------------ | --------------------------------------------------- |
-| **Polling interval**    | Frequent = fresh but expensive | Start 30s, backoff to 5min (reuse existing pattern) |
-| **Block confirmations** | More = safer but slower        | 15 for BSC (vs 12 for ETH, 64 for Polygon)          |
-| **Reorg handling**      | Rare on BSC but possible       | Mark deposits as "pending" until 15 confirmations   |
-| **Multiple tokens**     | USDT + USDC + others           | Track by contract address, not just symbol          |
-
-### Recommended Implementation
-
-```javascript
-// Track deposit Hook Pattern (from PayzCore docs)
-routerAdd("POST", "/api/v2/track-deposit", (e) => {
-  const { users } = e.requireAuth()
-  const { transaction_hash } = e.parseBody()
-
-  // 1. Verify transaction exists
-  const tx = await provider.getTransaction(transaction_hash)
-  if (!tx) throw new Error('TX_NOT_FOUND')
-
-  // 2. Check if already tracked
-  const existing = await getDepositByTxHash(transaction_hash)
-  if (existing) return e.json(400, { error: 'DUPLICATE_DEPOSIT' })
-
-  // 3. Get current block for confirmation count
-  const currentBlock = await provider.getBlockNumber()
-  const confirmations = currentBlock - tx.blockNumber
-
-  // 4. Create deposit record
-  const record = {
-    user_id: user.id,
-    transaction_hash,
-    amount: parseAmount(tx),
-    confirmations,
-    status: confirmations >= 15 ? 'confirmed' : 'pending'
-  }
-
-  e.json(200, { success: true, data: record })
-})
-```
-
----
-
-## Mobile Responsive Navigation
-
-### Table Stakes
-
-| Feature                | Complexity | Industry Standard    | Implementation                                          |
-| ---------------------- | ---------- | -------------------- | ------------------------------------------------------- |
-| **Bottom tab bar**     | Low        | 4-5 primary sections | Fixed position, safe-area padding                       |
-| **Breakpoint layouts** | Medium     | 320px → 1440px       | Mobile (<640px), Tablet (640-1024px), Desktop (>1024px) |
-| **Touch targets**      | Low        | 48x48px minimum      | Material Design standard                                |
-| **Safe area insets**   | Low        | iPhone notch support | `padding-bottom: env(safe-area-inset-bottom)`           |
-
-**Industry Research Findings:**
-
-| Pattern                       | Best For            | Example                                        |
-| ----------------------------- | ------------------- | ---------------------------------------------- |
-| **Bottom Tab Bar**            | 3-5 core actions    | Instagram, Airbnb, Spotify                     |
-| **Hamburger Menu**            | 6+ sections         | Amazon, news sites                             |
-| **Hybrid (tabs + hamburger)** | Primary + secondary | E-commerce (products in tabs, account in menu) |
-
-**Key Statistics (2025 research):**
-
-- 40% faster task completion with bottom tabs vs hamburger
-- Thumb reach: bottom 1/3 of screen is "thumb zone"
-- Maximum 5 tabs (beyond = clutter)
-- 48px touch target minimum (accessibility standard)
-
-### Recommended Mobile Layout
-
-```tsx
-// Bottom navigation for Eggo (4 primary sections)
-const navItems = [
-  { icon: 'home', label: 'Home', href: '/' },
-  { icon: 'egg', label: 'My Eggs', href: '/eggs' },
-  { icon: 'storefront', label: 'Marketplace', href: '/marketplace' },
-  { icon: 'account', label: 'Account', href: '/profile' }
-]
-
-// CSS implementation
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 8px 0;
-  padding-bottom: env(safe-area-inset-bottom); /* iPhone notch */
-  display: flex;
-  justify-content: space-around;
-  background: var(--surface);
-  box-shadow: var(--shadow-clay);
-}
-```
-
-### Breakpoint Strategy
-
-| Breakpoint              | Layout         | Navigation                            |
-| ----------------------- | -------------- | ------------------------------------- |
-| **<640px** (Mobile)     | Single column  | Bottom tab bar                        |
-| **640-1024px** (Tablet) | 2-column grid  | Bottom tabs + hamburger for secondary |
-| **>1024px** (Desktop)   | 3+ column grid | Top navigation bar                    |
-
----
-
-## Touch Interactions
-
-### Table Stakes
-
-| Gesture             | Complexity | Common Pattern      | Accessibility              |
-| ------------------- | ---------- | ------------------- | -------------------------- |
-| **Tap**             | Low        | Select/activate     | Ensure 48px target         |
-| **Swipe**           | Medium     | Navigation, dismiss | Provide alternative button |
-| **Long press**      | Medium     | Context menu        | Add tooltip hint           |
-| **Pull-to-refresh** | Medium     | Refresh data        | Show loading indicator     |
-
-### Recommended Patterns for Eggo
-
-| Feature              | Gesture          | Alternative              |
-| -------------------- | ---------------- | ------------------------ |
-| **Refresh egg list** | Pull down        | Refresh button in header |
-| **Navigate eggs**    | Swipe left/right | Arrow buttons            |
-| **Quick feed**       | Tap + hold egg   | Feed button in card      |
-| **Dismiss modals**   | Swipe down       | ✕ close button           |
-
-### Complexity Notes
-
-| Concern               | Mitigation                                            |
-| --------------------- | ----------------------------------------------------- |
-| **Gesture conflicts** | Don't use same gesture for different actions          |
-| **Discoverability**   | Show hints on first visit ("swipe to refresh")        |
-| **Accessibility**     | All gestures must have button alternative             |
-| **Performance**       | Use CSS transforms, avoid JavaScript scroll listeners |
-
----
-
-## Feed/Play Mechanics (NFT Gaming Industry Patterns)
-
-### What "Feeding" Typically Does
-
-Based on NFT gaming research:
-
-| Game Type         | Feed Mechanic          | Result                          |
-| ----------------- | ---------------------- | ------------------------------- |
-| **Axie Infinity** | Feed Axie with potions | Restore energy/stamina          |
-| **CryptoKitties** | Feed cat food          | Increase Generation Points (GP) |
-| **Sorare**        | Feed player cards      | Boost performance stats         |
-| **STEPN**         | Burn tokens to repair  | Restore shoe durability         |
-
-**Common Pattern:**
-
-```
-Feed Resource (Food NFT) → Egg NFT
-         ↓
-  - Increase progress toward evolution
-  - Restore stamina/energy
-  - Boost rarity multiplier
-  - Reset cooldown timer
-```
-
-### Recommended Feed Mechanic for Eggo
-
-Based on PROJECT.md requirements:
-
-```
-Feed 10 Food NFTs → Egg hatches into Animal NFT
-         ↓
-  - food_count: 0 → 10
-  - status: "egg" → "hatched"
-  - rarity_bonus: based on food types fed
-```
-
-**Implementation:**
-
-```javascript
-// Feed function (contract call)
-async function feedEgg(eggId, foodIds) {
-  const contract = getEggNftContract(signer)
-
-  // 1. Approve food NFTs to contract (if not already)
-  await foodContract.setApprovalForAll(contractAddress, true)
-
-  // 2. Call feed function
-  const tx = await contract.feedEgg(eggId, foodIds)
-  await tx.wait()
-
-  // 3. Update UI
-  toast.success("Egg fed! Progress: {count}/10")
-
-  // 4. Check if ready to hatch
-  if (count >= 10) {
-    showHatchAnimation()
-  }
-}
-```
-
-### What "Playing" Typically Means
-
-| Game               | Play Mechanic      | Reward         |
-| ------------------ | ------------------ | -------------- |
-| **Axie Infinity**  | Battle in arena    | SLP tokens, XP |
-| **Gods Unchained** | Play card games    | Gods tokens    |
-| **Alien Worlds**   | Complete missions  | Trilium tokens |
-| **Pegaxy**         | Race other players | VIS tokens     |
-
-**For Eggo — Recommended Play Mechanics:**
-
-Since Eggo is focused on NFT collection + marketplace (not PvP battles):
-
-| Option                 | Complexity | Description                                        |
-| ---------------------- | ---------- | -------------------------------------------------- |
-| **Mini-game**          | High       | Simple game (tap/click) to earn small USDT rewards |
-| **Social interaction** | Medium     | Show egg to friends, get "likes" → boost rarity    |
-| **Daily check-in**     | Low        | Play = claim daily reward (1 Food NFT)             |
-| **Remove feature**     | Lowest     | No play mechanic — only Feed + Hatch               |
-
-**Recommendation:** Start with **daily check-in** (simple), add mini-game later if engagement metrics justify.
-
----
-
-## Recommendations Summary
-
-### Must Implement (Table Stakes) — P0
-
-1. **Real contract interactions** (wallet-api replacement)
-   - Replace 4 mock endpoints with ethers.js calls
-   - Gas estimation + pending/confirmed states
-   - Block explorer links
-
-2. **USDT deposit tracking** (track-deposit hook)
-   - Event polling with 15 block confirmations
-   - Duplicate transaction prevention
-   - User notification on deposit
-
-3. **Mobile responsive breakpoints**
-   - Bottom tab bar for mobile (<640px)
-   - Touch targets 48x48px minimum
-   - Safe area insets for iPhone
-
-### Nice to Have (Differentiators) — P2
-
-1. **Feed feature completion**
-   - Wire existing UI button to real contract call
-   - Show feeding progress (X/10)
-   - Hatch animation when complete
-
-2. **Play feature (simple)**
-   - Daily check-in for Food NFT reward
-   - Skip complex mini-games for v0.0.7
-
-3. **Pull-to-refresh on egg list**
-   - Reuse existing 30s polling pattern
-   - Visual feedback on refresh
-
-### Avoid (Anti-Features) — Explicit NO
-
-1. **Auto-retry failed transactions** — Let user manually retry
-2. **Hiding gas fees from users** — Show estimated cost in USDT
-3. **Gesture-only navigation** — Always provide button alternative
-4. **Hardcoded gas limits** — Use estimateGas() + 20% buffer
-5. **Complex play mini-games** — Focus on core loop (Feed → Hatch → Sell)
+## Feature Landscape
+
+### Table Stakes (Users Expect These)
+
+Features that are non-negotiable for E2E blockchain testing. Missing these = tests are unreliable or incomplete.
+
+| Feature                           | Why Expected                                               | Complexity | Notes                                                                                                                         |
+| --------------------------------- | ---------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Transaction Confirmation Wait** | Blockchain txs are async; UI can't proceed until confirmed | HIGH       | Use `tx.wait()` (ethers) or `waitForTransactionReceipt()` (wagmi/viem). Default 1 confirmation for testnet, 2+ for production |
+| **On-Chain State Verification**   | Trust comes from blockchain, not just UI                   | HIGH       | Query contract state directly: `ownerOf(tokenId)`, `balanceOf(address)`. Don't rely solely on PocketBase                      |
+| **Event Parsing**                 | Mint/transfer outcomes are in events, not return values    | MEDIUM     | Parse Transfer events from receipt logs: `from: 0x000...` = mint, `from/to: real addresses` = transfer                        |
+| **Test Account Isolation**        | Each test needs clean wallet state                         | HIGH       | Use Anvil/Hardhat local fork with deterministic accounts, or mock wallet responses                                            |
+| **Timeout Handling**              | Blockchain ops can take seconds to minutes                 | MEDIUM     | Use `test.setTimeout(120000)` for blockchain tests in Playwright/Bun                                                          |
+| **Gas Estimation Mocking**        | Real gas costs make tests expensive                        | MEDIUM     | Mock gas or use testnet with faucet; BSC testnet provides free gas                                                            |
+
+### Differentiators (Competitive Advantage)
+
+Patterns that set apart reliable blockchain testing. Not required, but valuable.
+
+| Feature                        | Value Proposition                                  | Complexity | Notes                                                                               |
+| ------------------------------ | -------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------- |
+| **Forked Mainnet Testing**     | Test against real contract state without cost      | HIGH       | Anvil/Hardhat can fork BSC mainnet at specific block; use actual USDT/NFT contracts |
+| **Wallet Mocking (web3-mock)** | Skip real wallet interactions; deterministic tests | HIGH       | DePayFi web3-mock intercepts MetaMask responses; no real tx signing needed          |
+| **Event Indexing Simulation**  | Verify indexing layer catches blockchain events    | MEDIUM     | Test that PocketBase hooks correctly process Transfer events                        |
+| **Multi-Step Flow Automation** | Test complete journeys (auth→mint→feed→hatch)      | HIGH       | Synpress/Playwright automates MetaMask for real browser tests                       |
+| **Referral Chain Mocking**     | Test MLM commission without 4 real users           | MEDIUM     | Mock PocketBase user referral_chain field; verify commission distribution           |
+
+### Anti-Features (Commonly Requested, Often Problematic)
+
+Patterns that seem good but create issues.
+
+| Feature                          | Why Requested              | Why Problematic                                                   | Alternative                                                            |
+| -------------------------------- | -------------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **Real Mainnet Testing**         | "Trust only mainnet"       | Expensive gas, unpredictable timing, rate limits                  | Use Anvil fork with `--fork-url <BSC_RPC>`                             |
+| **No Mocking, Pure Integration** | "Real tests are better"    | Flaky, slow, requires faucet funding, rate limit triggers         | Hybrid: mock wallet, test contract logic                               |
+| **Fixed Timeout Values**         | "Simple wait"              | Blockchain timing varies wildly; 30s may be too short or wasteful | Use `waitForTransactionReceipt({ confirmations: 1 })` with polling     |
+| **UI-Only Assertions**           | "If UI shows it, it works" | UI can lag behind blockchain; PocketBase sync delay               | Assert on-chain state AND UI: `expect(onChainOwner).toBe(userAddress)` |
+| **Single Test User**             | "One account is enough"    | Can't test marketplace buy/sell, referral chain                   | Multiple test accounts from Anvil's deterministic wallets              |
 
 ---
 
 ## Feature Dependencies
 
 ```
-Real contract interactions (wallet-api)
-         ↓
-    Feed feature (requires mint-food, feed-egg endpoints)
-         ↓
-    Hatch flow (already implemented, just needs real data)
-         ↓
-    Marketplace listing (already working)
+Transaction Confirmation Wait
+    └──requires──> On-Chain State Verification
+                       └──requires──> Test Account Isolation
 
-USDT deposit tracking
-         ↓
-    Auto-polling balance (already implemented)
-         ↓
-    User notification system (already in place)
+Wallet Mocking
+    └──enables──> Fast Test Execution
+    └──conflicts──> Real MetaMask Integration (Synpress)
 
-Mobile responsive
-         ↓
-    Bottom navigation (new component)
-         ↓
-    Breakpoint-specific layouts (CSS changes)
-         ↓
-    Touch gesture handlers (new hooks)
+Forked Mainnet Testing
+    └──requires──> Anvil/Hardhat Local Node
+    └──enables──> Real Contract State Testing
+
+Multi-Step Flow Automation (Auth → Mint → Feed → Hatch)
+    └──requires──> OAuth Simulation
+    └──requires──> Transaction Confirmation Wait
+    └──requires──> Test Data Preparation (USDT balance, NFTs)
+
+Referral Chain Testing
+    └──requires──> Multi-Account Setup
+    └──requires──> Commission Event Verification
+```
+
+### Dependency Notes
+
+- **Transaction Wait requires On-Chain Verification**: Waiting confirms tx mined; verification confirms correct state change
+- **Wallet Mocking conflicts with Synpress**: Choose deterministic mock OR real MetaMask automation; both approaches work
+- **Multi-Step Flow requires Test Data**: Can't test hatch without pre-existing egg with 10 food; can't test marketplace without pre-listed NFTs
+- **Referral Chain requires Multi-Account**: 4-level MLM needs 4 test accounts (G1→G4); setup in beforeEach hooks
+
+---
+
+## Flow-Specific Testing Patterns
+
+### Auth Flow (LINE OAuth → Dashboard)
+
+| Step                       | Expected Behavior                           | Verification                  |
+| -------------------------- | ------------------------------------------- | ----------------------------- |
+| 1. Click "Login with LINE" | Redirect to LINE auth page                  | URL contains `access.line.me` |
+| 2. Authorize in LINE       | Redirect to callback                        | URL contains `/auth/callback` |
+| 3. Callback processing     | Create PocketBase user, wallet auto-created | `pb.authStore.valid === true` |
+| 4. Dashboard load          | Show user balance, referral chain           | UI displays non-zero elements |
+
+**Testing Approach:**
+
+- **Mock OAuth**: Use Cypress `cy.origin()` pattern for multi-domain testing (Auth0 pattern applies to LINE)
+- **Session Injection**: For most tests, inject authenticated session directly via `pb.authStore.save(token, model)`
+- **Wallet Auto-Creation**: Verify `user.wallet_address` exists in PocketBase after auth
+
+```typescript
+// Pattern: Inject auth session for faster tests
+Cypress.Commands.add("loginToApp", () => {
+  cy.request("POST", "/api/auth/line-test", {
+    test_user_id: "TEST_USER_001",
+  }).then((response) => {
+    window.localStorage.setItem("pocketbase_auth", JSON.stringify(response.body))
+  })
+})
+```
+
+### Mint Flow (Buy Egg → NFT appears in /eggs)
+
+| Step                     | Expected Behavior                             | Verification                                             |
+| ------------------------ | --------------------------------------------- | -------------------------------------------------------- |
+| 1. User clicks "Buy Egg" | Dialog opens, shows 25 USDT price             | UI renders price correctly                               |
+| 2. USDT approval         | If insufficient allowance, prompt approval tx | `allowance < 25 USDT` triggers approve flow              |
+| 3. Approval transaction  | tx.hash returned, wait for confirmation       | `await approvalTx.wait(1)`                               |
+| 4. Mint transaction      | `mintEggNFT()` called, tx.hash returned       | Capture tx hash from contract call                       |
+| 5. Transaction confirmed | Egg NFT minted + 2 Food NFTs bonus            | Parse `EggMinted` event from receipt                     |
+| 6. UI update             | Egg appears in /eggs page                     | Poll PocketBase `eggs` collection OR wait for UI element |
+
+**Critical Timing Pattern:**
+
+```typescript
+// Pattern: Wait for transaction + verify on-chain
+const mintTx = await contract.mintEggNFT(userAddress, referrerAddress)
+const receipt = await mintTx.wait(1) // 1 confirmation
+
+// Parse events
+const eggMintedEvent = receipt.logs.find((log) => log.fragment?.name === "EggMinted")
+const eggId = eggMintedEvent.args.egg_id
+
+// Verify on-chain
+const eggOwner = await contract.ownerOf(eggId)
+expect(eggOwner).toBe(userAddress)
+
+// Verify UI (with retry)
+await page.waitForSelector(`[data-testid="egg-card-${eggId}"]`, { timeout: 30000 })
+```
+
+### Feed Flow (Buy Food → Feed Egg → Progress)
+
+| Step                    | Expected Behavior                         | Verification                          |
+| ----------------------- | ----------------------------------------- | ------------------------------------- |
+| 1. Buy Food NFT         | `mintFoodNFT(quantity)` called            | Verify food_count in user inventory   |
+| 2. Select Egg + Food    | UI shows eligible eggs and available food | UI renders correct lists              |
+| 3. Feed transaction     | `feedEgg(eggId, foodIds[])` called        | tx.wait() for confirmation            |
+| 4. Food burned          | Food NFTs marked as consumed              | `food.is_consumed === true`           |
+| 5. Egg progress updated | `egg.food_count += len(foodIds)`          | Query contract: `getFoodCount(eggId)` |
+
+**Key Test Pattern:**
+
+```typescript
+// Pattern: Verify food consumption (burn)
+const beforeFoodCount = await contract.getFoodCount(eggId)
+const feedTx = await contract.feedEgg(eggId, [foodId1, foodId2])
+await feedTx.wait(1)
+const afterFoodCount = await contract.getFoodCount(eggId)
+expect(afterFoodCount).toBe(beforeFoodCount + 2)
+
+// Verify food burned
+const foodOwner = await foodContract.ownerOf(foodId1)
+expect(foodOwner).toBe("0x000...") // Burned = transferred to null address
+```
+
+### Hatch Flow (Feed 10 → Hatch → Animal NFT minted)
+
+| Step                     | Expected Behavior                    | Verification                                |
+| ------------------------ | ------------------------------------ | ------------------------------------------- |
+| 1. Check eligibility     | `egg.food_count >= 10`               | Contract query OR UI shows "Ready to Hatch" |
+| 2. Click Hatch           | `hatchEgg(eggId)` called             | tx.hash returned                            |
+| 3. Transaction confirmed | Animal NFT minted with random rarity | Parse `EggHatched` event                    |
+| 4. Egg marked hatched    | `egg.is_hatched === true`            | Contract query                              |
+| 5. Animal appears        | New Animal NFT in user inventory     | UI shows animal card                        |
+
+**Rarity Verification Pattern:**
+
+```typescript
+// Pattern: Parse hatch event for rarity
+const hatchTx = await contract.hatchEgg(eggId)
+const receipt = await hatchTx.wait(1)
+
+const hatchEvent = receipt.logs.find((log) => log.fragment?.name === "EggHatched")
+const { egg_id, animal_id, rarity, species } = hatchEvent.args
+
+// Verify egg marked as hatched
+const eggProps = await contract.getEggProperties(eggId)
+expect(eggProps.is_hatched).toBe(true)
+
+// Verify animal ownership
+const animalOwner = await animalContract.ownerOf(animal_id)
+expect(animalOwner).toBe(userAddress)
+
+// Verify rarity in valid range
+expect(rarity).toBeWithin(0, 3) // Common=0 to Legendary=3
+```
+
+### Marketplace Flow (List → Buy → Transfer)
+
+| Step                     | Expected Behavior                        | Verification                        |
+| ------------------------ | ---------------------------------------- | ----------------------------------- |
+| 1. Approve NFT           | `setApprovalForAll(marketplace, true)`   | tx.wait() for confirmation          |
+| 2. Create listing        | `createListing(tokenId, nftType, price)` | Parse `ListingCreated` event        |
+| 3. Listing appears       | NFT shows in marketplace with price      | UI query OR PocketBase query        |
+| 4. Buyer purchases       | `buyNFT(listingId)` by different user    | Must have USDT approved             |
+| 5. Ownership transferred | NFT now owned by buyer                   | `ownerOf(tokenId) === buyerAddress` |
+| 6. Seller receives USDT  | Balance updated (minus fees)             | Verify seller USDT balance change   |
+
+**Multi-Account Pattern:**
+
+```typescript
+// Pattern: Two accounts for marketplace
+const sellerSigner = await provider.getSigner(0) // Anvil account 0
+const buyerSigner = await provider.getSigner(1)  // Anvil account 1
+
+// Seller lists
+const listingTx = await marketplace.connect(sellerSigner).createListing(...)
+await listingTx.wait(1)
+const listingId = parseListingCreatedEvent(listingTx.receipt)
+
+// Buyer purchases (with USDT approval first)
+await usdt.connect(buyerSigner).approve(marketplaceAddress, price)
+const buyTx = await marketplace.connect(buyerSigner).buyNFT(listingId)
+await buyTx.wait(1)
+
+// Verify ownership transfer
+const newOwner = await nftContract.ownerOf(tokenId)
+const buyerAddress = await buyerSigner.getAddress()
+expect(newOwner).toBe(buyerAddress)
+```
+
+### Commission Flow (Referral → Earn → Claim)
+
+| Step                      | Expected Behavior          | Verification                        |
+| ------------------------- | -------------------------- | ----------------------------------- |
+| 1. User registers         | With referrer G1 address   | `user.referral_chain[0] = G1`       |
+| 2. User buys Egg          | Commission triggers        | `distributeEggCommission` called    |
+| 3. G1 receives 20%        | USDT credited to G1 wallet | Verify G1 USDT balance increase     |
+| 4. G2-G4 receive 10% each | Commission cascades up     | Verify G2, G3, G4 balances          |
+| 5. User claims            | Withdraw commission        | USDT transferred to external wallet |
+
+**Commission Verification Pattern:**
+
+```typescript
+// Pattern: Verify commission distribution
+const g1BeforeBalance = await usdt.balanceOf(g1Address)
+const g2BeforeBalance = await usdt.balanceOf(g2Address)
+
+// Trigger purchase
+const mintTx = await eggContract.connect(userSigner).mintEggNFT(userAddress, g1Address)
+await mintTx.wait(1)
+
+// Verify commission (25 USDT * 20% = 5 USDT to G1)
+const g1AfterBalance = await usdt.balanceOf(g1Address)
+const expectedG1Commission = parseUnits("5", 18) // 20% of 25 USDT
+expect(g1AfterBalance - g1BeforeBalance).toBe(expectedG1Commission)
+
+// G2 receives 10% = 2.5 USDT
+const g2AfterBalance = await usdt.balanceOf(g2Address)
+const expectedG2Commission = parseUnits("2.5", 18)
+expect(g2AfterBalance - g2BeforeBalance).toBe(expectedG2Commission)
+```
+
+### Tier Flow (Consume Food → Threshold → Badge)
+
+| Step                           | Expected Behavior                     | Verification                              |
+| ------------------------------ | ------------------------------------- | ----------------------------------------- |
+| 1. Track lifetime food         | `user.lifetime_food_items` increments | PocketBase record update                  |
+| 2. Hit threshold (10/100/1000) | Tier upgrade triggered                | Check threshold in contract OR PocketBase |
+| 3. Badge minted                | TierBadge NFT (soulbound ERC-5192)    | Verify badge ownership, locked=true       |
+| 4. USDT reward claimed         | Tier reward credited                  | Verify USDT balance                       |
+
+---
+
+## MVP Definition for E2E Testing Framework
+
+### Phase 1: Core Infrastructure (Must Have)
+
+- [ ] **Transaction Wait Helper** — `waitForTransaction(tx, confirmations=1)` utility
+- [ ] **On-Chain Verification Helper** — `verifyNFTOwnership(contract, tokenId, expectedOwner)`
+- [ ] **Event Parser Helper** — `parseEvent(receipt, eventName)` utility
+- [ ] **Test Account Setup** — 5 deterministic Anvil accounts for multi-user tests
+- [ ] **Timeout Configuration** — `test.setTimeout(120000)` for blockchain tests
+
+### Phase 2: Flow Coverage (Should Have)
+
+- [ ] **Auth Flow Test** — Mock LINE OAuth, verify wallet auto-creation
+- [ ] **Mint Flow Test** — Buy Egg, verify NFT + Food bonus
+- [ ] **Feed Flow Test** — Feed egg, verify food burn + progress
+- [ ] **Hatch Flow Test** — Hatch ready egg, verify Animal NFT + rarity
+- [ ] **Marketplace Flow Test** — List, buy (different users), verify transfer
+
+### Phase 3: Advanced Patterns (Nice to Have)
+
+- [ ] **Commission Flow Test** — 4-level referral chain verification
+- [ ] **Tier Badge Test** — Threshold trigger, soulbound badge mint
+- [ ] **Forked Mainnet Mode** — Test against real BSC contracts
+- [ ] **Gas Optimization Verification** — Track gas costs across flows
+
+---
+
+## Feature Prioritization Matrix
+
+| Feature                          | User Value (Test Reliability) | Implementation Cost   | Priority |
+| -------------------------------- | ----------------------------- | --------------------- | -------- |
+| Transaction Wait Helper          | HIGH                          | LOW (ethers built-in) | P1       |
+| On-Chain Verification Helper     | HIGH                          | LOW                   | P1       |
+| Event Parser Helper              | HIGH                          | MEDIUM                | P1       |
+| Test Account Setup (Anvil)       | HIGH                          | MEDIUM                | P1       |
+| Auth Flow Mock                   | HIGH                          | MEDIUM                | P1       |
+| Mint Flow Test                   | HIGH                          | MEDIUM                | P1       |
+| Feed Flow Test                   | HIGH                          | MEDIUM                | P1       |
+| Hatch Flow Test                  | HIGH                          | MEDIUM                | P1       |
+| Marketplace Flow (Multi-Account) | HIGH                          | HIGH                  | P2       |
+| Commission Verification          | MEDIUM                        | HIGH                  | P2       |
+| Forked Mainnet Mode              | MEDIUM                        | HIGH                  | P3       |
+| Tier Badge Test                  | MEDIUM                        | MEDIUM                | P3       |
+
+---
+
+## Transaction Timing Patterns
+
+### Timing Constants for BSC Testnet
+
+| Operation            | Expected Duration | Timeout Setting |
+| -------------------- | ----------------- | --------------- |
+| USDT Approval        | 3-10 seconds      | 30 seconds      |
+| NFT Mint (Egg)       | 5-15 seconds      | 45 seconds      |
+| NFT Transfer         | 3-10 seconds      | 30 seconds      |
+| Marketplace Purchase | 5-15 seconds      | 45 seconds      |
+| Hatch (includes VRF) | 10-30 seconds     | 60 seconds      |
+| Breed                | 5-15 seconds      | 45 seconds      |
+
+### Wait Pattern (ethers.js)
+
+```typescript
+// Pattern: Wait with confirmation count
+export async function waitForTransaction(
+  tx: ContractTransactionResponse,
+  confirmations: number = 1
+): Promise<TransactionReceipt> {
+  const receipt = await tx.wait(confirmations)
+  if (receipt?.status !== 1) {
+    throw new Error(`Transaction failed: ${tx.hash}`)
+  }
+  return receipt
+}
+```
+
+### Poll Pattern (UI sync after blockchain)
+
+```typescript
+// Pattern: Poll PocketBase until synced
+export async function pollUntilSynced(
+  collection: string,
+  recordId: string,
+  predicate: (record: Record) => boolean,
+  maxAttempts: number = 10,
+  intervalMs: number = 2000
+): Promise<Record> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const record = await pb.collection(collection).getOne(recordId)
+    if (predicate(record)) return record
+    await new Promise((resolve) => setTimeout(resolve, intervalMs))
+  }
+  throw new Error(`Sync timeout: ${collection}/${recordId}`)
+}
 ```
 
 ---
 
-## Complexity Estimates
+## Test Data Requirements
 
-| Feature                        | Engineering Effort | Risk   | Dependencies                                  |
-| ------------------------------ | ------------------ | ------ | --------------------------------------------- |
-| **Real contract interactions** | 3-5 days           | Medium | Contract deployment, ABI availability         |
-| **Track deposit hook**         | 2-3 days           | Low    | USDT contract address, polling infrastructure |
-| **Mobile responsive**          | 2-4 days           | Low    | Design approval for mobile layouts            |
-| **Feed feature**               | 1-2 days           | Low    | Contract interactions completed               |
-| **Play feature (daily)**       | 1 day              | Low    | None                                          |
-| **Pull-to-refresh**            | 0.5 day            | Low    | Existing polling hook                         |
+### Required Test Data per Flow
+
+| Flow        | Required Data                 | Setup Method                                 |
+| ----------- | ----------------------------- | -------------------------------------------- |
+| Auth        | Test LINE user                | Create in PocketBase with mock LINE ID       |
+| Mint        | 25+ USDT in wallet            | Anvil: setBalance, or faucet on testnet      |
+| Feed        | Egg NFT + Food NFTs           | Mint Egg (gets 2 food), mint additional food |
+| Hatch       | Egg with food_count=10        | Feed egg 10 times in beforeEach              |
+| Marketplace | Listed NFT + buyer USDT       | Create listing, fund buyer account           |
+| Commission  | 4-user referral chain         | Create G1→G4 users, link referral_chain      |
+| Tier        | User with lifetime_food_items | Accumulate food consumption records          |
+
+### Anvil Account Setup
+
+```typescript
+// Pattern: Deterministic test accounts
+const ANVIL_ACCOUNTS = [
+  { address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", privateKey: "0xac0974..." }, // Account 0: Admin
+  { address: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8", privateKey: "0x59c6..." }, // Account 1: User A
+  { address: "0x3C44CdDdB6a900fa2b585dd299e03d12FA429", privateKey: "0x5de4..." }, // Account 2: User B (G1)
+  { address: "0x90F79bf6EB2c4f870365E785982E1f101E93b906", privateKey: "0x7c85..." }, // Account 3: User C (G2)
+  { address: "0x15d34AAf54267DB7D7c367839AAf71A00a2C", privateKey: "0x68e9..." }, // Account 4: User D (G3)
+]
+```
 
 ---
 
 ## Sources
 
-- **ethers.js v6 docs** — TransactionResponse, waitForTransaction, estimateGas
-- **vfat-tools GitHub** — Real-world transaction patterns (100+ DeFi implementations)
-- **Bitquery docs** — ERC20 Transfer event polling
-- **Tatum docs** — Deposit tracking webhook patterns
-- **PayzCore docs** — USDT confirmation thresholds by network
-- **NNGroup, UXPin, Medium** — Mobile navigation patterns 2025-2026
-- **Material Design** — Touch target guidelines (48px minimum)
-- **Axie Infinity, CryptoKitties** — NFT game feed mechanics
+- **Wagmi waitForTransactionReceipt**: https://wagmi.sh/core/api/actions/waitForTransactionReceipt — HIGH confidence
+- **Viem Documentation**: https://viem.sh/ — HIGH confidence
+- **Ethers.js Transaction Handling**: https://docs.ethers.org/v6/ — HIGH confidence
+- **Blockscout NFT Verification Guide**: https://www.blog.blockscout.com/minted-nft-not-showing-how-to-verify-onchain/ — HIGH confidence
+- **Synpress GitHub**: https://github.com/synpress-io/synpress — HIGH confidence
+- **DePayFi web3-mock**: https://github.com/DePayFi/web3-mock — HIGH confidence
+- **Auth0 Testing Patterns**: https://auth0.com/blog/testing-auth0-login-with-cypress/ — HIGH confidence (applies to LINE OAuth)
+- **Playwright Timeouts**: https://playwright.dev/docs/test-timeouts — HIGH confidence
+- **7BlockLabs Testing Frameworks**: https://www.7blocklabs.com/blog/blockchain-testing-frameworks-compared-hardhat-foundry-and-more — MEDIUM confidence
+- **Thinksys Blockchain Testing Guide**: https://thinksys.com/blockchain/blockchain-testing/ — MEDIUM confidence
+- **Existing Project Contract Files**: apps/web/lib/contracts/\*.ts — HIGH confidence (verified patterns in use)
 
 ---
 
-**Confidence Assessment:**
+## Confidence Assessment
 
-- **Contract interactions:** HIGH (extensive docs + reference implementations)
-- **Deposit tracking:** HIGH (standard pattern across payment processors)
-- **Mobile navigation:** HIGH (well-documented UX research)
-- **Feed/Play mechanics:** MEDIUM (inferred from similar games, not project-specific)
+| Area                    | Confidence | Reason                                                         |
+| ----------------------- | ---------- | -------------------------------------------------------------- |
+| Transaction Timing      | HIGH       | Official ethers/wagmi docs, patterns verified in existing code |
+| On-Chain Verification   | HIGH       | Blockscout guide, standard ERC-721 patterns                    |
+| Event Parsing           | HIGH       | Existing code in eggNft.ts already parses EggHatched events    |
+| OAuth Testing           | MEDIUM     | Auth0 pattern applies, LINE-specific nuances need validation   |
+| Multi-Account Setup     | HIGH       | Anvil deterministic accounts are standard practice             |
+| Commission Verification | MEDIUM     | MLM-specific; need to verify contract implementation details   |
+| Forked Mainnet          | HIGH       | Anvil/Hardhat fork is standard blockchain testing pattern      |
+
+---
+
+_Feature research for: E2E Flow Testing in NFT/Blockchain Applications_
+_Researched: 2026-04-27_
+_Context: Egg × Food × Animal NFT Marketplace on BSC_

@@ -1,404 +1,205 @@
-# Research Summary — v0.0.7 Security & Quality
+# Project Research Summary: E2E Flow Testing
 
-**Synthesized:** 2026-04-18  
-**Milestone:** Security & Quality (replace mock endpoints, USDT tracking, mobile polish)
-
----
+**Project:** Eggo NFT Marketplace (E2E Flow Testing Milestone)
+**Domain:** Blockchain/NFT Marketplace E2E Testing
+**Researched:** 2026-04-27
+**Confidence:** HIGH
 
 ## Executive Summary
 
-v0.0.7 is a **security-critical milestone** that replaces 4 mock blockchain endpoints in `wallet-api/server.js` with real ethers.js contract calls, implements USDT deposit tracking via event polling, and polishes mobile responsive design (320px-1440px). Research confidence is **HIGH** for contract integration patterns (extensive ethers.js docs + existing wallet infrastructure) and **MEDIUM** for deposit tracking (standard pattern but BSC reorg behavior needs validation).
+E2E testing for blockchain/NFT applications requires fundamentally different patterns than traditional web apps. The critical challenges are **transaction timing**, **on-chain state verification**, **test data isolation**, and **OAuth simulation for static export**. Unlike HTTP APIs where responses are synchronous, blockchain transactions return immediately but confirm asynchronously—tests checking results before confirmation will fail unpredictably.
 
-**Recommended approach:** Implement wallet-api contract layer first (Phase 14) — this blocks all other features. Use polling with `eth_getLogs` (not WebSocket) for deposit tracking to match PocketBase architecture. Mobile gestures should use `@use-gesture/react` (lightweight, unified touch/mouse API). **Critical risks:** private key handling security, transaction finality assumptions, and duplicate deposit tracking — all have well-documented prevention patterns.
+The recommended approach uses **Playwright 1.59.1 + Synpress 4.1.2** for browser automation with wallet integration, **Anvil** (already in Foundry) as the local testnet, and a **Docker Compose test environment** orchestrating PocketBase, wallet-api, and Anvil together. LINE OAuth should be bypassed by creating test users directly in PocketBase and injecting auth state into the browser context—this avoids the rate limits, CAPTCHAs, and network latency of real OAuth flows while still testing authenticated features.
 
-**Timeline estimate:** 3-5 days total (wallet-api: 1-2 days, track-deposit: 1 day, mobile polish: 1-2 days).
-
----
-
-## Stack Additions
-
-| Library/Tool               | Version       | Purpose                                                    | Notes                                                         |
-| -------------------------- | ------------- | ---------------------------------------------------------- | ------------------------------------------------------------- |
-| `@use-gesture/react`       | `^10.3.1`     | Touch gesture handling (swipe-to-refresh, egg card swipes) | 6KB bundle, React hooks pattern, works for both touch + mouse |
-| Contract ABIs              | Manual JSON   | ERC-1155 NFT interface definitions                         | Hardcode minimal ABI in `server.js` to avoid file I/O         |
-| `/contract-addresses.json` | Manual        | Deployed contract addresses by network                     | Network-specific addresses (testnet/mainnet)                  |
-| `ethers.JsonRpcProvider`   | v6 (existing) | BSC RPC connection for contract calls                      | Already installed in `wallet-api/package.json`                |
-| `ethers.Wallet`            | v6 (existing) | Transaction signing with decrypted private keys            | Reuse existing `decryptPrivateKey()` function (AES-256-GCM)   |
-
-**Already Have (Reuse):**
-
-- ✅ `ethers v6` — wallet-api dependency
-- ✅ `decryptPrivateKey()` — lines 31-59 in `server.js`
-- ✅ `MASTER_KEY` pattern — environment variable encryption
-- ✅ Tailwind CSS 4 — responsive breakpoints
-- ✅ TanStack Query — existing 30s polling pattern
-
-**Avoid:**
-
-- ❌ `web3.js` — ethers v6 already installed, smaller bundle
-- ❌ WebSocket subscriptions — PocketBase incompatible, filterId state issues
-- ❌ `react-swipeable` — @use-gesture/react does same + more
+The primary risk is **test flakiness from timing mismatches**—transaction timing race conditions are the #1 source of unreliable blockchain tests. Mitigation requires polling patterns with appropriate timeouts (60-120s for VRF operations, 30-45s for standard transactions) and multi-layer verification (frontend → PocketBase → wallet-api → contract) to catch sync bugs between services.
 
 ---
 
-## Feature Table Stakes
+## Key Findings
 
-### Must-Have (P0 — Blocks Launch)
+### Recommended Stack
 
-1. **Real Contract Interactions** (wallet-api replacement)
-   - Replace 4 mock endpoints: `mint-egg`, `claim-commission`, `mint-food`, `feed-egg`
-   - Gas estimation + 20% buffer to prevent out-of-gas failures
-   - Transaction pending/confirmed states with block explorer links
-   - Error handling that doesn't expose internal errors
+Playwright is the industry standard for E2E testing in 2026, offering 2-4x faster execution than Cypress with cross-browser support (Chromium, Firefox, Safari). Synpress 4.1.2 is the only mature solution for automating MetaMask wallet extension interactions—it extends Playwright with commands like `connectToDapp()`, `confirmTransaction()`, and `addNetwork()` that handle popup flows standard Playwright cannot access. Anvil is already available via Foundry and provides instant block times with configurable gas for local testing.
 
-2. **USDT Deposit Tracking** (track-deposit hook)
-   - Event polling via `eth_getLogs` (every 30-60s)
-   - 12-15 block confirmations before marking as "confirmed"
-   - Duplicate prevention via unique `tx_hash` constraint
-   - Idempotency: track `last_polled_block` to prevent re-polling
+**Core technologies:**
 
-3. **Mobile Responsive Breakpoints**
-   - Bottom tab bar for mobile (<640px)
-   - Touch targets minimum 44×44px (WCAG 2.2)
-   - Safe area insets for iPhone notch (`env(safe-area-inset-bottom)`)
-   - Test matrix: 320px, 375px, 768px, 1024px, 1440px
+- **@playwright/test 1.59.1** — Browser automation, cross-browser testing, multi-tab support — Industry standard, Microsoft-backed, 2-4x faster than Cypress
+- **@synthetixio/synpress 4.1.2** — MetaMask wallet automation — Only mature solution for browser wallet extension automation; built for Playwright
+- **Anvil (Foundry)** — Local Ethereum testnet — Already in project; instant block times; supports mainnet forking; no additional installation
+- **Bun test** — Unit test runner — Already in use via `bun:test`; native and faster than jest/vitest
 
-### Nice-to-Have (P2 — Differentiators)
+**Critical configuration:** Tests must run **sequentially (`workers: 1`)** because Synpress manages a single MetaMask instance that cannot be parallelized across tests.
 
-1. **Feed Feature Completion**
-   - Wire existing UI button (`apps/web/app/eggs/page.tsx:89`) to real contract call
-   - Show feeding progress (X/10 food consumed)
-   - Hatch animation when `food_count >= 10`
+### Expected Features
 
-2. **Play Feature (Simple)**
-   - Daily check-in for Food NFT reward (off-chain, database only)
-   - Skip complex mini-games for v0.0.7
+Blockchain E2E testing has non-negotiable requirements that differ from traditional web testing. Users (developers) expect reliable tests that pass consistently across environments.
 
-3. **Pull-to-Refresh on Egg List**
-   - Reuse existing 30s polling pattern
-   - Visual feedback on refresh (loading indicator)
+**Must have (table stakes):**
 
-### Anti-Features (Explicit NO)
+- **Transaction Confirmation Wait** — Blockchain operations are async; `tx.wait(1)` or `waitForTransactionReceipt()` required before assertions
+- **On-Chain State Verification** — Trust comes from blockchain; verify `ownerOf(tokenId)` directly, not just PocketBase records
+- **Event Parsing** — Mint/transfer outcomes are in events, not return values; parse `EggMinted`, `EggHatched` events from receipt logs
+- **Test Account Isolation** — Each test needs clean wallet state; use Anvil's deterministic accounts or create test users per test
+- **Extended Timeouts** — Blockchain ops take 30-120 seconds; `test.setTimeout(120000)` for VRF operations
 
-- ❌ Auto-retry failed transactions — let user manually retry
-- ❌ Hiding gas fees from users — show estimated cost in USDT
-- ❌ Gesture-only navigation — always provide button alternative
-- ❌ Hardcoded gas limits — use `estimateGas()` + 20% buffer
-- ❌ Complex play mini-games — focus on core loop (Feed → Hatch → Sell)
+**Should have (competitive):**
 
----
+- **Multi-Account Setup** — Marketplace buy/sell requires 2+ accounts; commission verification needs 4-level referral chain (G1→G4)
+- **Forked Mainnet Testing** — Test against real BSC contract state with Anvil fork without gas costs
+- **LINE OAuth Mock** — Inject PocketBase auth directly; bypass external OAuth for speed and reliability
 
-## Watch Out For
+**Defer (v2+):**
 
-### P0 - Security Critical (Blocks Launch)
+- **Real 0xl3 testnet testing** — Pre-deployment validation only; too slow and rate-limited for CI
+- **Gas optimization verification** — Track gas costs across flows; useful but not essential for MVP
 
-| Pitfall                              | Consequence                                | Prevention                                                                         | Phase |
-| ------------------------------------ | ------------------------------------------ | ---------------------------------------------------------------------------------- | ----- |
-| **Private key logging**              | Complete wallet compromise                 | Never log `privateKey`, `signer`, `wallet` objects — log only `address`, `tx.hash` | 14    |
-| **Transaction finality assumptions** | Users see funds that disappear after reorg | Wait 12+ confirmations on BSC before updating UI/balance                           | 14    |
-| **Duplicate deposit tracking**       | Users get free USDT (economy inflation)    | Unique constraint on `tx_hash`, idempotency check before creating record           | 15    |
-| **Chain reorganization**             | Tracked deposits that never occurred       | Store `block_hash` for each event, verify parent hash continuity                   | 15    |
+### Architecture Approach
 
-### P1 - Quality Issues (Technical Debt)
+The recommended architecture places Playwright tests in a dedicated `tests/e2e/` directory with fixtures for auth, blockchain, and PocketBase state. The critical pattern is **Auth Bypass via API Injection**—create test users directly in PocketBase via admin API, generate auth tokens, and inject them into browser cookies. This bypasses LINE OAuth entirely while still testing authenticated flows.
 
-| Pitfall                                | Consequence                              | Prevention                                                                                 | Phase |
-| -------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------ | ----- |
-| **Missing events due to RPC failures** | Lost user funds (not tracked)            | Retry with exponential backoff (1s, 2s, 4s), adaptive chunking for large ranges            | 15    |
-| **Untested mobile breakpoints**        | Broken layouts on edge-case devices      | Test matrix: 320px, 375px, 768px, 1024px, 1440px (not just common sizes)                   | 16    |
-| **Image scaling failures**             | Horizontal scroll, broken layouts        | `max-width: 100%`, Next.js Image component with `sizes` prop                               | 16    |
-| **iOS input zoom**                     | Screen zooms unexpectedly on input focus | Font-size minimum 16px on all inputs (use `transform: scale()` if visually smaller needed) | 16    |
+**Major components:**
 
-### P2 - Feature Exploits (Nice-to-Have)
+1. **Auth Fixture** (`tests/e2e/fixtures/auth.fixture.ts`) — Creates test users in PocketBase, injects session state into browser context, cleans up after tests
+2. **Blockchain Fixture** (`tests/e2e/fixtures/blockchain.fixture.ts`) — Forks/connects to Anvil, manages deterministic test accounts, deploys mock VRF coordinator
+3. **Docker Compose Environment** (`docker-compose.e2e.yml`) — Orchestrates PocketBase, wallet-api, Anvil, and frontend with health checks and proper startup ordering
+4. **Flow Tests** (`tests/e2e/flows/*.spec.ts`) — User journey tests for Auth, Mint, Feed, Hatch, Marketplace, Commission, Tier flows
 
-| Pitfall                           | Consequence                                  | Prevention                                                                                          | Phase |
-| --------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------- | ----- |
-| **Feed economy exploits**         | Free hatches (economy inflation)             | Database transaction for atomic check-and-update, verify ownership of ALL food items                | 17    |
-| **Race condition on consumption** | Same food NFT consumed multiple times        | Unique constraint on `(food_id, consumed)` where `consumed=true`, optimistic locking                | 17    |
-| **Missing feed validation**       | Invalid blockchain transactions (wasted gas) | Verify egg not hatched, user owns egg, user owns all food, food not consumed, won't exceed 10 limit | 17    |
+**Multi-layer verification pattern:** For each transaction flow, verify state at each layer:
+
+- Frontend: UI elements visible (`page.getByRole()`, `expect(locator).toBeVisible()`)
+- PocketBase: Records created/updated (`request.get()` to collection API)
+- wallet-api: Endpoint called successfully (`request.post()` check `success: true`)
+- Contract: State change confirmed (RPC `eth_call` or contract read methods)
+
+### Critical Pitfalls
+
+**Top 5 pitfalls with prevention strategies:**
+
+1. **Transaction Timing Race Conditions** — Tests check blockchain results immediately after API call, before confirmation. Prevention: Use polling patterns with timeouts matching blockchain timing (BSC ~3s/block). NEVER use hardcoded `sleep()` delays.
+
+2. **Shared On-Chain State Killing Parallel Testing** — Tests running against same blockchain share wallet addresses and contract state. Prevention: Use Anvil local fork per test OR run tests sequentially with state reset between each.
+
+3. **Gas Sponsorship Wallet Exhaustion** — Platform relayer wallet pays gas for all operations; runs out of BNB during test suites. Prevention: Monitor relayer balance in `beforeAll`, use Anvil fork with `setBalance()` to fund unlimited test gas.
+
+4. **VRF Fulfillment Timeout** — Hatch flow requires Chainlink VRF randomness; real VRF takes 30-60 seconds. Prevention: Deploy `VRFCoordinatorV2Mock` in test environment for deterministic, instant fulfillment.
+
+5. **LINE OAuth Cannot Be Mocked in Static Export** — Static export has no server-side routes to intercept OAuth; real LINE calls required. Prevention: Create test users directly in PocketBase, inject auth token via browser context—bypass OAuth UI entirely.
 
 ---
 
-## Architecture Reminders
+## Implications for Roadmap
 
-### Integration Pattern: Frontend → PocketBase → Wallet-API → Blockchain → Database
+Based on research, suggested phase structure addresses dependencies and mitigates pitfalls progressively:
 
-```
-┌─────────────────────┐
-│  User taps "Feed"   │
-│  button in UI       │
-└─────────────────────┘
-            │
-            ▼
-┌─────────────────────┐
-│  Frontend           │
-│  (apps/web/app/    │
-│   eggs/page.tsx)   │
-└─────────────────────┘
-            │
-            ▼
-┌─────────────────────┐
-│  POST /api/v2/      │
-│  feed-egg           │
-│  (PocketBase hook)  │
-└─────────────────────┘
-            │
-            ▼
-┌─────────────────────┐
-│  16-feed-egg.pb.js  │
-│  - Verify ownership │
-│  - Validate inputs  │
-│  - Call wallet-api  │
-└─────────────────────┘
-            │
-            ▼
-┌─────────────────────┐
-│  Wallet API         │
-│  (POST /api/wallet/ │
-│   feed-egg)         │
-│  - Decrypt key      │
-│  - Create signer    │
-└─────────────────────┘
-            │
-            ▼
-┌─────────────────────┐
-│  Smart Contract     │
-│  (FoodNFT + EggNFT) │
-└─────────────────────┘
-            │
-            ▼
-┌─────────────────────┐
-│  Hook updates DB    │
-│  - egg_nfts.food_count++ │
-│  - food_nfts.consumed=true │
-└─────────────────────┘
-```
+### Phase 1: Test Infrastructure Setup
 
-### Build Order (Critical Dependencies)
+**Rationale:** Infrastructure is the foundation—without proper test environment, fixtures, and helpers, all subsequent tests will be flaky. Addresses the #1 pitfall (timing race conditions) by establishing polling patterns early.
+**Delivers:** Playwright config, Docker Compose environment, auth/blockchain fixtures, transaction wait helpers, test account setup
+**Addresses:** Must-have features: Transaction Wait Helper, On-Chain Verification Helper, Test Account Isolation, Timeout Configuration
+**Avoids:** Pitfalls 1, 2, 3, 5, 6, 7 (timing, state isolation, gas exhaustion, OAuth mock, RPC rate limiting, contract addresses)
 
-```
-Phase 14: Wallet-API Contract Layer (FOUNDATION — blocks all others)
-    ↓
-Phase 15: Track-Deposit Infrastructure (parallel with 16)
-    ↓
-Phase 16: Feed Feature (depends on 14)
-    ↓
-Phase 17: Play Feature (need design decision)
+### Phase 2: Auth + Mint Flow Tests
 
-Phase 18: Mobile Polish (parallel with any phase)
-```
+**Rationale:** Auth is prerequisite for all authenticated flows; Mint is simplest transaction flow to validate infrastructure. Together they prove the end-to-end testing framework works.
+**Delivers:** Auth flow test (LINE OAuth bypass verification), Mint flow test (buy egg → verify NFT ownership)
+**Uses:** Playwright, Synpress (optional for real wallet), Anvil, auth fixture
+**Implements:** Auth fixture pattern, multi-layer verification (frontend → PB → contract)
 
-### Environment Variables to Add
+### Phase 3: Feed + Hatch Flow Tests
 
-```bash
-# wallet-api/.env
-BSC_RPC_URL="https://bsc-testnet-rpc.publicnode.com"  # Testnet
-BSC_MAINNET_RPC_URL="https://bsc-dataseed.binance.org"  # Mainnet
+**Rationale:** Feed flow tests food consumption logic; Hatch introduces VRF complexity. Sequential because Hatch depends on Feed completion (egg must have 10 food).
+**Delivers:** Feed flow test, Hatch flow test with VRF mock, food burn verification, rarity distribution testing
+**Uses:** Anvil VRF mock deployment, polling patterns for async VRF fulfillment
+**Avoids:** Pitfall 9 (VRF mock complexity), Pitfall 8 (ownership timing)
 
-# Contract addresses (testnet)
-EGG_NFT_ADDRESS="0x..."
-FOOD_NFT_ADDRESS="0x..."
-ANIMAL_NFT_ADDRESS="0x..."
-COMMISSION_DISTRIBUTION_ADDRESS="0x..."
-MARKETPLACE_ADDRESS="0x..."
+### Phase 4: Marketplace Flow Tests
 
-# Security (NEVER commit)
-WALLET_MASTER_KEY="<64-char-hex-from-openssl-rand-hex-32>"
-```
+**Rationale:** Marketplace requires multi-account setup (seller + buyer)—more complex than single-user flows. Tests listing creation, approval, purchase, and ownership transfer.
+**Delivers:** Marketplace flow test with 2 accounts, USDT approval handling, listing/purchase verification
+**Uses:** Anvil multi-account setup, USDT contract mock
+**Avoids:** Pitfall 13 (USDT approval race condition), tests commission triggers
 
-### Security Patterns (Non-Negotiable)
+### Phase 5: Commission + Tier Flow Tests
 
-1. **Never expose private keys** — key exists only in memory during contract call
-2. **Use authenticated endpoints only** — `$apis.requireAuth(e)` in all hooks
-3. **Validate ownership before contract calls** — verify user owns egg/food before calling wallet-api
-4. **Idempotent operations** — check existence before creating deposit records
+**Rationale:** Most complex flows—Commission needs 4-level referral chain, Tier needs accumulated lifetime stats. Deferred until simpler flows prove infrastructure stability.
+**Delivers:** Commission distribution verification, 4-user referral chain setup, Tier badge minting test
+**Uses:** PocketBase referral_chain field mocking, multi-account fixture
+**Avoids:** Pitfall 10 (commission timing mismatch), verifies MLM logic
 
----
+### Phase Ordering Rationale
 
-## Open Questions
-
-| Question                                                                     | Impact                                                       | Decision Needed By |
-| ---------------------------------------------------------------------------- | ------------------------------------------------------------ | ------------------ |
-| **Play feature mechanics** — What is "play"?                                 | Determines if on-chain contract or off-chain database update | Phase 17 planning  |
-| **Contract deployment status** — Are contracts deployed? What are addresses? | Blocks wallet-api implementation (need actual addresses)     | Phase 14 planning  |
-| **RPC endpoint selection** — Which BSC RPC provider? Rate limits?            | Affects polling frequency, error handling strategy           | Phase 14 planning  |
-| **Deposit polling interval** — 30s vs 60s vs adaptive?                       | Trade-off between freshness vs RPC cost                      | Phase 15 planning  |
-| **USDT contract address** — Testnet vs mainnet address?                      | Different addresses per network                              | Phase 15 planning  |
-
----
-
-## Roadmap Recommendations
-
-### Suggested Phase Structure
-
-Based on research synthesis, recommend **5 phases** for v0.0.7:
-
-#### Phase 14: Wallet-API Contract Integration (P0 — Foundation)
-
-**Rationale:** Blocks all other features. Mock endpoints are security liability.
-
-**Delivers:**
-
-- Real ethers.js contract calls for mint-egg, claim-commission, mint-food, feed-egg
-- Private key decryption flow (AES-256-GCM)
-- Gas estimation + error handling
-- Block explorer links in UI
-
-**Features from FEATURES.md:** Real contract interactions, gas estimation, pending/confirmed states
-
-**Pitfalls to avoid:** Private key logging (log only address/hash), insufficient confirmations (wait 12+ blocks), hardcoded gas limits (use estimateGas + 20%)
-
-**Research needed:** ❌ No — standard ethers.js patterns, well-documented
-
----
-
-#### Phase 15: USDT Deposit Tracking (P0 — Security)
-
-**Rationale:** Critical for production economy. Prevents lost deposits, duplicate tracking.
-
-**Delivers:**
-
-- `eth_getLogs` polling service (every 30s)
-- 12-block confirmation wait
-- Unique constraint on `tx_hash`
-- `last_polled_block` tracking for idempotency
-
-**Features from FEATURES.md:** Event polling, duplicate detection, user notifications
-
-**Pitfalls to avoid:** Duplicate tracking (unique DB constraint), chain reorgs (store block_hash), missing events (retry with backoff)
-
-**Research needed:** ⚠️ Maybe — BSC reorg frequency needs validation during planning
-
----
-
-#### Phase 16: Mobile Responsive Polish (P1 — Quality)
-
-**Rationale:** Production users on mobile devices. Can run parallel with Phase 14.
-
-**Delivers:**
-
-- Bottom tab bar for mobile (<640px)
-- Touch targets 44×44px minimum
-- Safe area insets for iPhone
-- Test matrix: 320px-1440px
-
-**Features from FEATURES.md:** Responsive breakpoints, touch targets, safe area insets
-
-**Pitfalls to avoid:** Untested breakpoints (test 320px, 375px, 768px, 1024px, 1440px), image scaling failures (max-width: 100%), iOS input zoom (16px minimum font)
-
-**Research needed:** ❌ No — standard responsive patterns, well-documented
-
----
-
-#### Phase 17: Feed Feature (P1 — Core Loop)
-
-**Rationale:** Depends on Phase 14 (wallet-api contract calls). Core gameplay mechanic.
-
-**Delivers:**
-
-- Wire Feed button to contract call
-- Food NFT picker UI
-- Progress display (X/10 food consumed)
-- Hatch notification when complete
-
-**Features from FEATURES.md:** Feed mechanic, progress toward evolution, rarity bonus
-
-**Pitfalls to avoid:** Race conditions (DB transaction for atomic update), missing validation (verify egg not hatched, user owns all food), economy exploits (optimistic locking)
-
-**Research needed:** ❌ No — standard database ACID patterns
-
----
-
-#### Phase 18: Play Feature (P2 — Nice-to-Have)
-
-**Rationale:** Deferred pending game design decision. Can skip for MVP if needed.
-
-**Delivers:** (TBD based on design decision)
-
-- Option A: Daily check-in (off-chain, database only)
-- Option B: Simple mini-game (tap/click rewards)
-- Option C: Social interaction (show egg to friends)
-
-**Features from FEATURES.md:** Daily check-in, social interaction
-
-**Pitfalls to avoid:** Complex mini-games (defer to v2), on-chain state (prefer off-chain database)
-
-**Research needed:** ⚠️ Yes — game mechanics undefined, needs design spec
-
----
+- **Infrastructure first** (Phase 1): Without proper helpers and environment, all tests inherit timing and isolation problems
+- **Auth before authenticated flows** (Phase 2): Every subsequent flow requires authenticated session; auth fixture must be proven first
+- **Feed before Hatch** (Phase 3): Hatch depends on Feed—cannot hatch without feeding; natural dependency
+- **Single-user before multi-user** (Phase 2-3 before 4-5): Multi-account setup is more complex; prove single-user works first
+- **Core flows before advanced** (Phases 1-3 before 4-5): Mint/Feed/Hatch are table stakes; Marketplace/Commission are competitive features
 
 ### Research Flags
 
-| Phase    | Needs `/gsd-research-phase`? | Reason                                               |
-| -------- | ---------------------------- | ---------------------------------------------------- |
-| Phase 14 | ❌ No                        | Standard ethers.js patterns, extensive docs          |
-| Phase 15 | ⚠️ Maybe                     | BSC reorg behavior needs validation, RPC rate limits |
-| Phase 16 | ❌ No                        | Standard responsive patterns, well-documented        |
-| Phase 17 | ❌ No                        | Standard database ACID, existing hook code           |
-| Phase 18 | ✅ Yes                       | Game mechanics undefined, needs design research      |
+Phases likely needing deeper research during planning:
+
+- **Phase 3:** VRF mock deployment and configuration—Chainlink VRF coordinator mock setup needs careful implementation; may need `/gsd-research-phase` for VRFCoordinatorV2Mock patterns
+- **Phase 5:** Commission contract integration details—MLM distribution logic is contract-specific; need to verify actual contract implementation for test assertions
+
+Phases with standard patterns (skip research-phase):
+
+- **Phase 1:** Well-documented Playwright/Docker patterns; auth fixture follows standard session injection patterns
+- **Phase 2:** Mint flow testing patterns documented in existing contract tests; Synpress patterns from official docs
+- **Phase 4:** Marketplace patterns similar to standard NFT transfer testing; multi-account setup follows Anvil deterministic accounts pattern
 
 ---
 
 ## Confidence Assessment
 
-| Area             | Confidence | Notes                                                                                                                           |
-| ---------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **Stack**        | HIGH       | ethers.js v6 docs (Context7), existing wallet infrastructure, standard patterns                                                 |
-| **Features**     | MEDIUM     | Contract interactions (HIGH), deposit tracking (HIGH), Feed/Play mechanics (MEDIUM — inferred from similar games)               |
-| **Architecture** | HIGH       | Existing code analyzed, integration patterns clear, hook code reviewed                                                          |
-| **Pitfalls**     | MEDIUM     | Security patterns (HIGH from OWASP), BSC reorg behavior (MEDIUM — needs production validation), mobile testing (HIGH from WCAG) |
+| Area         | Confidence | Notes                                                                                                                                                                                                                                  |
+| ------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stack        | HIGH       | Playwright/Synpress verified from official docs (playwright.dev, Synthetixio/synpress); Cyfrin Academy course confirms patterns; version compatibility checked                                                                         |
+| Features     | HIGH       | Transaction timing from ethers/wagmi/viem official docs; on-chain verification from Blockscout guide; multi-account setup from Anvil standard practice; timing constants from BSC block times                                          |
+| Architecture | HIGH       | Playwright mock patterns from official docs; Docker E2E patterns from established guides; auth fixture from Currents.dev authentication testing guide; project source code analyzed for existing patterns                              |
+| Pitfalls     | HIGH       | Base OnchainTestKit blog for wallet testing; Ethereum Stack Exchange for gas estimation; Chainlink docs for VRF mock; web3-mock Playwright integration guide; all sources are primary documentation or established community resources |
+
+**Overall confidence:** HIGH
 
 ### Gaps to Address
 
-1. **Contract addresses** — Need deployed contract addresses before Phase 14 can implement
-2. **RPC provider selection** — Need to confirm BSC RPC URL, rate limits, archive node requirements
-3. **Play feature design** — Need game mechanics decision before Phase 18 implementation
-4. **USDT testnet address** — Different address for testnet vs mainnet, need to verify
+Areas requiring validation during implementation:
+
+- **LINE OAuth bypass details:** Pattern is established (Auth0 testing), but LINE-specific OAuth flow details may need adjustment. PocketBase hooks for LINE auth should be verified—test user creation may need specific fields matching LINE OAuth expectations.
+
+- **Contract event parsing specifics:** `EggMinted`, `EggHatched` event structures are documented in existing code (`apps/web/lib/contracts/*.ts`), but event argument names/types should be verified against deployed contract during testing setup.
+
+- **Gas sponsorship flow in tests:** Wallet-api uses relayer for gas sponsorship; need to verify relayer private key setup in test environment and that Anvil fork properly simulates gas sponsorship without real BNB.
+
+- **PocketBase-wallet-api synchronization timing:** Events trigger PocketBase sync after blockchain confirmation; polling interval for PocketBase state sync may need tuning based on actual hook processing speed.
 
 ---
 
 ## Sources
 
-### STACK.md
+### Primary (HIGH confidence)
 
-- Context7: ethers.js v6 docs (websites/ethers_v6)
-- theRpc.io: eth_getLogs best practices
-- ethers.js GitHub #696, #4784: eth_getLogs pitfalls
-- tailwindcss.com/docs: Breakpoint strategy
-- GitHub pmndrs/use-gesture: @use-gesture/react patterns
-- TanStack Query docs: Polling with refetchInterval
+- **Playwright Documentation** — playwright.dev/docs/best-practices, playwright.dev/docs/mock — Test patterns, mock API patterns
+- **Synpress GitHub** — github.com/Synthetixio/synpress — Wallet automation commands, Playwright integration
+- **Wagmi waitForTransactionReceipt** — wagmi.sh/core/api/actions/waitForTransactionReceipt — Transaction timing patterns
+- **Ethers.js v6** — docs.ethers.org/v6/ — Transaction handling, event parsing
+- **Foundry Book** — book.getfoundry.sh/ — Anvil local testnet, forking patterns
+- **Chainlink VRF Docs** — docs.chain.link/vrf/v2/direct-funding/examples/test-locally — VRF mock setup
 
-### FEATURES.md
+### Secondary (MEDIUM confidence)
 
-- ethers.js v6 docs: TransactionResponse, waitForTransaction, estimateGas
-- vfat-tools GitHub: Real-world transaction patterns (100+ DeFi implementations)
-- Bit query docs: ERC-20 Transfer event polling
-- Tatum docs: Deposit tracking webhook patterns
-- PayzCore docs: USDT confirmation thresholds by network
-- NNGroup, UXPin, Medium: Mobile navigation patterns 2025-2026
-- Material Design: Touch target guidelines (48px minimum)
-- Axie Infinity, CryptoKitties: NFT game feed mechanics
+- **Cyfrin Academy** — updraft.cyfrin.io/courses/full-stack-web3-development-crash-course — Synpress + Playwright setup patterns
+- **BugBug.io comparison** — bugbug.io/blog/test-automation-tools/cypress-vs-playwright/ — Performance comparison
+- **Currents.dev Auth Testing** — currents.dev/posts/testing-authentication-with-playwright-the-complete-guide — Authentication bypass patterns
+- **Blockscout NFT Verification** — blog.blockscout.com/minted-nft-not-showing-how-to-verify-onchain/ — On-chain verification patterns
 
-### ARCHITECTURE.md
+### Project Context (HIGH confidence)
 
-- wallet-api/server.js: Current implementation analysis
-- apps/backend/pb_hooks/: Hook patterns (13-mint-egg, 16-feed-egg, 13-track-deposit)
-- apps/web/app/eggs/page.tsx: Frontend egg management UI
-- Project documentation (AGENTS.md, README.md)
-
-### PITFALLS.md
-
-- Context7: Ethers v6 Wallet API, TransactionResponse docs
-- OWASP Smart Contract Security guidelines
-- QuickNode reorg handling docs
-- EventDock idempotency patterns
-- Bitium: "Best On-chain Data Indexing Solutions for dApps in 2026"
-- ChainStack: "Ethereum redundant event listener"
-- WCAG 2.2 guidelines: Target Size (Enhanced)
-- Apple Human Interface Guidelines
-- Zealynx: "Asset Duplication Attack"
-- Mav Levin: "Check-then-Act" vulnerability
+- **apps/web/lib/contracts/\*.ts** — Existing contract interaction patterns, event parsing code
+- **wallet-api/server.js** — Gas sponsorship patterns, transaction handling
+- **contracts/test/\*.t.sol** — Existing Foundry test patterns
+- **apps/web/package.json** — Existing stack (Bun, Testing Library)
 
 ---
 
-**Last Updated:** 2026-04-18  
-**Next Action:** Roadmap planning based on this synthesis (gsd-roadmapper)
+_Research completed: 2026-04-27_
+_Ready for roadmap: yes_

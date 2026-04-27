@@ -1,977 +1,685 @@
-# Architecture Research — v0.0.7 Security & Quality
+# Architecture Research: E2E Testing Integration
 
-**Domain:** Blockchain NFT platform with wallet management
-**Researched:** 2026-04-18
-**Overall confidence:** HIGH
+**Domain:** Multi-service NFT Marketplace with Blockchain
+**Researched:** 2026-04-27
+**Confidence:** HIGH
 
----
+## Existing Architecture Overview
 
-## Executive Summary
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    FRONTEND (Next.js 16 Static Export)                   │
+│                         Cloudflare Pages Hosting                         │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
+│  │  Auth   │  │Dashboard│  │  Eggs   │  │ Market  │  │ Animals │        │
+│  │  Pages  │  │  Pages  │  │  Pages  │  │  Pages  │  │  Pages  │        │
+│  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘        │
+│       │            │            │            │            │              │
+│       └────────────┴────────────┴────────────┴────────────┘              │
+│                           │                                              │
+│   ┌───────────────────────┼───────────────────────────────────┐         │
+│   │           PocketBase Client SDK (pocketbase.js)           │         │
+│   └───────────────────────┬───────────────────────────────────┘         │
+└────────────────────────────┼────────────────────────────────────────────┘
+                             │ HTTP API
+┌────────────────────────────┼────────────────────────────────────────────┐
+│                      POCKETBASE BACKEND (Docker)                         │
+│                       pb.eggoworld.io:8090                               │
+│  ┌───────────────────────┴───────────────────────────────────┐         │
+│  │              Collections + Hooks + OAuth                   │         │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │         │
+│  │  │ users   │  │egg_nfts │  │food_nfts│  │ listings│        │         │
+│  │  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘        │         │
+│  └───────┼────────────┼────────────┼────────────┼─────────────┘         │
+│          │            │            │            │                        │
+│  ┌───────┴────────────┴────────────┴────────────┴───────────────┐       │
+│  │                 PocketBase Hooks (Go/JS)                      │       │
+│  │  - OnRecordCreate: Call wallet-api for mint operations       │       │
+│  │  - OnRecordUpdate: Sync blockchain state                     │       │
+│  │  - LINE OAuth integration                                     │       │
+│  └─────────────────────────────┬────────────────────────────────┘       │
+└────────────────────────────────┼────────────────────────────────────────┘
+                                 │ HTTP API
+┌────────────────────────────────┼────────────────────────────────────────┐
+│                     WALLET-API (Express.js)                              │
+│                        localhost:3001                                    │
+│  ┌─────────────────────────────┴───────────────────────────────────┐   │
+│  │                 Blockchain Operations                            │   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐              │   │
+│  │  │/mint-egg│  │mint-food│  │feed-egg │  │buy-nft  │              │   │
+│  │  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘              │   │
+│  └───────┼────────────┼────────────┼────────────┼────────────────────┘   │
+│          │            │            │            │                        │
+│  ┌───────┴────────────┴────────────┴────────────┴───────────────────┐   │
+│  │  Gas Sponsorship (Relayer Wallet) + AES-256-GCM Key Management   │   │
+│  └──────────────────────────────────┬────────────────────────────────┘   │
+└─────────────────────────────────────┼────────────────────────────────────┘
+                                      │ ethers.js RPC
+┌─────────────────────────────────────┼────────────────────────────────────┐
+│                    SMART CONTRACTS (Foundry)                              │
+│              0xl3 Testnet (Chain ID 7117) / BSC Mainnet                   │
+│  ┌──────────────────────────────────┴────────────────────────────────┐   │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │   │
+│  │  │EggNFT   │  │FoodNFT  │  │AnimalNFT│  │Market   │  │Commission│  │   │
+│  │  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘   │   │
+│  └──────┴───────────┴───────────┴───────────┴───────────┴───────────┘   │   │
+│                                                                         │   │
+│  ┌──────────────────────────────────────────────────────────────────┐   │   │
+│  │          Foundry Test Suite (Anvil Local Testnet)                 │   │   │
+│  │          contracts/test/*.t.sol (Chain ID 31337)                  │   │   │
+│  └──────────────────────────────────────────────────────────────────┘   │   │
+└────────────────────────────────────────────────────────────────────────────┘
 
-Eggo NFT platform uses 3-tier architecture: Next.js frontend (static), PocketBase backend (hooks), and Express wallet-api (contract interactions). For v0.0.7, we're replacing mock blockchain calls with real ethers.js contract interactions.
-
-**Current state:**
-
-- Frontend: Claymorphism UI complete, Feed/Play buttons exist but disconnected
-- Backend: 27 hooks handle business logic, track-deposit hook incomplete
-- Wallet API: 4 endpoints return mock transactions (lines 388-512 in `server.js`)
-
-**Architecture pattern:** Frontend → PocketBase Hook → Wallet API → Blockchain → Database Update
-
----
-
-## Wallet-API Contract Integration
-
-### Current Architecture
-
-**Request/Response Format** (from `server.js` lines 379-512):
-
-```javascript
-// Current mock endpoints (ALL need real implementation):
-POST /api/wallet/mint-egg
-POST /api/wallet/claim-commission
-POST /api/wallet/mint-food
-POST /api/wallet/feed-egg
-
-// Request format:
-{
-  "wallet": "0x...",
-  "daccPublicKey": "daccPublickey_0x...",
-  "pin": "randomPassword123",
-  "referralChain": ["0x...", "0x...", null, null],
-  "eggNftAddress": "0x..."
-}
-
-// Response format:
-{
-  "success": true,
-  "data": {
-    "txHash": "0xMOCK",  // ❌ Currently fake
-    "food_ids": [1,2,3],
-    "status": "pending_blockchain_confirmation"
-  }
-}
+┌────────────────────────────────────────────────────────────────────────────┐
+│                    EXTERNAL SERVICES                                       │
+│  ┌─────────────┐  ┌─────────────────────────────────────────────────┐     │
+│  │ LINE OAuth  │  │ 0xl3 RPC: https://rpc.0xl3.com                  │     │
+│  │ (External)  │  │ BSC RPC: https://bsc-dataseed.binance.org       │     │
+│  └─────────────┘  └─────────────────────────────────────────────────┘     │
+└────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Hook Integration Points** (from `13-mint-egg-nft.pb.js`):
+## Recommended E2E Test Architecture
 
-```javascript
-// PocketBase hook calls wallet-api:
-const response = fetch("http://wallet-api:3001/api/wallet/mint-egg", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    wallet: wallet.get("wallet"),
-    daccPublicKey: wallet.get("daccPublickey"),
-    pin: wallet.get("pin"), // Encrypted password
-    referralChain: referralChain,
-    eggNftAddress: eggNftAddress,
-  }),
+### Test Runner Location
+
+**Recommendation:** Playwright in monorepo root (`tests/e2e/`)
+
+```
+eggo-pocketbase/
+├── tests/
+│   ├── e2e/                    # Playwright E2E tests (NEW)
+│   │   ├── playwright.config.ts
+│   │   ├── fixtures/           # Test fixtures (auth, blockchain)
+│   │   │   ├── auth.fixture.ts
+│   │   │   ├── blockchain.fixture.ts
+│   │   │   └── pocketbase.fixture.ts
+│   │   ├── mocks/              # External service mocks
+│   │   │   ├── line-oauth.mock.ts
+│   │   │   ├── rpc.mock.ts
+│   │   │   └── wallet-api.mock.ts
+│   │   ├── flows/              # User flow tests
+│   │   │   ├── auth-flow.spec.ts
+│   │   │   ├── mint-flow.spec.ts
+│   │   │   ├── feed-hatch-flow.spec.ts
+│   │   │   ├── marketplace-flow.spec.ts
+│   │   │   ├── commission-flow.spec.ts
+│   │   │   ├── tier-flow.spec.ts
+│   │   │   └── breeding-flow.spec.ts
+│   │   ├── integration/        # Cross-service verification
+│   │   │   ├── frontend-to-pb.spec.ts
+│   │   │   ├── pb-to-wallet-api.spec.ts
+│   │   │   └── wallet-api-to-contract.spec.ts
+│   │   └── setup/              # Test environment setup
+│   │       ├── setup-project.ts
+│   │       ├── seed-test-data.ts
+│   │       └── teardown.ts
+│   └── integration/            # Existing integration tests
+│       └── tools/
+├── apps/
+│   ├── web/                    # Existing bun:test unit tests
+│   └── backend/                # Existing bun:test PocketBase tests
+├── wallet-api/                 # Express API (integration test target)
+└── contracts/                  # Foundry tests (Anvil local testnet)
+    └── test/
+        ├── AnvilIntegration.t.sol
+        ├── FoodNFTAnvilIntegration.t.sol
+        └── EggFeedingAnvilIntegration.t.sol
+```
+
+### Component Responsibilities
+
+| Component                  | Responsibility                                 | Implementation                                   |
+| -------------------------- | ---------------------------------------------- | ------------------------------------------------ |
+| **Playwright Test Runner** | Browser automation, cross-service verification | `tests/e2e/` with `playwright.config.ts`         |
+| **Auth Fixture**           | Mock LINE OAuth, inject session state          | `fixtures/auth.fixture.ts` (API-based setup)     |
+| **Blockchain Fixture**     | Fork/Anvil connection, contract mocking        | `fixtures/blockchain.fixture.ts` (optional fork) |
+| **PocketBase Fixture**     | Test DB seeding, cleanup                       | `fixtures/pocketbase.fixture.ts`                 |
+| **Setup Project**          | Pre-test environment initialization            | Playwright setup project pattern                 |
+| **Flow Tests**             | User journey verification                      | `flows/*.spec.ts`                                |
+| **Integration Tests**      | Cross-service boundary checks                  | `integration/*.spec.ts`                          |
+
+## Architectural Patterns
+
+### Pattern 1: Auth Bypass via API Injection
+
+**What:** Inject authentication state directly into browser context, bypassing LINE OAuth UI flow.
+
+**Why:** External OAuth providers are unreliable in E2E tests (rate limits, network latency, CAPTCHA). Speed up tests by skipping real OAuth.
+
+**Implementation:**
+
+```typescript
+// tests/e2e/fixtures/auth.fixture.ts
+import { test as base } from "@playwright/test"
+
+type AuthFixture = {
+  authenticatedPage: Page
+  testUser: { id: string; wallet: string }
+}
+
+export const test = base.extend<AuthFixture>({
+  // Create authenticated page by injecting session
+  authenticatedPage: async ({ page, request }, use) => {
+    // 1. Create test user directly in PocketBase via API
+    const testUser = await createTestUser(request)
+
+    // 2. Get PocketBase auth token via admin API
+    const authResponse = await request.post(`${PB_URL}/api/admins/auth-with-password`, {
+      data: { email: PB_ADMIN_EMAIL, password: PB_ADMIN_PASSWORD },
+    })
+    const adminToken = authResponse.json().token
+
+    // 3. Generate auth token for test user
+    const userAuthResponse = await request.post(`${PB_URL}/api/collections/users/auth`, {
+      headers: { Authorization: `Bearer ${adminToken}` },
+      data: { userId: testUser.id },
+    })
+    const userToken = userAuthResponse.json().token
+
+    // 4. Inject auth state into browser context
+    await page.context().addCookies([
+      {
+        name: "pb_auth",
+        value: JSON.stringify({ token: userToken, record: testUser }),
+        domain: "localhost",
+        path: "/",
+      },
+    ])
+
+    await use(page, testUser)
+
+    // 5. Cleanup: Delete test user
+    await cleanupTestUser(request, testUser.id)
+  },
 })
 ```
 
-### Required Changes
+**Trade-offs:**
 
-#### 1. Private Key Storage & Decryption Flow
+- ✅ Fast: No UI login flow, ~100ms vs 5-15 seconds
+- ✅ Reliable: No external OAuth dependency
+- ✅ Isolated: Each test gets fresh user state
+- ⚠ Requires PocketBase admin access
+- ⚠ Needs separate test for actual LINE OAuth UI flow
 
-**Current approach** (from `wallet-api/server.js` lines 7-59):
+### Pattern 2: Mock External Dependencies with `page.route()`
 
-```javascript
-// Master key from environment
-const MASTER_KEY = process.env.WALLET_MASTER_KEY || "change-this-in-production"
+**What:** Intercept and mock network requests to external services (LINE OAuth, RPC endpoints).
 
-// Encryption key = MASTER_KEY + userId (unique per user)
-const encryptionKey = MASTER_KEY + userId
+**Why:** Control responses, avoid rate limits, test edge cases (failures, timeouts).
 
-// Decrypt function (supports v3 XOR legacy and v4 AES-GCM)
-async function decryptPrivateKey(encryptedData, masterKey) {
-  if (encryptedData.version === 4) {
-    // AES-256-GCM with IV + authTag
-    const key = crypto.createHash("sha256").update(masterKey).digest()
-    const iv = Buffer.from(encryptedData.iv, "hex")
-    const authTag = Buffer.from(encryptedData.authTag, "hex")
-    const ciphertext = Buffer.from(encryptedData.ciphertext, "hex")
+**Implementation:**
 
-    const decipher = crypto.createDecipheriv("aes-256-gcm", key, iv)
-    decipher.setAuthTag(authTag)
+```typescript
+// tests/e2e/mocks/line-oauth.mock.ts
+export async function mockLINEOAuth(page: Page) {
+  // Intercept LINE OAuth callback
+  await page.route("**/api/oauth2-redirect**", async (route) => {
+    // Fulfill with mock auth response
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        token: "mock-line-token",
+        user: {
+          id: "mock-line-user-id",
+          name: "Test User",
+          picture: "https://example.com/avatar.png",
+        },
+      }),
+    })
+  })
 
-    let decrypted = decipher.update(ciphertext, null, "utf8")
-    decrypted += decipher.final("utf8")
-    return decrypted // Private key
-  }
+  // Intercept LINE Login button click redirect
+  await page.route("**/access.line.me/oauth2/v2.1/authorize**", async (route) => {
+    // Redirect directly to callback URL with mock code
+    await route.fulfill({
+      status: 302,
+      headers: {
+        Location: `${PB_URL}/api/oauth2-redirect?code=test-code&state=test-state`,
+      },
+    })
+  })
+}
+
+// tests/e2e/mocks/rpc.mock.ts
+export async function mockRPCResponses(page: Page, mockResponses: Record<string, any>) {
+  await page.route("**/rpc.0xl3.com**", async (route) => {
+    const request = route.request()
+    const body = request.postDataJSON()
+
+    // Match method and return mock response
+    if (body.method === "eth_call" && mockResponses[body.params[0]]) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: body.id,
+          result: mockResponses[body.params[0]],
+        }),
+      })
+    } else {
+      // Pass through to real RPC for unmocked calls
+      await route.continue()
+    }
+  })
 }
 ```
 
-**Required implementation for contract calls:**
+**Trade-offs:**
 
-```javascript
-// REAL implementation needed (replace mock):
-app.post("/api/wallet/mint-egg", async (req, res) => {
-  const { wallet: walletAddress, daccPublicKey, pin, referralChain, eggNftAddress } = req.body
+- ✅ Complete control over external responses
+- ✅ Can test failure scenarios (timeout, error)
+- ✅ No rate limiting concerns
+- ⚠ Requires maintaining mock responses synced with real API
+- ⚠ Some calls should pass through (use `route.continue()`)
 
-  // 1. Validate inputs
-  if (!walletAddress || !pin) {
-    return res.status(400).json({ success: false, error: { message: "Missing params" } })
-  }
+### Pattern 3: Docker Compose Test Environment
 
-  // 2. Get user's encrypted private key from database
-  // (Need to fetch from PocketBase or have hook pass it)
-  const encryptedPrivateKey = await fetchFromPocketBase(walletAddress)
+**What:** Run entire test stack via Docker Compose for reproducible environments.
 
-  // 3. Decrypt using MASTER_KEY + walletAddress
-  const encryptionKey = MASTER_KEY + walletAddress
-  const privateKey = await decryptPrivateKey(encryptedPrivateKey, encryptionKey)
+**Why:** Isolated, clean state per run, CI/CD consistency, service dependency management.
 
-  // 4. Create ethers signer
-  const provider = new ethers.JsonRpcProvider(process.env.NEXT_PUBLIC_RPC_URL)
-  const signer = new ethers.Wallet(privateKey, provider)
+**Implementation:**
 
-  // 5. Connect to NFT contract
-  const nftContract = new ethers.Contract(eggNftAddress, EGG_NFT_ABI, signer)
+```yaml
+# docker-compose.e2e.yml
+version: "3.8"
 
-  // 6. Execute transaction
-  const tx = await nftContract.mintEgg(referralChain)
-  await tx.wait() // Wait for confirmation
+services:
+  # Infrastructure
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    environment:
+      - PB_ADMIN_EMAIL=test@test.com
+      - PB_ADMIN_PASSWORD=testpass
+    ports:
+      - "8090:8090"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/api/health"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - pb_test_data:/pb_data
 
-  // 7. Return real tx hash
-  res.json({
-    success: true,
+  wallet-api:
+    build:
+      context: ./wallet-api
+      dockerfile: Dockerfile
+    environment:
+      - POCKETBASE_URL=http://pocketbase:8090
+      - RPC_URL=http://anvil:8545
+      - WALLET_MASTER_KEY=test-master-key
+      - RELAYER_PRIVATE_KEY=test-relayer-key
+      - PB_ADMIN_EMAIL=test@test.com
+      - PB_ADMIN_PASSWORD=testpass
+      - CHAIN_ID=31337
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+      anvil:
+        condition: service_started
+    ports:
+      - "3001:3001"
+
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:latest
+    command: ["anvil", "--chain-id", "31337", "--port", "8545"]
+    ports:
+      - "8545:8545"
+
+  frontend:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile.test
+      args:
+        - NEXT_PUBLIC_PB_URL=http://pocketbase:8090
+        - NEXT_PUBLIC_WALLET_API_URL=http://wallet-api:3001
+    depends_on:
+      wallet-api:
+        condition: service_started
+    ports:
+      - "3000:3000"
+
+  playwright:
+    build:
+      context: ./tests/e2e
+      dockerfile: Dockerfile.playwright
+    environment:
+      - BASE_URL=http://frontend:3000
+      - PB_URL=http://pocketbase:8090
+      - WALLET_API_URL=http://wallet-api:3001
+      - RPC_URL=http://anvil:8545
+    depends_on:
+      frontend:
+        condition: service_started
+    volumes:
+      - ./test-results:/app/results
+
+volumes:
+  pb_test_data:
+```
+
+**Trade-offs:**
+
+- ✅ 100% reproducible across environments
+- ✅ Automatic cleanup via ephemeral volumes
+- ✅ Service health checks ensure proper startup order
+- ⚠ Slower startup than local (Docker overhead)
+- ⚠ Requires Docker setup maintenance
+
+### Pattern 4: Multi-Layer Verification
+
+**What:** Verify state across all layers (frontend → PocketBase → wallet-api → contract) in single test.
+
+**Why:** Catch data synchronization bugs between layers.
+
+**Implementation:**
+
+```typescript
+// tests/e2e/integration/mint-flow.spec.ts
+test("mint egg: verify across all layers", async ({ authenticatedPage, request }) => {
+  const testUser = authenticatedPage.testUser
+
+  // Step 1: UI Action - Click mint button
+  await authenticatedPage.goto("/eggs")
+  await authenticatedPage.getByRole("button", { name: "Mint Egg" }).click()
+
+  // Step 2: Wait for UI update
+  await authenticatedPage.waitForSelector('[data-testid="new-egg-card"]')
+
+  // Step 3: Verify PocketBase state
+  const pbResponse = await request.get(`${PB_URL}/api/collections/egg_nfts/records`, {
+    params: { filter: `owner="${testUser.id}"` },
+  })
+  const pbData = pbResponse.json()
+  expect(pbData.items.length).toBeGreaterThan(0)
+  const eggRecord = pbData.items[0]
+
+  // Step 4: Verify wallet-api logs (optional: check endpoint directly)
+  const walletApiHealth = await request.get(`${WALLET_API_URL}/health`)
+  expect(walletApiHealth.ok).toBeTruthy()
+
+  // Step 5: Verify contract state (via wallet-api query or direct RPC)
+  // For testnet fork, query contract directly
+  const contractResponse = await request.post(`${RPC_URL}`, {
     data: {
-      txHash: tx.hash, // ✅ REAL
-      status: "confirmed",
+      jsonrpc: "2.0",
+      id: 1,
+      method: "eth_call",
+      params: [
+        {
+          to: EGG_NFT_ADDRESS,
+          data: "0x...", // ownerOf(uint256) calldata
+        },
+        "latest",
+      ],
     },
   })
+
+  // Owner should match test user's wallet address
+  expect(contractResponse.json().result).toContain(testUser.wallet.toLowerCase())
 })
 ```
 
-#### 2. Master Key Management
+**Trade-offs:**
 
-**Security architecture:**
+- ✅ Full system verification
+- ✅ Catches sync bugs between layers
+- ⚠ More complex test setup
+- ⚠ Higher test execution time
 
-```bash
-# Environment variable (NEVER commit)
-WALLET_MASTER_KEY=<32-char-random-string>
+## Test Flow Strategy
 
-# Generate with:
-openssl rand -hex 32
-# Output: 64-character hex string (256 bits)
-```
+### User Flow Tests (P0 - Critical Path)
 
-**Key properties:**
+| Flow                                 | Test Strategy                                                                | External Dependencies |
+| ------------------------------------ | ---------------------------------------------------------------------------- | --------------------- |
+| Auth (LINE OAuth → Dashboard)        | **Mock LINE OAuth** via `page.route()`, verify session state in PocketBase   | LINE OAuth mocked     |
+| Mint (Buy egg → NFT appears)         | Real wallet-api call to Anvil testnet, verify PB record + contract ownership | Anvil local testnet   |
+| Feed (Buy food → Feed egg → 10/10)   | Real wallet-api calls, verify PB food_count update                           | Anvil local testnet   |
+| Hatch (Feed 10 → Hatch → Animal)     | Real contract interactions, verify Animal NFT mint                           | Anvil local testnet   |
+| Marketplace (List → Buy → Transfer)  | Real listing creation, mock or real buy depending on complexity              | Anvil + PB hooks      |
+| Commission (Referral → Earn → Claim) | Mock referral tree, verify commission distribution                           | PB + Anvil            |
+| Tier (Consume → Threshold → Badge)   | Mock tier thresholds, verify badge mint                                      | PB + Anvil            |
 
-- **Never stored in database** — only in environment
-- **Combined with user ID** — `MASTER_KEY + userId` creates unique key per user
-- **Encrypted at rest** — AES-256-GCM with IV + authTag
-- **Never logged** — no console.log of private keys
+### Test Environment Modes
 
-**Production deployment:**
+| Mode                 | Use Case                 | Configuration                                        |
+| -------------------- | ------------------------ | ---------------------------------------------------- |
+| **Full Mock**        | Fast CI, unit-like tests | All external services mocked via `page.route()`      |
+| **Hybrid**           | Recommended default      | LINE OAuth mocked, Anvil testnet for blockchain      |
+| **Full Integration** | Production validation    | Real 0xl3 testnet, real LINE OAuth (staging account) |
 
-```bash
-# Docker Compose
-services:
-  wallet-api:
-    environment:
-      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY}  # From .env file
-      - NODE_ENV=production
+### Recommended Default: Hybrid Mode
 
-# Or in production server
-export WALLET_MASTER_KEY="<secret>"
-```
-
-#### 3. Contract ABI Management
-
-**Required:** Store contract ABIs for wallet-api to use.
-
-```javascript
-// wallet-api/contracts/egg-nft-abi.json
-;[
-  {
-    inputs: [{ name: "referrerChain", type: "address[]" }],
-    name: "mintEgg",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  // ... more functions
-]
-```
-
-**Better approach:** Hardcode minimal ABI in `server.js` to avoid file I/O:
-
-```javascript
-const EGG_NFT_ABI = [
-  "function mintEgg(address[] referrerChain) external payable returns (uint256)",
-  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
-]
-```
-
-#### 4. Error Handling & Retry Logic
-
-**Recommended pattern:**
-
-```javascript
-app.post("/api/wallet/mint-egg", async (req, res) => {
-  try {
-    // ... contract call
-  } catch (error) {
-    console.error("Mint egg contract call failed:", {
-      wallet: walletAddress,
-      error: error.message,
-      code: error.code,
-    })
-
-    // Categorize errors
-    let errorCode = "CONTRACT_CALL_FAILED"
-    if (error.code === "INSUFFICIENT_FUNDS") {
-      errorCode = "INSUFFICIENT_GAS"
-    } else if (error.code === "NONCE_TOO_LOW") {
-      errorCode = "NETWORK_CONGESTION"
-    }
-
-    res.status(500).json({
-      success: false,
-      error: {
-        message: error.message,
-        code: errorCode,
+```typescript
+// playwright.config.ts - Hybrid mode
+export default defineConfig({
+  projects: [
+    // Setup: Seed test data
+    {
+      name: "setup",
+      testMatch: /.*\.setup\.ts/,
+    },
+    // Main tests: Hybrid mode
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: "http://localhost:3000",
       },
-    })
-  }
+      dependencies: ["setup"],
+    },
+  ],
+  // Global setup for Anvil + PocketBase
+  globalSetup: require.resolve("./setup/global-setup"),
+  globalTeardown: require.resolve("./setup/global-teardown"),
 })
 ```
 
----
+## Data Flow Verification Points
 
-## Track-Deposit Hook Architecture
-
-### Current State (from `13-track-deposit.pb.js`)
-
-Hook exists at `apps/backend/pb_hooks/13-track-deposit.pb.js` with:
-
-```javascript
-routerAdd("POST", "/api/v2/deposit/poll", async (e) => {
-  e.requireAuth()
-  const { user_address } = e.parseBody()
-
-  // Polls CommissionDistribution contract for Transfer events
-  // Uses eth_getLogs with fromBlock: "latest", toBlock: "latest"
-
-  // Checks for duplicate tx_hash before creating deposit record
-  // Updates user_wallets.usdt_balance on confirmed deposits
-})
-```
-
-**Limitations:**
-
-- Only polls latest block (not historical)
-- No scheduled polling (requires manual trigger)
-- No backfill mechanism for missed events
-
-### Architecture Options
-
-| Option                                   | Pros                         | Cons                          | Recommendation     |
-| ---------------------------------------- | ---------------------------- | ----------------------------- | ------------------ |
-| **1. PocketBase hook polling**           | Simple, existing codebase    | No scheduling, manual trigger | ❌ Not suitable    |
-| **2. Separate polling service**          | Full control, scheduled jobs | New service to maintain       | ✅ **RECOMMENDED** |
-| **3. External webhook (Alchemy/Infura)** | No polling needed, real-time | Vendor lock-in, cost          | ⚠️ Alternative     |
-
-### Recommended Approach: Separate Polling Service
-
-**Architecture diagram:**
+### Request Flow
 
 ```
-┌──────────────────┐      ┌──────────────────┐      ┌─────────────────┐
-│  Cron Job        │──────▶  Poller Service  │──────▶  PocketBase     │
-│  (every 30s)     │      │  (Node.js)       │      │  API            │
-└──────────────────┘      └──────────────────┘      └─────────────────┘
-                                  │
-                                  ▼
-                          ┌──────────────────┐
-                          │  BSC RPC Node    │
-                          │  (eth_getLogs)   │
-                          └──────────────────┘
+[User Clicks Mint]
+    ↓
+[Frontend] → PocketBase Client SDK → [PocketBase Hook]
+    ↓              ↓                      ↓
+[UI Update] ← Collection Record ← [OnRecordCreate Hook]
+    ↓                                     ↓
+    └───→ wallet-api POST /mint-egg ←────┘
+                    ↓
+            [ethers.js Contract Call]
+                    ↓
+            [Anvil/0xl3 RPC Node]
+                    ↓
+            [Contract Execution]
+                    ↓
+            [Event Emitted] → [PocketBase Sync]
+                    ↓
+            [Frontend Poll/Update]
 ```
 
-**New service structure:**
+### Key Verification Points
+
+| Layer      | Check                             | Method                                              |
+| ---------- | --------------------------------- | --------------------------------------------------- |
+| Frontend   | Button state, UI elements         | `page.getByRole()`, `expect(locator).toBeVisible()` |
+| PocketBase | Record created/updated            | `request.get()` to collection API                   |
+| wallet-api | Endpoint called, response success | `request.post()`, check `success: true`             |
+| Contract   | State change, ownership           | RPC `eth_call` or contract read methods             |
+| Sync       | Data consistency across layers    | Compare IDs, timestamps between PB and contract     |
+
+## Anti-Patterns to Avoid
+
+### Anti-Pattern 1: Real LINE OAuth in Every Test
+
+**What people do:** Click through LINE Login UI in every E2E test.
+
+**Why it's wrong:**
+
+- External OAuth is rate-limited
+- UI flow takes 5-15 seconds per test
+- CAPTCHA/email verification breaks tests
+- Cannot control edge cases (expired token, network failure)
+
+**Do this instead:**
+
+- Inject auth state via API (see Pattern 1)
+- Have ONE dedicated test for LINE OAuth UI flow validation
+- Mock LINE OAuth for all other feature tests
+
+### Anti-Pattern 2: Real 0xl3 Testnet for CI Tests
+
+**What people do:** Use real 0xl3 testnet RPC in CI E2E tests.
+
+**Why it's wrong:**
+
+- Testnet has variable latency
+- Block confirmations take 12+ blocks
+- Testnet faucet limits (limited test USDT)
+- Rate limiting from RPC provider
+
+**Do this instead:**
+
+- Use Anvil local testnet (chain ID 31337)
+- Fork 0xl3 if needed for existing contract state
+- Seed unlimited test tokens via Anvil
+
+### Anti-Pattern 3: Shared Test User Across Tests
+
+**What people do:** Create one test user account, reuse in all tests.
+
+**Why it's wrong:**
+
+- Tests modify state (buy NFTs, feed eggs)
+- Parallel tests conflict (same wallet balance)
+- Race conditions in shared state
+
+**Do this instead:**
+
+- Create isolated test user per test via fixture
+- Use worker-scoped fixtures for parallel isolation
+- Cleanup test user after each test
+
+### Anti-Pattern 4: Skipping Backend Verification
+
+**What people do:** Only check frontend UI, ignore PocketBase/wallet-api state.
+
+**Why it's wrong:**
+
+- UI may show stale data while backend differs
+- Sync bugs between layers go undetected
+- Contract ownership mismatches hidden
+
+**Do this instead:**
+
+- Verify at each layer (frontend → PB → wallet-api → contract)
+- Check data consistency across services
+- Use multi-layer verification pattern
+
+### Anti-Pattern 5: Static Export Incompatibility
+
+**What people do:** Run E2E tests against `next dev` server instead of production build.
+
+**Why it's wrong:**
+
+- Static export has different behavior (no server-side routes)
+- Hydration behavior differs
+- Middleware/routing may differ
+
+**Do this instead:**
+
+- Run tests against `next build && next export && next start` (or static server)
+- Use `output: 'export'` compatible configuration
+- Test both dev and production modes separately
+
+## Integration Points
+
+### External Services Mocking Strategy
+
+| Service          | Mock Strategy                        | When to Mock      | When to Use Real              |
+| ---------------- | ------------------------------------ | ----------------- | ----------------------------- |
+| LINE OAuth       | `page.route()` redirect interception | All feature tests | One auth flow validation test |
+| 0xl3 RPC         | Anvil local testnet OR RPC mock      | CI/Dev tests      | Production validation         |
+| BSC RPC          | Fork via Anvil OR mock               | CI tests          | Pre-production testing        |
+| Cloudflare Pages | Local static server                  | All tests         | Deployment verification       |
+
+### Internal Service Communication
+
+| Boundary                | Test Coverage                      | Notes                          |
+| ----------------------- | ---------------------------------- | ------------------------------ |
+| Frontend ↔ PocketBase   | Frontend tests + Integration tests | Client SDK calls, auth cookies |
+| PocketBase ↔ wallet-api | Hook tests + Integration tests     | HTTP calls in hooks            |
+| wallet-api ↔ Contracts  | wallet-api tests + Foundry tests   | ethers.js calls                |
+| Contracts ↔ Events      | Foundry tests + Integration tests  | Event emission                 |
+
+## New vs Modified Components
+
+### New Components (Test Infrastructure)
+
+| Component                | Location              | Purpose                     |
+| ------------------------ | --------------------- | --------------------------- |
+| `playwright.config.ts`   | `tests/e2e/`          | Playwright configuration    |
+| `auth.fixture.ts`        | `tests/e2e/fixtures/` | Auth state injection        |
+| `blockchain.fixture.ts`  | `tests/e2e/fixtures/` | Anvil/testnet connection    |
+| `pocketbase.fixture.ts`  | `tests/e2e/fixtures/` | PB test data seeding        |
+| `line-oauth.mock.ts`     | `tests/e2e/mocks/`    | LINE OAuth interception     |
+| `setup-project.ts`       | `tests/e2e/setup/`    | Pre-test initialization     |
+| `docker-compose.e2e.yml` | Root                  | Test environment definition |
+| `Dockerfile.playwright`  | `tests/e2e/`          | Playwright container        |
+
+### Modified Components
+
+| Component                  | Location | Changes                                 |
+| -------------------------- | -------- | --------------------------------------- |
+| `apps/web/package.json`    | Existing | Add Playwright devDependency            |
+| `apps/web/next.config.mjs` | Existing | Ensure static export compatibility      |
+| `wallet-api/server.js`     | Existing | Add `/test/seed` endpoint for test data |
+| `apps/backend/pb_hooks/`   | Existing | Add test-mode hooks if needed           |
+
+### Build Order
 
 ```
-deposit-poller/
-├── index.js           # Main polling loop
-├── poller.js          # Event polling logic
-├── pocketbase.js      # PB API client
-├── config.js          # Contract addresses, RPC URL
-└── package.json
+1. Install Playwright: npm install -D @playwright/test
+2. Create test infrastructure (config, fixtures, mocks)
+3. Add test endpoints to services (seed, cleanup)
+4. Create docker-compose.e2e.yml
+5. Write flow tests
+6. CI integration (GitHub Actions workflow)
 ```
 
-**Polling logic:**
-
-```javascript
-// deposit-poller/poller.js
-const { ethers } = require("ethers")
-
-async function pollDeposits(userAddress, fromBlock, toBlock) {
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL)
-
-  const transferSignature = "0xddf252ad..." // Transfer event topic
-  const toTopic = `0x${userAddress.slice(2).padStart(64, "0")}`
-
-  const logs = await provider.getLogs({
-    address: process.env.COMMISSION_DISTRIBUTION_ADDRESS,
-    topics: [transferSignature, null, toTopic],
-    fromBlock: fromBlock,
-    toBlock: toBlock,
-  })
-
-  return logs.map((log) => ({
-    txHash: log.transactionHash,
-    amount: ethers.formatUnits(log.data, 6), // USDT has 6 decimals
-    fromAddress: `0x${log.topics[1].slice(26)}`,
-    blockNumber: log.blockNumber,
-  }))
-}
-
-// Main loop
-setInterval(async () => {
-  // 1. Get all user wallets from PocketBase
-  const wallets = await pocketBase.getAllUserWallets()
-
-  // 2. Get last polled block (stored in DB)
-  const lastPolledBlock = await getLastPolledBlock()
-
-  // 3. Poll each wallet
-  for (const wallet of wallets) {
-    const deposits = await pollDeposits(wallet.address, lastPolledBlock, "latest")
-
-    // 4. Filter duplicates and update balances
-    for (const deposit of deposits) {
-      const exists = await pocketBase.depositExists(deposit.txHash)
-      if (!exists) {
-        await pocketBase.createDeposit(deposit)
-        await pocketBase.updateBalance(wallet.userId, deposit.amount)
-      }
-    }
-  }
-
-  // 5. Update lastPolledBlock
-  await setLastPolledBlock("latest")
-}, 30000) // Every 30 seconds
-```
-
-**Why this approach:**
-
-1. **Deduplication:** Stores lastPolledBlock in database, never processes same event twice
-2. **Scheduled:** Runs automatically, no manual trigger needed
-3. **Decoupled:** Doesn't block PocketBase threads
-4. **Observable:** Can monitor poller health separately
-5. **Scalable:** Easy parallelize if needed
-
-**Integration with existing hook:**
-
-The existing `13-track-deposit.pb.js` endpoint can remain for:
-
-- Manual re-polling (admin feature)
-- On-demand balance refresh for specific user
-- Backfill mechanism
-
----
-
-## Mobile Responsive Architecture
-
-### Component Strategy
-
-**Recommended pattern** (from existing claymorphism UI in `apps/web/app/`):
-
-```typescript
-// Responsive wrapper component with mobile-first CSS
-export function ResponsivePage({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="
-      w-full
-      min-h-screen
-      px-4           // Base: 16px padding on mobile (320px+)
-      sm:px-6        // Small: 24px (640px+)
-      lg:px-8        // Large: 32px (1024px+)
-    ">
-      {children}
-    </div>
-  )
-}
-```
-
-**Component variants vs conditional rendering:**
-
-```typescript
-// ✅ PATTERN A: Responsive wrapper (PREFERRED)
-// Single component adapts via Tailwind breakpoints
-export function FoodCard({ food }: { food: FoodNFT }) {
-  return (
-    <div className="
-      w-full
-      sm:w-1/2      // Tablet: 2 columns
-      lg:w-1/3      // Desktop: 3 columns
-      xl:w-1/4      // Large: 4 columns
-    ">
-      {/* Content */}
-    </div>
-  )
-}
-
-// ✅ PATTERN B: Conditional rendering for complex layouts
-// Mobile: simplified UI, Desktop: full UI
-export function EggDashboard({ egg }: { egg: EggNFT }) {
-  const isMobile = useMediaQuery('(max-width: 640px)')
-
-  if (isMobile) {
-    return <MobileEggView egg={egg} />  // Simplified
-  }
-
-  return <DesktopEggView egg={egg} />   // Full UI with stats
-}
-
-// ❌ ANTI-PATTERN: Responsive logic scattered in component
-export function BadExample() {
-  return (
-    <div className={width < 640 ? 'text-sm' : 'text-lg'}>  // Don't do this
-      {/* ... */}
-    </div>
-  )
-}
-```
-
-### Data Flow: UI Button → Contract → Database
-
-**Feed feature example:**
-
-```
-┌─────────────────────┐
-│  User taps "Feed"   │
-│  button in UI       │
-└─────────────────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Frontend           │
-│  (apps/web/app/    │
-│   eggs/page.tsx)   │
-│                     │
-│  - Validate owner-  │
-│    ship client-side │
-│  - Show loading UI  │
-└─────────────────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  POST /api/v2/      │
-│  feed-egg           │
-│  (PocketBase hook)  │
-└─────────────────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  16-feed-egg.pb.js  │
-│                     │
-│  - Verify ownership │
-│  - Validate inputs  │
-│  - Call wallet-api  │
-└─────────────────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Wallet API         │
-│  (POST /api/wallet/ │
-│   feed-egg)         │
-│                     │
-│  - Decrypt key      │
-│  - Create signer    │
-│  - Call contract    │
-└─────────────────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Smart Contract     │
-│  (FoodNFT + EggNFT) │
-│                     │
-│  - Consume food     │
-│  - Update foodCount │
-│  - Emit event       │
-└─────────────────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Hook updates DB    │
-│                     │
-│  - egg_nfts.        │
-│    food_count++     │
-│  - food_nfts.       │
-│    is_consumed=true │
-│  - Create log       │
-└─────────────────────┘
-           │
-           ▼
-┌─────────────────────┐
-│  Frontend refreshes │
-│                     │
-│  - Refetch egg data │
-│  - Update UI state  │
-│  - Show success     │
-└─────────────────────┘
-```
-
-**Frontend implementation** (from `apps/web/app/eggs/page.tsx`):
-
-```typescript
-// Current state (line 89):
-<button
-  onClick={async () => {
-    // TODO: Implement feed flow
-    await handleFeed(egg.id, selectedFoodIds)
-  }}
-  disabled={!canFeed}
->
-  Feed Egg
-</button>
-
-// Required implementation:
-async function handleFeed(eggId: number, foodIds: number[]) {
-  try {
-    setLoading(true)
-
-    const response = await fetch(`${PB_URL}/api/v2/feed-egg`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${pb.authStore.token}`
-      },
-      body: JSON.stringify({
-        egg_token_id: eggId,
-        food_ids: foodIds
-      })
-    })
-
-    const result = await response.json()
-
-    if (!result.success) {
-      throw new Error(result.error.message)
-    }
-
-    // Update UI
-    toast.success('Egg fed successfully!')
-    await refreshEggData()  // Refetch from PocketBase
-    setSelectedFoodIds([])  // Clear selection
-
-  } catch (error) {
-    toast.error(`Failed to feed egg: ${error.message}`)
-  } finally {
-    setLoading(false)
-  }
-}
-```
-
-### Responsive Breakpoint Strategy
-
-**Project convention** (Tailwind CSS 4, from `apps/web/`):
-
-```typescript
-// apps/web/app/eggs/[[...id]]/page.tsx
-<div className="
-  grid
-  grid-cols-1        // Mobile: single column (320px)
-  sm:grid-cols-2     // Tablet: 2 columns (640px)
-  lg:grid-cols-3     // Desktop: 3 columns (1024px)
-  xl:grid-cols-4     // Large: 4 columns (1280px)
-  gap-4
-  sm:gap-6
-  lg:gap-8
-">
-```
-
----
-
-## Feed/Play Data Flow Architecture
-
-### Complete Flow for Feed Feature
-
-**Steps with responsible component:**
-
-| Step | Component                                 | Responsibility                                 |
-| ---- | ----------------------------------------- | ---------------------------------------------- |
-| 1    | `apps/web/app/eggs/page.tsx`              | Render Feed button, validate user selection    |
-| 2    | `apps/web/lib/pocketbase/client.ts`       | Add Authorization header, handle auth          |
-| 3    | `apps/backend/pb_hooks/16-feed-egg.pb.js` | Verify ownership, parse body, validate         |
-| 4    | `apps/backend/pb_hooks/16-feed-egg.pb.js` | Call wallet-api endpoint                       |
-| 5    | `wallet-api/server.js` lines 479-512      | **Decrypt private key from pin**               |
-| 6    | `wallet-api/server.js`                    | Create ethers signer, call `foodNFT.feedEgg()` |
-| 7    | `wallet-api/server.js`                    | Wait for transaction confirmation              |
-| 8    | `apps/backend/pb_hooks/16-feed-egg.pb.js` | Update `egg_nfts.food_count`                   |
-| 9    | `apps/backend/pb_hooks/16-feed-egg.pb.js` | Mark `food_nfts.is_consumed = true`            |
-| 10   | `apps/backend/pb_hooks/16-feed-egg.pb.js` | Create `egg_consumption_logs` record           |
-| 11   | `apps/web/app/eggs/page.tsx`              | Refetch egg data, update UI                    |
-
-**Data transformations:**
-
-```javascript
-// Frontend → Backend
-{
-  "egg_token_id": 123,
-  "food_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-}
-
-// Backend → Wallet API
-{
-  "wallet": "0x123...",
-  "daccPublicKey": "daccPublickey_0x123...",
-  "pin": "randomPassword123",
-  "egg_token_id": 123,
-  "food_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-  "foodNftAddress": "0xFOOD_CONTRACT",
-  "eggNftAddress": "0xEGG_CONTRACT"
-}
-
-// Wallet API → Contract
-// Call: foodNFT.contract.feedEgg(
-//   tokenId: 123,
-//   foodIds: [1, 2, 3, ...],
-//   owner: "0x123..."
-// )
-
-// Contract → Backend
-{
-  "txHash": "0xREAL_HASH",
-  "success": true
-}
-
-// Backend → Frontend
-{
-  "success": true,
-  "data": {
-    "egg_token_id": 123,
-    "new_food_count": 12,
-    "ready_to_hatch": true,
-    "tx_hash": "0xREAL_HASH",
-    "food_type_distribution": {
-      "grain": 4,
-      "fish": 3,
-      "insects": 2,
-      "herb": 1
-    }
-  }
-}
-```
-
-### Play Feature Architecture
-
-**Status:** UI button exists (line 95 in `apps/web/app/eggs/page.tsx`) but game mechanics undefined.
-
-**Required decisions before implementation:**
-
-1. **What is "play"?**
-   - Minigame (tap/click game)?
-   - Social interaction (show egg to friends)?
-   - Earning mechanism (generate rewards)?
-
-2. **On-chain or off-chain?**
-   - On-chain: Smart contract call, gas fees, slow UX
-   - Off-chain: Database updates only, instant feedback
-
-3. **State storage?**
-   - Smart contract: Immutable, expensive, gas fees
-   - PocketBase: Mutable, cheap, can migrate
-
-**Recommended approach for MVP:**
-
-```typescript
-// Off-chain play interaction
-POST /api/v2/play-with-egg
-{
-  "egg_token_id": 123,
-  "interaction_type": "pet"  // or "play", "clean", etc.
-}
-
-// Response
-{
-  "success": true,
-  "data": {
-    "happiness": 85,  // Updated stat
-    "xp_gained": 10,
-    "new_level": 5
-  }
-}
-```
-
-This doesn't require wallet-api contract calls — simple PocketBase hook updating `egg_nfts` metadata fields.
-
----
-
-## Build Order
-
-### Phase Dependencies
-
-```
-┌────────────────────────────────────┐
-│  1. Wallet-API Contract Layer      │  ← Foundation (blocks all others)
-│     - Real ethers.js calls         │
-│     - Contract ABI management      │
-│     - Private key decryption       │
-└────────────────────────────────────┘
-                    │
-                    ▼
-┌────────────────────────────────────┐
-│  2. Track-Deposit Infrastructure   │  ← Parallel with 3
-│     - Deploy polling service       │
-│     - Configure scheduled jobs     │
-│     - Backfill historical data     │
-└────────────────────────────────────┘
-                    │
-                    ▼
-┌────────────────────────────────────┐
-│  3. Feed Feature (Full Stack)      │  ← Depends on 1
-│     - Frontend: Hook up button     │
-│     - Backend: Already exists      │
-│     - Wallet-API: Real contract    │
-└────────────────────────────────────┘
-                    │
-                    ▼
-┌────────────────────────────────────┐
-│  4. Play Feature                   │  ← Need design decision
-│     - Define game mechanics        │
-│     - Off-chain state preferred    │
-│     - No contract call needed      │
-└────────────────────────────────────┘
-
-┌────────────────────────────────────┐
-│  5. Mobile Polish                  │  ← Parallel with any phase
-│     - Responsive CSS tuning        │
-│     - Touch interaction testing    │
-│     - Performance optimization     │
-└────────────────────────────────────┘
-```
-
-### Detailed Task Sequence
-
-**Phase 1: Wallet-API Contract Implementation (CRITICAL)**
-
-```markdown
-# Foundation - Blocks all other phases
-
-## Tasks:
-
-1. [ ] **Add environment variables**
-   - NEXT_PUBLIC_RPC_URL (BSC testnet/mainnet)
-   - WALLET_MASTER_KEY (production secret)
-   - EGG_NFT_CONTRACT_ADDRESS
-   - FOOD_NFT_CONTRACT_ADDRESS
-
-2. [ ] **Implement real contract calls**
-   - `/api/wallet/mint-egg` (line 379)
-   - `/api/wallet/claim-commission` (line 408)
-   - `/api/wallet/mint-food` (line 442)
-   - `/api/wallet/feed-egg` (line 479)
-
-3. [ ] **Test contract interactions**
-   - Verify private key decryption
-   - Test on BSC testnet first
-   - Verify gas estimation
-
-4. [ ] **Error handling**
-   - Insufficient gas errors
-   - Network timeout handling
-   - Transaction failure recovery
-```
-
-**Phase 2: Track-Deposit Service**
-
-```markdown
-## Tasks:
-
-1. [ ] **Set up polling service**
-   - Create `deposit-poller/` directory
-   - Install ethers v6
-   - Configure RPC endpoint
-
-2. [ ] **Implement polling logic**
-   - lastPolledBlock tracking
-   - eth_getLogs for each wallet
-   - Duplicate detection via tx_hash
-
-3. [ ] **Database integration**
-   - Create/update deposits collection
-   - Hook into user_wallets balance updates
-
-4. [ ] **Deploy and monitor**
-   - Docker container or PM2 process
-   - Health check endpoint
-   - Alerting on failures
-```
-
-**Phase 3: Feed Feature**
-
-```markdown
-## Tasks:
-
-1. [ ] **Frontend: Hook up button**
-   - Replace TODO in `apps/web/app/eggs/page.tsx:89`
-   - Add loading state
-   - Add error handling
-
-2. [ ] **Food selection**
-   - Implement food NFT picker
-   - Validate 10 food items required
-   - Show food type distribution
-
-3. [ ] **Backend: Already complete**
-   - `16-feed-egg.pb.js` handles all logic
-   - No changes needed
-
-4. [ ] **UI feedback**
-   - Success/error toasts
-   - Refresh egg data after feed
-   - Show "Ready to Hatch" when food_count >= 10
-```
-
-**Phase 4: Play Feature**
-
-```markdown
-## Tasks:
-
-1. [ ] **Game design decision**
-   - Define "play" mechanics
-   - Decide on-chain vs off-chain
-   - Define rewards/benefits
-
-2. [ ] **Off-chain implementation** (recommended)
-   - New PocketBase hook: `POST /api/v2/play-with-egg`
-   - Update egg metadata (happiness, xp)
-   - Create play_logs collection
-
-3. [ ] **Frontend**
-   - Hook up Play button
-   - Add interaction animations
-   - Show updated stats
-```
-
-**Phase 5: Mobile Polish**
-
-```markdown
-## Tasks:
-
-1. [ ] **Audit responsive layouts**
-   - Check all pages on 320px-1440px
-   - Test landscape orientation
-   - Verify touch targets (44px min)
-
-2. [ ] **CSS consistency**
-   - Use Tailwind breakpoints consistently
-   - Mobile-first CSS (base styles for mobile)
-   - Conditional rendering for complex UI
-
-3. [ ] **Performance**
-   - Lazy load heavy components
-   - Optimize images for mobile
-   - Reduce re-renders
-```
-
----
-
-## Security Architecture
-
-### Critical Security Patterns
-
-**1. Never expose private keys**
-
-```javascript
-// ✅ GOOD: Key exists only in memory
-app.post('/api/wallet/mint-egg', async (req, res) => {
-  const privateKey = await decryptPrivateKey(...)  // In memory only
-  const signer = new ethers.Wallet(privateKey, provider)
-
-  // Use signer, never log or store
-  const tx = await signer.sendTransaction(...)
-
-  // Clear from memory (garbage collection handles this)
-  privateKey = null
-})
-
-// ❌ BAD: Logging private key
-console.log('Private key:', privateKey)  // NEVER DO THIS
-```
-
-**2. Use authenticated endpoints only**
-
-```javascript
-// ✅ GOOD: Always require auth
-routerAdd("POST", "/api/v2/feed-egg", (e) => {
-  const user = $apis.requireAuth(e) // Auth required
-  // ... rest of logic
-})
-
-// ❌ BAD: Public endpoint
-routerAdd("POST", "/api/v2/feed-egg", (e) => {
-  // No authentication
-  // Anyone can feed anyone's egg!
-})
-```
-
-**3. Validate ownership before contract calls**
-
-```javascript
-// ✅ GOOD: Verify ownership
-const eggs = $app
-  .dao()
-  .findRecordsByFilter("egg_nfts", `token_id = ${egg_token_id} && owner.id = "${user.id}"`, "", 1)
-
-if (eggs.length === 0) {
-  return e.json(404, { error: { message: "Egg not found or not yours" } })
-}
-
-// ❌ BAD: Trusting client input
-const { egg_token_id } = e.parseBody()
-// Just use it without verifying ownership
-```
-
-**4. Idempotent operations (prevent duplicates)**
-
-```javascript
-// ✅ GOOD: Check existence before creating
-const exists = await pocketBase.findFirstRecordByData("deposits", "tx_hash", txHash)
-
-if (exists) {
-  console.log("Deposit already tracked, skipping")
-  return
-}
-
-// ❌ BAD: Always creating new record
-await pocketBase.createRecord({ tx_hash: txHash })
-// Will create duplicate on retry!
-```
-
----
+## Scaling Considerations
+
+| Scale      | Architecture Adjustments                                     |
+| ---------- | ------------------------------------------------------------ |
+| 10 tests   | Local Anvil + simple mocks sufficient                        |
+| 50 tests   | Worker-scoped fixtures, Docker Compose recommended           |
+| 100+ tests | Dedicated test database, parallel workers, sharded test runs |
+
+### Scaling Priorities
+
+1. **First bottleneck:** Test execution time → Parallel workers with isolated fixtures
+2. **Second bottleneck:** Test data conflicts → Dedicated test PocketBase instance
+3. **Third bottleneck:** Blockchain wait times → Mock contract responses for UI tests
 
 ## Sources
 
-- `wallet-api/server.js` — Current wallet API implementation
-- `apps/backend/pb_hooks/13-mint-egg-nft.pb.js` — Mint egg hook pattern
-- `apps/backend/pb_hooks/16-feed-egg.pb.js` — Feed egg hook pattern
-- `apps/backend/pb_hooks/13-track-deposit.pb.js` — Track deposit hook (incomplete)
-- `apps/web/app/eggs/page.tsx` — Frontend egg management UI
-- Project documentation (`AGENTS.md`, `README.md`)
-
-## Confidence Assessment
-
-| Area                       | Confidence | Reason                                 |
-| -------------------------- | ---------- | -------------------------------------- |
-| Wallet-API Integration     | HIGH       | Analyzed existing code, patterns clear |
-| Track-Deposit Architecture | MEDIUM     | Hook exists, service needs design      |
-| Mobile Responsive          | HIGH       | Existing patterns in claymorphism UI   |
-| Feed/Play Data Flow        | HIGH       | Hook code analyzed, flow documented    |
-| Security Patterns          | HIGH       | Based on existing hook implementations |
-
-## Open Questions
-
-- **Play feature mechanics:** Need game design decision before implementation can proceed
-- **Contract deployment status:** Need to verify contract addresses and ABI availability
-- **RPC endpoint:** Need to confirm BSC testnet/mainnet RPC URLs and rate limits
-- **Deposit polling interval:** 30s recommended, but trade-off between freshness vs RPC cost needs discussion
+- Playwright Documentation: https://playwright.dev/docs/best-practices (HIGH confidence)
+- Playwright Mock APIs: https://playwright.dev/docs/mock (HIGH confidence)
+- Next.js Testing with Playwright: https://nextjs.org/docs/pages/guides/testing/playwright (HIGH confidence)
+- Testing Authentication with Playwright: https://currents.dev/posts/testing-authentication-with-playwright-the-complete-guide (HIGH confidence)
+- Docker E2E Testing: https://oneuptime.com/blog/post/2026-02-08-how-to-use-docker-for-end-to-end-testing-environments/view (HIGH confidence)
+- Ethereum Smart Contract Testing: https://ethereum.org/developers/docs/smart-contracts/testing/ (HIGH confidence)
+- Project source code analysis (wallet-api/server.js, apps/web/next.config.mjs, contracts/foundry.toml) (HIGH confidence)
 
 ---
 
-**Last updated:** 2026-04-18
-**Next action:** Roadmap planning based on this architecture research
+_Architecture research for: E2E Testing Integration_
+_Researched: 2026-04-27_

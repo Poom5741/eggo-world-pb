@@ -1,1223 +1,712 @@
-# Pitfalls Research — v0.0.7 Security & Quality
+# Pitfalls Research: E2E Testing for Blockchain/NFT Marketplace
 
-**Domain:** Blockchain NFT marketplace with contract interactions, USDT polling, mobile UX
-**Researched:** 2026-04-18
-**Overall confidence:** MEDIUM (verified with Context7 + official docs + multiple sources)
+**Domain:** Blockchain/NFT E2E Testing (Subsequent Milestone)
+**Researched:** 2026-04-27
+**Confidence:** HIGH
+
+> **Scope Note:** This research focuses on pitfalls SPECIFIC to testing blockchain/NFT flows. NOT general E2E testing issues. See existing unit/integration test coverage for general testing patterns.
 
 ---
 
-## Security Pitfalls (P0 - Blocks Launch)
+## Critical Pitfalls
 
-### Private Key Handling
+### Pitfall 1: Transaction Timing Race Conditions
 
-**Pitfall:** Logging private keys, encryption keys, or mnemonics during development or error handling.
+**What goes wrong:**
+Tests check for blockchain results (NFT ownership, balance changes, commission updates) immediately after calling wallet API, before the transaction has been confirmed. The test passes locally (fast local node) but fails on testnet/production where confirmations take 12+ blocks.
 
 **Why it happens:**
-
-- Debug logging during contract interaction development
-- Error messages that include full transaction objects
-- Console statements left in production code
-
-**Warning signs:**
-
-- `console.log` statements in wallet-api or hooks containing `privateKey`, `signer`, `wallet`
-- Error stack traces showing key material
-- Keys visible in PocketBase logs (`/tmp/pocketbase.log`)
+Blockchain confirmations are asynchronous and variable. Developers accustomed to synchronous HTTP testing assume the API call returning means the transaction is complete. The wallet API returns `txHash` but confirmation happens later.
 
 **Consequences:**
 
-- Complete wallet compromise
-- User fund theft
-- Regulatory/compliance violations
+- Flaky tests: pass sometimes, fail sometimes
+- False negatives: "test failed but feature works"
+- Silent data corruption: PocketBase records created before blockchain confirms
 
 **Prevention:**
 
 ```javascript
-// ❌ NEVER DO THIS
-console.log("Wallet created:", wallet) // Contains privateKey
-console.log("Signer:", signer) // Contains key
+// WRONG: Check immediately
+await walletApi.mintEgg({ ... });
+await page.locator('[data-testid="nft-card"]').waitFor(); // FAILS
 
-// ✅ CORRECT
-console.log("Wallet created:", { address: wallet.address })
-console.log("Transaction sent:", { hash: tx.hash, to: tx.to })
+// RIGHT: Poll for confirmation with timeout
+await walletApi.mintEgg({ ... });
+await pollForConfirmation({
+  check: () => page.locator('[data-testid="nft-card"]').isVisible(),
+  timeout: 30000, // BSC ~3s per block × 12 confirmations
+  interval: 2000
+});
+```
 
-// Redact sensitive fields in error messages
+**Warning signs:**
+
+- Tests that pass locally but fail on testnet
+- Tests with hardcoded `waitFor(5000)` delays
+- "Element not found" errors after API returns success
+
+**Phase to address:** Phase 1 — Test Infrastructure Setup
+
+---
+
+### Pitfall 2: Wallet Popup Handling Flakiness
+
+**What goes wrong:**
+When testing flows that require user wallet interaction (MetaMask, Coinbase Wallet), wallet popups appear asynchronously with unpredictable timing. Tests fail because they can't detect or interact with popups reliably.
+
+**Why it happens:**
+Wallet extensions inject UI that appears outside the page context. Playwright/Cypress can't see wallet popups unless specifically configured. Popups appear at random delays (0.5s-5s) depending on wallet implementation.
+
+**Consequences:**
+
+- 30-50% test flakiness rate
+- Tests fail on CI but pass locally (different wallet state)
+- Impossible to test real transaction signing flows
+
+**Prevention:**
+For this project (gas sponsorship by relayer), this is mitigated:
+
+- Platform relayer signs all transactions — users don't need wallet popups
+- Tests mock `window.ethereum` for read-only calls (balance checks)
+
+If adding user-signed transactions later:
+
+```javascript
+// Use web3-mock in Playwright
+await page.addInitScript({
+  content:
+    readFileSync("@depay/web3-mock/dist/umd/index.bundle.js") +
+    `\nWeb3Mock.mock({ blockchain: 'ethereum', accounts: { return: [TEST_ADDRESS] } });`,
+})
+```
+
+Or use Synpress/OnchainTestKit frameworks designed for wallet testing.
+
+**Warning signs:**
+
+- Tests that need "manual wallet interaction" notes
+- Transaction flows that only work with "already connected wallet"
+- CI failures with "timeout waiting for element" after "Connect Wallet" click
+
+**Phase to address:** Phase 1 — if adding user-signed transactions; Already mitigated by gas sponsorship
+
+---
+
+### Pitfall 3: Shared On-Chain State Causing Test Interference
+
+**What goes wrong:**
+When multiple E2E tests run in parallel against the same blockchain (testnet or production fork), they share wallet addresses and contract state. Test A's mint affects Test B's ownership check. Tests interfere with each other unpredictably.
+
+**Why it happens:**
+Standard E2E test runners (Playwright, Cypress) parallelize tests for speed. But blockchain state is shared — you can't have isolated "test databases" like traditional apps. All tests see the same contract balances, NFT ownership, commission pools.
+
+**Consequences:**
+
+- Tests fail randomly depending on order
+- "Test suite passes individually but fails when run together"
+- Debugging nightmare: which test caused the state change?
+
+**Prevention:**
+
+1. **Use Anvil/Hardhat local forks per test:**
+
+```javascript
+// Each test gets isolated blockchain
+test("mint flow", async ({ page, localNode }) => {
+  // localNode forks testnet at fixed block number
+  // Test's transactions don't affect other tests
+})
+```
+
+2. **Or: Sequential test execution with state reset:**
+
+```javascript
+// Run tests sequentially, reset state between each
+beforeEach(async () => {
+  await resetTestWalletState() // Clear NFTs, reset balances
+})
+```
+
+3. **Or: Unique test wallets per test:**
+
+```javascript
+// Each test uses different wallet address
+const testWallet = `test_wallet_${testId}_${Date.now()}`
+```
+
+**Warning signs:**
+
+- Tests that pass alone but fail in full suite
+- "Balance mismatch" errors between tests
+- Comments like "TODO: fix parallel test conflicts"
+
+**Phase to address:** Phase 1 — Test Infrastructure Setup (critical for reliable CI)
+
+---
+
+### Pitfall 4: Gas Estimation Silent Failures
+
+**What goes wrong:**
+Tests call smart contract functions without gas estimation. The transaction appears to send but never confirms. `eth_estimateGas` returns an error but tests don't catch it, assuming gas estimation always succeeds.
+
+**Why it happens:**
+Gas estimation can fail when:
+
+- Contract logic would revert (insufficient balance, wrong state)
+- Network congestion changes gas prices mid-test
+- Hardhat console.log in contract (works in fork, fails on real chain)
+
+**Consequences:**
+
+- Transactions stuck in mempool
+- Tests timeout waiting for confirmation
+- Misleading "transaction reverted" errors
+
+**Prevention:**
+The wallet API already has gas buffer pattern:
+
+```javascript
+// server.js pattern (already implemented)
+const gasEstimate = await contract.method.estimateGas(args)
+const gasLimit = (gasEstimate * BigInt(120)) / BigInt(100) // 20% buffer
+
+// For tests: catch estimation failures
 try {
-  await doSomethingWithKey(privateKey)
+  const gasEstimate = await contract.mintEgg.estimateGas(eggId)
 } catch (error) {
-  console.error("Operation failed:", {
-    code: error.code,
-    message: error.message,
-    // privateKey NOT included
-  })
-}
-```
-
-**Detection:**
-
-```bash
-# Audit for key logging
-grep -r "console.log.*privateKey\|console.log.*signer\|console.log.*mnemonic" apps/backend wallet-api
-
-# Check PocketBase logs
-ssh root@host "grep -i 'private\|secret\|key' /tmp/pocketbase.log"
-```
-
-**Phase:** Phase 14 (Wallet-api contract integration)
-
-**Sources:**
-
-- Context7: Ethers v6 Wallet API docs (HIGH confidence)
-- OWASP Smart Contract Security guidelines (HIGH confidence)
-
----
-
-### Transaction Finality Assumptions
-
-**Pitfall:** Treating transaction as confirmed immediately after `tx.wait()` without waiting for sufficient block confirmations.
-
-**Why it happens:**
-
-- Ethers `tx.wait()` defaults to 1 confirmation
-- UI shows "confirmed" too early
-- Chain reorganizations can orphan recently-mined blocks
-
-**Warning signs:**
-
-- UI shows "Success!" immediately after `tx.wait()`
-- Balance updates before N confirmations (N < 5 for BSC)
-- No confirmation count displayed to users
-
-**Consequences:**
-
-- Users see funds that may disappear after reorg
-- Economy exploits (users spend before final)
-- Race conditions in hatch/claim flows
-
-**Prevention:**
-
-```javascript
-// ❌ Insufficient (1 confirmation default)
-const receipt = await tx.wait()
-updateBalance()
-
-// ✅ Wait for sufficient confirmations (BSC: 5-12)
-const receipt = await tx.wait(12) // Wait for 12 block confirmations
-const confirmations = await tx.confirmations()
-
-// Update UI only after sufficient confirmations
-if (confirmations >= 12) {
-  updateBalance()
-  toast.success("Transaction confirmed (12 blocks)")
-}
-```
-
-**BSC-specific guidance:**
-
-- Testnet: 5 confirmations (faster blocks, less security)
-- Mainnet: 12-15 confirmations (production security)
-
-**Detection:**
-
-```bash
-# Check for insufficient wait patterns
-grep -r "tx.wait()" apps/web wallet-api | grep -v "wait(5\|wait(12\|wait(\d"
-```
-
-**Phase:** Phase 14 (Contract integration)
-
-**Sources:**
-
-- Context7: Ethers v6 TransactionResponse.wait() docs (HIGH confidence)
-- QuickNode reorg handling docs (MEDIUM confidence)
-
----
-
-### Gas Estimation Failures
-
-**Pitfall:** Not handling gas estimation errors, leading to failed transactions or overpayment.
-
-**Why it happens:**
-
-- Network congestion changes gas prices rapidly
-- Contract state changes between estimation and execution
-- Insufficient balance for gas + transaction
-
-**Warning signs:**
-
-- Transactions failing with "out of gas"
-- Users reporting "transaction reverted" without clear error
-- No retry logic for gas estimation
-
-**Consequences:**
-
-- Failed minting/feeding operations
-- Users pay gas for reverted transactions
-- Poor UX during high network congestion
-
-**Prevention:**
-
-```javascript
-// ❌ No error handling
-const gasLimit = await contract.estimateGas.mintEgg(eggId)
-const tx = await contract.mintEgg(eggId, { gasLimit })
-
-// ✅ With fallback and buffer
-async function estimateWithFallback(method, params, baseGasLimit) {
-  try {
-    const estimated = await method.estimateGas(...params)
-    // Add 20% buffer for safety
-    return estimated.mul(120).div(100)
-  } catch (estimateError) {
-    console.warn("Gas estimate failed, using fallback:", estimateError)
-    // Use known safe default for this operation
-    return ethers.BigNumber.from(baseGasLimit)
+  if (error.code === "UNPREDICTABLE_GAS_LIMIT") {
+    // Contract would revert — test precondition not met
+    console.error("Gas estimation failed — contract state invalid for this call")
   }
 }
+```
 
-const gasLimit = await estimateWithFallback(
-  contract.mintEgg,
-  [eggId],
-  150000 // Known safe default for mintEgg
+**Warning signs:**
+
+- "cannot estimate gas; transaction may fail" errors
+- Transactions pending indefinitely in test logs
+- Tests that work in fork but fail on deployed contract
+
+**Phase to address:** Phase 2 — Transaction Flow Testing
+
+---
+
+### Pitfall 5: RPC Rate Limiting During Test Suites
+
+**What goes wrong:**
+E2E tests make many RPC calls (balance checks, contract reads, transaction receipts). Public RPC endpoints (0xl3, BSC testnet) rate-limit aggressive callers. Test suite fails partway through with "429 Too Many Requests" or connection timeouts.
+
+**Why it happens:**
+A full E2E suite might make 100+ RPC calls per minute. Free RPC tiers limit to ~10-50 calls/second. Tests polling for confirmations exacerbate this.
+
+**Consequences:**
+
+- CI failures from RPC throttling
+- Tests that pass with 1 user fail with 10 parallel tests
+- Random "network timeout" errors
+
+**Prevention:**
+
+1. **Use local Anvil fork for test suite (eliminates RPC calls to public endpoint):**
+
+```javascript
+// Fork once, run all tests against local node
+const anvil = await spawnAnvil({
+  forkUrl: BSC_TESTNET_RPC,
+  forkBlockNumber: FIXED_BLOCK, // Deterministic state
+})
+```
+
+2. **Or: Reduce polling frequency in tests:**
+
+```javascript
+// WRONG: Poll every 0.5s (rate limit risk)
+await poll({ interval: 500, timeout: 60000 })
+
+// RIGHT: Poll every 3s (BSC block time)
+await poll({ interval: 3000, timeout: 60000 })
+```
+
+3. **Or: Use paid RPC tier for CI (Alchemy, QuickNode):**
+   Higher rate limits for automated testing.
+
+**Warning signs:**
+
+- "429" or "rate limited" errors in test logs
+- Connection timeouts after many tests
+- Tests that pass with `--workers=1` but fail with `--workers=4`
+
+**Phase to address:** Phase 1 — Test Infrastructure Setup
+
+---
+
+### Pitfall 6: Gas Sponsorship Wallet Exhaustion
+
+**What goes wrong:**
+The platform relayer wallet (`RELAYER_PRIVATE_KEY`) pays gas for all user operations. During extensive E2E testing, the relayer runs out of BNB. Subsequent tests fail with "insufficient funds for gas".
+
+**Why it happens:**
+Gas costs accumulate. A test suite running 50 mint/hatch/breed flows might cost 0.1-0.5 BNB. Relayer wallet not refilled between test runs.
+
+**Consequences:**
+
+- Tests fail mid-suite
+- False negative: feature works but test fails from gas exhaustion
+- Production issue if relayer exhausted in prod testing
+
+**Prevention:**
+
+1. **Monitor relayer balance in test setup:**
+
+```javascript
+beforeAll(async () => {
+  const relayerBalance = await provider.getBalance(RELAYER_ADDRESS)
+  if (relayerBalance < ethers.parseEther("0.5")) {
+    throw new Error("Relayer wallet needs BNB refill before tests")
+  }
+})
+```
+
+2. **Use Anvil fork with unlimited gas:**
+
+```javascript
+// Local fork gives free ETH/BNB to test accounts
+await anvil.setBalance(RELAYER_ADDRESS, ethers.parseEther("1000"))
+```
+
+3. **Auto-refill relayer in test environment:**
+
+```javascript
+// Fund relayer from test faucet before suite
+await testFaucet.sendTransaction({ to: RELAYER_ADDRESS, value: parseEther("1") })
+```
+
+**Warning signs:**
+
+- "insufficient funds for intrinsic transaction cost" errors
+- Relayer balance < 0.1 BNB before tests
+- Tests that pass first run fail second run (without refill)
+
+**Phase to address:** Phase 1 — Test Infrastructure Setup
+
+---
+
+### Pitfall 7: Static Export Cannot Mock LINE OAuth
+
+**What goes wrong:**
+This project uses Next.js static export (Cloudflare Pages). Tests need to mock LINE OAuth to create authenticated sessions. But static export has no server-side routes to intercept/authenticate — OAuth callback happens at LINE's servers, not ours.
+
+**Why it happens:**
+Static export means:
+
+- No API routes to intercept OAuth flow
+- No server-side session handling
+- LINE OAuth requires real LINE API calls or complex client-side mocking
+
+**Consequences:**
+
+- Can't test authenticated flows (mint, feed, hatch) without real LINE login
+- Tests depend on external LINE service (flaky, slow)
+- Can't create test users programmatically
+
+**Prevention:**
+
+1. **Test against PocketBase directly (bypass LINE OAuth):**
+
+```javascript
+// Create test user in PocketBase for E2E tests
+const testUser = await pocketBaseAdmin.users.create({
+  email: `test_${Date.now()}@test.com`,
+  password: "testpass123",
+})
+const authToken = await pocketBaseAdmin.users.auth(testUser)
+
+// Inject auth into browser
+await page.goto("/")
+await page.evaluate((token) => {
+  localStorage.setItem("pb_auth", JSON.stringify(token))
+}, authToken)
+```
+
+2. **Or: Test wallet API directly (no frontend OAuth):**
+
+```javascript
+// Test wallet-api endpoints with user_id from PocketBase
+// Skip frontend authentication layer
+const response = await walletApi.post('/api/wallet/mint-egg', {
+  userId: testUser.id,
+  wallet: testWallet.address,
+  ...
+});
+```
+
+3. **Or: Create LINE OAuth mock service:**
+
+```javascript
+// Standalone mock server that mimics LINE OAuth
+// Redirect to mock instead of real LINE
+await page.route("**/access.line.me/**", (route) =>
+  route.fulfill({
+    status: 302,
+    headers: { Location: `http://localhost:3000/auth/callback?code=test_code` },
+  })
 )
 ```
 
-**Detection:**
+**Warning signs:**
 
-- Monitor gas estimation failure rate in logs
-- Track transaction revert reasons
+- Tests requiring "manual LINE login before running"
+- "Cannot test without LINE account" documentation
+- Auth flows only testable with real user credentials
 
-**Phase:** Phase 14 (Contract integration)
-
-**Sources:**
-
-- Context7: Ethers v6 Signer API (HIGH confidence)
-- Ethers error handling documentation (HIGH confidence)
+**Phase to address:** Phase 1 — Test Infrastructure Setup
 
 ---
 
-## Data Integrity Pitfalls (P0 - Blocks Launch)
+### Pitfall 8: NFT Ownership Check Before Blockchain Confirms
 
-### Duplicate Deposit Tracking
-
-**Pitfall:** Counting the same USDT Transfer event multiple times, inflating user balances.
+**What goes wrong:**
+Tests verify NFT ownership (`ownerOf(tokenId)`) immediately after mint API returns. The PocketBase record exists but blockchain ownership hasn't transferred yet. Ownership check fails.
 
 **Why it happens:**
+The mint flow has two stages:
 
-- Polling runs multiple times before processed event is stored
-- No deduplication on transaction hash
-- Race conditions in concurrent poll requests
+1. Transaction submitted → API returns txHash
+2. Transaction confirmed → NFT ownership transfers on-chain
 
-**Warning signs:**
-
-- User balance increases without new deposit
-- Multiple deposit records with same `tx_hash`
-- Logs show same event processed multiple times
+PocketBase creates record optimistically (before confirmation). Tests checking `ownerOf` hit the blockchain directly.
 
 **Consequences:**
 
-- Users get free USDT
-- Economy inflation
-- Reserve fund depletion
+- False negative: NFT minted but test says "not owned"
+- Race condition between PocketBase and blockchain state
+- Tests pass with delay, fail without
 
 **Prevention:**
 
 ```javascript
-// ✅ Database-level deduplication (PostgreSQL/PocketBase)
-// Use unique constraint on tx_hash
-CREATE UNIQUE INDEX idx_deposits_tx_hash ON deposits(tx_hash);
+// Check ownership AFTER confirmation, not after API response
+await walletApi.mintEgg({ ... });
+// Wait for the txHash to be confirmed
+await waitForTransactionConfirmation(txHash, { confirmations: 12 });
 
-// ✅ Application-level check (current hook pattern)
-let existingDeposit = null
-try {
-  existingDeposit = $app.findFirstRecordByData("deposits", "tx_hash", txHash)
-} catch (err) {
-  // Not found = OK to process
-}
-
-if (existingDeposit) {
-  console.log('Deposit already tracked:', txHash)
-  return e.json(200, { success: true, data: { skipped: true } })
-}
-
-// Create deposit record AFTER verification
-const deposit = $app.dao().findRecordByName("deposits")
-deposit.set("tx_hash", txHash)
-// ... other fields
-$app.dao().saveRecord(deposit)
+// NOW check ownership
+const owner = await contract.ownerOf(tokenId);
+expect(owner.toLowerCase()).toBe(userWallet.toLowerCase());
 ```
 
-**Database constraint (recommended):**
+Or: Use PocketBase as ownership source (reflects UI state):
 
-```sql
--- Add unique index to prevent duplicates at DB level
-CREATE UNIQUE INDEX idx_deposits_unique ON deposits(tx_hash, log_index);
+```javascript
+// UI reads from PocketBase, not blockchain
+const nftRecord = await pocketBase.collection("egg_nfts").getFirstListItem(`token_id="${tokenId}"`)
+expect(nftRecord.owner).toBe(userId)
 ```
-
-**Detection:**
-
-```sql
--- Query for duplicate deposits
-SELECT tx_hash, COUNT(*)
-FROM deposits
-GROUP BY tx_hash
-HAVING COUNT(*) > 1;
-```
-
-**Phase:** Phase 15 (Track-deposit implementation)
-
-**Sources:**
-
-- QuickNode reorg handling (HIGH confidence)
-- EventDock idempotency patterns (HIGH confidence)
-- Current hook `13-track-deposit.pb.js` analysis (HIGH confidence)
-
----
-
-### Chain Reorganization Handling
-
-**Pitfall:** Not detecting or handling blockchain reorganizations, leading to incorrect deposit tracking.
-
-**Why it happens:**
-
-- Blocks can be orphaned during network consensus changes
-- Polling from "latest" may miss reorg events
-- No verification of parent hash continuity
 
 **Warning signs:**
 
-- Deposit records with block numbers that later disappear
-- Transaction hashes not found in canonical chain
-- Balance discrepancies after network hiccups
+- Tests with `sleep(5000)` before ownership checks
+- "owner mismatch" errors after successful mint
+- Blockchain reads failing after API success
+
+**Phase to address:** Phase 2 — Mint Flow Testing
+
+---
+
+### Pitfall 9: VRF Hatch Fulfillment Mock Complexity
+
+**What goes wrong:**
+Tests for hatch flow (`hatch-egg-vrf`) require Chainlink VRF to return random values. On testnet, VRF fulfillment takes 30-60 seconds and costs LINK. Tests timeout or fail without proper VRF mock.
+
+**Why it happens:**
+VRF is an asynchronous callback:
+
+1. Request randomness → transaction submits
+2. VRF coordinator fulfills → callback transaction (separate)
+3. Contract receives random words → hatch completes
+
+Tests can't control this timing on real VRF.
 
 **Consequences:**
 
-- Tracked deposits that never actually occurred
-- Balance inflation
-- Audit trail corruption
+- Hatch tests take 60+ seconds (VRF fulfillment)
+- Tests fail if VRF coordinator down
+- Can't test specific randomness outcomes (rarity testing)
+
+**Prevention:**
+
+1. **Use VRF Mock contract for tests:**
+
+```javascript
+// Deploy VRFCoordinatorV2Mock in test environment
+const vrfMock = await deployVRFCoordinatorMock()
+await vrfMock.setConfig(/* test config */)
+
+// After hatch request, manually fulfill
+const requestId = await hatchContract.lastRequestId()
+await vrfMock.fulfillRandomWords(requestId, hatchContract.address, [
+  /* test random values */
+])
+```
+
+2. **Or: Test VRF flow separately from hatch outcome:**
+
+```javascript
+// Test VRF request submission (fast)
+expect(hatchResponse.requestId).toBeDefined()
+
+// Test hatch completion separately with pre-hatched egg
+// (skip VRF timing entirely)
+```
+
+**Warning signs:**
+
+- Tests with 60-second timeouts for hatch
+- "VRF fulfillment timeout" errors
+- Rarity distribution tests impossible
+
+**Phase to address:** Phase 4 — Hatch Flow Testing
+
+---
+
+### Pitfall 10: Commission Calculation Timing Mismatch
+
+**What goes wrong:**
+Tests verify commission earned after marketplace sale. The commission distribution happens asynchronously (via contract events). Tests check commission balance before blockchain processes the distribution.
+
+**Why it happens:**
+Commission flow:
+
+1. Marketplace sale → USDT transfer to seller
+2. Commission contract receives fee → distribution triggers
+3. Referrer balances update → separate internal accounting
+
+Tests checking `commissionBalances(address)` immediately after sale see stale values.
+
+**Consequences:**
+
+- "Commission balance 0" after successful sale
+- False negative: commission works but test fails
+- Complex debugging: is contract broken or timing wrong?
 
 **Prevention:**
 
 ```javascript
-// ✅ Store block hash alongside each deposit
-const deposit = {
-  tx_hash: txHash,
-  block_number: blockNumber,
-  block_hash: blockHash, // CRITICAL for reorg detection
-  log_index: event.logIndex, // Unique within block
-}
+// Wait for commission distribution event
+const saleTx = await marketplace.buyNFT(...);
+await saleTx.wait();
 
-// ✅ Verify parent hash continuity on each poll
-const latestBlock = await provider.getBlock("latest")
-const storedBlock = await provider.getBlock(currentBlock - 1)
-
-if (latestBlock.parentHash !== storedBlock.hash) {
-  console.warn("Reorg detected! Rolling back...")
-  await rollbackToCommonAncestor()
-  await reprocessCanonicalChain()
-}
-
-// ✅ Use confirmations (wait N blocks before treating as final)
-const safeBlock = latestBlock.number - 12 // 12 confirmations
-await processEventsUpTo(safeBlock)
+// Poll for commission update
+await pollForCondition({
+  check: async () => {
+    const balance = await commissionContract.commissionBalances(referrerAddress);
+    return balance > 0;
+  },
+  timeout: 30000,
+  interval: 2000
+});
 ```
-
-**Reorg detection flow:**
-
-1. Store `block_hash` for each processed event
-2. On each poll, verify parent hash matches stored hash
-3. If mismatch: detect reorg, rollback to common ancestor
-4. Reprocess from canonical chain
-5. Update/removed orphaned records
-
-**BSC-specific:**
-
-- Reorganizations are rare but DO occur (especially on testnet)
-- Use 12+ confirmations for production (BSC mainnet finality is faster than Ethereum but not instant)
-
-**Phase:** Phase 15 (Track-deposit implementation)
-
-**Sources:**
-
-- Medium: "Understanding Blockchain Reorgs" (HIGH confidence)
-- QuickNode reorg handling guide (HIGH confidence)
-- EIP-8072 transaction inclusion with reorg monitoring (MEDIUM confidence)
-
----
-
-### Missing Event Handling
-
-**Pitfall:** Missing blockchain events due to polling interval gaps or RPC failures.
-
-**Why it happens:**
-
-- Server downtime during critical events
-- RPC rate limiting blocks requests
-- Polling interval too long for fast blockchains
 
 **Warning signs:**
 
-- User deposits exist on-chain but not in database
-- Gaps in `block_number` sequence in deposits table
-- RPC error logs showing 429/500 responses
+- Commission tests with hardcoded delays
+- "Balance should be X but is 0" assertions
+- Tests that pass when run alone (timing) but fail in suite
 
-**Consequences:**
+**Phase to address:** Phase 5 — Marketplace & Commission Testing
 
-- Lost user funds (not tracked)
-- Support tickets
-- Manual reconciliation required
+---
+
+## Moderate Pitfalls
+
+### Pitfall 11: Contract Address Non-Determinism
+
+**What goes wrong:**
+Tests assume contract addresses are fixed. When contracts redeploy (testnet reset, new deployment), test config has wrong addresses. All tests fail with "contract not found".
+
+**Prevention:**
+
+- Use `contract-addresses.json` loaded dynamically
+- Test environment has its own address config
+- CI pipeline updates addresses after deployment
+
+**Phase to address:** Phase 1 — Test Infrastructure Setup
+
+---
+
+### Pitfall 12: PocketBase Test Data Cleanup
+
+**What goes wrong:**
+Tests create NFT records, user wallets, listings in PocketBase. Without cleanup, test database accumulates junk. Later tests fail from duplicate records or stale state.
 
 **Prevention:**
 
 ```javascript
-// ✅ Poll with block range (not just "latest")
-const currentBlock = await provider.getBlockNumber()
-const fromBlock = lastProcessedBlock + 1
-const toBlock = currentBlock - 12 // Leave 12-block buffer for reorgs
-
-const logs = await provider.getLogs({
-  address: contractAddress,
-  topics: [transferSignature, null, toTopic],
-  fromBlock: fromBlock,
-  toBlock: toBlock,
-})
-
-// ✅ Handle RPC failures with retry + exponential backoff
-async function fetchWithRetry(url, options, maxRetries = 3) {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const response = await fetch(url, options)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      return await response.json()
-    } catch (error) {
-      if (i === maxRetries - 1) throw error
-      const delay = Math.pow(2, i) * 1000 // 1s, 2s, 4s
-      await new Promise((r) => setTimeout(r, delay))
-    }
-  }
-}
-
-// ✅ Adaptive chunking for large ranges
-async function fetchLogsAdaptive(fromBlock, toBlock) {
-  const MAX_RANGE = 1000 // Adjust per RPC limits
-  if (toBlock - fromBlock <= MAX_RANGE) {
-    return await fetchLogsOnce(fromBlock, toBlock)
-  }
-
-  // Split range in half and retry
-  const mid = Math.floor((fromBlock + toBlock) / 2)
-  const logs1 = await fetchLogsAdaptive(fromBlock, mid)
-  const logs2 = await fetchLogsAdaptive(mid + 1, toBlock)
-  return [...logs1, ...logs2]
-}
-```
-
-**Detection:**
-
-```sql
--- Find gaps in block processing
-SELECT
-  block_number,
-  LAG(block_number) OVER (ORDER BY block_number) as prev_block,
-  block_number - LAG(block_number) OVER (ORDER BY block_number) as gap
-FROM deposits
-WHERE block_number - LAG(block_number) OVER (ORDER BY block_number) > 1
-ORDER BY block_number DESC;
-```
-
-**Phase:** Phase 15 (Track-deposit implementation)
-
-**Sources:**
-
-- Bitium: "Best On-chain Data Indexing Solutions for dApps in 2026" (HIGH confidence)
-- ChainStack: "Ethereum redundant event listener" (HIGH confidence)
-- Current `13-track-deposit.pb.js` polling pattern (HIGH confidence)
-
----
-
-## Quality Pitfalls (P1 - Technical Debt)
-
-### Untested Mobile Breakpoints
-
-**Pitfall:** Only testing on desktop and one mobile size, missing layout breaks at edge cases.
-
-**Why it happens:**
-
-- Developers test at common breakpoints (375px, 768px)
-- Real devices have varied viewports (320px-430px mobile)
-- DevTools responsive mode doesn't catch all real-device issues
-
-**Warning signs:**
-
-- Horizontal scroll on 320px devices
-- Text too small to read without zooming
-- Touch targets under 44×44px
-- Content overflow on budget Android phones
-
-**Consequences:**
-
-- Poor UX for users with small/old devices
-- Accessibility violations (WCAG 2.2)
-- Increased bounce rate on mobile
-
-**Prevention:**
-
-```typescript
-// ✅ Test matrix configuration (Playwright example)
-const viewports = [
-  { width: 320, name: "mobile-s" }, // iPhone SE / budget Android
-  { width: 375, name: "mobile-m" }, // iPhone 12-15 mini
-  { width: 390, name: "mobile-l" }, // iPhone 14/15
-  { width: 430, name: "mobile-xl" }, // iPhone 15 Pro Max
-  { width: 768, name: "tablet" }, // iPad portrait
-  { width: 1024, name: "laptop" }, // Small laptop
-  { width: 1440, name: "desktop" }, // Standard desktop
-]
-
-// ✅ Automated responsive test
-test("no horizontal overflow on all pages", async ({ page }) => {
-  const pages = ["/", "/eggs", "/marketplace", "/dashboard"]
-  const widths = [320, 375, 768, 1024, 1440]
-
-  for (const width of widths) {
-    await page.setViewportSize({ width, height: 800 })
-    for (const path of pages) {
-      await page.goto(path)
-      const hasOverflow = await page.evaluate(
-        () => document.documentElement.scrollWidth > window.innerWidth
-      )
-      expect(hasOverflow).toBe(false)
-    }
-  }
-})
-
-// ✅ Touch target size audit
-test("all interactive elements have 44px touch targets", async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 800 })
-  await page.goto("/")
-
-  const buttons = await page.locator('button, a, [role="button"]').all()
-  for (const button of buttons) {
-    const box = await button.boundingBox()
-    expect(box.width).toBeGreaterThanOrEqual(44)
-    expect(box.height).toBeGreaterThanOrEqual(44)
-  }
+afterAll(async () => {
+  // Clean test records
+  await pocketBaseAdmin.collection("egg_nfts").delete(testRecordId)
+  await pocketBaseAdmin.collection("users").delete(testUserId)
 })
 ```
 
-**Detection:**
+Or: Use separate PocketBase instance for tests.
 
-```bash
-# Manual audit command (Chrome DevTools)
-# Test viewports: 320px, 375px, 768px, 1024px, 1440px
-# Check for: horizontal scroll, text size, touch targets
-
-# Automated Lighthouse audit
-lighthouse http://localhost:3000 --view --preset=performance --form-factor=mobile
-```
-
-**Phase:** Phase 16 (Mobile polish)
-
-**Sources:**
-
-- Mobile Viewer: "How to Test Responsive Design" (HIGH confidence)
-- Peasy Design: "Responsive Design Breakpoints" (HIGH confidence)
-- TestParty: "Mobile Accessibility Patterns" (HIGH confidence)
+**Phase to address:** Phase 1 — Test Infrastructure Setup
 
 ---
 
-### Image Scaling Failures
+### Pitfall 13: USDT Approval Race Condition
 
-**Pitfall:** Images with fixed pixel widths breaking out of containers on mobile.
-
-**Why it happens:**
-
-- Images without `max-width: 100%`
-- Fixed `width` and `height` attributes
-- Missing `aspect-ratio` for CLS prevention
-
-**Warning signs:**
-
-- Horizontal scroll on pages with images
-- Images overflow parent containers
-- Images not loading with correct aspect ratio
-
-**Consequences:**
-
-- Broken layouts
-- Poor Core Web Vitals (CLS scores)
-- Accessibility issues (images not visible on small screens)
-
-**Prevention:**
-
-```css
-/* ✅ Responsive image pattern */
-img {
-  max-width: 100%;
-  height: auto;
-  display: block; /* Remove inline spacing */
-}
-
-/* ✅ Next.js Image component (preferred) */
-import Image from 'next/image'
-
-<Image
-  src="/egg.png"
-  alt="Egg NFT"
-  width={400}
-  height={400}
-  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-  priority
-/>
-
-/* ✅ Container with aspect ratio */
-.egg-card {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  max-width: 400px;
-}
-
-.egg-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-```
-
-**Detection:**
-
-```bash
-# Check for fixed-width images
-grep -r "width: \d+px" apps/web/components | grep -v "max-width"
-
-# Lighthouse CLS audit
-lighthouse http://localhost:3000 --view
-```
-
-**Phase:** Phase 16 (Mobile polish)
-
-**Sources:**
-
-- Responsive Web Design Guide (HIGH confidence)
-- Next.js Image documentation (HIGH confidence)
-
----
-
-### iOS Input Zoom
-
-**Pitfall:** iOS Safari automatically zooms when focusing inputs with font-size < 16px.
-
-**Why it happens:**
-
-- iOS Safari behavior (not a bug)
-- Inputs styled with small font sizes for design
-
-**Warning signs:**
-
-- Screen zooms in unexpectedly on input focus
-- Layout breaks after zoom
-- Users complain about needing to pinch-zoom out
-
-**Consequences:**
-
-- Poor UX on iPhones
-- Broken layouts
-- Accessibility friction
-
-**Prevention:**
-
-```css
-/* ✅ Force 16px minimum on all inputs */
-input,
-textarea,
-select {
-  font-size: 16px; /* Minimum to prevent iOS zoom */
-}
-
-/* ✅ If you need smaller visual size, use scale transform */
-.input-small {
-  font-size: 16px;
-  transform: scale(0.875); /* Visually 14px */
-  transform-origin: left center;
-}
-```
-
-**Detection:**
-
-- Manual testing on iOS device or Safari simulation
-- Check computed font-size of all form inputs
-
-**Phase:** Phase 16 (Mobile polish)
-
-**Sources:**
-
-- Responsive Web Design Guide (HIGH confidence)
-- Apple Human Interface Guidelines (HIGH confidence)
-
----
-
-## UX Pitfalls (P1 - Technical Debt)
-
-### Gesture Conflicts
-
-**Pitfall:** Custom swipe gestures conflict with browser back/forward navigation gestures.
-
-**Why it happens:**
-
-- Mobile browsers use edge swipes for navigation
-- Custom horizontal scroll/swipe handlers don't prevent defaults
-- No threshold sensitivity for edge swipes
-
-**Warning signs:**
-
-- Users accidentally navigate back when swiping left
-- Swipe-to-feed triggers browser history navigation
-- Complaints about "app going back randomly"
-
-**Consequences:**
-
-- Lost work (users lose in-progress actions)
-- Frustration
-- Abandoned sessions
+**What goes wrong:**
+Tests for marketplace buy flow assume USDT approval exists. The approval transaction and buy transaction happen in sequence. If tests check approval allowance mid-approval, they see stale value.
 
 **Prevention:**
 
 ```javascript
-// ✅ Prevent default on edge swipes (React example)
-function usePreventSwipeNavigation() {
-  useEffect(() => {
-    const handleTouchStart = (e: TouchEvent) => {
-      // Don't prevent on edge swipes (browser navigation zone)
-      const isEdgeSwipe = e.touches[0].clientX < 20 ||
-                         e.touches[0].clientX > window.innerWidth - 20
-
-      if (isEdgeSwipe) return // Let browser handle edge swipes
-
-      // Prevent internal swipes from triggering browser nav
-      if (shouldHandleSwipe(e)) {
-        e.preventDefault()
-      }
-    }
-
-    document.addEventListener('touchstart', handleTouchStart, { passive: false })
-    return () => document.removeEventListener('touchstart', handleTouchStart)
-  }, [])
-}
-
-// ✅ Use overscroll-behavior for horizontal scroll containers
-.css-horizontal-scroll {
-  overflow-x: auto;
-  overscroll-behavior-x: contain; /* Prevent pull-to-refresh conflicts */
-}
-
-// ✅ Add threshold sensitivity (avoid accidental triggers)
-function handleSwipe(deltaX: number) {
-  const THRESHOLD = 50 // pixels
-  if (Math.abs(deltaX) < THRESHOLD) return // Ignore small swipes
-
-  // Process swipe only if it exceeds threshold
-  if (deltaX > THRESHOLD) {
-    handleSwipeRight()
-  } else if (deltaX < -THRESHOLD) {
-    handleSwipeLeft()
-  }
-}
+// Ensure approval completes before buy
+await usdtContract.approve(marketplaceAddress, price);
+await approvalTx.wait(); // WAIT for approval confirmation
+// NOW execute buy
+await marketplace.buyNFT(...);
 ```
 
-**Detection:**
-
-- Manual testing on iOS Safari and Chrome mobile
-- Check for edge swipe conflicts
-
-**Phase:** Phase 17 (Touch interactions)
-
-**Sources:**
-
-- WebKit PR #40377: "Prevent navigation transition swipe gestures" (HIGH confidence)
-- Stack Overflow: "overscroll-behavior does not prevent browser navigation" (MEDIUM confidence)
-- WICG proposal: "API to Control User Gesture Navigation" (MEDIUM confidence)
+**Phase to address:** Phase 5 — Marketplace Testing
 
 ---
 
-### Hover-Only Interactions
+### Pitfall 14: Breeding Cooldown State
 
-**Pitfall:** Functionality only accessible via `:hover` state, invisible to touch users.
-
-**Why it happens:**
-
-- Desktop-first design patterns
-- Dropdown menus that require hover
-- Tooltips that don't show on tap
-
-**Warning signs:**
-
-- "I can't see the delete button on mobile"
-- Menu items hidden behind hover-only triggers
-- Tooltips never appearing on touch devices
-
-**Consequences:**
-
-- Hidden functionality
-- Accessibility violations
-- Poor mobile UX
-
-**Prevention:**
-
-```css
-/* ❌ Hover-only (BAD) */
-.menu-item:hover .dropdown {
-  display: block;
-}
-
-/* ✅ Touch-friendly alternative */
-.menu-item:hover .dropdown,
-.menu-item:focus-within .dropdown,
-.menu-item[data-touched="true"] .dropdown {
-  display: block;
-}
-
-/* ✅ Add visible button alternative */
-.dropdown-trigger {
-  /* Always visible on mobile */
-  display: block;
-}
-
-@media (hover: hover) {
-  /* Hide trigger on desktop, use hover */
-  .dropdown-trigger {
-    display: none;
-  }
-}
-```
-
-**Detection:**
-
-```bash
-# Find hover-only patterns
-grep -r ":hover" apps/web/components | grep -v "focus\|focus-within"
-
-# Accessibility audit (axe-core)
-npm install -g @axe-core/cli
-axe http://localhost:3000
-```
-
-**Phase:** Phase 17 (Touch interactions)
-
-**Sources:**
-
-- TestParty: "Mobile Accessibility Patterns" (HIGH confidence)
-- WCAG 2.2 guidelines (HIGH confidence)
-
----
-
-### Touch Target Overlap
-
-**Pitfall:** Interactive elements positioned too close together on mobile, causing accidental taps.
-
-**Why it happens:**
-
-- Desktop layouts compressed for mobile
-- Dense information design
-- Missing minimum touch target enforcement
-
-**Warning signs:**
-
-- Users tap wrong button frequently
-- Complaints about "buttons too close together"
-- High error rate on mobile forms
-
-**Consequences:**
-
-- User frustration
-- Incorrect actions (wrong NFT selected)
-- Accessibility violations
-
-**Prevention:**
-
-```css
-/* ✅ Minimum 44×44px touch targets */
-button,
-a,
-[role="button"] {
-  min-height: 44px;
-  min-width: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 12px 16px; /* Use padding, not fixed size */
-}
-
-/* ✅ Add spacing between interactive elements */
-.button-group {
-  display: flex;
-  gap: 8px; /* Adequate spacing */
-}
-
-/* ✅ Check for overlap programmatically */
-/* (Playwright test above catches this) */
-```
-
-**Detection:**
-
-```css
-/* CSS audit for small touch targets */
-.button {
-  min-height: 44px;
-  min-width: 44px;
-}
-```
-
-**Phase:** Phase 17 (Touch interactions)
-
-**Sources:**
-
-- WCAG 2.2 Target Size (Enhanced) guideline (HIGH confidence)
-- Apple Human Interface Guidelines (HIGH confidence)
-- TestParty: "Mobile Accessibility Patterns" (HIGH confidence)
-
----
-
-## Feature Pitfalls (P2 - Nice to Have)
-
-### Feed Economy Exploits
-
-**Pitfall:** Users feeding same egg from multiple concurrent sessions, bypassing consumption limits.
-
-**Why it happens:**
-
-- No database transaction isolation
-- Race condition between "check food count" and "update food count"
-- Optimistic UI updates before server confirmation
-
-**Warning signs:**
-
-- Egg shows 10 food consumed but only 8 food transactions
-- Users hatching eggs with fewer than 10 food
-- Food inventory negative or inconsistent
-
-**Consequences:**
-
-- Free hatches (economy inflation)
-- Food NFT duplication
-- Platform revenue loss
+**What goes wrong:**
+Tests for breeding check `canBreed(tokenId)`. Animals have cooldown after breeding. If test breeds then immediately checks breeding again, cooldown hasn't updated on-chain yet.
 
 **Prevention:**
 
 ```javascript
-// ✅ Database transaction with atomic update
-// (PocketBase uses SQLite, supports ACID transactions)
-const eggCollection = $app.dao().getCollectionByNameOrId("egg_nfts")
-
-// Use transaction for atomic check-and-update
-$app.dao().runInTransaction(async (txDao) => {
-  // Lock the egg record (simulate with read-write lock)
-  const egg = await txDao.findRecordById("egg_nfts", eggId)
-
-  // Check current food count
-  const currentFoodCount = egg.get("food_count") || 0
-  if (currentFoodCount + foodIds.length > 10) {
-    throw new Error("Egg already has enough food")
-  }
-
-  // Verify ownership of all food items FIRST
-  for (const foodId of foodIds) {
-    const food = await txDao.findRecordById("food_nfts", foodId)
-    if (food.get("owner_id") !== user.id) {
-      throw new Error("Food item not owned by user")
-    }
-    if (food.get("consumed")) {
-      throw new Error("Food item already consumed")
-    }
-  }
-
-  // Atomically update egg food count
-  egg.set("food_count", currentFoodCount + foodIds.length)
-  await txDao.saveRecord(egg)
-
-  // Mark all food items as consumed
-  for (const foodId of foodIds) {
-    const food = await txDao.findRecordById("food_nfts", foodId)
-    food.set("consumed", true)
-    await txDao.saveRecord(food)
-  }
-})
-
-// ✅ Optimistic locking with version field
-// Add 'version' field to egg_nfts collection
-const currentVersion = egg.get("version")
-egg.set("version", currentVersion + 1)
-
-// This will fail if version changed between read and write
-egg.onBeforeSave = (e) => {
-  const dbRecord = $app.dao().findRecordById("egg_nfts", egg.id)
-  if (dbRecord.get("version") !== currentVersion) {
-    throw new Error("Concurrent modification detected")
-  }
-}
+// Wait for cooldown state to reflect on-chain
+await breedTx.wait()
+// BSC ~3s block time, cooldown is in blocks
+await provider.waitForBlock(receipt.blockNumber + 1)
+expect(await animalContract.canBreed(tokenId)).toBe(false)
 ```
 
-**Detection:**
-
-```sql
--- Find eggs with suspicious food counts
-SELECT
-  id,
-  food_count,
-  (SELECT COUNT(*) FROM egg_consumption_logs WHERE egg_id = egg_nfts.id) as logged_feed_count
-FROM egg_nfts
-WHERE food_count != (SELECT COUNT(*) FROM egg_consumption_logs WHERE egg_id = egg_nfts.id);
-```
-
-**Phase:** Phase 17 (Feed implementation)
-
-**Sources:**
-
-- Zealynx: "Asset Duplication Attack" (HIGH confidence)
-- OWASP: "Race condition in crafting" patterns (HIGH confidence)
-- Mav Levin: "Check-then-Act" vulnerability (HIGH confidence)
+**Phase to address:** Phase 6 — Breeding Flow Testing
 
 ---
 
-### Race Condition on Item Consumption
+## Technical Debt Patterns
 
-**Pitfall:** Same food NFT consumed multiple times in concurrent requests.
-
-**Why it happens:**
-
-- Validation occurs before consumption
-- Gap between "check consumed" and "mark consumed"
-- Multiple simultaneous feed requests
-
-**Warning signs:**
-
-- Food NFT consumed count > 1
-- Same food_id appears in multiple feed logs
-- User has fewer food NFTs than logged consumption
-
-**Consequences:**
-
-- Economy exploits
-- NFT duplication
-- Balance sheet errors
-
-**Prevention:**
-
-```javascript
-// ✅ Atomic consumption with unique constraint
-// Database: Add unique index on (food_id, consumed) where consumed = true
-CREATE UNIQUE INDEX idx_food_consumed_unique ON food_nfts(id) WHERE consumed = true;
-
-// Application: Check existence before update
-try {
-  const food = await $app.dao().findRecordById("food_nfts", foodId)
-
-  if (food.get('consumed')) {
-    throw new Error('Food already consumed')
-  }
-
-  // Mark as consumed (unique constraint will prevent duplicates)
-  food.set('consumed', true)
-  await $app.dao().saveRecord(food)
-
-} catch (error) {
-  if (error.message.includes('unique constraint')) {
-    console.error('Concurrent consumption detected:', foodId)
-    return e.json(400, {
-      success: false,
-      error: { message: 'Food already consumed', code: 'DUPLICATE_CONSUMPTION' }
-    })
-  }
-  throw error
-}
-```
-
-**Phase:** Phase 17 (Feed implementation)
-
-**Sources:**
-
-- OWASP: "Race condition in crafting" (HIGH confidence)
-- Cyfrin: "Double spending attacks" (HIGH confidence)
+| Shortcut                         | Immediate Benefit          | Long-term Cost                              | When Acceptable            |
+| -------------------------------- | -------------------------- | ------------------------------------------- | -------------------------- |
+| Hardcoded `sleep(5000)` delays   | Tests pass quickly locally | Flaky on testnet, fails on prod             | Never — use polling        |
+| Shared test wallet for all tests | Simpler setup              | Tests interfere, parallelization impossible | MVP demo only              |
+| Skip gas estimation in tests     | Faster test execution      | Hidden contract bugs, production failures   | Never                      |
+| Test against production testnet  | No local setup             | Slow, rate limits, state pollution          | Only for final smoke tests |
+| Mock blockchain entirely         | Very fast tests            | Doesn't test real contract behavior         | Unit tests only, not E2E   |
 
 ---
 
-### Missing Feed Validation
+## Integration Gotchas
 
-**Pitfall:** Not validating all preconditions before calling wallet-api feed-egg endpoint.
-
-**Why it happens:**
-
-- Trusts frontend input without verification
-- Skips ownership checks
-- Doesn't verify egg hatched status
-
-**Warning signs:**
-
-- Hatched eggs being fed
-- Users feeding eggs they don't own
-- Food items consumed without transfer
-
-**Consequences:**
-
-- Invalid blockchain transactions (wasted gas)
-- Economy exploits
-- Error cascades
-
-**Prevention:**
-
-```javascript
-// ✅ Comprehensive validation checklist
-routerAdd("POST", "/api/v2/feed-egg", (e) => {
-  const user = $apis.requireAuth(e)
-  const { egg_token_id, food_ids } = e.parseBody()
-
-  // 1. Validate inputs
-  if (!egg_token_id || food_ids.length === 0) {
-    return e.json(400, { error: { message: "Invalid input", code: "VALIDATION_ERROR" } })
-  }
-
-  // 2. Verify egg exists and owned by user
-  const egg = $app.findFirstRecordByData("egg_nfts", "token_id", egg_token_id)
-  if (!egg || egg.get("owner_id") !== user.id) {
-    return e.json(404, { error: { message: "Egg not found or not owned", code: "NOT_FOUND" } })
-  }
-
-  // 3. Verify egg not hatched
-  if (egg.get("is_hatched")) {
-    return e.json(400, { error: { message: "Egg already hatched", code: "ALREADY_HATCHED" } })
-  }
-
-  // 4. Verify egg not already has 10 food
-  if (egg.get("food_count") >= 10) {
-    return e.json(400, { error: { message: "Egg already fully fed", code: "MAX_FOOD" } })
-  }
-
-  // 5. Verify user owns ALL food items
-  // 6. Verify food items not consumed
-  // 7. Verify food_ids don't contain duplicates
-  // 8. Verify feed won't exceed 10 food limit
-
-  // THEN call wallet-api
-})
-```
-
-**Phase:** Phase 17 (Feed implementation)
-
-**Sources:**
-
-- Current `16-feed-egg.pb.js` hook analysis (HIGH confidence)
-- OWASP input validation guidelines (HIGH confidence)
+| Integration     | Common Mistake                                | Correct Approach                                           |
+| --------------- | --------------------------------------------- | ---------------------------------------------------------- |
+| LINE OAuth      | Try to mock OAuth callback in static export   | Create test user in PocketBase directly, inject auth token |
+| PocketBase      | Assume records sync instantly with blockchain | Poll for PocketBase state to match blockchain              |
+| BSC RPC         | Use single RPC URL for all tests              | Fork testnet once, run tests against local Anvil node      |
+| Chainlink VRF   | Wait for real VRF fulfillment (60s timeout)   | Use VRFCoordinatorV2Mock for deterministic testing         |
+| Gas Sponsorship | Assume relayer always has BNB                 | Check/fund relayer balance before test suite               |
+| USDT Contract   | Test transfer without approval                | Ensure `approve()` confirms before `transferFrom()`        |
 
 ---
 
-## Summary by Phase
+## Performance Traps
 
-| Phase                  | Primary Pitfall Category | Critical Pitfalls                                         | Prevention Priority                                                         |
-| ---------------------- | ------------------------ | --------------------------------------------------------- | --------------------------------------------------------------------------- |
-| **14 (Wallet-api)**    | Security (P0)            | Private key logging, transaction finality, gas estimation | Implement secure logging patterns, add confirmation waits, add gas fallback |
-| **15 (Track-deposit)** | Data integrity (P0)      | Duplicate tracking, chain reorganizations, missing events | Add unique constraints, store block hashes, implement retry logic           |
-| **16 (Mobile polish)** | Quality (P1)             | Untested breakpoints, image scaling, iOS zoom             | Test matrix (320px-1440px), max-width: 100%, 16px inputs                    |
-| **17 (Feed)**          | Feature (P2)             | Economy exploits, race conditions, missing validation     | Database transactions, optimistic locking, comprehensive validation         |
-
----
-
-## Cross-Cutting Concerns
-
-### Error Message Security
-
-**Pitfall:** Detailed error messages expose system internals or assist attackers.
-
-**Prevention:**
-
-```javascript
-// ❌ Overly detailed (BAD)
-throw new Error(`Failed to decrypt wallet with key: ${masterKey.slice(0, 10)}...`)
-
-// ✅ Generic user message, detailed log
-console.error("Wallet decryption failed:", {
-  error: error.message,
-  userId: user.id,
-  // masterKey NOT logged
-})
-e.json(500, {
-  success: false,
-  error: { message: "Wallet operation failed", code: "WALLET_ERROR" },
-})
-```
-
-**Phase:** All phases
+| Trap                                      | Symptoms                | Prevention                                                  | When It Breaks       |
+| ----------------------------------------- | ----------------------- | ----------------------------------------------------------- | -------------------- |
+| RPC polling at 0.5s intervals             | Rate limit errors in CI | Poll at BSC block time (3s)                                 | 10+ parallel tests   |
+| 12 confirmation waits for every assertion | Tests take 36s each     | Use 1 confirmation for tests, verify critical flows with 12 | 50+ tests in suite   |
+| Per-test blockchain forks                 | CI memory exhaustion    | Fork once, reset state between tests                        | 20+ parallel workers |
+| Real VRF calls in every hatch test        | 60s+ per hatch test     | Mock VRF, test VRF flow separately                          | 3+ hatch tests       |
 
 ---
 
-### Rate Limiting
+## Security Mistakes
 
-**Pitfall:** No rate limiting on expensive blockchain endpoints.
-
-**Consequences:**
-
-- API abuse
-- RPC quota exhaustion
-- Service denial
-
-**Prevention:**
-
-```javascript
-// Add rate limiting to wallet-api endpoints
-// Use express-rate-limit or similar
-const rateLimit = require("express-rate-limit")
-
-const depositPollLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 10, // 10 requests per minute
-  message: "Too many requests, please try again later",
-})
-
-app.post("/api/v2/deposit/poll", depositPollLimiter, async (req, res) => {
-  // ...
-})
-```
-
-**Phase:** Phase 15 (Track-deposit)
+| Mistake                                  | Risk                             | Prevention                                       |
+| ---------------------------------------- | -------------------------------- | ------------------------------------------------ |
+| Using production keys in tests           | Key exposure in CI logs          | Use test-only keys, never commit production keys |
+| Test wallet with real USDT               | Loss of funds if tests misbehave | Use testnet/mock USDT, never real tokens         |
+| Relayer private key in test config       | Key leak if config exposed       | Use env vars, separate test relayer wallet       |
+| Skipping ownership verification in tests | Users could receive wrong NFTs   | Always verify `ownerOf()` after mint             |
 
 ---
 
-## Confidence Assessment
+## UX Pitfalls
 
-| Area                      | Confidence | Notes                                                    |
-| ------------------------- | ---------- | -------------------------------------------------------- |
-| Private key security      | HIGH       | Context7 (official Ethers docs)                          |
-| Transaction confirmations | HIGH       | Context7 + QuickNode                                     |
-| Gas estimation            | HIGH       | Context7 (Ethers Signer API)                             |
-| Duplicate prevention      | HIGH       | EventDock + QuickNode + database best practices          |
-| Chain reorganizations     | MEDIUM     | Multiple sources but BSC-specific behavior needs testing |
-| Mobile testing matrix     | HIGH       | Multiple responsive design guides                        |
-| Touch target sizing       | HIGH       | WCAG 2.2 + Apple HIG                                     |
-| Gesture conflicts         | MEDIUM     | WebKit + StackOverflow (browser-dependent)               |
-| Feed economy exploits     | HIGH       | OWASP + Zealynx GameFi security                          |
+| Pitfall                                | User Impact                   | Better Approach                       |
+| -------------------------------------- | ----------------------------- | ------------------------------------- |
+| "Transaction pending" forever in tests | Users see stuck UI            | Test loading states, error handling   |
+| No feedback on gas estimation failure  | User thinks feature broken    | Test gas error UI messages            |
+| Hatch button disabled during VRF wait  | User confused why can't hatch | Test UI state during VRF pending      |
+| Commission not showing immediately     | Users think referral broken   | Test optimistic UI vs confirmed state |
 
 ---
 
-## Research Recommendations for Phases
+## "Looks Done But Isn't" Checklist
 
-**Phase 14 (Wallet-api):**
-
-- Likely needs: Context7 ethers.js queries for specific contract patterns
-- Unlikely to need: Deep research (standard patterns documented)
-
-**Phase 15 (Track-deposit):**
-
-- Likely needs: BSC reorg frequency data, RPC provider rate limits
-- Unlikely to need: Core deduplication patterns (well-documented)
-
-**Phase 16 (Mobile polish):**
-
-- Likely needs: User analytics for device viewport distribution
-- Unlikely to need: Breakpoint research (standard patterns suffice)
-
-**Phase 17 (Feed):**
-
-- Likely needs: Economy balance modeling, exploit scenario testing
-- Unlikely to need: Core transaction patterns (standard database ACID)
+- [ ] **Mint Flow:** NFT appears in UI but blockchain ownership unconfirmed — verify `ownerOf()` returns correct address
+- [ ] **Feed Flow:** UI shows 10/10 progress but blockchain `foodCount` < 10 — verify contract state matches UI
+- [ ] **Hatch Flow:** Hatch dialog closes but VRF request pending — verify VRF fulfillment completes
+- [ ] **Marketplace Buy:** Ownership transfers in PocketBase but blockchain still shows seller — verify `ownerOf()` matches buyer
+- [ ] **Commission Claim:** UI shows success but USDT not in wallet — verify actual token balance change
+- [ ] **LINE OAuth:** Session token exists but wallet not created — verify `users.wallet_address` populated
 
 ---
 
-_**Last updated:** 2026-04-18 — Research for v0.0.7 Security & Quality milestone_
+## Recovery Strategies
+
+| Pitfall                   | Recovery Cost | Recovery Steps                                           |
+| ------------------------- | ------------- | -------------------------------------------------------- |
+| Relayer gas exhaustion    | LOW           | Fund relayer, rerun tests                                |
+| Test state pollution      | MEDIUM        | Reset PocketBase, clear blockchain state, rerun          |
+| RPC rate limiting         | MEDIUM        | Wait 5-10 minutes, reduce polling, rerun                 |
+| VRF timeout               | LOW           | Rerun with mock VRF                                      |
+| Contract address mismatch | HIGH          | Redeploy contracts, update test config, rerun full suite |
+| OAuth mock failure        | HIGH          | Implement proper mock, redesign test approach            |
+
+---
+
+## Pitfall-to-Phase Mapping
+
+| Pitfall                            | Prevention Phase           | Verification                                |
+| ---------------------------------- | -------------------------- | ------------------------------------------- |
+| Transaction Timing Race Conditions | Phase 1: Infrastructure    | Tests use polling, no hardcoded sleeps      |
+| Wallet Popup Handling              | Phase 1: Infrastructure    | web3-mock configured, relayer path tested   |
+| Shared On-Chain State              | Phase 1: Infrastructure    | Anvil fork per test OR sequential execution |
+| Gas Estimation Failures            | Phase 2: Transaction Flows | Gas buffer pattern in all tests             |
+| RPC Rate Limiting                  | Phase 1: Infrastructure    | Local fork OR paid RPC OR reduced polling   |
+| Gas Sponsorship Exhaustion         | Phase 1: Infrastructure    | Relayer balance check in beforeAll          |
+| LINE OAuth Mock                    | Phase 1: Infrastructure    | PocketBase test user creation works         |
+| NFT Ownership Timing               | Phase 2: Mint Flow         | Ownership check after tx.wait()             |
+| VRF Mock                           | Phase 4: Hatch Flow        | VRFCoordinatorV2Mock deployed and tested    |
+| Commission Timing                  | Phase 5: Marketplace       | Poll for commission balance change          |
+
+---
+
+## Sources
+
+- Base OnchainTestKit Blog: https://blog.base.dev/introducing-onchaintestkit (HIGH confidence)
+- Ethereum Stack Exchange Gas Estimation: https://ethereum.stackexchange.com/questions/141632 (HIGH confidence)
+- Chainlink VRF Mock Testing: https://docs.chain.link/vrf/v2/direct-funding/examples/test-locally (HIGH confidence)
+- web3-mock Playwright Integration: https://massimilianomirra.com/notes/mocking-window-ethereum-in-playwright-for-end-to-end-dapp-testing (HIGH confidence)
+- Synpress E2E Testing Framework: https://synpress.io/integrations (MEDIUM confidence)
+- dRPC RPC Latency Guide: https://drpc.org/blog/rpc-latency-how-to-measure/ (HIGH confidence)
+- Ethers.js Transaction Confirmations: https://github.com/ethers-io/ethers.js/issues/229 (HIGH confidence)
+- PocketBase Testing Docs: https://pocketbase.io/docs/go-testing/ (HIGH confidence)
+- Project wallet-api/server.js transaction handling patterns (HIGH confidence)
+- Project .planning/PROJECT.md architecture context (HIGH confidence)
+
+---
+
+_Pitfalls research for: E2E Testing Blockchain/NFT Marketplace_
+_Researched: 2026-04-27_
