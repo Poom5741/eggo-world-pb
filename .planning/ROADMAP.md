@@ -47,7 +47,7 @@ Plans:
 
 **Goal**: Auth bypass and blockchain verification utilities for reliable E2E tests without external dependencies
 **Depends on**: Phase 41
-**Requirements**: AUTH-01, AUTH-02, AUTH-03, BLOCK-01, BLOCK-02, BLOCK-03
+**Requirements**: AUTH-01, AUTH-02, BLOCK-01, BLOCK-02, BLOCK-03
 **Success Criteria** (what must be TRUE):
 
 1. Test can create authenticated user session without LINE OAuth UI flow
@@ -58,8 +58,8 @@ Plans:
 
 Plans:
 
-- [ ] 42-01: LINE OAuth bypass with PocketBase test user injection
-- [ ] 42-02: Blockchain transaction polling and event parsing helpers
+- [ ] 42-01: E2E login button with query param trigger for test authentication (Wave 1, autonomous)
+- [ ] 42-02: Blockchain transaction polling and event parsing helpers (Wave 1, autonomous)
 
 ### Phase 43: Wallet Automation
 
@@ -101,10 +101,10 @@ Phases execute in numeric order: 41 → 42 → 43 → 44
 | Phase                                    | Milestone | Plans Complete | Status      | Completed |
 | ---------------------------------------- | --------- | -------------- | ----------- | --------- |
 | 41. Framework Setup + Docker Environment | v0.3.0    | 0/2            | Planned     | -         |
-| 42. Auth Mock + Blockchain Helpers       | v0.3.0    | 0/2            | Not started | -         |
+| 42. Auth Mock + Blockchain Helpers       | v0.3.0    | 0/2            | Planned     | -         |
 | 43. Wallet Automation                    | v0.3.0    | 0/1            | Not started | -         |
 | 44. CI Integration                       | v0.3.0    | 0/1            | Not started | -         |
 
 ---
 
-_Last updated: 2026-04-27 — Phase 41 plans created (2 plans, Wave 1 parallel)_
+_Last updated: 2026-04-27 — Phase 42 plans created (2 plans, Wave 1 parallel)_
