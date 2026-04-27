@@ -1,4 +1,27 @@
-# Phase 19 E2E Tests
+# E2E Tests
+
+## Playwright Tests (Phase 41+)
+
+Playwright tests run against static export from `apps/web/out/`.
+
+**Prerequisites:**
+
+1. Build static export: `bun run build` (from project root)
+2. Start Docker E2E environment: `docker-compose -f docker-compose.e2e.yml up -d`
+
+**Run:**
+
+```bash
+bun run test:e2e
+```
+
+**Available tests:**
+
+- `playwright-smoke.test.ts` - Framework smoke tests
+
+---
+
+## Phase 19 Manual E2E Tests
 
 End-to-end test suite for complete NFT mint → PocketBase registration → marketplace listing → buy flow.
 

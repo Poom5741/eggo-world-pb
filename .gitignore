@@ -56,6 +56,7 @@ ssl/
 
 # PocketBase data
 **/pb_data/
+**/pb_data.e2e/
 
 # Foundry
 contracts/cache/
