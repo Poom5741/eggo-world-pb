@@ -78,15 +78,15 @@ Based on E2E testing research and test-first approach.
 
 ## Wallet Automation (WALLET)
 
-- [ ] **WALLET-01**: Synpress installed and configured for MetaMask automation
+- [x] **WALLET-01**: Synpress installed and configured for MetaMask automation
   - Phase: 43
   - Spec: Research STACK.md
 
-- [ ] **WALLET-02**: Anvil test accounts configured with deterministic private keys
+- [x] **WALLET-02**: Anvil test accounts configured with deterministic private keys
   - Phase: 43
   - Spec: Research ARCHITECTURE.md
 
-- [ ] **WALLET-03**: Gas sponsorship monitoring helper (relayer balance check)
+- [x] **WALLET-03**: Gas sponsorship monitoring helper (relayer balance check)
   - Phase: 43
   - Spec: Research PITFALLS.md
 
@@ -124,9 +124,9 @@ Based on E2E testing research and test-first approach.
 | BLOCK-01  | 42    | FEATURES.md     | complete |
 | BLOCK-02  | 42    | FEATURES.md     | complete |
 | BLOCK-03  | 42    | FEATURES.md     | complete |
-| WALLET-01 | 43    | STACK.md        | planned  |
-| WALLET-02 | 43    | ARCHITECTURE.md | planned  |
-| WALLET-03 | 43    | PITFALLS.md     | planned  |
+| WALLET-01 | 43    | STACK.md        | complete |
+| WALLET-02 | 43    | ARCHITECTURE.md | complete |
+| WALLET-03 | 43    | PITFALLS.md     | complete |
 | CI-01     | 44    | ARCHITECTURE.md | planned  |
 | CI-02     | 44    | ARCHITECTURE.md | planned  |
 | CI-03     | 44    | ARCHITECTURE.md | planned  |
@@ -156,4 +156,4 @@ Based on E2E testing research and test-first approach.
 
 ---
 
-_Last updated: 2026-04-27 — Roadmap created, all requirements mapped to phases_
+_Last updated: 2026-04-27 — Phase 43 complete, WALLET-01/02/03 satisfied_

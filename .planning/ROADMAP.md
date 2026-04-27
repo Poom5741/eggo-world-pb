@@ -75,7 +75,7 @@ Plans:
 
 Plans:
 
-- [ ] 43-01: Synpress MetaMask automation with Anvil accounts and relayer balance helper
+- [x] 43-01: Synpress MetaMask automation with Anvil accounts and relayer balance helper
 
 ### Phase 44: CI Integration
 
@@ -102,9 +102,9 @@ Phases execute in numeric order: 41 → 42 → 43 → 44
 | ---------------------------------------- | --------- | -------------- | ----------- | ---------- |
 | 41. Framework Setup + Docker Environment | v0.3.0    | 2/2            | Complete    | 2026-04-27 |
 | 42. Auth Mock + Blockchain Helpers       | v0.3.0    | 2/2            | Complete    | 2026-04-27 |
-| 43. Wallet Automation                    | v0.3.0    | 0/1            | Planned     | -          |
+| 43. Wallet Automation                    | v0.3.0    | 1/1            | Complete    | 2026-04-27 |
 | 44. CI Integration                       | v0.3.0    | 0/1            | Not started | -          |
 
 ---
 
-_Last updated: 2026-04-27 — Phase 42 complete (E2E login button + blockchain helpers)_
+_Last updated: 2026-04-27 — Phase 43 complete (Synpress MetaMask automation + Anvil accounts)_
