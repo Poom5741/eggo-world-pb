@@ -155,11 +155,11 @@ migrate((app) => {
             "CREATE INDEX `idx_egg_nfts_token_id` ON `egg_nfts` (`token_id`)",
             "CREATE INDEX `idx_egg_nfts_is_hatched` ON `egg_nfts` (`is_hatched`)"
         ],
-        "listRule": "@request.auth.id != \"\" && owner = @request.auth.id",
-        "viewRule": "@request.auth.id != \"\" && owner = @request.auth.id",
-        "createRule": "@request.auth.id != \"\" && owner = @request.auth.id",
-        "updateRule": "@request.auth.id != \"\" && owner = @request.auth.id",
-        "deleteRule": "@request.auth.id != \"\" && owner = @request.auth.id",
+        "listRule": "@request.auth.id != '' && owner.id = @request.auth.id",
+        "viewRule": "@request.auth.id != '' && owner.id = @request.auth.id",
+        "createRule": "@request.auth.id != '' && owner.id = @request.auth.id",
+        "updateRule": "@request.auth.id != '' && owner.id = @request.auth.id",
+        "deleteRule": "@request.auth.id != '' && owner.id = @request.auth.id",
         "options": {}
   }, collection)
 
