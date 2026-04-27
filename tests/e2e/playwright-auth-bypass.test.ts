@@ -12,8 +12,8 @@ test.describe('E2E Auth Bypass', () => {
   test.describe.configure({ mode: 'serial' })
 
   test('E2E login button visible on localhost', async ({ page }) => {
-    // Navigate to login page with E2E param
-    await page.goto('/auth/login?e2e=true')
+    // Navigate to login page with E2E param (trailing slash required for static export)
+    await page.goto('/auth/login/?e2e=true')
 
     // Wait for page to load
     await page.waitForLoadState('networkidle')
@@ -24,8 +24,8 @@ test.describe('E2E Auth Bypass', () => {
   })
 
   test('E2E login button visible with specific test user param', async ({ page }) => {
-    // Navigate with specific test user
-    await page.goto('/auth/login?e2e=true&e2e_test_user=test_buyer')
+    // Navigate with specific test user (trailing slash required for static export)
+    await page.goto('/auth/login/?e2e=true&e2e_test_user=test_buyer')
 
     // Single button for test_buyer should be visible
     const e2eButton = page.getByTestId('e2e-login-button')
@@ -36,8 +36,8 @@ test.describe('E2E Auth Bypass', () => {
   })
 
   test('Invalid test user shows all buttons', async ({ page }) => {
-    // Navigate with invalid test user
-    await page.goto('/auth/login?e2e=true&e2e_test_user=invalid_user')
+    // Navigate with invalid test user (trailing slash required for static export)
+    await page.goto('/auth/login/?e2e=true&e2e_test_user=invalid_user')
 
     // Should show all 4 test user buttons instead
     await expect(page.getByTestId('e2e-login-button-test_buyer')).toBeVisible()
@@ -53,7 +53,7 @@ test.describe('E2E Auth Bypass', () => {
     // verifies the logic exists by checking environment detection
 
     // Navigate to login page with E2E param on localhost (should show)
-    await page.goto('/auth/login?e2e=true')
+    await page.goto('/auth/login/?e2e=true')
     const e2eButton = page.locator('[data-testid="e2e-login-button"], [data-testid="e2e-login-button-test_buyer"]')
     await expect(e2eButton.first()).toBeVisible()
 
