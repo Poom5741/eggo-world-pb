@@ -46,11 +46,11 @@ Based on E2E testing research and test-first approach.
 
 ## Authentication Mocking (AUTH)
 
-- [ ] **AUTH-01**: LINE OAuth bypass mechanism implemented (PocketBase test user injection)
+- [x] **AUTH-01**: LINE OAuth bypass mechanism implemented (PocketBase test user injection)
   - Phase: 42
   - Spec: Research ARCHITECTURE.md
 
-- [ ] **AUTH-02**: Test fixture creates authenticated session without UI flow
+- [x] **AUTH-02**: Test fixture creates authenticated session without UI flow
   - Phase: 42
   - Spec: Research FEATURES.md
 
@@ -62,15 +62,15 @@ Based on E2E testing research and test-first approach.
 
 ## Blockchain Helpers (BLOCK)
 
-- [ ] **BLOCK-01**: Transaction polling utility implemented (replaces fixed waits)
+- [x] **BLOCK-01**: Transaction polling utility implemented (replaces fixed waits)
   - Phase: 42
   - Spec: Research FEATURES.md
 
-- [ ] **BLOCK-02**: On-chain verification helpers created (ownerOf, balanceOf, event parsing)
+- [x] **BLOCK-02**: On-chain verification helpers created (ownerOf, balanceOf, event parsing)
   - Phase: 42
   - Spec: Research FEATURES.md
 
-- [ ] **BLOCK-03**: Event parser for mint/hatch/transfer events implemented
+- [x] **BLOCK-03**: Event parser for mint/hatch/transfer events implemented
   - Phase: 42
   - Spec: Research FEATURES.md
 
@@ -110,26 +110,26 @@ Based on E2E testing research and test-first approach.
 
 ## Traceability
 
-| REQ-ID    | Phase | Spec            | Status  |
-| --------- | ----- | --------------- | ------- |
-| INFRA-01  | 41    | STACK.md        | planned |
-| INFRA-02  | 41    | STACK.md        | planned |
-| INFRA-03  | 41    | STACK.md        | planned |
-| ENV-01    | 41    | ARCHITECTURE.md | planned |
-| ENV-02    | 41    | ARCHITECTURE.md | planned |
-| ENV-03    | 41    | ARCHITECTURE.md | planned |
-| AUTH-01   | 42    | ARCHITECTURE.md | planned |
-| AUTH-02   | 42    | FEATURES.md     | planned |
-| AUTH-03   | 42    | FEATURES.md     | planned |
-| BLOCK-01  | 42    | FEATURES.md     | planned |
-| BLOCK-02  | 42    | FEATURES.md     | planned |
-| BLOCK-03  | 42    | FEATURES.md     | planned |
-| WALLET-01 | 43    | STACK.md        | planned |
-| WALLET-02 | 43    | ARCHITECTURE.md | planned |
-| WALLET-03 | 43    | PITFALLS.md     | planned |
-| CI-01     | 44    | ARCHITECTURE.md | planned |
-| CI-02     | 44    | ARCHITECTURE.md | planned |
-| CI-03     | 44    | ARCHITECTURE.md | planned |
+| REQ-ID    | Phase | Spec            | Status   |
+| --------- | ----- | --------------- | -------- |
+| INFRA-01  | 41    | STACK.md        | planned  |
+| INFRA-02  | 41    | STACK.md        | planned  |
+| INFRA-03  | 41    | STACK.md        | planned  |
+| ENV-01    | 41    | ARCHITECTURE.md | planned  |
+| ENV-02    | 41    | ARCHITECTURE.md | planned  |
+| ENV-03    | 41    | ARCHITECTURE.md | planned  |
+| AUTH-01   | 42    | ARCHITECTURE.md | complete |
+| AUTH-02   | 42    | FEATURES.md     | complete |
+| AUTH-03   | 42    | FEATURES.md     | planned  |
+| BLOCK-01  | 42    | FEATURES.md     | complete |
+| BLOCK-02  | 42    | FEATURES.md     | complete |
+| BLOCK-03  | 42    | FEATURES.md     | complete |
+| WALLET-01 | 43    | STACK.md        | planned  |
+| WALLET-02 | 43    | ARCHITECTURE.md | planned  |
+| WALLET-03 | 43    | PITFALLS.md     | planned  |
+| CI-01     | 44    | ARCHITECTURE.md | planned  |
+| CI-02     | 44    | ARCHITECTURE.md | planned  |
+| CI-03     | 44    | ARCHITECTURE.md | planned  |
 
 ---
 

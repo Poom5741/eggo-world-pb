@@ -9,31 +9,32 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 
 ## Current Position
 
-Phase: 42 of 44 (Auth Mock + Blockchain Helpers)
-Plan: 0 of 2 in current phase
-Status: Context gathered, ready to plan
-Last activity: 2026-04-27 — Phase 42 context captured (E2E login button + blockchain helpers)
+Phase: 43 of 44 (Wallet Automation)
+Plan: 0 of 1 in current phase
+Status: Phase 42 complete, ready for Phase 43
+Last activity: 2026-04-27 — Phase 42 executed (E2E login button + blockchain helpers)
 
-Progress: [██░░░░░░░░] 25% (1/4 phases)
+Progress: [███░░░░░░░] 50% (2/4 phases)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 0 (milestone just started)
-- Average duration: —
-- Total execution time: —
+- Total plans completed: 2 (Phase 42)
+- Average duration: 17.5 min
+- Total execution time: 35 min
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-| ----- | ----- | ----- | -------- |
-| 41    | 0/2   | —     | —        |
+| Phase | Plans | Total  | Avg/Plan |
+| ----- | ----- | ------ | -------- |
+| 41    | 2/2   | —      | —        |
+| 42    | 2/2   | 35 min | 17.5 min |
 
 **Recent Trend:**
 
-- Last 5 plans: —
-- Trend: —
+- Last 5 plans: 42-01 (20min), 42-02 (15min)
+- Trend: Fast execution, autonomous plans
 
 _Updated after each plan completion_
 
@@ -44,7 +45,7 @@ _Updated after each plan completion_
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Phase 41: Framework Setup + Docker Environment (2 plans created)
+- Phase 41: Framework Setup + Docker Environment (2 plans)
   - D-01: @playwright/test with Bun
   - D-02: bun run test:e2e as unified command
   - D-03: playwright.config.ts at project root
@@ -55,9 +56,18 @@ Recent decisions affecting current work:
   - D-08: Health checks for all services
   - D-09: BSC Testnet fork for Anvil
 
+- Phase 42: Auth Mock + Blockchain Helpers (2 plans)
+  - D-01: E2E login button on frontend (not backend API injection)
+  - D-02: Query param trigger: ?e2e_test_user=test_buyer
+  - D-03: Environment check (localhost or e2e=true param)
+  - D-08: Use ethers.js provider.waitForTransaction
+  - D-09: Default 12 confirmations (BSC standard)
+  - D-10: Default 120-second timeout
+
 ### Pending Todos
 
-None yet.
+- Create test users in production PocketBase (test_buyer, test_seller, test_referrer, test_admin)
+- Password pattern: {username}\_e2e_test_password
 
 ### Blockers/Concerns
 
@@ -75,5 +85,5 @@ Items acknowledged and carried forward from v0.2.0 milestone close:
 ## Session Continuity
 
 Last session: 2026-04-27
-Stopped at: Phase 41 plans created, ready to execute
-Resume file: .planning/phases/41-framework-setup-docker-env/41-01-PLAN.md
+Stopped at: Phase 42 complete, Phase 43 ready to execute
+Resume file: .planning/phases/43-wallet-automation/43-01-PLAN.md
