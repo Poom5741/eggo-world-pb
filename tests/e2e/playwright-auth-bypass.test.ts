@@ -99,8 +99,8 @@ test.describe('E2E Auth Bypass', () => {
     // (tested indirectly in page tests)
   })
 
-  test.skip('e2eLogin authenticates test_buyer', async ({ page }) => {
-    // Skip: Requires test users to exist in PocketBase
+  test('e2eLogin authenticates test_buyer', async ({ page }) => {
+    // Requires test users to exist in PocketBase
     // This test will run after test users are created in production
 
     await e2eLogin(page, 'test_buyer')
@@ -119,8 +119,8 @@ test.describe('E2E Auth Bypass', () => {
     expect(authData.model.username).toBe('test_buyer')
   })
 
-  test.skip('e2eLogin with redirectTo param', async ({ page }) => {
-    // Skip: Requires test users to exist in PocketBase
+  test('e2eLogin with redirectTo param', async ({ page }) => {
+    // Requires test users to exist in PocketBase
 
     await e2eLogin(page, 'test_seller', '/marketplace')
 

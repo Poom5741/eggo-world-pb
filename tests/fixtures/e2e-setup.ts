@@ -84,10 +84,10 @@ export async function e2eLogin(
     throw new Error(`Invalid test user: ${testUser}. Valid: ${Object.keys(TEST_USERS).join(', ')}`)
   }
 
-  // Navigate to login page with E2E query params
+  // Navigate to login page with E2E query params (trailing slash required for static export)
   const loginUrl = redirectTo
-    ? `/auth/login?e2e=true&e2e_test_user=${testUser}&redirectTo=${redirectTo}`
-    : `/auth/login?e2e=true&e2e_test_user=${testUser}`
+    ? `/auth/login/?e2e=true&e2e_test_user=${testUser}&redirectTo=${redirectTo}`
+    : `/auth/login/?e2e=true&e2e_test_user=${testUser}`
 
   await page.goto(loginUrl)
 
