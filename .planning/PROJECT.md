@@ -11,12 +11,26 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Current Milestone: v0.2.0 Functional Spec 100% Completion
+## Current Milestone: v0.3.0 E2E Flow Testing & Production Validation
 
-**Status:** Active — Gap analysis complete, planning ready
-**Goal:** Implement all 12 missing spec functions (85% → 100%)
+**Status:** Active — Requirements definition started
+**Goal:** Verify complete user journeys from authentication to commission claiming with real data
 
-**Previous Milestone:** v0.1.0 UAT Gap Closure (shipped 2026-04-25)
+**Previous Milestone:** v0.2.0 Functional Spec 100% (shipped 2026-04-26)
+
+### Target Flows
+
+| Flow        | Journey                                           | Priority |
+| ----------- | ------------------------------------------------- | -------- |
+| Auth        | LINE OAuth → Dashboard (new user)                 | P0       |
+| Mint        | Buy egg → NFT appears in /eggs                    | P0       |
+| Feed        | Buy food → Feed egg → 10/10 progress              | P0       |
+| Hatch       | Feed 10 → Hatch → Animal NFT minted               | P0       |
+| Marketplace | List NFT → Buy NFT → Ownership transferred        | P1       |
+| Commission  | Referral → Earn commission → Claim commission     | P1       |
+| Tier        | Consume food → Reach threshold → Claim tier badge | P2       |
+
+**Approach:** Test-first — Execute E2E flows, identify issues, fix in subsequent phases
 
 ### Spec Gap Summary
 
@@ -298,4 +312,25 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 ---
 
-_Last updated: 2026-04-22 — v0.0.8 NFT Ecosystem Complete milestone started_
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
+---
+
+_Last updated: 2026-04-27 — v0.3.0 E2E Flow Testing milestone started_
