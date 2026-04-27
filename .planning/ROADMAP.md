@@ -40,8 +40,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 
-- [ ] 41-01: Playwright configuration with Bun test runner (Wave 1, autonomous)
-- [ ] 41-02: Docker Compose test environment with health checks (Wave 1, has checkpoint)
+- [x] 41-01: Playwright configuration with Bun test runner (Wave 1, autonomous)
+- [x] 41-02: Docker Compose test environment with health checks (Wave 1, has checkpoint)
 
 ### Phase 42: Auth Mock + Blockchain Helpers
 
@@ -58,8 +58,8 @@ Plans:
 
 Plans:
 
-- [ ] 42-01: E2E login button with query param trigger for test authentication (Wave 1, autonomous)
-- [ ] 42-02: Blockchain transaction polling and event parsing helpers (Wave 1, autonomous)
+- [x] 42-01: E2E login button with query param trigger for test authentication (Wave 1, autonomous)
+- [x] 42-02: Blockchain transaction polling and event parsing helpers (Wave 1, autonomous)
 
 ### Phase 43: Wallet Automation
 
@@ -91,20 +91,20 @@ Plans:
 
 Plans:
 
-- [ ] 44-01: GitHub Actions E2E workflow with parallel execution
+- [ ] 44-01: GitHub Actions E2E workflow with parallel execution (Wave 1, autonomous)
 
 ## Progress
 
 **Execution Order:**
 Phases execute in numeric order: 41 → 42 → 43 → 44
 
-| Phase                                    | Milestone | Plans Complete | Status      | Completed  |
-| ---------------------------------------- | --------- | -------------- | ----------- | ---------- |
-| 41. Framework Setup + Docker Environment | v0.3.0    | 2/2            | Complete    | 2026-04-27 |
-| 42. Auth Mock + Blockchain Helpers       | v0.3.0    | 2/2            | Complete    | 2026-04-27 |
-| 43. Wallet Automation                    | v0.3.0    | 1/1            | Complete    | 2026-04-27 |
-| 44. CI Integration                       | v0.3.0    | 0/1            | Not started | -          |
+| Phase                                    | Milestone | Plans Complete | Status   | Completed  |
+| ---------------------------------------- | --------- | -------------- | -------- | ---------- |
+| 41. Framework Setup + Docker Environment | v0.3.0    | 2/2            | Complete | 2026-04-27 |
+| 42. Auth Mock + Blockchain Helpers       | v0.3.0    | 2/2            | Complete | 2026-04-27 |
+| 43. Wallet Automation                    | v0.3.0    | 1/1            | Complete | 2026-04-27 |
+| 44. CI Integration                       | v0.3.0    | 0/1            | Planned  | -          |
 
 ---
 
-_Last updated: 2026-04-27 — Phase 43 complete (Synpress MetaMask automation + Anvil accounts)_
+_Last updated: 2026-04-27 — Phase 44 planned (GitHub Actions E2E workflow)_
