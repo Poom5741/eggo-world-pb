@@ -27,18 +27,8 @@
  * { "success": true, "data": { "animal_id": 1, "price": 50, "seller_amount": 42.5, "royalty_total": 5 } }
  */
 
-const PLATFORM_FEE_PERCENT = 4 // RESALE-04
-const MISC_FEE_PERCENT = 1 // RESALE-04
-const SELLER_PERCENT = 85 // RESALE-04
-
 // Royalty splits per D-10 (RESALE-03)
-const ROYALTY_SPLITS = {
-  G1: 2, // 2% of total sale price
-  G2: 1, // 1% of total sale price
-  G3: 1, // 1% of total sale price
-  G4: 1, // 1% of total sale price (5% total to referral chain)
-}
-const ROYALTY_TOTAL_PERCENT = 10 // RESALE-02
+// Constants defined inside routerAdd callback to avoid goja global scope conflicts
 
 /**
  * Distribute royalties to referral chain
@@ -92,6 +82,17 @@ function distributeRoyalties(referralChain, salePrice, listingId, listingRecord)
 }
 
 routerAdd("POST", "/api/v2/buy-animal", (e) => {
+    // Constants must be inside routerAdd callback — goja doesn't expose top-level vars to callbacks
+    const PLATFORM_FEE_PERCENT = 4 // RESALE-04
+    const MISC_FEE_PERCENT = 1 // RESALE-04
+    const SELLER_PERCENT = 85 // RESALE-04
+    const ROYALTY_SPLITS = {
+      G1: 2, // 2% of total sale price
+      G2: 1, // 1% of total sale price
+      G3: 1, // 1% of total sale price
+      G4: 1, // 1% of total sale price (5% total to referral chain)
+    }
+    const ROYALTY_TOTAL_PERCENT = 10 // RESALE-02
   try {
     const buyer = $apis.requireAuth(e)
 

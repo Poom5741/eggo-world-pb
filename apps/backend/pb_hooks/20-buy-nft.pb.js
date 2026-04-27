@@ -38,9 +38,9 @@
  * }
  */
 
-const PLATFORM_FEE_PERCENT = 4; // 4% platform fee
-
 routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
+    // Constants must be inside routerAdd callback — goja doesn't expose top-level vars to callbacks
+    const PLATFORM_FEE_PERCENT = 4; // 4% platform fee
     try {
         const buyer = $apis.requireAuth(e);
         
