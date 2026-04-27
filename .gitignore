@@ -43,6 +43,7 @@ Thumbs.db
 !**/.env.example
 !**/.env.production.example
 !**/.env.sample
+!**/.env.e2e.example
 
 # Temporary files
 **/*.tmp
