@@ -318,3 +318,65 @@ export function parseAllEvents(
     TierBadgeMinted: parseEvent(receipt, 'TierBadgeMinted'),
   }
 }
+
+// ============================================================================
+// Gas Sponsorship Relayer Helpers (WALLET-03)
+// ============================================================================
+
+/**
+ * Options for checkRelayerBalance helper
+ * Per D-14: Configurable threshold with default 0.1 ETH
+ */
+export interface CheckRelayerBalanceOptions {
+  /** Minimum balance threshold in ETH (default: 0.1 per D-14) */
+  threshold?: number
+  /** Log warning if below threshold (default: true) */
+  logWarning?: boolean
+}
+
+/**
+ * Result of relayer balance check
+ * Per D-13: Helper returns balance info with sufficiency check
+ */
+export interface RelayerBalanceResult {
+  address: string
+  balanceWei: bigint
+  balanceEth: string
+  sufficient: boolean
+  threshold: number
+}
+
+/**
+ * Check relayer wallet balance for gas sponsorship verification.
+ * Per WALLET-03: Gas sponsorship monitoring helper.
+ * Per D-12: Create checkRelayerBalance() helper in blockchain-helpers.ts.
+ * Per D-13: Helper queries relayer wallet balance via ethers provider on Anvil.
+ * Per D-14: Log warning if relayer balance below threshold (default 0.1 ETH).
+ *
+ * @param relayerAddress - Relayer wallet address (from env or default)
+ * @param options - Configuration options
+ * @returns Balance result with sufficiency check
+ */
+export async function checkRelayerBalance(
+  relayerAddress?: string,
+  options: CheckRelayerBalanceOptions = {}
+): Promise<RelayerBalanceResult> {
+  const { threshold = 0.1, logWarning = true } = options
+  const provider = createEthersProvider()
+
+  // Get relayer address from env or use Anvil Account 0 as default for testing
+  const address =
+    relayerAddress || process.env.RELAYER_ADDRESS || '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+
+  const balanceWei = await provider.getBalance(address)
+  const balanceEth = ethers.formatEther(balanceWei)
+  const sufficient = parseFloat(balanceEth) >= threshold
+
+  if (!sufficient && logWarning) {
+    console.warn(
+      `[checkRelayerBalance] Relayer ${address} balance ${balanceEth} ETH below threshold ${threshold} ETH`
+    )
+  }
+
+  return { address, balanceWei, balanceEth, sufficient, threshold }
+}

@@ -38,12 +38,29 @@ export function getE2EContext(): E2ETestContext {
 /**
  * Predefined test users for E2E testing
  * These users are created in production PocketBase with USDT balance
+ * Per WALLET-02: Wallet addresses mapped to Anvil accounts per D-05
  */
 export const TEST_USERS = {
-  test_buyer: { role: 'buyer', description: 'Purchases NFTs from marketplace' },
-  test_seller: { role: 'seller', description: 'Lists NFTs for sale' },
-  test_referrer: { role: 'referrer', description: 'Referral chain testing (G1 position)' },
-  test_admin: { role: 'admin', description: 'Admin operations testing' },
+  test_buyer: {
+    role: 'buyer',
+    description: 'Purchases NFTs from marketplace',
+    walletAddress: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', // Anvil Account 0
+  },
+  test_seller: {
+    role: 'seller',
+    description: 'Lists NFTs for sale',
+    walletAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', // Anvil Account 1
+  },
+  test_referrer: {
+    role: 'referrer',
+    description: 'Referral chain testing (G1 position)',
+    walletAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC', // Anvil Account 2
+  },
+  test_admin: {
+    role: 'admin',
+    description: 'Admin operations testing',
+    walletAddress: '0x90F79bf6EB2c4f870365E785982E1f101E93b906', // Anvil Account 3
+  },
 } as const
 
 export type TestUserName = keyof typeof TEST_USERS
