@@ -2,7 +2,7 @@
 milestone: v0.3.0
 milestone_name: E2E Flow Testing & Production Validation
 created: 2026-04-27
-status: scoped
+status: planned
 total_requirements: 18
 ---
 
@@ -110,26 +110,26 @@ Based on E2E testing research and test-first approach.
 
 ## Traceability
 
-| REQ-ID    | Phase | Spec            | Status |
-| --------- | ----- | --------------- | ------ |
-| INFRA-01  | 41    | STACK.md        | scoped |
-| INFRA-02  | 41    | STACK.md        | scoped |
-| INFRA-03  | 41    | STACK.md        | scoped |
-| ENV-01    | 41    | ARCHITECTURE.md | scoped |
-| ENV-02    | 41    | ARCHITECTURE.md | scoped |
-| ENV-03    | 41    | ARCHITECTURE.md | scoped |
-| AUTH-01   | 42    | ARCHITECTURE.md | scoped |
-| AUTH-02   | 42    | FEATURES.md     | scoped |
-| AUTH-03   | 42    | FEATURES.md     | scoped |
-| BLOCK-01  | 42    | FEATURES.md     | scoped |
-| BLOCK-02  | 42    | FEATURES.md     | scoped |
-| BLOCK-03  | 42    | FEATURES.md     | scoped |
-| WALLET-01 | 43    | STACK.md        | scoped |
-| WALLET-02 | 43    | ARCHITECTURE.md | scoped |
-| WALLET-03 | 43    | PITFALLS.md     | scoped |
-| CI-01     | 44    | ARCHITECTURE.md | scoped |
-| CI-02     | 44    | ARCHITECTURE.md | scoped |
-| CI-03     | 44    | ARCHITECTURE.md | scoped |
+| REQ-ID    | Phase | Spec            | Status  |
+| --------- | ----- | --------------- | ------- |
+| INFRA-01  | 41    | STACK.md        | planned |
+| INFRA-02  | 41    | STACK.md        | planned |
+| INFRA-03  | 41    | STACK.md        | planned |
+| ENV-01    | 41    | ARCHITECTURE.md | planned |
+| ENV-02    | 41    | ARCHITECTURE.md | planned |
+| ENV-03    | 41    | ARCHITECTURE.md | planned |
+| AUTH-01   | 42    | ARCHITECTURE.md | planned |
+| AUTH-02   | 42    | FEATURES.md     | planned |
+| AUTH-03   | 42    | FEATURES.md     | planned |
+| BLOCK-01  | 42    | FEATURES.md     | planned |
+| BLOCK-02  | 42    | FEATURES.md     | planned |
+| BLOCK-03  | 42    | FEATURES.md     | planned |
+| WALLET-01 | 43    | STACK.md        | planned |
+| WALLET-02 | 43    | ARCHITECTURE.md | planned |
+| WALLET-03 | 43    | PITFALLS.md     | planned |
+| CI-01     | 44    | ARCHITECTURE.md | planned |
+| CI-02     | 44    | ARCHITECTURE.md | planned |
+| CI-03     | 44    | ARCHITECTURE.md | planned |
 
 ---
 
@@ -156,4 +156,4 @@ Based on E2E testing research and test-first approach.
 
 ---
 
-_Last updated: 2026-04-27 — Requirements scoped for v0.3.0 Test Infrastructure milestone_
+_Last updated: 2026-04-27 — Roadmap created, all requirements mapped to phases_

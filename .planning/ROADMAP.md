@@ -1,97 +1,110 @@
-# Roadmap: Eggo NFT Platform
+# Roadmap: E2E Flow Testing & Production Validation
 
 ## Milestones
 
-- ✅ **v0.0.7 Security & Quality** — Phases 12-19 (shipped 2026-04-22) — [Archive](milestones/v0.0.7-ROADMAP.md)
-- ✅ **v0.0.8 NFT Ecosystem Complete** — Phases 20-24 (shipped 2026-04-22) — [Archive](milestones/v0.0.8-ROADMAP.md)
-- ✅ **v0.0.9 Feature Completion & Cloudflare Deployment** — Phases 25-30 (shipped 2026-04-24) — [Archive](milestones/v0.0.9-ROADMAP.md)
-- ✅ **v0.1.0 UAT Gap Closure** — Phase 31 (shipped 2026-04-25) — [Archive](milestones/v0.1.0-ROADMAP.md)
-- ✅ **v0.2.0 Functional Spec 100% Completion** — Phases 32-40 (shipped 2026-04-26) — [Archive](milestones/v0.2.0-ROADMAP.md)
+- ✅ **v0.2.0 Functional Spec 100%** - Phases 32-40 (shipped 2026-04-26)
+- 🚧 **v0.3.0 E2E Flow Testing** - Phases 41-44 (in progress)
 
-## No Active Milestone
+## Overview
 
-Ready to plan next milestone with `/gsd-new-milestone`
+Build test infrastructure for verifying complete user journeys from authentication to commission claiming. This milestone establishes Playwright E2E testing with Docker Compose environment, authentication bypass, blockchain helpers, wallet automation, and CI integration.
 
----
+## Phases
 
-## Completed Milestones (Archived)
+**Phase Numbering:**
 
-<details>
-<summary>✅ v0.2.0 Functional Spec 100% Completion — Phases 32-40 — SHIPPED 2026-04-26</summary>
+- Integer phases (41, 42, 43, 44): Planned milestone work
+- Decimal phases (41.1, 41.2): Urgent insertions (marked with INSERTED)
 
-- [x] Phase 32: Marketplace Stats API (3/3 plans)
-- [x] Phase 33: Recruitment Bonus USDT (1/1 plan)
-- [x] Phase 34: VRF Integration (1/1 plan)
-- [x] Phase 35: Admin Game Config (1/1 plan)
-- [x] Phase 36: NFT Burn & KYC Toggle (1/1 plan)
-- [x] Phase 37: Smart Contract Updates (2/2 plans)
-- [x] Phase 38: Wallet API Endpoints (2/2 plans)
-- [x] Phase 39: Collection Schema Updates (1/1 plan)
-- [x] Phase 40: Frontend Components (3/3 plans)
+Decimal phases appear between their surrounding integers in numeric order.
 
-**Full Details:** [milestones/v0.2.0-ROADMAP.md](milestones/v0.2.0-ROADMAP.md)
+- [ ] **Phase 41: Framework Setup + Docker Environment** - Playwright configuration and isolated Docker test environment
+- [ ] **Phase 42: Auth Mock + Blockchain Helpers** - LINE OAuth bypass and transaction verification utilities
+- [ ] **Phase 43: Wallet Automation** - Synpress MetaMask automation and test account configuration
+- [ ] **Phase 44: CI Integration** - GitHub Actions workflow with parallel execution and artifacts
 
-</details>
+## Phase Details
 
-<details>
-<summary>✅ v0.1.0 UAT Gap Closure — Phase 31 — SHIPPED 2026-04-25</summary>
+### Phase 41: Framework Setup + Docker Environment
 
-- [x] Phase 31: UAT Gap Closure (3/3 plans)
-  - [x] 31-01: Fix polling badge visual indicator
-  - [x] 31-02: Fix breeding dialog Parent 2 selection
-  - [x] 31-03: Fix marketplace detail page routing
+**Goal**: Test infrastructure foundation with isolated Docker environment ready for E2E test execution
+**Depends on**: Phase 40 (v0.2.0 completion)
+**Requirements**: INFRA-01, INFRA-02, INFRA-03, ENV-01, ENV-02, ENV-03
+**Success Criteria** (what must be TRUE):
 
-</details>
+1. Developer can run `bun run test:e2e` and Playwright launches successfully
+2. Developer can run `docker-compose -f docker-compose.e2e.yml up` and all services start with healthy status
+3. Tests can connect to PocketBase, wallet-api, and Anvil from the test runner
+4. Anvil is accessible with configured BSC-forked or local deployment state
+   **Plans**: 2 plans
 
-<details>
-<summary>✅ v0.0.9 Feature Completion & Cloudflare Deployment — Phases 25-30 — SHIPPED 2026-04-24</summary>
+Plans:
 
-- [x] Phase 25: UX/UI Consistency Audit Fixes (2/3 plans, 1 deferred)
-- [x] Phase 26: Phase 23 UAT Gap Closure (4/4 plans)
-- [x] Phase 27: Egg Rarity Upgrade System (3/3 plans)
-- [x] Phase 28: Wallet Withdrawal & CoinStor Admin (3/3 plans)
-- [x] Phase 29: Admin Controls & Platform Safety (3/3 plans)
-- [x] Phase 30: Cloudflare Pages Frontend Deployment (2/2 plans)
+- [ ] 41-01: Playwright configuration with Bun test runner
+- [ ] 41-02: Docker Compose test environment with health checks
 
-</details>
+### Phase 42: Auth Mock + Blockchain Helpers
 
-<details>
-<summary>✅ v0.0.8 NFT Ecosystem Complete — Phases 20-24 — SHIPPED 2026-04-22</summary>
+**Goal**: Auth bypass and blockchain verification utilities for reliable E2E tests without external dependencies
+**Depends on**: Phase 41
+**Requirements**: AUTH-01, AUTH-02, AUTH-03, BLOCK-01, BLOCK-02, BLOCK-03
+**Success Criteria** (what must be TRUE):
 
-- [x] Phase 20: Gap Closure & UAT Execution (3/3 plans)
-- [x] Phase 21: Breeding System (6/6 plans)
-- [x] Phase 22: Tier Rewards & Badges (3/3 plans)
-- [x] Phase 23: Secondary Market & Royalties (3/3 plans)
-- [x] Phase 24: Polish & Launch Prep (3/3 plans)
+1. Test can create authenticated user session without LINE OAuth UI flow
+2. Test can poll for transaction confirmation instead of using fixed waits
+3. Test can verify on-chain ownership (ownerOf, balanceOf) directly from test code
+4. Test can parse mint/hatch/transfer events from transaction receipts
+   **Plans**: 2 plans
 
-</details>
+Plans:
 
-<details>
-<summary>✅ v0.0.7 Security & Quality — Phases 12-19 — SHIPPED 2026-04-22</summary>
+- [ ] 42-01: LINE OAuth bypass with PocketBase test user injection
+- [ ] 42-02: Blockchain transaction polling and event parsing helpers
 
-- [x] Phase 12: Wallet-API Contract Integration (4/4 plans)
-- [x] Phase 13: Documentation Sync (1/1 plan)
-- [x] Phase 14: Marketplace Complete (1/1 plan)
-- [x] Phase 15: Feed Feature (1/1 plan)
-- [x] Phase 16: Play Feature & Test Infrastructure (3/3 plans)
-- [x] Phase 17: UAT & Verification Gap Closure (3/3 plans)
-- [x] Phase 18: Fix LINE OAuth Wallet Creation (2/2 plans)
-- [x] Phase 19: Real NFT Mint Flow & Marketplace Integration (5/5 plans)
+### Phase 43: Wallet Automation
 
-</details>
+**Goal**: MetaMask wallet automation for testing blockchain transactions with deterministic test accounts
+**Depends on**: Phase 42
+**Requirements**: WALLET-01, WALLET-02, WALLET-03
+**Success Criteria** (what must be TRUE):
 
----
+1. Test can programmatically connect MetaMask wallet to the application
+2. Test can sign transactions using deterministic Anvil test accounts
+3. Test can verify gas sponsorship relayer has sufficient balance before operations
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 43-01: Synpress configuration and Anvil test accounts
+
+### Phase 44: CI Integration
+
+**Goal**: Automated E2E test execution in GitHub Actions with parallel workers and failure artifacts
+**Depends on**: Phase 43
+**Requirements**: CI-01, CI-02, CI-03
+**Success Criteria** (what must be TRUE):
+
+1. GitHub Actions runs E2E tests automatically on pull requests
+2. Tests execute in parallel with multiple workers for faster completion
+3. Failed tests produce screenshots, videos, and traces for debugging
+   **Plans**: 1 plan
+
+Plans:
+
+- [ ] 44-01: GitHub Actions E2E workflow with parallel execution
 
 ## Progress
 
-| Phase | Milestone | Plans | Status   | Completed  |
-| ----- | --------- | ----- | -------- | ---------- |
-| 12-19 | v0.0.7    | 20/20 | Complete | 2026-04-22 |
-| 20-24 | v0.0.8    | 16/16 | Complete | 2026-04-22 |
-| 25-30 | v0.0.9    | 17/18 | Complete | 2026-04-24 |
-| 31    | v0.1.0    | 3/3   | Complete | 2026-04-25 |
-| 32-40 | v0.2.0    | 15/15 | Complete | 2026-04-26 |
+**Execution Order:**
+Phases execute in numeric order: 41 → 42 → 43 → 44
+
+| Phase                                    | Milestone | Plans Complete | Status      | Completed |
+| ---------------------------------------- | --------- | -------------- | ----------- | --------- |
+| 41. Framework Setup + Docker Environment | v0.3.0    | 0/2            | Not started | -         |
+| 42. Auth Mock + Blockchain Helpers       | v0.3.0    | 0/2            | Not started | -         |
+| 43. Wallet Automation                    | v0.3.0    | 0/1            | Not started | -         |
+| 44. CI Integration                       | v0.3.0    | 0/1            | Not started | -         |
 
 ---
 
-_Last updated: 2026-04-26 — v0.2.0 milestone archived_
+_Last updated: 2026-04-27 — Roadmap created for v0.3.0 E2E Flow Testing milestone_
