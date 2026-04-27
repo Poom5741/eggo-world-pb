@@ -1,279 +1,159 @@
 ---
-milestone: v0.0.9
-milestone_name: Feature Completion & Cloudflare Deployment
-created: 2026-04-23
+milestone: v0.3.0
+milestone_name: E2E Flow Testing & Production Validation
+created: 2026-04-27
 status: scoped
-total_requirements: 19
+total_requirements: 18
 ---
 
-# Milestone v0.0.9 Requirements
+# Milestone v0.3.0 Requirements
 
-Based on missing features from `docs/NFT_Marketplace_Functional_Spec.md` and user deployment request.
-
----
-
-## Phase 26: Phase 23 UAT Gap Closure (P0 BLOCKER)
-
-### Bug Fixes
-
-- [x] **BUG-01**: Rarity filter buttons filter listings by selected rarity type (fix: single-quote syntax)
-  - Phase: 26
-  - Plan: 26-01
-  - Source: Phase 23 UAT gap 1
-
-- [x] **BUG-02**: After listing animal, user sees confirmation and listing appears in marketplace
-  - Phase: 26
-  - Plan: 26-02
-  - Source: Phase 23 UAT gap 2
-
-- [x] **BUG-03**: Same animal cannot be listed twice while previous listing active
-  - Phase: 26
-  - Plan: 26-03
-  - Source: Phase 23 UAT gap 3
-
-- [x] **BUG-04**: Clicking animal listing card shows detail page without 404 crash
-  - Phase: 26
-  - Plan: 26-04
-  - Source: Phase 23 UAT gap 4
+Based on E2E testing research and test-first approach.
 
 ---
 
-## Phase 27: Egg Rarity Upgrade System (P1)
+## Framework Setup (INFRA)
 
-From Spec Section 7.2 — Rarity Upgrade Paths
+- [ ] **INFRA-01**: Playwright installed and configured for static export compatibility
+  - Phase: 41
+  - Spec: Research STACK.md
 
-### Rarity Upgrade UI
+- [ ] **INFRA-02**: Browser binaries installed (Chromium, Firefox, Safari)
+  - Phase: 41
+  - Spec: Research STACK.md
 
-- [ ] **RARITY-01**: User sees rarity probability indicator on egg cards based on food count
-  - Phase: 27
-  - Plan: 27-01
-  - Spec: Section 7.2
-
-- [ ] **RARITY-02**: User can open RarityUpgradeDialog from egg detail page
-  - Phase: 27
-  - Plan: 27-01
-  - Spec: Section 7.2
-
-- [ ] **RARITY-03**: User selects additional food items beyond 10 minimum for upgrade
-  - Phase: 27
-  - Plan: 27-01
-  - Spec: Section 7.2
-
-### Rarity Probability Thresholds
-
-| Accumulated Food Items | Minimum Rarity Guaranteed |
-| ---------------------- | ------------------------- |
-| 10 items (minimum)     | Common                    |
-| 50 items               | Rare                      |
-| 200 items              | Epic                      |
-| 500+ items             | Legendary (chance)        |
-
-- [ ] **RARITY-04**: Backend validates egg ownership and food availability before upgrade
-  - Phase: 27
-  - Plan: 27-02
-  - Spec: Section 7.2
-
-- [ ] **RARITY-05**: Contract call succeeds and updates egg rarity probability
-  - Phase: 27
-  - Plan: 27-03
-  - Spec: Section 7.2 (upgradeEggRarity function)
+- [ ] **INFRA-03**: Test runner configured with Bun (not separate Node.js)
+  - Phase: 41
+  - Spec: Research STACK.md
 
 ---
 
-## Phase 28: Wallet Withdrawal & CoinStor Admin (P1)
+## Docker Compose Test Environment (ENV)
 
-From Spec Sections 9.2, 3.3, 9.3
+- [ ] **ENV-01**: docker-compose.e2e.yml created with all services (PocketBase, wallet-api, Anvil, frontend)
+  - Phase: 41
+  - Spec: Research ARCHITECTURE.md
 
-### Wallet Withdrawal
+- [ ] **ENV-02**: Health checks configured for all services in Docker Compose
+  - Phase: 41
+  - Spec: Research ARCHITECTURE.md
 
-- [ ] **WALLET-01**: User can withdraw USDT from platform wallet to external address
-  - Phase: 28
-  - Plan: 28-01
-  - Spec: Section 9.2 (withdrawUSDT)
-
-- [ ] **WALLET-02**: Withdrawal fee displayed before confirmation (configurable)
-  - Phase: 28
-  - Plan: 28-01, 28-02
-  - Spec: Section 9.2
-
-- [ ] **WALLET-03**: Transaction history shows past withdrawals
-  - Phase: 28
-  - Plan: 28-02
-  - Spec: Section 9.2
-
-### CoinStor Reserve Admin
-
-- [ ] **COINSTOR-01**: Admin can view CoinStor balance in dashboard
-  - Phase: 28
-  - Plan: 28-03
-  - Spec: Section 9.3 (getCoinStorBalance)
-
-- [ ] **COINSTOR-02**: Admin can inject liquidity into marketplace pool
-  - Phase: 28
-  - Plan: 28-03
-  - Spec: Section 9.3 (coinStorLiquidityInject)
-
-- [ ] **COINSTOR-03**: Admin can distribute ecosystem rewards in batch
-  - Phase: 28
-  - Plan: 28-03
-  - Spec: Section 9.3 (coinStorEcosystemReward)
+- [ ] **ENV-03**: Anvil configured with BSC fork or fresh local deployment
+  - Phase: 41
+  - Spec: Research ARCHITECTURE.md
 
 ---
 
-## Phase 29: Admin Controls & Platform Safety (P1)
+## Authentication Mocking (AUTH)
 
-From Spec Section 12
+- [ ] **AUTH-01**: LINE OAuth bypass mechanism implemented (PocketBase test user injection)
+  - Phase: 42
+  - Spec: Research ARCHITECTURE.md
 
-### Admin Functions
+- [ ] **AUTH-02**: Test fixture creates authenticated session without UI flow
+  - Phase: 42
+  - Spec: Research FEATURES.md
 
-- [ ] **ADMIN-01**: Admin can pause/unpause marketplace from dashboard
-  - Phase: 29
-  - Plan: 29-01, 29-03
-  - Spec: Section 12 (pauseMarketplace/unpauseMarketplace)
-
-- [ ] **ADMIN-02**: Admin can adjust platform fee percentage
-  - Phase: 29
-  - Plan: 29-01, 29-03
-  - Spec: Section 12 (setPlatformFee)
-
-- [ ] **ADMIN-03**: Admin can update rarity distribution weights
-  - Phase: 29
-  - Plan: 29-03
-  - Spec: Section 12 (updateRarityWeights)
-
-- [ ] **ADMIN-04**: Admin can set breeding cooldown duration
-  - Phase: 29
-  - Plan: 29-03
-  - Spec: Section 12 (setBreedCooldown)
-
-- [ ] **ADMIN-05**: Admin can toggle KYC requirement for withdrawals
-  - Phase: 29
-  - Plan: 29-02, 29-03
-  - Spec: Section 12 (setKYCRequired)
-
-- [ ] **ADMIN-06**: Admin dashboard shows platform stats (revenue, volume, users)
-  - Phase: 29
-  - Plan: 29-03
-  - Spec: Section 12 (getPlatformStats)
+- [ ] **AUTH-03**: One dedicated test validates real LINE OAuth flow (optional smoke test)
+  - Phase: 42
+  - Spec: Research FEATURES.md
 
 ---
 
-## Phase 25: UX/UI Consistency Audit Fixes (P2)
+## Blockchain Helpers (BLOCK)
 
-From Phase 24 design system audit
+- [ ] **BLOCK-01**: Transaction polling utility implemented (replaces fixed waits)
+  - Phase: 42
+  - Spec: Research FEATURES.md
 
-### P0 Critical Fixes
+- [ ] **BLOCK-02**: On-chain verification helpers created (ownerOf, balanceOf, event parsing)
+  - Phase: 42
+  - Spec: Research FEATURES.md
 
-- [ ] **UX-01**: Remove emoji usage per design system guidelines
-  - Phase: 25
-  - Plan: 25-01
-  - Source: Design audit
-
-- [ ] **UX-02**: Replace hardcoded colors with design tokens
-  - Phase: 25
-  - Plan: 25-01
-  - Source: Design audit
-
-- [ ] **UX-03**: Fix accessibility violations (WCAG 2.2 AA)
-  - Phase: 25
-  - Plan: 25-01
-  - Source: Design audit
+- [ ] **BLOCK-03**: Event parser for mint/hatch/transfer events implemented
+  - Phase: 42
+  - Spec: Research FEATURES.md
 
 ---
 
-## Phase 30: Cloudflare Pages Frontend Deployment (P0 DEPLOY)
+## Wallet Automation (WALLET)
 
-User request for frontend deployment automation
+- [ ] **WALLET-01**: Synpress installed and configured for MetaMask automation
+  - Phase: 43
+  - Spec: Research STACK.md
 
-### Deployment Requirements
+- [ ] **WALLET-02**: Anvil test accounts configured with deterministic private keys
+  - Phase: 43
+  - Spec: Research ARCHITECTURE.md
 
-- [ ] **DEPLOY-01**: Frontend deploys automatically on push to main via GitHub Actions
-  - Phase: 30
-  - Plan: 30-02
-  - Source: User request
+- [ ] **WALLET-03**: Gas sponsorship monitoring helper (relayer balance check)
+  - Phase: 43
+  - Spec: Research PITFALLS.md
 
-- [ ] **DEPLOY-02**: Preview deployments created for PRs
-  - Phase: 30
-  - Plan: 30-02
-  - Source: User request
+---
 
-- [ ] **DEPLOY-03**: Edge caching enabled for global performance
-  - Phase: 30
-  - Plan: 30-01
-  - Source: User request
+## CI Integration (CI)
 
-- [ ] **DEPLOY-04**: Custom domain bound (eggoworld.io)
-  - Phase: 30
-  - Plan: 30-01
-  - Source: User request
+- [ ] **CI-01**: GitHub Actions workflow created for E2E tests
+  - Phase: 44
+  - Spec: Research ARCHITECTURE.md
 
-- [ ] **DEPLOY-05**: Deployment time < 3 minutes
-  - Phase: 30
-  - Plan: 30-02
-  - Source: User request
+- [ ] **CI-02**: Parallel worker configuration for faster test execution
+  - Phase: 44
+  - Spec: Research ARCHITECTURE.md
 
-**Note:** Backend (PocketBase) and Wallet API are already hosted on VPS - no Cloudflare Workers migration needed.
+- [ ] **CI-03**: Test artifacts configured (screenshots, videos, traces on failure)
+  - Phase: 44
+  - Spec: Research ARCHITECTURE.md
 
 ---
 
 ## Traceability
 
-| REQ-ID      | Phase | Plan         | Status |
-| ----------- | ----- | ------------ | ------ |
-| BUG-01      | 26    | 26-01        | scoped |
-| BUG-02      | 26    | 26-02        | scoped |
-| BUG-03      | 26    | 26-03        | scoped |
-| BUG-04      | 26    | 26-04        | scoped |
-| RARITY-01   | 27    | 27-01        | scoped |
-| RARITY-02   | 27    | 27-01        | scoped |
-| RARITY-03   | 27    | 27-01        | scoped |
-| RARITY-04   | 27    | 27-02        | scoped |
-| RARITY-05   | 27    | 27-03        | scoped |
-| WALLET-01   | 28    | 28-01        | scoped |
-| WALLET-02   | 28    | 28-01, 28-02 | scoped |
-| WALLET-03   | 28    | 28-02        | scoped |
-| COINSTOR-01 | 28    | 28-03        | scoped |
-| COINSTOR-02 | 28    | 28-03        | scoped |
-| COINSTOR-03 | 28    | 28-03        | scoped |
-| ADMIN-01    | 29    | 29-01, 29-03 | scoped |
-| ADMIN-02    | 29    | 29-01, 29-03 | scoped |
-| ADMIN-03    | 29    | 29-03        | scoped |
-| ADMIN-04    | 29    | 29-03        | scoped |
-| ADMIN-05    | 29    | 29-02, 29-03 | scoped |
-| ADMIN-06    | 29    | 29-03        | scoped |
-| UX-01       | 25    | 25-01        | scoped |
-| UX-02       | 25    | 25-01        | scoped |
-| UX-03       | 25    | 25-01        | scoped |
-| DEPLOY-01   | 30    | 30-02        | scoped |
-| DEPLOY-02   | 30    | 30-02        | scoped |
-| DEPLOY-03   | 30    | 30-01        | scoped |
-| DEPLOY-04   | 30    | 30-01        | scoped |
-| DEPLOY-05   | 30    | 30-02        | scoped |
+| REQ-ID    | Phase | Spec            | Status |
+| --------- | ----- | --------------- | ------ |
+| INFRA-01  | 41    | STACK.md        | scoped |
+| INFRA-02  | 41    | STACK.md        | scoped |
+| INFRA-03  | 41    | STACK.md        | scoped |
+| ENV-01    | 41    | ARCHITECTURE.md | scoped |
+| ENV-02    | 41    | ARCHITECTURE.md | scoped |
+| ENV-03    | 41    | ARCHITECTURE.md | scoped |
+| AUTH-01   | 42    | ARCHITECTURE.md | scoped |
+| AUTH-02   | 42    | FEATURES.md     | scoped |
+| AUTH-03   | 42    | FEATURES.md     | scoped |
+| BLOCK-01  | 42    | FEATURES.md     | scoped |
+| BLOCK-02  | 42    | FEATURES.md     | scoped |
+| BLOCK-03  | 42    | FEATURES.md     | scoped |
+| WALLET-01 | 43    | STACK.md        | scoped |
+| WALLET-02 | 43    | ARCHITECTURE.md | scoped |
+| WALLET-03 | 43    | PITFALLS.md     | scoped |
+| CI-01     | 44    | ARCHITECTURE.md | scoped |
+| CI-02     | 44    | ARCHITECTURE.md | scoped |
+| CI-03     | 44    | ARCHITECTURE.md | scoped |
 
 ---
 
 ## Out of Scope
 
-- D1 database migration (future milestone consideration)
+- Actual E2E flow tests (Auth → Mint → Feed → Hatch flows) — future milestone
+- Marketplace flow tests (multi-account buy/sell) — future milestone
+- Commission/Tier flow tests (4-user referral chain) — future milestone
+- Production validation beyond test infrastructure
 - Smart contract deployment automation
-- Full serverless architecture (PocketBase remains on VPS)
-- Recruitment bonus implementation (Phase 24-03 partially covers)
-- Species catalog expansion (addNewSpecies admin function)
+- VRF mock coordinator setup (deferred to hatch flow testing)
 
 ---
 
 ## Summary
 
-| Phase     | Plans  | Requirements                     | Priority     |
-| --------- | ------ | -------------------------------- | ------------ |
-| 26        | 4      | 4 (BUG-01–04)                    | P0 (blocker) |
-| 27        | 3      | 5 (RARITY-01–05)                 | P1           |
-| 28        | 3      | 6 (WALLET-01–03, COINSTOR-01–03) | P1           |
-| 29        | 3      | 6 (ADMIN-01–06)                  | P1           |
-| 25        | 3      | 3 (UX-01–03)                     | P2           |
-| 30        | 2      | 5 (DEPLOY-01–05)                 | P0 (deploy)  |
-| **Total** | **17** | **29**                           | —            |
+| Phase     | Plans | Requirements     | Priority |
+| --------- | ----- | ---------------- | -------- |
+| 41        | 2     | 6 (INFRA + ENV)  | P0       |
+| 42        | 2     | 6 (AUTH + BLOCK) | P0       |
+| 43        | 1     | 3 (WALLET)       | P1       |
+| 44        | 1     | 3 (CI)           | P1       |
+| **Total** | **6** | **18**           | —        |
 
 ---
 
-_Last updated: 2026-04-23 — Requirements scoped for v0.0.9. Phase 30 corrected: Frontend-only deployment (17 plans, 29 requirements). Backend/wallet-api already hosted on VPS._
+_Last updated: 2026-04-27 — Requirements scoped for v0.3.0 Test Infrastructure milestone_
