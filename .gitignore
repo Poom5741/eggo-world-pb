@@ -76,6 +76,10 @@ contracts/lib/
 # Prettier
 .prettier-cache
 
+# Playwright test results
+playwright-report/
+test-results/
+
 .qoder.flux/
 .qoder
 .flux.env.production

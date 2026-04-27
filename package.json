@@ -13,6 +13,7 @@
     "lint": "bun run --cwd apps/web lint",
     "test": "bun run --cwd apps/web test",
     "test:coverage": "bun run --cwd apps/web test:coverage",
+    "test:e2e": "playwright test",
     "format": "bunx prettier --write \"**/*.{json,md}\""
   },
   "lint-staged": {
@@ -34,5 +35,8 @@
     "apps/backend/pb_hooks/**/*.js": [
       "echo '✓ PocketBase hooks - ensure manual review'"
     ]
+  },
+  "dependencies": {
+    "@playwright/test": "^1.59.1"
   }
 }
