@@ -5,52 +5,17 @@
 # Usage: docker-compose -f docker-compose.e2e.yml up -d
 #
 # Services:
-# - pocketbase: Backend with isolated pb_data.e2e/ (D-06)
 # - wallet-api: Gas sponsorship service
 # - anvil: BSC testnet fork (D-09)
 # - frontend: Static file server for apps/web/out/
+#
+# Note: PocketBase uses production instance (pb.eggoworld.io) for E2E testing
+# due to local migration API compatibility issues with PocketBase 0.23.x
+# Set POCKETBASE_URL environment variable to override
 
 version: '3.8'
 
 services:
-  # PocketBase - Backend service
-  pocketbase:
-    build:
-      context: ./apps/backend
-      dockerfile: Dockerfile
-    container_name: e2e-pb
-    ports:
-      - "8090:8090"
-    environment:
-      - WALLET_SRV_URL=http://wallet-api:3001
-      - WALLET_API_URL=http://wallet-api:3001
-      - PB_PUBLIC_URL=http://localhost:8090
-      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-e2e-test-key}
-      - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-test@e2e.local}
-      - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-test-password}
-      # LINE OAuth disabled for E2E (auth bypass in Phase 42)
-      - LINE_CHANNEL_ID=
-      - LINE_CHANNEL_SECRET=
-    volumes:
-      # D-06: Isolated pb_data.e2e/ volume (not production data)
-      - ./apps/backend/pb_data.e2e:/pb/pb_data
-      - ./apps/backend/pb_hooks:/pb/pb_hooks
-      - ./apps/backend/pb_migrations:/pb/pb_migrations
-      - ./apps/backend/pb_public:/pb/pb_public
-    networks:
-      - e2e-test-network
-    depends_on:
-      wallet-api:
-        condition: service_healthy
-    restart: unless-stopped
-    # D-08: Health check
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8090/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   # Wallet API - Gas sponsorship service
   wallet-api:
     build:
