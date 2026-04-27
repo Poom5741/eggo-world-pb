@@ -40,8 +40,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 
-- [ ] 41-01: Playwright configuration with Bun test runner
-- [ ] 41-02: Docker Compose test environment with health checks
+- [ ] 41-01: Playwright configuration with Bun test runner (Wave 1, autonomous)
+- [ ] 41-02: Docker Compose test environment with health checks (Wave 1, has checkpoint)
 
 ### Phase 42: Auth Mock + Blockchain Helpers
 
@@ -100,11 +100,11 @@ Phases execute in numeric order: 41 → 42 → 43 → 44
 
 | Phase                                    | Milestone | Plans Complete | Status      | Completed |
 | ---------------------------------------- | --------- | -------------- | ----------- | --------- |
-| 41. Framework Setup + Docker Environment | v0.3.0    | 0/2            | Not started | -         |
+| 41. Framework Setup + Docker Environment | v0.3.0    | 0/2            | Planned     | -         |
 | 42. Auth Mock + Blockchain Helpers       | v0.3.0    | 0/2            | Not started | -         |
 | 43. Wallet Automation                    | v0.3.0    | 0/1            | Not started | -         |
 | 44. CI Integration                       | v0.3.0    | 0/1            | Not started | -         |
 
 ---
 
-_Last updated: 2026-04-27 — Roadmap created for v0.3.0 E2E Flow Testing milestone_
+_Last updated: 2026-04-27 — Phase 41 plans created (2 plans, Wave 1 parallel)_

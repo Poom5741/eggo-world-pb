@@ -11,8 +11,8 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 
 Phase: 41 of 44 (Framework Setup + Docker Environment)
 Plan: 0 of 2 in current phase
-Status: Context gathered, ready to plan
-Last activity: 2026-04-27 — Phase 41 context captured (Playwright + Docker + Anvil + Test Organization)
+Status: Plans created, ready to execute
+Last activity: 2026-04-27 — Phase 41 plans created (Playwright + Docker Compose)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -44,7 +44,16 @@ _Updated after each plan completion_
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Phase 40: v0.2.0 Functional Spec 100% completed (shipped 2026-04-26)
+- Phase 41: Framework Setup + Docker Environment (2 plans created)
+  - D-01: @playwright/test with Bun
+  - D-02: bun run test:e2e as unified command
+  - D-03: playwright.config.ts at project root
+  - D-04: Static export compatibility
+  - D-05: Standalone docker-compose.e2e.yml
+  - D-06: Isolated test environment
+  - D-07: Services: PocketBase, wallet-api, Anvil, frontend
+  - D-08: Health checks for all services
+  - D-09: BSC Testnet fork for Anvil
 
 ### Pending Todos
 
@@ -66,5 +75,5 @@ Items acknowledged and carried forward from v0.2.0 milestone close:
 ## Session Continuity
 
 Last session: 2026-04-27
-Stopped at: Phase 41 context captured, ready to plan
-Resume file: .planning/phases/41-framework-setup-docker-env/41-CONTEXT.md
+Stopped at: Phase 41 plans created, ready to execute
+Resume file: .planning/phases/41-framework-setup-docker-env/41-01-PLAN.md
