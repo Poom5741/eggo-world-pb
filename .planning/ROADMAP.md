@@ -75,7 +75,7 @@ Plans:
 
 Plans:
 
-- [ ] 43-01: Synpress configuration and Anvil test accounts
+- [ ] 43-01: Synpress MetaMask automation with Anvil accounts and relayer balance helper
 
 ### Phase 44: CI Integration
 
