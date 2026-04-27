@@ -7,7 +7,7 @@
     "dev": "bun run --cwd apps/web dev",
     "build": "bun run --cwd apps/web build",
     "start": "bun run --cwd apps/web start",
-    "install": "bun install apps/web",
+    "install": "bun install",
     "dev-local": "NEXT_PUBLIC_POCKETBASE_URL=http://localhost:8090 bun run --cwd apps/web dev",
     "prepare": "husky",
     "lint": "bun run --cwd apps/web lint",
@@ -38,5 +38,8 @@
   },
   "dependencies": {
     "@playwright/test": "^1.59.1"
+  },
+  "devDependencies": {
+    "ethers": "^6.16.0"
   }
 }
