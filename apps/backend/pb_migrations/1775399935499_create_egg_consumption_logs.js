@@ -47,11 +47,11 @@ migrate((app) => {
         "indexes": [
             "CREATE INDEX idx_consumption_egg ON egg_consumption_logs (egg)"
         ],
-        "listRule": "@request.auth.id != \"\" && egg.owner = @request.auth.id",
-        "viewRule": "@request.auth.id != \"\" && egg.owner = @request.auth.id",
+        "listRule": "@request.auth.id != '' && egg.owner.id = @request.auth.id",
+        "viewRule": "@request.auth.id != '' && egg.owner.id = @request.auth.id",
         "createRule": null,
         "updateRule": null,
-        "deleteRule": "@request.auth.id != \"\" && egg.owner = @request.auth.id"
+        "deleteRule": "@request.auth.id != '' && egg.owner.id = @request.auth.id"
   }, collection)
 
   return app.save(collection)

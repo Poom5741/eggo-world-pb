@@ -94,10 +94,10 @@ migrate((app) => {
             "CREATE INDEX idx_food_nfts_is_consumed ON food_nfts (is_consumed)",
             "CREATE INDEX idx_food_nfts_food_type ON food_nfts (food_type)"
         ],
-        "listRule": "@request.auth.id != \"\" && owner = @request.auth.id",
-        "viewRule": "@request.auth.id != \"\" && owner = @request.auth.id",
+        "listRule": "@request.auth.id != '' && owner.id = @request.auth.id",
+        "viewRule": "@request.auth.id != '' && owner.id = @request.auth.id",
         "createRule": null,
-        "updateRule": "@request.auth.id != \"\" && owner = @request.auth.id",
+        "updateRule": "@request.auth.id != '' && owner.id = @request.auth.id",
         "deleteRule": null
   }, collection)
 

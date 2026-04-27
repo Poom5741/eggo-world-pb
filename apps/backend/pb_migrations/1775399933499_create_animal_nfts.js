@@ -163,11 +163,11 @@ migrate((app) => {
             "CREATE INDEX `idx_animal_nfts_generation` ON `animal_nfts` (`generation`)",
             "CREATE INDEX `idx_animal_nfts_rarity` ON `animal_nfts` (`rarity`)"
         ],
-        "listRule": "@request.auth.id != \"\" && owner = @request.auth.id",
-        "viewRule": "@request.auth.id != \"\" && owner = @request.auth.id",
-        "createRule": "@request.auth.id != \"\" && owner = @request.auth.id",
-        "updateRule": "@request.auth.id != \"\" && owner = @request.auth.id",
-        "deleteRule": "@request.auth.id != \"\" && owner = @request.auth.id",
+        "listRule": "@request.auth.id != '' && owner.id = @request.auth.id",
+        "viewRule": "@request.auth.id != '' && owner.id = @request.auth.id",
+        "createRule": "@request.auth.id != '' && owner.id = @request.auth.id",
+        "updateRule": "@request.auth.id != '' && owner.id = @request.auth.id",
+        "deleteRule": "@request.auth.id != '' && owner.id = @request.auth.id",
         "options": {}
   }, collection)
 
