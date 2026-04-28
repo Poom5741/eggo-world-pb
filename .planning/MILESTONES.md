@@ -1,5 +1,32 @@
 # Project Milestones
 
+## v0.3.0 — E2E Flow Testing Infrastructure
+
+**Status:** ✅ ARCHIVED  
+**Shipped:** 2026-04-28  
+**Phases:** 4 (41-44) | **Plans:** 6
+
+### What Was Built
+
+- Playwright framework with Bun test runner and static export config
+- E2E auth bypass via query param trigger (?e2e_test_user=test_buyer)
+- Blockchain helpers: waitForTx, getOwnerOf, getBalanceOf, parseEvent
+- Synpress MetaMask automation with Anvil test accounts
+- GitHub Actions workflow for automated E2E tests on PRs
+
+### Test Infrastructure Coverage
+
+**UAT Verified:** 16/16 tests passed with live services
+**E2E Test Suite:** 35 passed, 1 skipped in 15.1s
+
+### Known Gaps (Deferred)
+
+- Test users not created in production PocketBase (pending todo)
+- Functional journey tests not yet written (buy egg → feed → hatch)
+- 9 UAT gaps + 4 verification gaps from prior milestones (v0.0.7-v0.2.0)
+
+---
+
 ## v0.2.0 — Functional Spec 100% Completion
 
 **Status:** ✅ ARCHIVED  
@@ -112,4 +139,4 @@
 
 ---
 
-_Last updated: 2026-04-26 — v0.2.0 milestone archived_
+_Last updated: 2026-04-28 — v0.3.0 milestone archived_
