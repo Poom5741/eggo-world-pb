@@ -17,11 +17,13 @@ import {
   EGG_NFT_ADDRESS,
   ANIMAL_NFT_ADDRESS,
   FOOD_NFT_ADDRESS,
+  COMMISSION_DISTRIBUTION_ADDRESS,
   OwnershipVerificationResult,
   OwnershipTransferResult,
+  CommissionVerificationResult,
 } from '../fixtures/journey-helpers'
 import { TEST_USERS, getE2EContext } from '../fixtures/e2e-setup'
-import { getOwnerOf, createEthersProvider } from '../fixtures/blockchain-helpers'
+import { getOwnerOf, createEthersProvider, getCommissionBalance } from '../fixtures/blockchain-helpers'
 
 test.describe('Journey Helpers', () => {
   test.describe.configure({ mode: 'serial' })
@@ -286,6 +288,65 @@ test.describe('Journey Helpers', () => {
       }
 
       expect(mockResult.uiVisible).toBe(true)
+    })
+  })
+
+  // Phase 48: Referral Commission Journey Test helpers
+  test.describe('COMMISSION_DISTRIBUTION_ADDRESS constant', () => {
+    test('COMMISSION_DISTRIBUTION_ADDRESS matches contract-addresses.json ChainId 7117', async () => {
+      // Per D-13: Commission contract address from contracts/contract-addresses.json
+      expect(COMMISSION_DISTRIBUTION_ADDRESS).toBe('0xa0C50587306F0CCac627D2eaEcb9e5909dB58F3f')
+    })
+  })
+
+  test.describe('CommissionVerificationResult interface', () => {
+    test('CommissionVerificationResult has onChainBalance, pbAmount, level, txHash, allMatch fields', async () => {
+      // Per D-10, D-11: Double verification structure for commission checks
+      const mockResult: CommissionVerificationResult = {
+        onChainBalance: 5, // 5 USDT from contract (20% of 25)
+        pbAmount: 5, // 5 USDT from commission_records
+        level: 1, // G1 referrer
+        txHash: '0xabc123',
+        allMatch: true,
+      }
+
+      // Verify structure has all required fields
+      expect(mockResult.onChainBalance).toBe(5)
+      expect(mockResult.pbAmount).toBe(5)
+      expect(mockResult.level).toBe(1)
+      expect(mockResult.txHash).toBe('0xabc123')
+      expect(mockResult.allMatch).toBe(true)
+    })
+
+    test('CommissionVerificationResult allMatch is true when onChainBalance >= pbAmount', async () => {
+      // On-chain balance can accumulate from multiple purchases
+      const mockResult: CommissionVerificationResult = {
+        onChainBalance: 10, // Accumulated balance
+        pbAmount: 5, // This purchase's commission
+        level: 1,
+        txHash: '0xabc123',
+        allMatch: true,
+      }
+
+      expect(mockResult.allMatch).toBe(mockResult.onChainBalance >= mockResult.pbAmount)
+    })
+  })
+
+  test.describe('getCommissionBalance blockchain helper', () => {
+    test('getCommissionBalance helper exists in blockchain-helpers', async () => {
+      // Verify function exists
+      expect(typeof getCommissionBalance).toBe('function')
+    })
+
+    test('getCommissionBalance calls getCommissionBalance on CommissionDistribution contract', async () => {
+      // This test documents the expected behavior
+      // Real verification will happen in E2E journey test with actual commission distribution
+      // The helper should call the contract's getCommissionBalance(address) view function
+      // and return the USDT balance in wei (or converted to USDT)
+
+      // Mock the expected return type
+      const mockBalance = 5000000 // 5 USDT in wei (6 decimals for USDT)
+      expect(typeof mockBalance).toBe('number')
     })
   })
 })

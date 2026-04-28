@@ -202,6 +202,15 @@ export const TIER_BADGE_ABI = [
 ]
 
 /**
+ * ABI for CommissionDistribution contract (Phase 48)
+ * Used for referral commission verification
+ */
+export const COMMISSION_DISTRIBUTION_ABI = [
+  'function getCommissionBalance(address referrer) external view returns (uint256)',
+  'function commissionBalances(address referrer) external view returns (uint256)',
+]
+
+/**
  * Event names supported for parsing
  */
 export type EventName = 'Transfer' | 'NFTSold' | 'AnimalBred' | 'TierBadgeMinted'
@@ -317,6 +326,30 @@ export function parseAllEvents(
     AnimalBred: parseEvent(receipt, 'AnimalBred'),
     TierBadgeMinted: parseEvent(receipt, 'TierBadgeMinted'),
   }
+}
+
+// ============================================================================
+// Commission Balance Helpers (Phase 48)
+// ============================================================================
+
+/**
+ * Get commission balance for a referrer wallet
+ * Phase 48: Referral Commission Journey Test
+ * Calls getCommissionBalance(address) on CommissionDistribution contract
+ *
+ * @param contractAddress - CommissionDistribution contract address
+ * @param walletAddress - Referrer wallet address to check balance
+ * @returns Commission balance in USDT (converted from wei with 6 decimals)
+ */
+export async function getCommissionBalance(
+  contractAddress: string,
+  walletAddress: string
+): Promise<number> {
+  const provider = createEthersProvider()
+  const contract = new ethers.Contract(contractAddress, COMMISSION_DISTRIBUTION_ABI, provider)
+  const balanceWei = await contract.getCommissionBalance(walletAddress)
+  // USDT has 6 decimals, convert wei to USDT amount
+  return Number(ethers.formatUnits(balanceWei, 6))
 }
 
 // ============================================================================

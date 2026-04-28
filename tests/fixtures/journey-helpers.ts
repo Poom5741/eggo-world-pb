@@ -8,7 +8,7 @@
 
 import type { Page } from '@playwright/test'
 import { expect } from '@playwright/test'
-import { getOwnerOf } from './blockchain-helpers'
+import { getOwnerOf, getCommissionBalance } from './blockchain-helpers'
 import { getE2EContext } from './e2e-setup'
 
 /**
@@ -30,6 +30,13 @@ export const ANIMAL_NFT_ADDRESS = '0x35F53aB20B3073903ebDe04aA9b354d1Efe8A99C'
 export const FOOD_NFT_ADDRESS = '0xec21A3c068e84ceeD04975627418E867Ec342A02'
 
 /**
+ * COMMISSION DISTRIBUTION contract address for ChainId 7117 (Anvil testnet)
+ * Phase 48: Referral Commission Journey Test
+ * From contracts/contract-addresses.json
+ */
+export const COMMISSION_DISTRIBUTION_ADDRESS = '0xa0C50587306F0CCac627D2eaEcb9e5909dB58F3f'
+
+/**
  * Result of triple verification
  * Per D-05: UI visible + on-chain owner matches + PocketBase record exists
  */
@@ -44,6 +51,23 @@ export interface OwnershipVerificationResult {
   allMatch: boolean
   /** Token ID verified */
   tokenId: number
+}
+
+/**
+ * Result of commission verification (Phase 48)
+ * Per D-10, D-11: Double verification (on-chain + PocketBase)
+ */
+export interface CommissionVerificationResult {
+  /** USDT amount from CommissionDistribution.getCommissionBalance */
+  onChainBalance: number
+  /** USDT amount from commission_records collection */
+  pbAmount: number
+  /** Referral level (1-4, G1=1, G2=2, etc.) */
+  level: number
+  /** Transaction hash that triggered commission */
+  txHash: string
+  /** Whether on-chain balance >= PocketBase amount (on-chain can accumulate) */
+  allMatch: boolean
 }
 
 /**
@@ -365,6 +389,72 @@ export async function verifyOwnershipTransfer(
  * @param userId - PocketBase user ID for cross-check
  * @returns Verification result with match status
  */
+// ============================================================================
+// Phase 48: Referral Commission Verification
+// ============================================================================
+
+/**
+ * Commission verification helper for referral journey tests
+ * Per D-10, D-11: Double verification (on-chain + PocketBase)
+ *
+ * @param page - Playwright page object (optional, can be null for pure blockchain/PB checks)
+ * @param referrerWallet - Referrer wallet address to check
+ * @param expectedAmount - Expected commission amount in USDT
+ * @param txHash - Transaction hash that triggered the commission
+ * @param level - Referral level (1-4)
+ * @returns Verification result with on-chain and PocketBase amounts
+ */
+export async function verifyCommissionBalance(
+  page: Page | null,
+  referrerWallet: string,
+  expectedAmount: number,
+  txHash: string,
+  level: number
+): Promise<CommissionVerificationResult> {
+  const { pocketbaseUrl } = getE2EContext()
+
+  // 1. On-chain Check: getCommissionBalance(referrerWallet)
+  // Per D-10: On-chain first (blockchain truth)
+  let onChainBalance = 0
+  try {
+    onChainBalance = await getCommissionBalance(COMMISSION_DISTRIBUTION_ADDRESS, referrerWallet)
+  } catch {
+    onChainBalance = 0
+  }
+
+  // 2. PocketBase Check: Query commission_records by tx_hash
+  // Per D-10: PocketBase second (app sync)
+  let pbAmount = 0
+  let pbLevel = 0
+  try {
+    const response = await fetch(
+      `${pocketbaseUrl}/api/collections/commission_records/records?filter=(tx_hash='${txHash}')&(level=${level})`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      if (data.items && data.items.length > 0) {
+        pbAmount = data.items[0].amount || 0
+        pbLevel = data.items[0].level || level
+      }
+    }
+  } catch {
+    pbAmount = 0
+    pbLevel = level
+  }
+
+  // 3. Determine match status
+  // Per D-10: onChainBalance >= pbAmount (on-chain can accumulate from multiple purchases)
+  const allMatch = onChainBalance >= pbAmount && pbAmount >= expectedAmount
+
+  return {
+    onChainBalance,
+    pbAmount,
+    level: pbLevel,
+    txHash,
+    allMatch,
+  }
+}
+
 export async function verifyAnimalOwnership(
   page: Page,
   tokenId: number,
