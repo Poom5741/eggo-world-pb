@@ -35,7 +35,11 @@ v0.3.0 delivered E2E test infrastructure. Next milestone will focus on functiona
 
 ### 🚧 v0.4.0 Functional Journey Tests (Planned)
 
-- [ ] Phase 45: Buy Egg Journey Test (auth → buy → NFT appears)
+- [ ] Phase 45: Buy Egg Journey Test
+  - Goal: E2E test for complete "Buy Egg" user journey: authentication → marketplace browsing → purchase → verify NFT ownership
+  - Plans: 1 plan
+  - Plan list:
+    - [ ] 45-01-PLAN.md — Journey helpers + main buy journey test with triple verification
 - [ ] Phase 46: Feed + Hatch Journey Test (buy food → feed egg → hatch animal)
 - [ ] Phase 47: Marketplace Journey Test (list → purchase → ownership transfer)
 - [ ] Phase 48: Referral Commission Journey Test (signup → purchase → commission)
@@ -48,11 +52,11 @@ v0.3.0 delivered E2E test infrastructure. Next milestone will focus on functiona
 | 42. Auth Mock + Blockchain Helpers       | v0.3.0    | 2/2            | Complete | 2026-04-27 |
 | 43. Wallet Automation                    | v0.3.0    | 1/1            | Complete | 2026-04-27 |
 | 44. CI Integration                       | v0.3.0    | 1/1            | Complete | 2026-04-27 |
-| 45. Buy Egg Journey Test                 | v0.4.0    | 0/1            | Planned  | -          |
+| 45. Buy Egg Journey Test                 | v0.4.0    | 0/1 planned    | Planned  | -          |
 | 46. Feed + Hatch Journey Test            | v0.4.0    | 0/1            | Planned  | -          |
 | 47. Marketplace Journey Test             | v0.4.0    | 0/1            | Planned  | -          |
 | 48. Referral Commission Journey Test     | v0.4.0    | 0/1            | Planned  | -          |
 
 ---
 
-_Last updated: 2026-04-28 — v0.3.0 milestone archived_
+_Last updated: 2026-04-28 — Phase 45 planned_
