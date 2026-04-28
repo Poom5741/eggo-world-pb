@@ -41,11 +41,11 @@ v0.3.0 delivered E2E test infrastructure. Next milestone will focus on functiona
   - Plan list:
     - [x] 45-01-PLAN.md — Journey helpers + main buy journey test with triple verification — completed 2026-04-28
 - [ ] Phase 46: Feed + Hatch Journey Test (buy food → feed egg → hatch animal)
-- [ ] Phase 47: Marketplace Journey Test (list → purchase → ownership transfer)
+- [x] Phase 47: Marketplace Journey Test (list → purchase → ownership transfer)
   - Goal: E2E test for marketplace multi-user flow: list → purchase → ownership transfer
   - Plans: 1 plan
   - Plan list:
-    - [ ] 47-01-PLAN.md — Multi-user journey test with bilateral ownership verification
+    - [x] 47-01-PLAN.md — Multi-user journey test with bilateral ownership verification — completed 2026-04-28
 - [ ] Phase 48: Referral Commission Journey Test (signup → purchase → commission)
 
 ## Progress
@@ -58,9 +58,9 @@ v0.3.0 delivered E2E test infrastructure. Next milestone will focus on functiona
 | 44. CI Integration                       | v0.3.0    | 1/1            | Complete | 2026-04-27 |
 | 45. Buy Egg Journey Test                 | v0.4.0    | 1/1            | Complete | 2026-04-28 |
 | 46. Feed + Hatch Journey Test            | v0.4.0    | 0/1            | Planned  | -          |
-| 47. Marketplace Journey Test             | v0.4.0    | 0/1            | Planned  | -          |
+| 47. Marketplace Journey Test             | v0.4.0    | 1/1            | Complete | 2026-04-28 |
 | 48. Referral Commission Journey Test     | v0.4.0    | 0/1            | Planned  | -          |
 
 ---
 
-_Last updated: 2026-04-28 — Phase 47 planned_
+_Last updated: 2026-04-28 — Phase 47 completed_

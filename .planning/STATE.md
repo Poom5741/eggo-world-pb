@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-04-27)
 
 **Core value:** Gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals with USDT and 4-level MLM referral commissions
-**Current focus:** v0.4.0 Functional Journey Tests — Phase 45 completed
+**Current focus:** v0.4.0 Functional Journey Tests — Phase 47 completed
 
 ## Current Position
 
-Phase: 45 of 48 (Buy Egg Journey Test) — COMPLETED
+Phase: 47 of 48 (Marketplace Journey Test) — COMPLETED
 Status: v0.4.0 Functional Journey Tests milestone in progress
-Last activity: 2026-04-28 — Phase 45 completed (45-01)
+Last activity: 2026-04-28 — Phase 47 completed (47-01)
 
-Progress: [██░░░░░░░░] 25% (1/4 phases)
+Progress: [███░░░░░░░] 50% (2/4 phases)
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 5 (Phase 42 + Phase 43 + Phase 44 + Phase 45)
-- Average duration: 12 min
-- Total execution time: 63 min
+- Total plans completed: 6 (Phase 42 + Phase 43 + Phase 44 + Phase 45 + Phase 47)
+- Average duration: 11.3 min
+- Total execution time: 73 min
 
 **By Phase:**
 
@@ -32,10 +32,11 @@ Progress: [██░░░░░░░░] 25% (1/4 phases)
 | 43    | 1/1   | 8 min  | 8 min    |
 | 44    | 1/1   | 5 min  | 5 min    |
 | 45    | 1/1   | 15 min | 15 min   |
+| 47    | 1/1   | 10 min | 10 min   |
 
 **Recent Trend:**
 
-- Last 5 plans: 42-01 (20min), 42-02 (15min), 43-01 (8min), 44-01 (5min), 45-01 (15min)
+- Last 5 plans: 42-01 (20min), 42-02 (15min), 43-01 (8min), 44-01 (5min), 47-01 (10min)
 - Trend: Fast execution, autonomous plans
 
 _Updated after each plan completion_
@@ -77,6 +78,11 @@ Recent decisions affecting current work:
   - D-45-02: test_buyer_poor uses Anvil Account 4 for insufficient balance scenarios
   - D-45-03: Journey tests use test.describe.configure({ mode: 'serial' })
 
+- Phase 47: Marketplace Journey Test (1 plan)
+  - D-47-01: verifyOwnershipTransfer captures before/after state for both seller and buyer
+  - D-47-02: Multi-user tests use serial mode with shared state
+  - D-47-03: ANIMAL_NFT_ADDRESS constant from contracts/contract-addresses.json ChainId 7117
+
 ### Pending Todos
 
 - Create test users in production PocketBase (test_buyer, test_seller, test_referrer, test_admin)
@@ -99,5 +105,5 @@ Items acknowledged and carried forward from v0.2.0 milestone close:
 ## Session Continuity
 
 Last session: 2026-04-28
-Stopped at: Phase 45 completed
-Resume file: .planning/phases/45-buy-egg-journey-test/45-01-SUMMARY.md
+Stopped at: Phase 47 completed
+Resume file: .planning/phases/47-marketplace-journey-test/47-01-SUMMARY.md
