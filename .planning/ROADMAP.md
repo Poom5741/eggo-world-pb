@@ -46,7 +46,11 @@ v0.3.0 delivered E2E test infrastructure. Next milestone will focus on functiona
   - Plans: 1 plan
   - Plan list:
     - [x] 47-01-PLAN.md — Multi-user journey test with bilateral ownership verification — completed 2026-04-28
-- [ ] Phase 48: Referral Commission Journey Test (signup → purchase → commission)
+- [ ] Phase 48: Referral Commission Journey Test
+  - Goal: E2E test for referral commission flow: signup → purchase → commission distribution
+  - Plans: 1 plan
+  - Plan list:
+    - [ ] 48-01-PLAN.md — Commission verification helpers + referral commission journey test
 
 ## Progress
 
@@ -63,4 +67,4 @@ v0.3.0 delivered E2E test infrastructure. Next milestone will focus on functiona
 
 ---
 
-_Last updated: 2026-04-28 — Phase 47 completed_
+_Last updated: 2026-04-28 — Phase 48 planned_
