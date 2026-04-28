@@ -5,13 +5,13 @@
 See: .planning/PROJECT.md (updated 2026-04-27)
 
 **Core value:** Gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals with USDT and 4-level MLM referral commissions
-**Current focus:** v0.4.0 Functional Journey Tests — All phases complete
+**Current focus:** v0.4.0 Functional Journey Tests — MILESTONE COMPLETE (archived)
 
 ## Current Position
 
 Phase: 48 of 48 (Referral Commission Journey Test) — MILESTONE COMPLETE
-Status: v0.4.0 Functional Journey Tests milestone COMPLETE
-Last activity: 2026-04-28 — Phase 46 completed, milestone v0.4.0 done
+Status: v0.4.0 Functional Journey Tests milestone ARCHIVED
+Last activity: 2026-04-28 — Milestone archived, ready for v0.5.0 planning
 
 Progress: [█████████] 100% (4/4 phases)
 
@@ -117,5 +117,5 @@ Items acknowledged and carried forward from v0.2.0 milestone close:
 ## Session Continuity
 
 Last session: 2026-04-28
-Stopped at: Phase 48 completed
-Resume file: .planning/phases/48-referral-commission-journey-test/48-01-SUMMARY.md
+Stopped at: Milestone v0.4.0 archived
+Resume file: .planning/milestones/v0.4.0-ROADMAP.md
