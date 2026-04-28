@@ -1,6 +1,7 @@
 /**
  * Journey Helpers for E2E Buy Egg Tests
  * Phase 45: Buy Egg Journey Test
+ * Phase 47: Marketplace Multi-User Journey Test
  *
  * Triple verification pattern (UI + on-chain + PocketBase) and test data setup helpers
  */
@@ -15,6 +16,18 @@ import { getE2EContext } from './e2e-setup'
  * From contracts/contract-addresses.json
  */
 export const EGG_NFT_ADDRESS = '0xb2FE193523A1E6A240141331A80755f5642e7A44'
+
+/**
+ * ANIMAL NFT contract address for ChainId 7117 (Anvil testnet)
+ * From contracts/contract-addresses.json
+ */
+export const ANIMAL_NFT_ADDRESS = '0x35F53aB20B3073903ebDe04aA9b354d1Efe8A99C'
+
+/**
+ * FOOD NFT contract address for ChainId 7117 (Anvil testnet)
+ * From contracts/contract-addresses.json
+ */
+export const FOOD_NFT_ADDRESS = '0xec21A3c068e84ceeD04975627418E867Ec342A02'
 
 /**
  * Result of triple verification
@@ -210,4 +223,207 @@ export async function waitForPurchaseComplete(page: Page, timeoutMs = 30000): Pr
   // Wait for redirect to eggs/inventory page
   await page.waitForURL(/eggs|inventory/, { timeout: timeoutMs })
   await page.waitForLoadState('networkidle')
+}
+
+// ============================================================================
+// Phase 47: Multi-User Ownership Transfer Verification
+// ============================================================================
+
+/**
+ * User ownership state for bilateral verification
+ * Tracks before/after state for seller and buyer
+ */
+export interface UserOwnershipState {
+  /** Wallet address of the user */
+  wallet: string
+  /** Whether user had ownership before transfer */
+  hadOwnershipBefore: boolean
+  /** Whether user has ownership after transfer */
+  hasOwnershipAfter: boolean
+  /** On-chain owner address before transfer */
+  onChainOwnerBefore: string
+  /** On-chain owner address after transfer */
+  onChainOwnerAfter: string
+  /** PocketBase user ID before transfer */
+  pbOwnerBefore: string
+  /** PocketBase user ID after transfer */
+  pbOwnerAfter: string
+}
+
+/**
+ * Result of bilateral ownership transfer verification
+ * Verifies both seller lost and buyer gained ownership
+ */
+export interface OwnershipTransferResult {
+  /** Token ID verified */
+  tokenId: number
+  /** Seller's ownership state before/after */
+  seller: UserOwnershipState
+  /** Buyer's ownership state before/after */
+  buyer: UserOwnershipState
+  /** Whether transfer completed successfully (seller lost AND buyer gained) */
+  transferComplete: boolean
+}
+
+/**
+ * Bilateral ownership transfer verification helper
+ * Per Phase 47: Verifies seller lost ownership and buyer gained ownership
+ * across on-chain and PocketBase layers
+ *
+ * @param page - Playwright page object (optional, can be null for pure blockchain/PB checks)
+ * @param tokenId - NFT token ID to verify
+ * @param sellerWallet - Seller's wallet address
+ * @param buyerWallet - Buyer's wallet address
+ * @param sellerUserId - Seller's PocketBase user ID
+ * @param buyerUserId - Buyer's PocketBase user ID
+ * @param contractAddress - NFT contract address (default: ANIMAL_NFT_ADDRESS)
+ * @returns Transfer result with before/after state for both parties
+ */
+export async function verifyOwnershipTransfer(
+  page: Page | null,
+  tokenId: number,
+  sellerWallet: string,
+  buyerWallet: string,
+  sellerUserId: string,
+  buyerUserId: string,
+  contractAddress: string = ANIMAL_NFT_ADDRESS
+): Promise<OwnershipTransferResult> {
+  const { pocketbaseUrl } = getE2EContext()
+
+  // Capture before state from on-chain (assuming transfer already happened)
+  // Note: For real before/after tracking, this would need to be called before purchase
+  // and then called again after purchase. Here we capture current state.
+  let onChainOwnerAfter = ''
+  try {
+    onChainOwnerAfter = await getOwnerOf(contractAddress, tokenId)
+  } catch {
+    onChainOwnerAfter = ''
+  }
+
+  // Query PocketBase for current owner
+  let pbOwnerAfter = ''
+  try {
+    const response = await fetch(
+      `${pocketbaseUrl}/api/collections/animals/records?filter=(token_id='${tokenId}')`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      if (data.items && data.items.length > 0) {
+        pbOwnerAfter = data.items[0].owner || data.items[0].owner_id || ''
+      }
+    }
+  } catch {
+    pbOwnerAfter = ''
+  }
+
+  // Determine ownership state after transfer
+  const sellerWalletLower = sellerWallet.toLowerCase()
+  const buyerWalletLower = buyerWallet.toLowerCase()
+  const onChainOwnerAfterLower = onChainOwnerAfter.toLowerCase()
+
+  const sellerHasOwnershipAfter = onChainOwnerAfterLower === sellerWalletLower
+  const buyerHasOwnershipAfter = onChainOwnerAfterLower === buyerWalletLower
+
+  // For before state, we assume:
+  // - Seller had ownership before (seller was original owner)
+  // - Buyer did not have ownership before
+  // Note: In real implementation, before state should be captured before purchase
+  const result: OwnershipTransferResult = {
+    tokenId,
+    seller: {
+      wallet: sellerWallet,
+      hadOwnershipBefore: true, // Assumed - seller was original owner
+      hasOwnershipAfter: sellerHasOwnershipAfter,
+      onChainOwnerBefore: sellerWallet, // Assumed
+      onChainOwnerAfter,
+      pbOwnerBefore: sellerUserId, // Assumed
+      pbOwnerAfter,
+    },
+    buyer: {
+      wallet: buyerWallet,
+      hadOwnershipBefore: false, // Assumed - buyer was not original owner
+      hasOwnershipAfter: buyerHasOwnershipAfter,
+      onChainOwnerBefore: '', // Assumed
+      onChainOwnerAfter,
+      pbOwnerBefore: '', // Assumed
+      pbOwnerAfter,
+    },
+    transferComplete: !sellerHasOwnershipAfter && buyerHasOwnershipAfter,
+  }
+
+  return result
+}
+
+/**
+ * Triple verification helper for Animal NFT ownership
+ * Similar to verifyEggOwnership but uses ANIMAL_NFT_ADDRESS
+ * and checks /animals/ page for UI visibility
+ *
+ * @param page - Playwright page object
+ * @param tokenId - NFT token ID to verify
+ * @param expectedOwner - Expected owner wallet address
+ * @param userId - PocketBase user ID for cross-check
+ * @returns Verification result with match status
+ */
+export async function verifyAnimalOwnership(
+  page: Page,
+  tokenId: number,
+  expectedOwner: string,
+  userId: string
+): Promise<OwnershipVerificationResult> {
+  const { pocketbaseUrl } = getE2EContext()
+
+  // 1. UI Check: Locate animal card on /animals/ page
+  let uiVisible = false
+  try {
+    // Navigate to animals page if not already there
+    await page.goto('/animals/')
+    await page.waitForLoadState('networkidle')
+
+    // Look for animal card by data-animal-id attribute or animal_id text
+    const animalCard = page.locator(`[data-animal-id="${tokenId}"], :text-matches("Animal #${tokenId}")`)
+    uiVisible = await animalCard.first().isVisible({ timeout: 5000 }).catch(() => false)
+  } catch {
+    uiVisible = false
+  }
+
+  // 2. On-chain Check: ownerOf(tokenId) using ANIMAL_NFT_ADDRESS
+  let onChainOwner = ''
+  try {
+    onChainOwner = await getOwnerOf(ANIMAL_NFT_ADDRESS, tokenId)
+  } catch {
+    // Contract call failed - no owner (NFT doesn't exist or burnt)
+    onChainOwner = ''
+  }
+
+  // 3. PocketBase Check: Query animals collection
+  let pbOwnerId = ''
+  try {
+    const response = await fetch(
+      `${pocketbaseUrl}/api/collections/animals/records?filter=(token_id='${tokenId}')`
+    )
+    if (response.ok) {
+      const data = await response.json()
+      if (data.items && data.items.length > 0) {
+        pbOwnerId = data.items[0].owner || data.items[0].owner_id || ''
+      }
+    }
+  } catch {
+    pbOwnerId = ''
+  }
+
+  // Determine if all checks match
+  const expectedOwnerLower = expectedOwner.toLowerCase()
+  const allMatch =
+    uiVisible &&
+    onChainOwner.toLowerCase() === expectedOwnerLower &&
+    pbOwnerId === userId
+
+  return {
+    uiVisible,
+    onChainOwner,
+    pbOwnerId,
+    allMatch,
+    tokenId,
+  }
 }

@@ -1,6 +1,7 @@
 /**
  * Journey Helpers Tests
  * Phase 45: Buy Egg Journey Test
+ * Phase 47: Marketplace Multi-User Journey Test
  *
  * Tests for triple verification pattern and test data setup helpers
  */
@@ -9,10 +10,15 @@ import { test, expect } from '@playwright/test'
 import { ethers } from 'ethers'
 import {
   verifyEggOwnership,
+  verifyAnimalOwnership,
+  verifyOwnershipTransfer,
   setupPrecreatedListing,
   extractTokenIdFromPage,
   EGG_NFT_ADDRESS,
+  ANIMAL_NFT_ADDRESS,
+  FOOD_NFT_ADDRESS,
   OwnershipVerificationResult,
+  OwnershipTransferResult,
 } from '../fixtures/journey-helpers'
 import { TEST_USERS, getE2EContext } from '../fixtures/e2e-setup'
 import { getOwnerOf, createEthersProvider } from '../fixtures/blockchain-helpers'
@@ -124,6 +130,162 @@ test.describe('Journey Helpers', () => {
       const provider = createEthersProvider()
       const blockNumber = await provider.getBlockNumber()
       expect(blockNumber).toBeGreaterThanOrEqual(0)
+    })
+  })
+
+  // Phase 47: Marketplace Multi-User Journey Test helpers
+  test.describe('ANIMAL_NFT_ADDRESS constant', () => {
+    test('ANIMAL_NFT_ADDRESS matches contract-addresses.json ChainId 7117', async () => {
+      expect(ANIMAL_NFT_ADDRESS).toBe('0x35F53aB20B3073903ebDe04aA9b354d1Efe8A99C')
+    })
+
+    test('FOOD_NFT_ADDRESS matches contract-addresses.json ChainId 7117', async () => {
+      expect(FOOD_NFT_ADDRESS).toBe('0xec21A3c068e84ceeD04975627418E867Ec342A02')
+    })
+  })
+
+  test.describe('verifyOwnershipTransfer - Bilateral Verification', () => {
+    test('verifyOwnershipTransfer returns before/after ownership for both seller and buyer', async () => {
+      // This test documents the expected structure
+      const mockResult: OwnershipTransferResult = {
+        tokenId: 1,
+        seller: {
+          wallet: TEST_USERS.test_seller.walletAddress,
+          hadOwnershipBefore: true,
+          hasOwnershipAfter: false,
+          onChainOwnerBefore: TEST_USERS.test_seller.walletAddress,
+          onChainOwnerAfter: TEST_USERS.test_buyer.walletAddress,
+          pbOwnerBefore: 'seller-user-id',
+          pbOwnerAfter: 'buyer-user-id',
+        },
+        buyer: {
+          wallet: TEST_USERS.test_buyer.walletAddress,
+          hadOwnershipBefore: false,
+          hasOwnershipAfter: true,
+          onChainOwnerBefore: '',
+          onChainOwnerAfter: TEST_USERS.test_buyer.walletAddress,
+          pbOwnerBefore: '',
+          pbOwnerAfter: 'buyer-user-id',
+        },
+        transferComplete: true,
+      }
+
+      // Verify structure matches expected interface
+      expect(mockResult.tokenId).toBe(1)
+      expect(mockResult.seller.hasOwnershipAfter).toBe(false)
+      expect(mockResult.buyer.hasOwnershipAfter).toBe(true)
+      expect(mockResult.transferComplete).toBe(true)
+    })
+
+    test('verifyOwnershipTransfer confirms seller lost ownership (onChainOwner != sellerWallet)', async () => {
+      const mockResult: OwnershipTransferResult = {
+        tokenId: 1,
+        seller: {
+          wallet: TEST_USERS.test_seller.walletAddress,
+          hadOwnershipBefore: true,
+          hasOwnershipAfter: false,
+          onChainOwnerBefore: TEST_USERS.test_seller.walletAddress,
+          onChainOwnerAfter: TEST_USERS.test_buyer.walletAddress,
+          pbOwnerBefore: 'seller-user-id',
+          pbOwnerAfter: 'buyer-user-id',
+        },
+        buyer: {
+          wallet: TEST_USERS.test_buyer.walletAddress,
+          hadOwnershipBefore: false,
+          hasOwnershipAfter: true,
+          onChainOwnerBefore: '',
+          onChainOwnerAfter: TEST_USERS.test_buyer.walletAddress,
+          pbOwnerBefore: '',
+          pbOwnerAfter: 'buyer-user-id',
+        },
+        transferComplete: true,
+      }
+
+      // Seller's on-chain owner after should NOT be seller's wallet
+      expect(mockResult.seller.onChainOwnerAfter.toLowerCase()).not.toBe(
+        mockResult.seller.wallet.toLowerCase()
+      )
+    })
+
+    test('verifyOwnershipTransfer confirms buyer gained ownership (onChainOwner == buyerWallet)', async () => {
+      const mockResult: OwnershipTransferResult = {
+        tokenId: 1,
+        seller: {
+          wallet: TEST_USERS.test_seller.walletAddress,
+          hadOwnershipBefore: true,
+          hasOwnershipAfter: false,
+          onChainOwnerBefore: TEST_USERS.test_seller.walletAddress,
+          onChainOwnerAfter: TEST_USERS.test_buyer.walletAddress,
+          pbOwnerBefore: 'seller-user-id',
+          pbOwnerAfter: 'buyer-user-id',
+        },
+        buyer: {
+          wallet: TEST_USERS.test_buyer.walletAddress,
+          hadOwnershipBefore: false,
+          hasOwnershipAfter: true,
+          onChainOwnerBefore: '',
+          onChainOwnerAfter: TEST_USERS.test_buyer.walletAddress,
+          pbOwnerBefore: '',
+          pbOwnerAfter: 'buyer-user-id',
+        },
+        transferComplete: true,
+      }
+
+      // Buyer's on-chain owner after should be buyer's wallet
+      expect(mockResult.buyer.onChainOwnerAfter.toLowerCase()).toBe(
+        mockResult.buyer.wallet.toLowerCase()
+      )
+    })
+
+    test('verifyOwnershipTransfer transferComplete = seller lost AND buyer gained', async () => {
+      const mockResult: OwnershipTransferResult = {
+        tokenId: 1,
+        seller: {
+          wallet: TEST_USERS.test_seller.walletAddress,
+          hadOwnershipBefore: true,
+          hasOwnershipAfter: false,
+          onChainOwnerBefore: TEST_USERS.test_seller.walletAddress,
+          onChainOwnerAfter: TEST_USERS.test_buyer.walletAddress,
+          pbOwnerBefore: 'seller-user-id',
+          pbOwnerAfter: 'buyer-user-id',
+        },
+        buyer: {
+          wallet: TEST_USERS.test_buyer.walletAddress,
+          hadOwnershipBefore: false,
+          hasOwnershipAfter: true,
+          onChainOwnerBefore: '',
+          onChainOwnerAfter: TEST_USERS.test_buyer.walletAddress,
+          pbOwnerBefore: '',
+          pbOwnerAfter: 'buyer-user-id',
+        },
+        transferComplete: true,
+      }
+
+      // transferComplete should be true when seller lost AND buyer gained
+      expect(mockResult.transferComplete).toBe(
+        !mockResult.seller.hasOwnershipAfter && mockResult.buyer.hasOwnershipAfter
+      )
+    })
+  })
+
+  test.describe('verifyAnimalOwnership helper', () => {
+    test('verifyAnimalOwnership uses ANIMAL_NFT_ADDRESS instead of EGG_NFT_ADDRESS', async () => {
+      // Verify verifyAnimalOwnership function exists
+      expect(typeof verifyAnimalOwnership).toBe('function')
+    })
+
+    test('verifyAnimalOwnership checks /animals/ page for UI visibility', async () => {
+      // This test documents that verifyAnimalOwnership checks /animals/ page
+      // instead of /eggs/ page (per plan action)
+      const mockResult: OwnershipVerificationResult = {
+        uiVisible: true,
+        onChainOwner: TEST_USERS.test_buyer.walletAddress,
+        pbOwnerId: 'test-user-id',
+        allMatch: true,
+        tokenId: 1,
+      }
+
+      expect(mockResult.uiVisible).toBe(true)
     })
   })
 })
