@@ -146,6 +146,203 @@ export async function verifyEggOwnership(
   }
 }
 
+// ============================================================================
+// Phase 46: Feed + Hatch Journey Helpers
+// ============================================================================
+
+/**
+ * Wait for hatch transaction to complete and return animal token ID
+ * Per D-46-07: Hatch button wait timeout: 30 seconds
+ *
+ * @param page - Playwright page object
+ * @param timeoutMs - Timeout in milliseconds (default 30s)
+ * @returns The newly minted animal token ID
+ */
+export async function waitForHatchComplete(page: Page, timeoutMs = 30000): Promise<number> {
+  // Wait for hatch animation to complete
+  // Look for "Congratulations!" text or animal result screen
+  const congratulationsText = page.locator('text=Congratulations')
+  const continueButton = page.locator('button:has-text("Continue")')
+
+  // Wait for either the congratulations message or continue button to appear
+  await Promise.race([
+    congratulationsText.waitFor({ state: 'visible', timeout: timeoutMs }),
+    continueButton.waitFor({ state: 'visible', timeout: timeoutMs }),
+  ])
+
+  // Extract animal tokenId from the result screen
+  // The modal shows "Species #tokenId" pattern
+  const animalTitle = page.locator('h2:has-text("#")')
+  const titleText = await animalTitle.textContent({ timeout: 5000 }).catch(() => '') || ''
+
+  // Parse tokenId from title like "Chicken #123"
+  const match = titleText.match(/#\s*(\d+)/)
+  if (match) {
+    return parseInt(match[1], 10)
+  }
+
+  // Fallback: Try to extract from species text
+  const speciesText = await page.locator('[data-animal-id], .animal-id').first().textContent().catch(() => '') || ''
+  const speciesMatch = speciesText.match(/#\s*(\d+)/)
+  if (speciesMatch) {
+    return parseInt(speciesMatch[1], 10)
+  }
+
+  // Second fallback: Navigate to animals page and find the newest animal
+  await page.goto('/animals/')
+  await page.waitForLoadState('networkidle')
+
+  // Get the first animal card (most recent)
+  const animalCard = page.locator('[data-animal-id]').first()
+  const animalIdText = await animalCard.getAttribute('data-animal-id').catch(() => '') || ''
+  if (animalIdText) {
+    return parseInt(animalIdText, 10)
+  }
+
+  throw new Error('Could not extract animal token ID after hatch')
+}
+
+/**
+ * Buy food from marketplace listing
+ * Per D-46-11: Marketplace purchase approach for food
+ *
+ * @param page - Playwright page object
+ * @param quantity - Number of food items to buy (default 10)
+ * @returns Array of purchased food_ids
+ */
+export async function buyFoodFromMarketplace(page: Page, quantity: number = 10): Promise<number[]> {
+  // Navigate to marketplace if not already there
+  const currentUrl = page.url()
+  if (!currentUrl.includes('/marketplace')) {
+    await page.goto('/marketplace/')
+    await page.waitForLoadState('networkidle')
+  }
+
+  // Find food listing (nft_type='Food')
+  // Food listings should have a distinct indicator
+  const foodListing = page.locator('[data-nft-type="Food"], .food-listing, :text-matches("Food")').first()
+
+  // If no explicit food listing indicator, look for any listing and check type
+  const listingCard = page.locator('.bg-surface-container-low.p-5.rounded-xl.clay-card').first()
+  await expect(listingCard).toBeVisible({ timeout: 10000 })
+
+  // Click on the listing to view details
+  await listingCard.click()
+  await page.waitForURL(/marketplace\/detail/, { timeout: 15000 })
+  await page.waitForLoadState('networkidle')
+
+  // Purchase the listing
+  const buyButton = page.locator('button:has-text("Buy")')
+  await expect(buyButton).toBeVisible({ timeout: 5000 })
+  await buyButton.click()
+
+  // Wait for confirmation dialog
+  const confirmDialog = page.locator('h2:has-text("Confirm Purchase")')
+  await expect(confirmDialog).toBeVisible({ timeout: 5000 })
+
+  // Click Confirm Purchase
+  const confirmButton = page.getByRole('button', { name: 'Confirm Purchase' })
+  await confirmButton.click()
+
+  // Wait for purchase to complete
+  await waitForPurchaseComplete(page, 30000)
+
+  // Get food IDs from PocketBase
+  // Query the user's food_nfts to get the newly purchased food_ids
+  const { pocketbaseUrl } = getE2EContext()
+  const response = await fetch(
+    `${pocketbaseUrl}/api/collections/food_nfts/records?filter=(is_consumed=false)&sort=-created&pageSize=${quantity}`
+  )
+
+  if (response.ok) {
+    const data = await response.json()
+    if (data.items && data.items.length > 0) {
+      return data.items.slice(0, quantity).map((item: any) => item.food_id)
+    }
+  }
+
+  // Return empty array if we couldn't fetch food IDs
+  // The test will handle this by checking food availability
+  return []
+}
+
+/**
+ * Wait for feed transaction to complete
+ * Waits for feed dialog to close and egg card to update
+ *
+ * @param page - Playwright page object
+ * @param timeoutMs - Timeout in milliseconds (default 10s)
+ */
+export async function waitForFeedComplete(page: Page, timeoutMs = 10000): Promise<void> {
+  // Wait for the feed dialog to close
+  // The dialog closes when feed is successful
+  const feedDialog = page.locator('[role="dialog"]')
+  await feedDialog.waitFor({ state: 'hidden', timeout: timeoutMs }).catch(() => {
+    // Dialog may have already closed
+  })
+
+  // Wait a moment for UI to update
+  await page.waitForTimeout(1000)
+
+  // Wait for network idle (data refresh)
+  await page.waitForLoadState('networkidle')
+}
+
+/**
+ * Get egg token ID for a user that needs feeding
+ * Per D-46-12: Pre-created egg for test_buyer with 0/10 feed progress
+ *
+ * @param userId - PocketBase user ID
+ * @returns Egg token ID if found, null otherwise
+ */
+export async function getEggTokenIdForUser(userId: string): Promise<number | null> {
+  const { pocketbaseUrl } = getE2EContext()
+
+  try {
+    const response = await fetch(
+      `${pocketbaseUrl}/api/collections/egg_nfts/records?filter=(owner='${userId}')&(is_hatched=false)&(food_count<10)&sort=-created&pageSize=1`
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.items && data.items.length > 0) {
+        return data.items[0].token_id || data.items[0].egg_id || null
+      }
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
+/**
+ * Get animal token ID for a user from PocketBase
+ *
+ * @param userId - PocketBase user ID
+ * @returns Most recent animal token ID if found, null otherwise
+ */
+export async function getAnimalTokenIdForUser(userId: string): Promise<number | null> {
+  const { pocketbaseUrl } = getE2EContext()
+
+  try {
+    const response = await fetch(
+      `${pocketbaseUrl}/api/collections/animals/records?filter=(owner='${userId}')&sort=-created&pageSize=1`
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.items && data.items.length > 0) {
+        return data.items[0].token_id || data.items[0].animal_id || null
+      }
+    }
+  } catch {
+    return null
+  }
+
+  return null
+}
+
 /**
  * Setup pre-created listing for deterministic testing
  * Per D-09, D-12: Create listing in PocketBase with known ID
