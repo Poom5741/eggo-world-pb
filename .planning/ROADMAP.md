@@ -4,7 +4,7 @@
 
 - ✅ **v0.3.0 E2E Flow Testing** — Phases 41-44 (shipped 2026-04-28) — [See archive](milestones/v0.3.0-ROADMAP.md)
 - ✅ **v0.2.0 Functional Spec 100%** — Phases 32-40 (shipped 2026-04-26) — [See archive](milestones/v0.2.0-ROADMAP.md)
-- 🚧 **v0.4.0 Functional Journey Tests** — Phases 45+ (planned)
+- ✅ **v0.4.0 Functional Journey Tests** — Phases 45-48 (shipped 2026-04-29) — [See archive](milestones/v0.4.0-ROADMAP.md)
 
 ## Overview
 
@@ -33,28 +33,15 @@ v0.3.0 delivered E2E test infrastructure. Next milestone will focus on functiona
 
 </details>
 
-### 🚧 v0.4.0 Functional Journey Tests (Planned)
+<details>
+<summary>✅ v0.4.0 Functional Journey Tests (Phases 45-48) — SHIPPED 2026-04-29</summary>
 
-- [x] Phase 45: Buy Egg Journey Test
-  - Goal: E2E test for complete "Buy Egg" user journey: authentication → marketplace browsing → purchase → verify NFT ownership
-  - Plans: 1 plan
-  - Plan list:
-    - [x] 45-01-PLAN.md — Journey helpers + main buy journey test with triple verification — completed 2026-04-28
-- [x] Phase 46: Feed + Hatch Journey Test
-  - Goal: E2E test for complete "Feed + Hatch" user journey: buy food → feed egg → hatch animal
-  - Plans: 1 plan
-  - Plan list:
-    - [x] 46-01-PLAN.md — Feed/hatch helpers + journey test with triple verification — completed 2026-04-28
-- [x] Phase 47: Marketplace Journey Test (list → purchase → ownership transfer)
-  - Goal: E2E test for marketplace multi-user flow: list → purchase → ownership transfer
-  - Plans: 1 plan
-  - Plan list:
-    - [x] 47-01-PLAN.md — Multi-user journey test with bilateral ownership verification — completed 2026-04-28
-- [x] Phase 48: Referral Commission Journey Test
-  - Goal: E2E test for referral commission flow: signup → purchase → commission distribution
-  - Plans: 1 plan
-  - Plan list:
-    - [x] 48-01-PLAN.md — Commission verification helpers + referral commission journey test — completed 2026-04-28
+- [x] Phase 45: Buy Egg Journey Test (1/1 plan) — completed 2026-04-28
+- [x] Phase 46: Feed + Hatch Journey Test (1/1 plan) — completed 2026-04-28
+- [x] Phase 47: Marketplace Journey Test (1/1 plan) — completed 2026-04-28
+- [x] Phase 48: Referral Commission Journey Test (1/1 plan) — completed 2026-04-28
+
+</details>
 
 ## Progress
 
@@ -71,4 +58,4 @@ v0.3.0 delivered E2E test infrastructure. Next milestone will focus on functiona
 
 ---
 
-_Last updated: 2026-04-28 — Phase 48 completed_
+_Last updated: 2026-04-29 — v0.4.0 milestone completed and archived_
