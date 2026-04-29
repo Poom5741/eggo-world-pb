@@ -871,6 +871,10 @@ img, video, svg {
 /* Typography utilities — unified font system */
 @layer utilities {
   /* Font family utilities */
+  .font-headline {
+    font-family: var(--font-headline);
+  }
+
   .font-heading {
     font-family: var(--font-headline);
   }
