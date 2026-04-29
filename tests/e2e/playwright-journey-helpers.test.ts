@@ -142,7 +142,7 @@ test.describe('Journey Helpers', () => {
     })
 
     test('FOOD_NFT_ADDRESS matches contract-addresses.json ChainId 7117', async () => {
-      expect(FOOD_NFT_ADDRESS).toBe('0xec21A3c068e84ceeD04975627418E867Ec342A02')
+      expect(FOOD_NFT_ADDRESS).toBe('0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9')
     })
   })
 
