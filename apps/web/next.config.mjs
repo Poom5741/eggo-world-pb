@@ -13,10 +13,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Only use static export for production builds, not dev mode
-  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
-  trailingSlash: true,  // Important for static export
-  distDir: process.env.NODE_ENV === 'production' ? 'out' : '.next',       // Output directory for static export
+  // Standalone output for Cloudflare Workers (OpenNext) deployment
+  // Supports SSR, API routes, and middleware
+  output: 'standalone',
+  trailingSlash: true,
 }
 
 export default withBundleAnalyzer(nextConfig)
