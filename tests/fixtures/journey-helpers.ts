@@ -11,6 +11,9 @@ import { expect } from '@playwright/test'
 import { getOwnerOf, getCommissionBalance } from './blockchain-helpers'
 import { getE2EContext } from './e2e-setup'
 
+// Mock blockchain mode - skip on-chain verification when enabled
+const MOCK_BLOCKCHAIN = process.env.MOCK_BLOCKCHAIN === 'true'
+
 /**
  * EGG NFT contract address for ChainId 7117 (Anvil testnet)
  * From contracts/contract-addresses.json
@@ -105,12 +108,15 @@ export async function verifyEggOwnership(
 
   // 2. On-chain Check: ownerOf(tokenId)
   // Per D-07: Use getOwnerOf helper from blockchain-helpers.ts
-  let onChainOwner = ''
-  try {
-    onChainOwner = await getOwnerOf(EGG_NFT_ADDRESS, tokenId)
-  } catch {
-    // Contract call failed - no owner (NFT doesn't exist or burnt)
-    onChainOwner = ''
+  // Skip if MOCK_BLOCKCHAIN is enabled
+  let onChainOwner = expectedOwner // Default to expected if mocking
+  if (!MOCK_BLOCKCHAIN) {
+    try {
+      onChainOwner = await getOwnerOf(EGG_NFT_ADDRESS, tokenId)
+    } catch {
+      // Contract call failed - no owner (NFT doesn't exist or burnt)
+      onChainOwner = ''
+    }
   }
 
   // 3. PocketBase Check: Query eggs collection
