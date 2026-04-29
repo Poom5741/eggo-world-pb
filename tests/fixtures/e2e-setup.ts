@@ -98,6 +98,7 @@ export async function e2eLogin(
   await page.goto(loginUrl)
 
   // Wait for E2E button to appear
+  // With e2e_test_user param, the button has data-testid="e2e-login-button"
   await page.waitForSelector('[data-testid="e2e-login-button"]', { state: 'visible', timeout: 10000 })
 
   // Click E2E login button

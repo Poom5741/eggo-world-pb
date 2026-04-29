@@ -57,20 +57,18 @@ services:
     ports:
       - "8545:8545"
     # D-09: BSC Testnet fork from foundry.toml bsc_testnet RPC
-    # Note: Use list format for command to ensure proper parameter passing
+    # Note: foundry image has entrypoint ["/bin/sh", "-c"], so command MUST be
+    # a single string (list form silently drops args 2..N — results in chain 31337, no fork).
     environment:
       - ANVIL_IP_ADDR=0.0.0.0
       - ANVIL_PORT=8545
-    command:
-      - anvil
-      - --fork-url
-      - https://data-seed-prebsc-1-s1.binance.org:8545
-      - --port
-      - "8545"
-      - --chain-id
-      - "97"
-      - --block-time
-      - "2"
+    entrypoint: ["anvil"]
+    command: >-
+      --host 0.0.0.0
+      --port 8545
+      --fork-url https://data-seed-prebsc-1-s1.binance.org:8545
+      --chain-id 97
+      --block-time 2
     networks:
       - e2e-test-network
     restart: unless-stopped

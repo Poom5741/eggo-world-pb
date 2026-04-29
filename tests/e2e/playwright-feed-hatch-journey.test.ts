@@ -1,14 +1,3 @@
-/**
- * Feed + Hatch Journey E2E Tests
- * Phase 46: Feed + Hatch Journey Test
- *
- * E2E test for the complete "Feed + Hatch" user journey covering:
- * buy food → navigate eggs → feed egg → hatch → triple verification
- *
- * Per D-01: Full journey test: Marketplace buy food → navigate eggs → select egg → batch feed → hatch → verify animal appears
- * Per D-08: Triple verification pattern (UI + on-chain + PocketBase) for hatched animal
- */
-
 import { test, expect } from '@playwright/test'
 import { e2eLogin, TEST_USERS, getE2EContext } from '../fixtures/e2e-setup'
 import {

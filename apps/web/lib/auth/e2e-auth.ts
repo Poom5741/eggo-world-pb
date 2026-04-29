@@ -6,7 +6,7 @@
  * Predefined test users for E2E testing
  * These users are created in production PocketBase with USDT balance
  */
-export const E2E_TEST_USERS = ['test_buyer', 'test_seller', 'test_referrer', 'test_admin'] as const
+export const E2E_TEST_USERS = ['test_buyer', 'test_seller', 'test_referrer', 'test_admin', 'test_buyer_poor'] as const
 
 export type E2ETestUser = typeof E2E_TEST_USERS[number]
 
@@ -18,6 +18,7 @@ export const TEST_USER_METADATA: Record<E2ETestUser, { role: string; description
   test_seller: { role: 'seller', description: 'Lists NFTs for sale' },
   test_referrer: { role: 'referrer', description: 'Referral chain testing (G1 position)' },
   test_admin: { role: 'admin', description: 'Admin operations testing' },
+  test_buyer_poor: { role: 'buyer_poor', description: 'Insufficient balance scenario testing (0 USDT)' },
 }
 
 /**
@@ -80,52 +81,67 @@ export async function handleE2eLogin(testUser: E2ETestUser, redirectTo?: string)
   }
 
   try {
-    // Fetch test user credentials from PocketBase
-    // Test users have deterministic passwords stored in PocketBase
-    const response = await fetch(`${pbUrl}/api/collections/users/records?filter=(username='${testUser}')&fields=id,username,email`)
+    // Authenticate directly with PocketBase using test credentials
+    // Existing users (test_buyer, test_seller, test_referrer, test_admin): username_e2e_test_password
+    // New users (test_buyer_poor): TestPass123!
+    // Try old pattern first, fallback to new pattern
+    const passwordsToTry = [
+      `${testUser}_e2e_test_password`,  // Old pattern for existing users
+      'TestPass123!'                     // New pattern for users created via /api/v2/create-test-user
+    ]
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch test user: ${response.statusText}`)
+    let authData: any = null
+    let lastError: Error | null = null
+
+    for (const testPassword of passwordsToTry) {
+      try {
+        const authResponse = await fetch(`${pbUrl}/api/collections/users/auth-with-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            identity: `${testUser}@e2e.eggoworld.io`,
+            password: testPassword,
+          }),
+        })
+
+        if (authResponse.ok) {
+          authData = await authResponse.json()
+          console.log(`✅ Authenticated with password pattern: ${testPassword.includes('_e2e_') ? 'OLD' : 'NEW'}`)
+          break
+        } else {
+          lastError = new Error(`Auth failed with password: ${testPassword}`)
+        }
+      } catch (err) {
+        lastError = err as Error
+      }
     }
 
-    const data = await response.json()
-    const userRecord = data.items?.[0]
-
-    if (!userRecord) {
-      throw new Error(`Test user ${testUser} not found in PocketBase`)
+    if (!authData) {
+      throw lastError || new Error('All authentication attempts failed')
     }
 
-    // Authenticate with PocketBase using test credentials
-    // Test user password pattern: username + '_e2e_test_password'
-    const testPassword = `${testUser}_e2e_test_password`
-
-    const authResponse = await fetch(`${pbUrl}/api/collections/users/auth-with-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        identity: testUser,
-        password: testPassword,
-      }),
-    })
-
-    if (!authResponse.ok) {
-      const errorText = await authResponse.text()
-      throw new Error(`E2E auth failed: ${errorText}`)
-    }
-
-    const authData = await authResponse.json()
-
-    // Store auth token in localStorage (matches existing pattern in pocketbase/client.ts)
-    localStorage.setItem('pocketbase_auth', JSON.stringify({
+    // Store auth token in localStorage in the format PocketBase client expects
+    // client.ts line 17 expects: { token, model } (not { token, record })
+    const authStorage = {
       token: authData.token,
-      model: authData.record,
-    }))
+      model: authData.record,  // PocketBase API returns 'record', but client expects 'model'
+    }
+    localStorage.setItem('pocketbase_auth', JSON.stringify(authStorage))
 
     // Set cookie for middleware (matches existing pattern)
     document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
 
-    // Redirect to dashboard or specified path
-    const targetPath = redirectTo || '/dashboard'
+    // Also save directly to PocketBase client singleton if it exists
+    if (typeof window !== 'undefined' && (window as any).__pb) {
+      try {
+        (window as any).__pb.authStore.save(authData.token, authData.record)
+      } catch {
+        // Client might not be initialized yet, localStorage will handle it on next load
+      }
+    }
+
+    // Redirect to dashboard or specified path (trailing slash required for static export)
+    const targetPath = redirectTo ? `${redirectTo}/` : '/dashboard/'
     window.location.href = targetPath
   } catch (error) {
     console.error('E2E login failed:', error)
