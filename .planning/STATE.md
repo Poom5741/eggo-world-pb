@@ -2,19 +2,19 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-27)
+See: .planning/PROJECT.md (updated 2026-04-29)
 
 **Core value:** Gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals with USDT and 4-level MLM referral commissions
-**Current focus:** v0.5.0 Planning — Next milestone after v0.4.0 completion
+**Current focus:** v0.5.0 Phase 49 — Critical Security Fixes
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements for v0.5.0
-Last activity: 2026-04-29 — Milestone v0.5.0 started
+Phase: 49 of 53 (Critical Security Fixes)
+Plan: Not started
+Status: Roadmap created, ready to plan Phase 49
+Last activity: 2026-04-29 — Milestone v0.5.0 roadmap created
 
-Progress: [█████████] 100% (4/4 phases)
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -51,46 +51,6 @@ _Updated after each plan completion_
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Phase 41: Framework Setup + Docker Environment (2 plans)
-  - D-01: @playwright/test with Bun
-  - D-02: bun run test:e2e as unified command
-  - D-03: playwright.config.ts at project root
-  - D-04: Static export compatibility
-  - D-05: Standalone docker-compose.e2e.yml
-  - D-06: Isolated test environment
-  - D-07: Services: PocketBase, wallet-api, Anvil, frontend
-  - D-08: Health checks for all services
-  - D-09: BSC Testnet fork for Anvil
-
-- Phase 42: Auth Mock + Blockchain Helpers (2 plans)
-  - D-01: E2E login button on frontend (not backend API injection)
-  - D-02: Query param trigger: ?e2e_test_user=test_buyer
-  - D-03: Environment check (localhost or e2e=true param)
-  - D-08: Use ethers.js provider.waitForTransaction
-  - D-09: Default 12 confirmations (BSC standard)
-  - D-10: Default 120-second timeout
-
-- Phase 44: CI Integration (1 plan)
-  - D-01: E2E tests on PR to main with path filtering
-  - D-05: Playwright --workers=2 for parallel execution
-  - D-08: GitHub Actions artifacts with 7-day retention
-  - D-10: Upload artifacts on failure only
-
-- Phase 45: Buy Egg Journey Test (1 plan)
-  - D-45-01: Triple verification checks UI first, then on-chain, then PocketBase
-  - D-45-02: test_buyer_poor uses Anvil Account 4 for insufficient balance scenarios
-  - D-45-03: Journey tests use test.describe.configure({ mode: 'serial' })
-
-- Phase 46: Feed + Hatch Journey Test (1 plan)
-  - D-46-01: Batch feed approach - select all 10 foods at once
-  - D-46-02: waitForHatchComplete helper for hatch animation waiting
-  - D-46-03: Triple verification pattern reused from Phase 47
-  - D-46-04: test_buyer_poor for no food error scenario
-  - Phase 47: Marketplace Journey Test (1 plan)
-  - D-47-01: verifyOwnershipTransfer captures before/after state for both seller and buyer
-  - D-47-02: Multi-user tests use serial mode with shared state
-  - D-47-03: ANIMAL_NFT_ADDRESS constant from contracts/contract-addresses.json ChainId 7117
-
 - Phase 48: Referral Commission Journey Test (1 plan)
   - D-48-01: Double verification pattern for commissions (on-chain + PocketBase)
   - D-48-02: COMMISSION_DISTRIBUTION_ADDRESS from contract-addresses.json ChainId 7117
@@ -108,7 +68,7 @@ None yet.
 
 ## Deferred Items
 
-Items acknowledged and carried forward from v0.2.0 milestone close:
+Items acknowledged and carried forward from v0.4.0 milestone close:
 
 | Category     | Item                                       | Status  | Deferred At  |
 | ------------ | ------------------------------------------ | ------- | ------------ |
@@ -117,6 +77,6 @@ Items acknowledged and carried forward from v0.2.0 milestone close:
 
 ## Session Continuity
 
-Last session: 2026-04-28
-Stopped at: Milestone v0.4.0 archived
-Resume file: .planning/milestones/v0.4.0-ROADMAP.md
+Last session: 2026-04-29
+Stopped at: Milestone v0.4.0 archived, v0.5.0 roadmap created
+Resume file: None

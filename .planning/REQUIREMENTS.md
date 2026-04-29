@@ -3,7 +3,7 @@ milestone: v0.5.0
 milestone_name: Security Hardening & Production Readiness
 created: 2026-04-29
 status: active
-total_requirements: 25
+total_requirements: 29
 ---
 
 # Milestone v0.5.0 Requirements
@@ -218,4 +218,4 @@ Based on security audit (2026-04-29) and E2E testing results. Focus on critical 
 
 ---
 
-_Last updated: 2026-04-29 — v0.5.0 milestone started_
+_Last updated: 2026-04-29 — v0.5.0 roadmap created_
