@@ -63,11 +63,13 @@ contract Deploy is Script {
         }
         
         // Deploy CommissionDistribution
+        address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
         CommissionDistribution commissionDistribution = new CommissionDistribution(
             coinStorReserve,
-            usdtAddress
+            usdtAddress,
+            treasuryAddress
         );
-        console.log("[OK] CommissionDistribution deployed at:", address(commissionDistribution));
+        console.log("[OK] CommissionDistribution deployed at:", payable(address(commissionDistribution)));
         
         // Deploy AnimalNFT
         AnimalNFT animalNFT = new AnimalNFT();
@@ -75,7 +77,7 @@ contract Deploy is Script {
         
         // Deploy EggNFT with VRF coordinator
         EggNFT eggNFT = new EggNFT(
-            address(commissionDistribution),
+            payable(address(commissionDistribution)),
             usdtAddress,
             vrfCoordinator
         );
@@ -84,7 +86,7 @@ contract Deploy is Script {
         
         // Deploy FoodNFT
         FoodNFT foodNFT = new FoodNFT(
-            address(commissionDistribution),
+            payable(address(commissionDistribution)),
             usdtAddress,
             address(eggNFT)
         );
@@ -119,7 +121,7 @@ contract Deploy is Script {
         console.log("\n========== Deployment Summary ==========");
         console.log("Network:", block.chainid);
         console.log("USDT Token:", usdtAddress);
-        console.log("CommissionDistribution:", address(commissionDistribution));
+        console.log("CommissionDistribution:", payable(address(commissionDistribution)));
         console.log("AnimalNFT:", address(animalNFT));
         console.log("EggNFT:", address(eggNFT));
         console.log("FoodNFT:", address(foodNFT));
@@ -147,7 +149,7 @@ contract Deploy is Script {
         console.log("{");
         console.log('  "%s": {', vm.toString(block.chainid));
         console.log('    "usdt": "%s",', usdtAddress);
-        console.log('    "commission": "%s",', address(commissionDistribution));
+        console.log('    "commission": "%s",', payable(address(commissionDistribution)));
         console.log('    "animalNft": "%s",', address(animalNFT));
         console.log('    "eggNft": "%s",', address(eggNFT));
         console.log('    "foodNft": "%s"', address(foodNFT));

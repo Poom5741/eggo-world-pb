@@ -37,16 +37,17 @@ contract DeployEggNFT is Script {
             console.log("Using existing USDT at:", usdtAddress);
         }
         
-        CommissionDistribution commissionDistribution = new CommissionDistribution(coinStorReserve, usdtAddress);
-        console.log("CommissionDistribution deployed at:", address(commissionDistribution));
+        address treasuryAddress = vm.envAddress("TREASURY_ADDRESS");
+        CommissionDistribution commissionDistribution = new CommissionDistribution(coinStorReserve, usdtAddress, treasuryAddress);
+        console.log("CommissionDistribution deployed at:", payable(address(commissionDistribution)));
         
         AnimalNFT animalNFT = new AnimalNFT();
         console.log("AnimalNFT deployed at:", address(animalNFT));
         
-        EggNFT eggNFT = new EggNFT(address(commissionDistribution), usdtAddress, vrfCoordinator);
+        EggNFT eggNFT = new EggNFT(payable(address(commissionDistribution)), usdtAddress, vrfCoordinator);
         console.log("EggNFT deployed at:", address(eggNFT));
         
-        FoodNFT foodNFT = new FoodNFT(address(commissionDistribution), usdtAddress, address(eggNFT));
+        FoodNFT foodNFT = new FoodNFT(payable(address(commissionDistribution)), usdtAddress, address(eggNFT));
         console.log("FoodNFT deployed at:", address(foodNFT));
         
         commissionDistribution.setEggNFTContract(address(eggNFT));
@@ -69,7 +70,7 @@ contract DeployEggNFT is Script {
         console.log("\n========== Deployment Summary ==========");
         console.log("Network:", block.chainid);
         console.log("USDT Token:", usdtAddress);
-        console.log("CommissionDistribution:", address(commissionDistribution));
+        console.log("CommissionDistribution:", payable(address(commissionDistribution)));
         console.log("AnimalNFT:", address(animalNFT));
         console.log("EggNFT:", address(eggNFT));
         console.log("FoodNFT:", address(foodNFT));

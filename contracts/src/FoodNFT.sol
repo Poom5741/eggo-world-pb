@@ -19,7 +19,7 @@ enum FoodType {
 contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
     
-    address public immutable commissionDistribution;
+    address payable public immutable commissionDistribution;
     address public immutable eggNFTContract;
     IERC20 public immutable usdtToken;
     
@@ -43,7 +43,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
     event FoodTypeAssigned(uint256 food_id, FoodType food_type);
     
     constructor(
-        address _commissionDistribution,
+        address payable _commissionDistribution,
         address _usdtToken,
         address _eggNFTContract
     ) ERC1155("https://eggoworld.io/api/food/{id}.json") Ownable(msg.sender) {

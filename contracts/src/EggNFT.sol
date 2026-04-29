@@ -15,7 +15,7 @@ import {AnimalNFT, Rarity, Species} from "./AnimalNFT.sol";
 contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     using SafeERC20 for IERC20;
     
-    address public immutable commissionDistribution;
+    address payable public immutable commissionDistribution;
     IERC20 public immutable usdtToken;
     address public animalNFTContract;
     
@@ -103,7 +103,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     mapping(uint256 => uint256) private tokenToRequestId; // tokenId → requestId
     
     constructor(
-        address _commissionDistribution,
+        address payable _commissionDistribution,
         address _usdtToken,
         address _vrfCoordinator
     ) ERC721("EggNFT", "EGG") VRFConsumerBaseV2Plus(_vrfCoordinator) {

@@ -10,6 +10,7 @@ contract CommissionDistribution {
     address public immutable owner;
     address public immutable coinStorReserve;
     IERC20 public immutable usdtToken;
+    address public immutable treasury;  // Treasury address for 46% allocation
     address public eggNFTContract;
     address public foodNFTContract;
     
@@ -24,18 +25,20 @@ contract CommissionDistribution {
     mapping(address => uint256) public commissionBalances;
     
     event CommissionDistributed(address indexed buyer, address[4] referralChain, uint256 totalAmount);
-    event CommissionClaimed(address indexed referrer, uint256 amount);
     event CommissionClaimedUSDT(address indexed referrer, uint256 amount);
     event CoinStorDeposit(address indexed buyer, uint256 amount);
+    event TreasuryWithdrawn(address indexed caller, address indexed treasury, uint256 amount);
     event EggNFTContractSet(address indexed eggNFT);
     event FoodNFTContractSet(address indexed foodNFT);
     
-    constructor(address _coinStorReserve, address _usdtToken) {
+    constructor(address _coinStorReserve, address _usdtToken, address _treasury) {
         require(_coinStorReserve != address(0), "CoinStor address cannot be zero");
         require(_usdtToken != address(0), "USDT address cannot be zero");
+        require(_treasury != address(0), "Treasury address cannot be zero");
         owner = msg.sender;
         coinStorReserve = _coinStorReserve;
         usdtToken = IERC20(_usdtToken);
+        treasury = _treasury;
     }
     
     function setEggNFTContract(address _eggNFT) external {
@@ -78,20 +81,12 @@ contract CommissionDistribution {
         uint256 coinStorAmount = (amount * COINSTOR_PERCENT) / TOTAL_PERCENT;
         commissionBalances[coinStorReserve] += coinStorAmount;
         
+        // Treasury allocation (46%)
+        uint256 treasuryAmount = (amount * TREASURY_PERCENT) / TOTAL_PERCENT;
+        commissionBalances[treasury] += treasuryAmount;
+        
         emit CommissionDistributed(msg.sender, referralChain, amount);
         emit CoinStorDeposit(msg.sender, coinStorAmount);
-    }
-    
-    function claimCommission() external {
-        uint256 balance = commissionBalances[msg.sender];
-        require(balance > 0, "No commission to claim");
-        
-        commissionBalances[msg.sender] = 0;
-        
-        (bool success, ) = payable(msg.sender).call{value: balance}("");
-        require(success, "Claim failed");
-        
-        emit CommissionClaimed(msg.sender, balance);
     }
     
     function claimCommissionUSDT() external {
@@ -109,14 +104,18 @@ contract CommissionDistribution {
         return commissionBalances[referrer];
     }
     
-    function withdrawCoinStor() external {
-        require(msg.sender == coinStorReserve, "Only CoinStor can withdraw");
-        uint256 balance = commissionBalances[coinStorReserve];
-        require(balance > 0, "No balance to withdraw");
+    function withdrawTreasury(uint256 amount) external {
+        require(msg.sender == owner, "Owner only");
+        require(amount > 0, "Amount must be > 0");
+        require(commissionBalances[treasury] >= amount, "Insufficient treasury balance");
         
-        commissionBalances[coinStorReserve] = 0;
+        commissionBalances[treasury] -= amount;
+        usdtToken.safeTransfer(treasury, amount);
         
-        (bool success, ) = payable(coinStorReserve).call{value: balance}("");
-        require(success, "Withdraw failed");
+        emit TreasuryWithdrawn(msg.sender, treasury, amount);
+    }
+    
+    receive() external payable {
+        revert("Contract does not accept ETH");
     }
 }
