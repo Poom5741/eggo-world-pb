@@ -11,26 +11,26 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Current Milestone: v0.3.0 E2E Flow Testing & Production Validation
+## Current Milestone: v0.5.0 Security Hardening & Production Readiness
 
 **Status:** Active — Requirements definition started
-**Goal:** Verify complete user journeys from authentication to commission claiming with real data
+**Goal:** Refactor smart contracts and application code to address critical security audit findings and E2E test failures, making the system production-ready
 
-**Previous Milestone:** v0.2.0 Functional Spec 100% (shipped 2026-04-26)
+**Previous Milestone:** v0.4.0 Functional Journey Tests (shipped 2026-04-29)
 
-### Target Flows
+### Target Features
 
-| Flow        | Journey                                           | Priority |
-| ----------- | ------------------------------------------------- | -------- |
-| Auth        | LINE OAuth → Dashboard (new user)                 | P0       |
-| Mint        | Buy egg → NFT appears in /eggs                    | P0       |
-| Feed        | Buy food → Feed egg → 10/10 progress              | P0       |
-| Hatch       | Feed 10 → Hatch → Animal NFT minted               | P0       |
-| Marketplace | List NFT → Buy NFT → Ownership transferred        | P1       |
-| Commission  | Referral → Earn commission → Claim commission     | P1       |
-| Tier        | Consume food → Reach threshold → Claim tier badge | P2       |
+| Feature                 | Priority | Description                                                                                                                   |
+| ----------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Critical Security Fixes | P0       | Fix 6 critical vulnerabilities (XOR operator, TierBadge IDs, currency mismatch, treasury lock, rug-pull risk, approval theft) |
+| High-Severity Fixes     | P1       | Address 7 high-severity issues (self-referral, weak randomness, no-op functions, missing checks)                              |
+| Medium-Severity Fixes   | P2       | Resolve 8 medium-severity issues (access control, state management, pausable coverage)                                        |
+| E2E Test Fixes          | P0       | Fix failing journey tests (purchase flow, data sync, network issues)                                                          |
+| Production Test Users   | P1       | Create test users in production PocketBase                                                                                    |
+| Data Synchronization    | P1       | Implement reliable blockchain-to- database sync                                                                               |
+| Test Coverage           | P2       | Achieve >95% test pass rate                                                                                                   |
 
-**Approach:** Test-first — Execute E2E flows, identify issues, fix in subsequent phases
+**Approach:** Security-first — Fix critical vulnerabilities before addressing functional issues
 
 ### Spec Gap Summary
 

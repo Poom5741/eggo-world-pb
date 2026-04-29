@@ -9,9 +9,10 @@ See: .planning/PROJECT.md (updated 2026-04-27)
 
 ## Current Position
 
-Phase: 48 of 48 (Referral Commission Journey Test) — MILESTONE COMPLETE
-Status: v0.4.0 Functional Journey Tests milestone ARCHIVED
-Last activity: 2026-04-29 — Milestone archived, ready for v0.5.0 planning
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements for v0.5.0
+Last activity: 2026-04-29 — Milestone v0.5.0 started
 
 Progress: [█████████] 100% (4/4 phases)
 
