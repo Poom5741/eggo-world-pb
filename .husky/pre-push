@@ -4,9 +4,9 @@
 export PATH="/opt/homebrew/bin:$HOME/.bun/bin:$PATH"
 
 # Pre-push quality gate
-# Run unit tests before pushing (integration tests skipped - require external services)
+# Quick smoke test before pushing (full test suite runs in CI)
 
-echo "Running tests before push..."
+echo "Running pre-push checks..."
 
 # Track test failures
 FAILED=0
@@ -14,22 +14,13 @@ FAILED=0
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-# Run web tests (only project tests, exclude node_modules)
-echo "Running web tests..."
-(cd "$SCRIPT_DIR/apps/web" && bun test app/ components/ hooks/ lib/ --timeout 30000) || FAILED=1
-
-# Run backend tests (only unit tests)
-echo "Running backend tests..."
-if [ -d "$SCRIPT_DIR/apps/backend" ]; then
-  echo "  Running backend unit tests only..."
-  (cd "$SCRIPT_DIR/apps/backend" && bun test test/field-migration.test.js --timeout 10000) || FAILED=1
-else
-  echo "⚠️  Backend directory not found, skipping..."
-fi
+# Run a single quick test to verify build integrity
+echo "Running smoke test..."
+(cd "$SCRIPT_DIR/apps/web" && bun test app/page.test.tsx app/layout.test.tsx --timeout 10000) || FAILED=1
 
 if [ $FAILED -ne 0 ]; then
   echo "❌ Tests failed. Push rejected."
   exit 1
 fi
 
-echo "✅ All tests passed. Pushing..."
+echo "✅ Pre-push checks passed. Pushing..."
