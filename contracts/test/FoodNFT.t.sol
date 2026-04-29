@@ -72,7 +72,7 @@ contract FoodNFTTest is Test {
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE);
         
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 1, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
         vm.stopPrank();
         
         assertEq(food_ids.length, 1, "Should mint 1 Food NFT");
@@ -85,7 +85,7 @@ contract FoodNFTTest is Test {
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 10);
         
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         vm.stopPrank();
         
         assertEq(food_ids.length, 10, "Should mint 10 Food NFTs");
@@ -100,7 +100,7 @@ contract FoodNFTTest is Test {
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 50);
         
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 50, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(50, referrerG1);
         vm.stopPrank();
         
         assertEq(food_ids.length, 50, "Should mint 50 Food NFTs");
@@ -110,7 +110,7 @@ contract FoodNFTTest is Test {
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 100);
         
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 100, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(100, referrerG1);
         vm.stopPrank();
         
         assertEq(food_ids.length, 100, "Should mint 100 Food NFTs");
@@ -127,7 +127,7 @@ contract FoodNFTTest is Test {
         mockUSDT.approve(address(foodNFT), MINT_PRICE * totalMints);
         
         for (uint256 i = 0; i < totalMints; i++) {
-            uint256[] memory food_ids = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
             (,, FoodType foodType,,) = foodNFT.getFoodProperties(food_ids[0]);
             
             if (foodType == FoodType.Grain) grainCount++;
@@ -156,7 +156,7 @@ contract FoodNFTTest is Test {
         
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
@@ -175,7 +175,7 @@ contract FoodNFTTest is Test {
         
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE);
-        foodNFT.mintFood(buyer, 1, referrerG1);
+        foodNFT.mintFood(1, referrerG1);
         vm.stopPrank();
         
         assertEq(commissionDistribution.getCommissionBalance(referrerG1), g1Expected);
@@ -192,7 +192,7 @@ contract FoodNFTTest is Test {
         
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 5);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 5, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(5, referrerG1);
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
@@ -206,7 +206,7 @@ contract FoodNFTTest is Test {
         uint256 egg_token_id = eggNFT.mintEgg(referrerG1);
         
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 3);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 3, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(3, referrerG1);
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
@@ -220,7 +220,7 @@ contract FoodNFTTest is Test {
         uint256 egg_token_id = eggNFT.mintEgg(referrerG1);
         
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         
         eggNFT.hatchEgg(egg_token_id);
@@ -241,7 +241,7 @@ contract FoodNFTTest is Test {
         
         vm.startPrank(otherBuyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE);
-        uint256[] memory food_ids = foodNFT.mintFood(otherBuyer, 1, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
         vm.stopPrank();
         
         vm.startPrank(buyer);
@@ -256,7 +256,7 @@ contract FoodNFTTest is Test {
         uint256 egg_token_id = eggNFT.mintEgg(referrerG1);
         
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         
         eggNFT.hatchEgg(egg_token_id);
@@ -272,7 +272,7 @@ contract FoodNFTTest is Test {
         uint256 egg_token_id = eggNFT.mintEgg(referrerG1);
         
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 5);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 5, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(5, referrerG1);
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         
         vm.expectRevert("Not enough food consumed");
@@ -284,7 +284,7 @@ contract FoodNFTTest is Test {
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 5);
         
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 5, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(5, referrerG1);
         vm.stopPrank();
         
         assertEq(food_ids.length, 5, "Should mint 5 food items");
@@ -297,7 +297,7 @@ contract FoodNFTTest is Test {
         uint256 egg_token_id = eggNFT.mintEgg(referrerG1);
         
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         
@@ -315,7 +315,7 @@ contract FoodNFTTest is Test {
     function test_GetFoodTypeDistribution() public {
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         vm.stopPrank();
         
         (uint256 grain, uint256 fish, uint256 insects, uint256 herb) = 
@@ -327,7 +327,7 @@ contract FoodNFTTest is Test {
     function test_ReentrancyProtection() public {
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         vm.stopPrank();
         
         for (uint256 i = 0; i < food_ids.length; i++) {

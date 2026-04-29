@@ -68,7 +68,7 @@ contract AnimalBreedingTest is Test {
         // Feed 10 times
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(user, 1, referrer);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrer);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
@@ -127,7 +127,7 @@ contract AnimalBreedingTest is Test {
         // Hatch the Gen 1 egg
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
         for (uint i = 0; i < 10; i++) {
-            uint256[] memory food_id = foodNFT.mintFood(breeder, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(gen1_egg, food_id, address(eggNFT));
         }
         uint256 gen1_animal = eggNFT.hatchEgg(gen1_egg);
@@ -141,7 +141,7 @@ contract AnimalBreedingTest is Test {
         
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
         for (uint i = 0; i < 10; i++) {
-            uint256[] memory food_id = foodNFT.mintFood(breeder, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(gen1_egg2, food_id, address(eggNFT));
         }
         uint256 gen1_animal2 = eggNFT.hatchEgg(gen1_egg2);
@@ -302,7 +302,7 @@ contract AnimalBreedingTest is Test {
         // Feed and hatch the Gen 1 egg
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
         for (uint i = 0; i < 10; i++) {
-            uint256[] memory food_id = foodNFT.mintFood(breeder, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(gen1_egg, food_id, address(eggNFT));
         }
         uint256 gen1_animal = eggNFT.hatchEgg(gen1_egg);
@@ -331,7 +331,7 @@ contract AnimalBreedingTest is Test {
         // Feed and hatch the breeding egg
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
         for (uint i = 0; i < 10; i++) {
-            uint256[] memory food_id = foodNFT.mintFood(breeder, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(breeding_egg_id, food_id, address(eggNFT));
         }
         
@@ -361,7 +361,7 @@ contract AnimalBreedingTest is Test {
             
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
             for (uint j = 0; j < 10; j++) {
-                uint256[] memory food_id = foodNFT.mintFood(breeder, 1, referrerG1);
+                uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
                 foodNFT.feedEgg(egg_id, food_id, address(eggNFT));
             }
             gen1_animals[i] = eggNFT.hatchEgg(egg_id);
@@ -377,7 +377,7 @@ contract AnimalBreedingTest is Test {
         
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
         for (uint j = 0; j < 10; j++) {
-            uint256[] memory food_id = foodNFT.mintFood(breeder, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(gen2_egg, food_id, address(eggNFT));
         }
         uint256 gen2_animal = eggNFT.hatchEgg(gen2_egg);
@@ -554,7 +554,7 @@ contract AnimalBreedingTest is Test {
         // Feed and hatch
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
         for (uint i = 0; i < 10; i++) {
-            uint256[] memory food_id = foodNFT.mintFood(breeder, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(breeding_egg, food_id, address(eggNFT));
         }
         uint256 offspring = eggNFT.hatchEgg(breeding_egg);

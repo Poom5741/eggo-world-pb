@@ -44,7 +44,7 @@ contract TestEggHatching is Script {
         console.log("Egg minted! Token ID:", eggTokenId);
         
         console.log("\nStep 4: Mint Food NFTs (8 food items)");
-        uint256[] memory foodIds = foodNFT.mintFood(user, 8, referrer);
+        uint256[] memory foodIds = foodNFT.mintFood(8, referrer);
         console.log("Food minted! Count:", foodIds.length);
         
         console.log("\nStep 5: Feed Egg with Food NFTs");

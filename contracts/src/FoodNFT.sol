@@ -59,7 +59,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         _nextFoodId = 1;
     }
     
-    function mintFood(address buyer, uint256 quantity, address referrer) 
+    function mintFood(uint256 quantity, address referrer) 
         external 
         nonReentrant
         returns (uint256[] memory food_ids)
@@ -67,7 +67,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         require(quantity > 0, "Quantity must be greater than 0");
         
         uint256 totalCost = MINT_PRICE * quantity;
-        usdtToken.safeTransferFrom(buyer, commissionDistribution, totalCost);
+        usdtToken.safeTransferFrom(msg.sender, commissionDistribution, totalCost);  // FIXED: was buyer
         
         address[4] memory referralChain;
         referralChain[0] = referrer;
@@ -84,20 +84,20 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
             
             _foodProperties[foodId] = FoodProperties({
                 food_id: foodId,
-                owner: buyer,
+                owner: msg.sender,              // FIXED: was buyer
                 food_type: foodType,
                 is_consumed: false,
                 consumed_by_egg_id: 0
             });
             
-            _mint(buyer, foodId, 1, "");
+            _mint(msg.sender, foodId, 1, "");   // FIXED: was buyer
             
             emit FoodTypeAssigned(foodId, foodType);
             
             food_ids[i] = foodId;
         }
         
-        emit FoodMinted(food_ids, buyer, quantity);
+        emit FoodMinted(food_ids, msg.sender, quantity);  // FIXED: was buyer
         
         return food_ids;
     }

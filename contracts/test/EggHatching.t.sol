@@ -87,7 +87,7 @@ contract EggHatchingTest is Test {
         uint256 foodCost = quantity * 50 * 10^16;
         usdtToken.mint(user1, foodCost);
         usdtToken.approve(address(foodNFT), foodCost);
-        uint256[] memory foodIds = foodNFT.mintFood(user1, quantity, referrer);
+        uint256[] memory foodIds = foodNFT.mintFood(quantity, referrer);
         foodNFT.feedEgg(eggTokenId, foodIds, address(eggNFT));
         vm.stopPrank();
     }

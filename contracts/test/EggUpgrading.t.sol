@@ -65,7 +65,7 @@ contract EggUpgradingTest is Test {
         // First feed 10 times to meet minimum requirement
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
@@ -75,7 +75,7 @@ contract EggUpgradingTest is Test {
         
         // Mint food for upgrade
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 1, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
         
         // Approve USDT for upgrade fee
         mockUSDT.approve(address(eggNFT), UPGRADE_FEE);
@@ -100,13 +100,13 @@ contract EggUpgradingTest is Test {
         // First feed 10 times to meet minimum requirement
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
         // Mint 5 food items for upgrade
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 5);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 5, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(5, referrerG1);
         
         // Approve USDT for upgrade fee (5 USDT per food item = 25 USDT)
         mockUSDT.approve(address(eggNFT), UPGRADE_FEE * 5);
@@ -131,13 +131,13 @@ contract EggUpgradingTest is Test {
         // First feed 10 times to meet minimum requirement
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
         // Mint 10 food items (maximum allowed for upgrade)
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         
         // Approve USDT for upgrade fee (50 USDT)
         mockUSDT.approve(address(eggNFT), UPGRADE_FEE * 10);
@@ -150,7 +150,7 @@ contract EggUpgradingTest is Test {
         
         // Try with 8 items instead (12 + 8 = 20, which is max)
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 8);
-        uint256[] memory food_ids_8 = foodNFT.mintFood(buyer, 8, referrerG1);
+        uint256[] memory food_ids_8 = foodNFT.mintFood(8, referrerG1);
         mockUSDT.approve(address(eggNFT), UPGRADE_FEE * 8);
         eggNFT.upgradeEggRarity(egg_token_id, food_ids_8);
         
@@ -171,13 +171,13 @@ contract EggUpgradingTest is Test {
         // First feed 10 times to meet minimum requirement
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
         // Try to mint 11 food items (would exceed max of 20: 12 + 11 = 23 > 20)
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 11);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 11, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(11, referrerG1);
         
         // Approve USDT for upgrade fee
         mockUSDT.approve(address(eggNFT), UPGRADE_FEE * 11);
@@ -199,7 +199,7 @@ contract EggUpgradingTest is Test {
         // Feed 10 times to make it hatchable
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
@@ -208,7 +208,7 @@ contract EggUpgradingTest is Test {
         
         // Try to upgrade already hatched egg
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 1, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
         mockUSDT.approve(address(eggNFT), UPGRADE_FEE);
         
         vm.expectRevert("Egg already hatched");
@@ -225,7 +225,7 @@ contract EggUpgradingTest is Test {
         uint256 egg_token_id = eggNFT.mintEgg(referrerG1);
         
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 1, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
         vm.stopPrank();
         
         // Try to upgrade from different user
@@ -248,13 +248,13 @@ contract EggUpgradingTest is Test {
         // First feed 10 times to meet minimum requirement
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
         // Mint 3 food items for upgrade
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 3);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 3, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(3, referrerG1);
         
         // Verify buyer owns the food NFTs (ERC1155 uses balanceOf)
         for (uint i = 0; i < food_ids.length; i++) {
@@ -283,13 +283,13 @@ contract EggUpgradingTest is Test {
         // First feed 10 times to meet minimum requirement
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
         // Mint 2 food items for upgrade
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 2);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 2, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(2, referrerG1);
         
         uint256 buyerBalanceBefore = mockUSDT.balanceOf(buyer);
         uint256 commissionBalanceBefore = mockUSDT.balanceOf(payable(address(commissionDistribution)));
@@ -318,7 +318,7 @@ contract EggUpgradingTest is Test {
         // Feed 10 times (required for hatching)
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
@@ -326,7 +326,7 @@ contract EggUpgradingTest is Test {
         // Note: Egg already has 12 food (2 initial + 10 fed), adding 5 makes 17 total
         // Upgrade count = 17 - 10 = 7 (total food above MAX_FOOD_COUNT)
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 5);
-        uint256[] memory upgrade_food = foodNFT.mintFood(buyer, 5, referrerG1);
+        uint256[] memory upgrade_food = foodNFT.mintFood(5, referrerG1);
         mockUSDT.approve(address(eggNFT), UPGRADE_FEE * 5);
         eggNFT.upgradeEggRarity(egg_token_id, upgrade_food);
         
@@ -357,13 +357,13 @@ contract EggUpgradingTest is Test {
         // First feed 10 times to meet minimum requirement (12 food total)
         for (uint i = 0; i < 10; i++) {
             mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-            uint256[] memory food_id = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_id = foodNFT.mintFood(1, referrerG1);
             foodNFT.feedEgg(egg_token_id, food_id, address(eggNFT));
         }
         
         // Mint 3 food items for upgrade (12 + 3 = 15 total, upgrade_count = 5)
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 3);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 3, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(3, referrerG1);
         
         mockUSDT.approve(address(eggNFT), UPGRADE_FEE * 3);
         eggNFT.upgradeEggRarity(egg_token_id, food_ids);

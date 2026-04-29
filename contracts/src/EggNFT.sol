@@ -487,37 +487,6 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         return history;
     }
     
-    // ==================== NFT BURNING ====================
-    
-    enum NFTType { Egg, Animal }
-    
-    event EggBurned(uint256 indexed tokenId, uint256 indexed egg_id, address indexed owner);
-    event AnimalBurned(uint256 indexed tokenId, address indexed owner);
-    
-    function burnNFT(uint256 tokenId, NFTType nftType) external onlyOwner {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
-        
-        if (nftType == NFTType.Egg) {
-            EggProperties storage props = _eggProperties[tokenId];
-            require(!props.is_hatched, "Cannot burn hatched egg - animal already exists");
-            
-            emit EggBurned(tokenId, props.egg_id, props.owner);
-            
-            _burn(tokenId);
-            
-            delete _eggProperties[tokenId];
-            
-        } else if (nftType == NFTType.Animal) {
-            require(animalNFTContract != address(0), "AnimalNFT contract not set");
-            
-            require(AnimalNFT(animalNFTContract).canBreed(tokenId), "Animal in breeding cooldown");
-            
-            emit AnimalBurned(tokenId, AnimalNFT(animalNFTContract).ownerOf(tokenId));
-            
-            AnimalNFT(animalNFTContract).burnAnimal(tokenId);
-        }
-    }
-    
     // ==================== AUTHORIZED FOOD NFT ====================
     
     modifier onlyAuthorizedFoodNFTContract() {

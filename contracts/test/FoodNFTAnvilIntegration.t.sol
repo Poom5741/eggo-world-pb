@@ -98,7 +98,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         console.log("\n--- Step 2: Minting 10 Food NFTs ---");
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         vm.stopPrank();
         
         console.log("Food NFTs minted:", food_ids.length);
@@ -147,7 +147,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 100);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 100, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(100, referrerG1);
         vm.stopPrank();
         
         console.log("Batch minted", food_ids.length, "Food NFTs");
@@ -180,7 +180,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * totalMints);
         
         for (uint256 i = 0; i < totalMints; i++) {
-            uint256[] memory food_ids = foodNFT.mintFood(buyer, 1, referrerG1);
+            uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
             (,, FoodType foodType,,) = foodNFT.getFoodProperties(food_ids[0]);
             
             if (foodType == FoodType.Grain) grainCount++;
@@ -209,7 +209,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-        foodNFT.mintFood(buyer, 1, referrerG1);
+        foodNFT.mintFood(1, referrerG1);
         vm.stopPrank();
         
         uint256 g1Expected = (FOOD_MINT_PRICE * 20) / 100;
@@ -241,7 +241,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         // Feed only 5 food
         vm.startPrank(buyer);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 5);
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 5, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(5, referrerG1);
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         
         // Try to hatch with only 7 food (2 initial + 5)
@@ -259,7 +259,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
         
         uint256 gasBefore = gasleft();
-        uint256[] memory food_ids = foodNFT.mintFood(buyer, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         uint256 gasAfter = gasleft();
         
         console.log("Gas used for minting 10 Food NFTs:", gasBefore - gasAfter);
