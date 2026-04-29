@@ -61,13 +61,19 @@ const CONFIG = {
     platformFeePercent: 4, // 4% CoinStor fee
     
     // Deployed contract addresses (Phase 1 deployment)
+    // Can be overridden per-environment via env vars (E2E uses local Anvil addresses)
     contracts: {
-      MockUSDT: "0xc015ebb27696b73E72Bef099b72791D7e666E2d0",
-      CommissionDistribution: "0x3c48926556e766E4564af0E264A9980e7C3a1787",
-      AnimalNFT: "0x973F2cA33E96FCC1fdbc48a7880b238b4C6be464",
-      EggNFT: "0xd7135090d78854820722CbCe0B29481Dd5D4808c",
-      FoodNFT: "0xbb0E0FcB40E209f7751A784F6b8d63E9C127D8fC"
+      MockUSDT: process.env.MOCK_USDT_ADDRESS || "0xc015ebb27696b73E72Bef099b72791D7e666E2d0",
+      CommissionDistribution: process.env.COMMISSION_DISTRIBUTION_ADDRESS || "0x3c48926556e766E4564af0E264A9980e7C3a1787",
+      AnimalNFT: process.env.ANIMAL_NFT_ADDRESS || "0x973F2cA33E96FCC1fdbc48a7880b238b4C6be464",
+      EggNFT: process.env.EGG_NFT_ADDRESS || "0xd7135090d78854820722CbCe0B29481Dd5D4808c",
+      FoodNFT: process.env.FOOD_NFT_ADDRESS || "0xbb0E0FcB40E209f7751A784F6b8d63E9C127D8fC"
     },
+
+    // E2E / local testing mode – when true, hooks skip on-chain verification
+    // and trust PocketBase as source of truth. Enables full local E2E runs
+    // without a funded, real-chain RPC.
+    mockBlockchain: (process.env.MOCK_BLOCKCHAIN || "").toLowerCase() === "true",
     
     // Sync settings
     pollingInterval: 30000, // 30 seconds

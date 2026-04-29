@@ -9,8 +9,10 @@
 // Use native fetch (available in Node.js 18+)
 
 // Configuration
-const POCKETBASE_URL = process.env.POCKETBASE_URL || 'https://pb.eggoworld.io'
+const POCKETBASE_URL = process.env.POCKETBASE_URL || 'http://localhost:8091'
 const ANVIL_RPC_URL = process.env.ANVIL_RPC_URL || 'http://localhost:8545'
+const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL || 'admin@e2e.local'
+const PB_ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD || 'admin_e2e_password'
 
 // Test user credentials (for authentication)
 const TEST_USERS = {

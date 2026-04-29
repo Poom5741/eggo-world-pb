@@ -1,21 +1,84 @@
 # E2E Test Environment
 # Phase 41: Framework Setup + Docker Environment
+# Option B: Full Local Environment (local PocketBase + local Anvil + local wallet-api)
 #
 # Standalone isolated test environment (D-05: not extending docker-compose.yml)
-# Usage: docker-compose -f docker-compose.e2e.yml up -d
+# Usage: docker compose -f docker-compose.e2e.yml up -d
 #
 # Services:
+# - pocketbase: Local PocketBase (host port 8091) wired to local Anvil
 # - wallet-api: Gas sponsorship service
-# - anvil: BSC testnet fork (D-09)
-# - frontend: Static file server for apps/web/out/
+# - anvil:     Local blockchain (chain id 7117)
+# - frontend:  Static file server for apps/web/out/
 #
-# Note: PocketBase uses production instance (pb.eggoworld.io) for E2E testing
-# due to local migration API compatibility issues with PocketBase 0.23.x
-# Set POCKETBASE_URL environment variable to override
+# All services share `e2e-test-network` and the PocketBase hooks are
+# configured to trust PocketBase (MOCK_BLOCKCHAIN=true) so E2E journeys
+# work end-to-end against purely local infrastructure.
 
 version: '3.8'
 
 services:
+  # PocketBase - Local E2E instance
+  # Uses a dedicated volume (pb_data.e2e) so production data is untouched.
+  pocketbase:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: e2e-pocketbase
+    ports:
+      - "8091:8090"   # host 8091 -> container 8090 to avoid clashing with local dev PB
+    environment:
+      # App / wallet
+      - NODE_ENV=development
+      - APP_NAME=eggo-pb-e2e
+      - APP_URL=http://pocketbase:8090
+      - PB_PUBLIC_URL=http://localhost:8091
+      - ENCRYPTION=${E2E_ENCRYPTION_KEY:-4nWpfKByg2u3tkbbHAZ34div}
+      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-e2e_master_key_change_me_32chars!!}
+      - WALLET_API_URL=http://wallet-api:3001
+      - WALLET_SRV_URL=http://wallet-api:3001
+
+      # Blockchain - point at local Anvil
+      - BSC_RPC_URL=http://anvil:8545
+      - BSC_CHAIN_ID=7117
+      - MOCK_BLOCKCHAIN=true
+
+      # Deployed test contract addresses (see scripts/test-contracts-config.json)
+      - MOCK_USDT_ADDRESS=${MOCK_USDT_ADDRESS:-0x5FbDB2315678afecb367f032d93F642f64180aa3}
+      - EGG_NFT_ADDRESS=${EGG_NFT_ADDRESS:-0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512}
+      - ANIMAL_NFT_ADDRESS=${ANIMAL_NFT_ADDRESS:-0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0}
+      - FOOD_NFT_ADDRESS=${FOOD_NFT_ADDRESS:-0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9}
+      - COMMISSION_DISTRIBUTION_ADDRESS=${COMMISSION_DISTRIBUTION_ADDRESS:-0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9}
+
+      # LINE OAuth disabled for E2E (kept blank)
+      - LINE_CHANNEL_ID=
+      - LINE_CHANNEL_SECRET=
+      - LINE_CALLBACK_URL=http://localhost:8091/api/oauth2-redirect
+    volumes:
+      - ./apps/backend/pb_data.e2e:/pb_data
+      - ./apps/backend/pb_hooks:/pb/pb_hooks:ro
+      - ./apps/backend/pb_public:/pb/pb_public:ro
+      - ./apps/backend/pb_migrations:/pb/pb_migrations:ro
+    command:
+      - serve
+      - --http=0.0.0.0:8090
+      - --dir=/pb_data
+      - --publicDir=/pb/pb_public
+      - --hooksDir=/pb/pb_hooks
+      - --migrationsDir=/pb/pb_migrations
+    networks:
+      - e2e-test-network
+    restart: unless-stopped
+    depends_on:
+      anvil:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
   # Wallet API - Gas sponsorship service
   wallet-api:
     build:
@@ -31,18 +94,21 @@ services:
       - MAX_PASSWORD_LENGTH=120
       - PUBLIC_ENCRYPTION=false
       - CORS_ORIGIN=*
-      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-e2e-test-key}
+      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-e2e_master_key_change_me_32chars!!}
       # DACC mnemonic for gas sponsorship (use test mnemonic for E2E)
       - DACC_MNEMONIC=${DACC_MNEMONIC:-test test test test test test test test test test test junk}
       - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-test@e2e.local}
       - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-test-password}
       # E2E specific: Anvil RPC endpoint
       - RPC_URL=http://anvil:8545
-      - EGG_NFT_ADDRESS=${EGG_NFT_ADDRESS:-0xb2FE193523A1E6A240141331A80755f5642e7A44}
+      - POCKETBASE_URL=http://pocketbase:8090
+      - EGG_NFT_ADDRESS=${EGG_NFT_ADDRESS:-0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512}
     networks:
       - e2e-test-network
     restart: unless-stopped
-    # D-08: Health check
+    depends_on:
+      anvil:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:3001/health || exit 1"]
       interval: 10s
@@ -51,14 +117,12 @@ services:
       start_period: 15s
 
   # Anvil - Local test blockchain (D-09)
-  # Changed from BSC testnet fork to local chain for full test control
-  # Allows contract deployment and NFT minting for E2E tests
+  # Local chain (not forked) - enables contract deployment and minting
   anvil:
     image: ghcr.io/foundry-rs/foundry:latest
     container_name: e2e-anvil
     ports:
       - "8545:8545"
-    # Local chain (not forked) - enables contract deployment and minting
     environment:
       - ANVIL_IP_ADDR=0.0.0.0
       - ANVIL_PORT=8545
@@ -72,13 +136,12 @@ services:
     networks:
       - e2e-test-network
     restart: unless-stopped
-    # D-08: Health check via JSON-RPC
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf -X POST http://localhost:8545 -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}' | grep -q result || exit 1"]
+      test: ["CMD-SHELL", "cast block-number --rpc-url http://localhost:8545 || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 10
-      start_period: 30s
+      start_period: 15s
 
   # Frontend - Static file server
   frontend:
@@ -91,7 +154,6 @@ services:
     networks:
       - e2e-test-network
     restart: unless-stopped
-    # D-08: Health check
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:80 || exit 1"]
       interval: 10s
@@ -103,7 +165,3 @@ services:
 networks:
   e2e-test-network:
     driver: bridge
-
-# Named volumes for persistence (optional - can be removed for clean teardown)
-# volumes:
-#   pb_data_e2e:
