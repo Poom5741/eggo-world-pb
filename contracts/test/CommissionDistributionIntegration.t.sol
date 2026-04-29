@@ -40,9 +40,9 @@ contract CommissionDistributionIntegrationTest is Test {
         coinStor = address(0x6);
         
         mockUSDT = new MockUSDT();
-        commissionDist = new CommissionDistribution(coinStor, address(mockUSDT));
+        commissionDist = new CommissionDistribution(coinStor, address(mockUSDT), address(0x5));
         VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
-        eggNFT = new EggNFT(address(commissionDist), address(mockUSDT), address(vrfMock));
+        eggNFT = new EggNFT(payable(address(commissionDist)), address(mockUSDT), address(vrfMock));
         
         commissionDist.setEggNFTContract(address(eggNFT));
         
@@ -50,7 +50,7 @@ contract CommissionDistributionIntegrationTest is Test {
         mockUSDT.mint(buyer, INITIAL_BALANCE);
         
         // Fund contract with BNB for commission payouts
-        deal(address(commissionDist), INITIAL_BALANCE);
+        deal(payable(address(commissionDist)), INITIAL_BALANCE);
     }
     
     function test_CommissionDistributionMath() public {

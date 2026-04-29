@@ -38,12 +38,13 @@ contract AnimalBreedingTest is Test {
         referrerG1 = address(0x2);
         
         mockUSDT = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(address(0x4), address(mockUSDT));
+        address treasury = address(0x5);
+        commissionDistribution = new CommissionDistribution(address(0x4), address(mockUSDT), treasury);
         VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
-        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT), address(vrfMock));
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(mockUSDT), address(vrfMock));
         animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
-            address(commissionDistribution),
+            payable(address(commissionDistribution)),
             address(mockUSDT),
             address(eggNFT)
         );
@@ -227,7 +228,7 @@ contract AnimalBreedingTest is Test {
         uint256 animal2 = _mintAndHatchEgg(breeder, referrerG1);
         
         uint256 breederBalanceBefore = mockUSDT.balanceOf(breeder);
-        uint256 commissionBalanceBefore = mockUSDT.balanceOf(address(commissionDistribution));
+        uint256 commissionBalanceBefore = mockUSDT.balanceOf(payable(address(commissionDistribution)));
         
         // Breed with 5 USDT fee
         mockUSDT.approve(address(eggNFT), BREEDING_FEE);
@@ -235,7 +236,7 @@ contract AnimalBreedingTest is Test {
         
         // Verify fee transfer
         uint256 breederBalanceAfter = mockUSDT.balanceOf(breeder);
-        uint256 commissionBalanceAfter = mockUSDT.balanceOf(address(commissionDistribution));
+        uint256 commissionBalanceAfter = mockUSDT.balanceOf(payable(address(commissionDistribution)));
         
         assertEq(breederBalanceBefore - breederBalanceAfter, BREEDING_FEE, "Breeder should pay breeding fee");
         assertEq(commissionBalanceAfter - commissionBalanceBefore, BREEDING_FEE, "Commission contract should receive fee");

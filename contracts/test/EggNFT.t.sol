@@ -39,13 +39,14 @@ contract EggNFTTest is Test {
         coinStorReserve = address(0x6);
         
         mockUSDT = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT));
+        address treasury = address(0x7);
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT), treasury);
         
         // Deploy mock VRF coordinator (LINK address = 0 for test, baseFee = 1e18, gasPrice = 1e9)
         vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
         
         // Deploy EggNFT with mock VRF coordinator
-        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT), address(vrfCoordinatorMock));
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(mockUSDT), address(vrfCoordinatorMock));
         
         commissionDistribution.setEggNFTContract(address(eggNFT));
         
@@ -61,7 +62,7 @@ contract EggNFTTest is Test {
         mockUSDT.mint(referrerG1, INITIAL_BALANCE);
         mockUSDT.mint(referrerG2, INITIAL_BALANCE);
         
-        vm.deal(address(commissionDistribution), INITIAL_BALANCE);
+        vm.deal(payable(address(commissionDistribution)), INITIAL_BALANCE);
     }
     
     function test_Deployment() public {
@@ -265,10 +266,10 @@ contract EggNFTTest is Test {
         uint256 g1Balance = commissionDistribution.getCommissionBalance(referrerG1);
         assertGt(g1Balance, 0);
         
-        vm.deal(address(commissionDistribution), g1Balance);
+        vm.deal(payable(address(commissionDistribution)), g1Balance);
         
         vm.prank(referrerG1);
-        commissionDistribution.claimCommission();
+        commissionDistribution.claimCommissionUSDT();
         
         assertEq(commissionDistribution.getCommissionBalance(referrerG1), 0);
     }

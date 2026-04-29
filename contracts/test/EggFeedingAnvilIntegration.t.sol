@@ -36,12 +36,13 @@ contract EggFeedingAnvilIntegrationTest is Test {
         coinStorReserve = address(0x04);
         
         mockUSDT = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT));
+        address treasury = address(0x05);
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT), treasury);
         VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
-        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT), address(vrfMock));
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(mockUSDT), address(vrfMock));
         animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
-            address(commissionDistribution),
+            payable(address(commissionDistribution)),
             address(mockUSDT),
             address(eggNFT)
         );
@@ -75,7 +76,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         
         console.log("FoodNFT Address:", address(foodNFT));
         console.log("EggNFT Address:", address(eggNFT));
-        console.log("CommissionDistribution Address:", address(commissionDistribution));
+        console.log("CommissionDistribution Address:", payable(address(commissionDistribution)));
         console.log("MockUSDT Address:", address(mockUSDT));
         
         assertEq(address(foodNFT.usdtToken()), address(mockUSDT));

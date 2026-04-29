@@ -98,7 +98,7 @@ contract CommissionDistributionTreasuryTest is Test {
         
         // Mint USDT to owner to simulate payment
         mockUSDT.mint(owner, MINT_PRICE);
-        mockUSDT.approve(address(commissionDist), MINT_PRICE);
+        mockUSDT.approve(payable(address(commissionDist)), MINT_PRICE);
         
         // Simulate distribution
         uint256 expectedTreasuryAmount = (MINT_PRICE * 46) / 100;
@@ -118,7 +118,7 @@ contract CommissionDistributionTreasuryTest is Test {
         
         // Mint USDT and distribute
         mockUSDT.mint(owner, MINT_PRICE);
-        mockUSDT.approve(address(commissionDist), MINT_PRICE);
+        mockUSDT.approve(payable(address(commissionDist)), MINT_PRICE);
         
         vm.prank(owner);
         commissionDist.distributeCommission(referralChain, MINT_PRICE);
@@ -128,7 +128,7 @@ contract CommissionDistributionTreasuryTest is Test {
         address referrer = referralChain[0];
         
         // Transfer USDT to commissionDist for payout
-        mockUSDT.mint(address(commissionDist), expectedCommission);
+        mockUSDT.mint(payable(address(commissionDist)), expectedCommission);
         
         // Claim commission
         uint256 balanceBefore = mockUSDT.balanceOf(referrer);
@@ -149,7 +149,7 @@ contract CommissionDistributionTreasuryTest is Test {
         
         // Mint USDT and distribute to build treasury balance
         mockUSDT.mint(owner, MINT_PRICE);
-        mockUSDT.approve(address(commissionDist), MINT_PRICE);
+        mockUSDT.approve(payable(address(commissionDist)), MINT_PRICE);
         
         vm.prank(owner);
         commissionDist.distributeCommission(referralChain, MINT_PRICE);
@@ -158,11 +158,11 @@ contract CommissionDistributionTreasuryTest is Test {
         uint256 treasuryUSDTBefore = mockUSDT.balanceOf(treasury);
         
         // Mint USDT to contract for withdrawal
-        mockUSDT.mint(address(commissionDist), treasuryBalance);
+        mockUSDT.mint(payable(address(commissionDist)), treasuryBalance);
         
         // Owner withdraws treasury
         vm.prank(owner);
-        vm.expectEmit(true, true, false, false, address(commissionDist));
+        vm.expectEmit(true, true, false, false, payable(address(commissionDist)));
         emit TreasuryWithdrawn(owner, treasury, treasuryBalance);
         commissionDist.withdrawTreasury(treasuryBalance);
         
@@ -178,13 +178,13 @@ contract CommissionDistributionTreasuryTest is Test {
         vm.stopPrank();
         
         mockUSDT.mint(owner, MINT_PRICE);
-        mockUSDT.approve(address(commissionDist), MINT_PRICE);
+        mockUSDT.approve(payable(address(commissionDist)), MINT_PRICE);
         
         vm.prank(owner);
         commissionDist.distributeCommission(referralChain, MINT_PRICE);
         
         uint256 treasuryBalance = commissionDist.commissionBalances(treasury);
-        mockUSDT.mint(address(commissionDist), treasuryBalance);
+        mockUSDT.mint(payable(address(commissionDist)), treasuryBalance);
         
         // Non-owner tries to withdraw
         address nonOwner = makeAddr("nonOwner");
@@ -220,7 +220,7 @@ contract CommissionDistributionTreasuryTest is Test {
         
         vm.prank(attacker);
         vm.expectRevert("Contract does not accept ETH");
-        (bool success, ) = address(commissionDist).call{value: 1 ether}("");
+        (bool success, ) = payable(address(commissionDist)).call{value: 1 ether}("");
         require(success, "Should have reverted");
     }
     
@@ -231,7 +231,7 @@ contract CommissionDistributionTreasuryTest is Test {
         vm.stopPrank();
         
         mockUSDT.mint(owner, MINT_PRICE);
-        mockUSDT.approve(address(commissionDist), MINT_PRICE);
+        mockUSDT.approve(payable(address(commissionDist)), MINT_PRICE);
         
         vm.prank(owner);
         commissionDist.distributeCommission(referralChain, MINT_PRICE);

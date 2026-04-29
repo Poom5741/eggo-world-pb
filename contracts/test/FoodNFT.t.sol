@@ -39,12 +39,13 @@ contract FoodNFTTest is Test {
         coinStorReserve = address(0x4);
         
         mockUSDT = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT));
+        address treasury = address(0x5);
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT), treasury);
         VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
-        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT), address(vrfMock));
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(mockUSDT), address(vrfMock));
         animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
-            address(commissionDistribution),
+            payable(address(commissionDistribution)),
             address(mockUSDT),
             address(eggNFT)
         );
@@ -59,7 +60,7 @@ contract FoodNFTTest is Test {
         mockUSDT.mint(referrerG1, INITIAL_BALANCE);
         mockUSDT.mint(referrerG2, INITIAL_BALANCE);
         
-        vm.deal(address(commissionDistribution), INITIAL_BALANCE);
+        vm.deal(payable(address(commissionDistribution)), INITIAL_BALANCE);
     }
     
     function test_Deployment() public {

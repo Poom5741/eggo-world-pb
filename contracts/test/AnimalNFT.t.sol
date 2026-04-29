@@ -32,9 +32,10 @@ contract AnimalNFTTest is Test {
         vm.startPrank(owner);
         
         usdtToken = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve, address(usdtToken));
+        address treasury = address(0x6);
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(usdtToken), treasury);
         VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
-        eggNFT = new EggNFT(address(commissionDistribution), address(usdtToken), address(vrfMock));
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(usdtToken), address(vrfMock));
         animalNFT = new AnimalNFT();
         
         vm.stopPrank();

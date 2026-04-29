@@ -33,12 +33,12 @@ contract EggUpgradingTest is Test {
         referrerG1 = address(0x2);
         
         mockUSDT = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(address(0x4), address(mockUSDT));
+        commissionDistribution = new CommissionDistribution(address(0x4), address(mockUSDT), address(0x5));
         VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
-        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT), address(vrfMock));
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(mockUSDT), address(vrfMock));
         animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
-            address(commissionDistribution),
+            payable(address(commissionDistribution)),
             address(mockUSDT),
             address(eggNFT)
         );
@@ -292,7 +292,7 @@ contract EggUpgradingTest is Test {
         uint256[] memory food_ids = foodNFT.mintFood(buyer, 2, referrerG1);
         
         uint256 buyerBalanceBefore = mockUSDT.balanceOf(buyer);
-        uint256 commissionBalanceBefore = mockUSDT.balanceOf(address(commissionDistribution));
+        uint256 commissionBalanceBefore = mockUSDT.balanceOf(payable(address(commissionDistribution)));
         
         // Upgrade with 2 items (10 USDT fee)
         mockUSDT.approve(address(eggNFT), UPGRADE_FEE * 2);
@@ -300,7 +300,7 @@ contract EggUpgradingTest is Test {
         
         // Verify fee transfer
         uint256 buyerBalanceAfter = mockUSDT.balanceOf(buyer);
-        uint256 commissionBalanceAfter = mockUSDT.balanceOf(address(commissionDistribution));
+        uint256 commissionBalanceAfter = mockUSDT.balanceOf(payable(address(commissionDistribution)));
         
         assertEq(buyerBalanceBefore - buyerBalanceAfter, UPGRADE_FEE * 2, "Buyer should pay upgrade fee");
         assertEq(commissionBalanceAfter - commissionBalanceBefore, UPGRADE_FEE * 2, "Commission contract should receive fee");

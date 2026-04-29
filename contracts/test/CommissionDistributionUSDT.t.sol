@@ -31,10 +31,10 @@ contract CommissionDistributionUSDTTest is Test {
         coinStor = address(0x3);
         
         mockUSDT = new MockUSDT();
-        commissionDist = new CommissionDistribution(coinStor, address(mockUSDT));
+        commissionDist = new CommissionDistribution(coinStor, address(mockUSDT), address(0x5));
         
         // Fund contract with USDT for payouts
-        mockUSDT.mint(address(commissionDist), INITIAL_BALANCE);
+        mockUSDT.mint(payable(address(commissionDist)), INITIAL_BALANCE);
     }
     
     function test_GetCommissionBalance_USDT() public {

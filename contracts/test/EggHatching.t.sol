@@ -40,14 +40,14 @@ contract EggHatchingTest is Test {
         vm.startPrank(owner);
         
         usdtToken = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve, address(usdtToken));
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(usdtToken), address(0x5));
         
         // Deploy mock VRF coordinator
         vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
         
-        eggNFT = new EggNFT(address(commissionDistribution), address(usdtToken), address(vrfCoordinatorMock));
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(usdtToken), address(vrfCoordinatorMock));
         animalNFT = new AnimalNFT();
-        foodNFT = new FoodNFT(address(commissionDistribution), address(usdtToken), address(eggNFT));
+        foodNFT = new FoodNFT(payable(address(commissionDistribution)), address(usdtToken), address(eggNFT));
         
         commissionDistribution.setEggNFTContract(address(eggNFT));
         commissionDistribution.setFoodNFTContract(address(foodNFT));

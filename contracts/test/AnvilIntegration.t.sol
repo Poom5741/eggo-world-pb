@@ -29,16 +29,17 @@ contract AnvilIntegrationTest is Test {
         coinStorReserve = address(0x4);
         
         mockUSDT = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT));
+        address treasury = address(0x7);
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT), treasury);
         VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
-        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT), address(vrfMock));
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(mockUSDT), address(vrfMock));
         commissionDistribution.setEggNFTContract(address(eggNFT));
         
         mockUSDT.mint(buyer, INITIAL_BALANCE);
         mockUSDT.mint(referrerG1, INITIAL_BALANCE);
         mockUSDT.mint(referrerG2, INITIAL_BALANCE);
         
-        vm.deal(address(commissionDistribution), INITIAL_BALANCE);
+        vm.deal(payable(address(commissionDistribution)), INITIAL_BALANCE);
     }
     
     function test_AnvilDeployment() public {
@@ -122,17 +123,21 @@ contract AnvilIntegrationTest is Test {
         uint256 g1BalanceBefore = commissionDistribution.getCommissionBalance(referrerG1);
         assertGt(g1BalanceBefore, 0);
         
-        uint256 initialBalance = address(referrerG1).balance;
+        uint256 initialBalance = mockUSDT.balanceOf(referrerG1);
         
-        vm.deal(address(commissionDistribution), g1BalanceBefore);
+        // Fund contract with USDT for payout
+        mockUSDT.mint(payable(address(commissionDistribution)), g1BalanceBefore);
         
         vm.prank(referrerG1);
-        commissionDistribution.claimCommission();
+        commissionDistribution.claimCommissionUSDT();
         
         uint256 g1BalanceAfter = commissionDistribution.getCommissionBalance(referrerG1);
         assertEq(g1BalanceAfter, 0, "Balance should be 0 after claim");
         
-        console.log("Commission claimed successfully!");
+        uint256 finalBalance = mockUSDT.balanceOf(referrerG1);
+        assertEq(finalBalance - initialBalance, g1BalanceBefore, "USDT should be transferred");
+        
+        console.log("Commission claimed successfully in USDT!");
     }
     
     function test_MultipleMintsOnAnvil() public {
