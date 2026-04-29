@@ -19,8 +19,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     IERC20 public immutable usdtToken;
     address public animalNFTContract;
     
-    uint256 public constant MINT_PRICE = 25 * 10^18;
-    uint256 public constant BREEDING_FEE = 5 * 10^18;
+    uint256 public constant MINT_PRICE = 25 * 10**18;        // Fixed: was 10^18 (XOR), now 10**18 (exponentiation)
+    uint256 public constant BREEDING_FEE = 5 * 10**18;       // Fixed: was 10^18 (XOR), now 10**18 (exponentiation)
     uint256 public constant UPGRADE_FEE = 0; // No fee — users already paid for food NFTs
     uint256 public constant MAX_FOOD_COUNT = 10;
     uint256 public constant INITIAL_FOOD_COUNT = 2;

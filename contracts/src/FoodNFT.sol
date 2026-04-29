@@ -23,7 +23,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
     address public immutable eggNFTContract;
     IERC20 public immutable usdtToken;
     
-    uint256 public constant MINT_PRICE = 0.50 * 10^18;
+    uint256 public constant MINT_PRICE = 5 * 10**17;         // Fixed: was 0.50 * 10^18 (XOR), now 5 * 10**17 (0.5e18)
     
     uint256 private _nextFoodId;
     
