@@ -23,8 +23,8 @@ contract FoodNFTTest is Test {
     address public referrerG2;
     address public coinStorReserve;
     
-    uint256 public constant MINT_PRICE = 0.50 * 10^18;
-    uint256 public constant EGG_MINT_PRICE = 25 * 10^18;
+    uint256 public constant MINT_PRICE = 5 * 10**17;  // Fixed: was 0.50 * 10^18 (XOR), now 5 * 10**17 (0.5e18)
+    uint256 public constant EGG_MINT_PRICE = 25 * 10**18;  // Fixed: was 10^18 (XOR)
     uint256 public constant INITIAL_BALANCE = 10000 * 10^18;
     
     event FoodMinted(uint256[] food_ids, address indexed buyer, uint256 quantity);

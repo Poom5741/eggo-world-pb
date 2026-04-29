@@ -20,8 +20,8 @@ contract EggUpgradingTest is Test {
     address public buyer;
     address public referrerG1;
     
-    uint256 public constant EGG_MINT_PRICE = 25 * 10^18;
-    uint256 public constant FOOD_MINT_PRICE = 0.50 * 10^18;
+    uint256 public constant EGG_MINT_PRICE = 25 * 10**18;
+    uint256 public constant FOOD_MINT_PRICE = 5 * 10**17;
     uint256 public constant INITIAL_BALANCE = 10000 * 10^18;
     uint256 public constant UPGRADE_FEE = 5 * 10^18;
     
