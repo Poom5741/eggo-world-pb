@@ -35,6 +35,9 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
     /// @notice Next token ID to mint (starts at 1)
     uint256 private _nextTokenId = 1;
     
+    /// @notice Maps tokenId → tierId (1=Seedling, 2=Grower, 3=Farmer)
+    mapping(uint256 => uint256) public tokenTier;
+    
     /// @notice Emitted when a tier badge is minted with reward
     event TierBadgeMinted(
         address indexed user,
@@ -108,42 +111,44 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
     
     /// @notice Mint a tier badge and distribute USDT reward
     /// @param user The address to mint the badge to
-    /// @param tokenId The tier token ID (1=Seedling, 2=Grower, 3=Farmer)
+    /// @param tierId The tier ID (1=Seedling, 2=Grower, 3=Farmer)
     /// @param lifetimeFoodItems The user's lifetime food items count (for verification)
-    /// @return success True if minting and reward distribution succeeded
+    /// @return tokenId The unique token ID minted
     function mintTierBadge(
         address user,
-        uint256 tokenId,
+        uint256 tierId,
         uint256 lifetimeFoodItems
-    ) external onlyOwner nonReentrant returns (bool success) {
+    ) external onlyOwner nonReentrant returns (uint256 tokenId) {
         // Validate tier ID
-        if (tokenId < 1 || tokenId > 3) {
-            emit TierClaimFailed(user, tokenId, "Invalid tier ID");
+        if (tierId < 1 || tierId > 3) {
+            emit TierClaimFailed(user, tierId, "Invalid tier ID");
             revert("Invalid tier");
         }
         
         // Check if user already has this tier or higher
-        if (userHighestTier[user] >= tokenId) {
-            emit TierClaimFailed(user, tokenId, "Tier already claimed");
+        if (userHighestTier[user] >= tierId) {
+            emit TierClaimFailed(user, tierId, "Tier already claimed");
             revert("Already claimed");
         }
         
         // Check sequential claim order (must claim 1, then 2, then 3)
-        if (userHighestTier[user] != tokenId - 1) {
-            emit TierClaimFailed(user, tokenId, "Claim tiers in order");
+        if (userHighestTier[user] != tierId - 1) {
+            emit TierClaimFailed(user, tierId, "Claim tiers in order");
             revert("Claim tiers in order");
         }
         
         // Verify lifetime food items threshold
-        Tier memory tier = tiers[tokenId];
+        Tier memory tier = tiers[tierId];
         if (lifetimeFoodItems < tier.threshold) {
-            emit TierClaimFailed(user, tokenId, "Threshold not met");
+            emit TierClaimFailed(user, tierId, "Threshold not met");
             revert("Threshold not met");
         }
         
-        // Mint the badge
+        // Generate unique token ID using monotonic counter
+        tokenId = _nextTokenId++;
         _safeMint(user, tokenId);
-        userHighestTier[user] = tokenId;
+        tokenTier[tokenId] = tierId;  // Map tokenId → tierId
+        userHighestTier[user] = tierId;
         
         // Transfer USDT reward from CoinStor reserve
         bool rewardSuccess = usdtToken.transferFrom(
@@ -156,7 +161,7 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
             // Note: Badge is minted but reward failed. This is acceptable per D-09:
             // "Failed transactions logged but don't rollback PocketBase state"
             // In production, operator should manually resolve failed transfers
-            emit TierClaimFailed(user, tokenId, "USDT transfer failed");
+            emit TierClaimFailed(user, tierId, "USDT transfer failed");
         }
         
         // Emit soulbound locked event
@@ -170,25 +175,23 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
             tier.rewardAmount,
             lifetimeFoodItems
         );
-        
-        return true;
     }
     
     /// @notice Check if a user can claim a specific tier
     /// @param user The user address to check
-    /// @param tokenId The tier token ID to check
+    /// @param tierId The tier ID to check (1=Seedling, 2=Grower, 3=Farmer)
     /// @param lifetimeFoodItems The user's current lifetime food items
     /// @return canClaim True if the user is eligible to claim this tier
     function canClaimTier(
         address user,
-        uint256 tokenId,
+        uint256 tierId,
         uint256 lifetimeFoodItems
     ) external view returns (bool canClaim) {
-        if (tokenId < 1 || tokenId > 3) return false;
-        if (userHighestTier[user] >= tokenId) return false;
-        if (userHighestTier[user] != tokenId - 1) return false;
+        if (tierId < 1 || tierId > 3) return false;
+        if (userHighestTier[user] >= tierId) return false;
+        if (userHighestTier[user] != tierId - 1) return false;
         
-        Tier memory tier = tiers[tokenId];
+        Tier memory tier = tiers[tierId];
         if (lifetimeFoodItems < tier.threshold) return false;
         
         return true;
@@ -203,18 +206,18 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
         return highestTier + 1;
     }
     
-    /// @notice Get tier details by token ID
-    /// @param tokenId The tier token ID
+    /// @notice Get tier details by tier ID
+    /// @param tierId The tier ID (1=Seedling, 2=Grower, 3=Farmer)
     /// @return name Tier name
     /// @return threshold Required lifetime food items
     /// @return rewardAmount USDT reward amount
-    function getTierDetails(uint256 tokenId) external view returns (
+    function getTierDetails(uint256 tierId) external view returns (
         string memory name,
         uint256 threshold,
         uint256 rewardAmount
     ) {
-        require(tokenId >= 1 && tokenId <= 3, "Invalid tier");
-        Tier memory tier = tiers[tokenId];
+        require(tierId >= 1 && tierId <= 3, "Invalid tier");
+        Tier memory tier = tiers[tierId];
         return (tier.name, tier.threshold, tier.rewardAmount);
     }
     
@@ -224,7 +227,9 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
         
-        Tier memory tier = tiers[tokenId];
+        // Resolve tier ID from token ID using mapping
+        uint256 tierId = tokenTier[tokenId];
+        Tier memory tier = tiers[tierId];
         
         // Build minimal JSON metadata as data URI
         string memory json = string.concat(
