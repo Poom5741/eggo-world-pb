@@ -382,7 +382,7 @@ test.describe('Marketplace Multi-User Journey - Helper Integration', () => {
     expect(typeof verifyOwnershipTransfer).toBe('function')
     
     // Verify contract address constant
-    expect(ANIMAL_NFT_ADDRESS).toBe('0x35F53aB20B3073903ebDe04aA9b354d1Efe8A99C')
+    expect(ANIMAL_NFT_ADDRESS).toBe('0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0')
   })
 
   /**

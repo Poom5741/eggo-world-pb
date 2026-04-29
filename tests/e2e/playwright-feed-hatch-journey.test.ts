@@ -386,7 +386,7 @@ test.describe('Feed + Hatch Journey - Helper Integration', () => {
     expect(pocketbaseUrl).toBeTruthy()
 
     // Verify contract addresses are set
-    expect(ANIMAL_NFT_ADDRESS).toBe('0x35F53aB20B3073903ebDe04aA9b354d1Efe8A99C')
-    expect(FOOD_NFT_ADDRESS).toBe('0xec21A3c068e84ceeD04975627418E867Ec342A02')
+    expect(ANIMAL_NFT_ADDRESS).toBe('0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0')
+    expect(FOOD_NFT_ADDRESS).toBe('0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9')
   })
 })

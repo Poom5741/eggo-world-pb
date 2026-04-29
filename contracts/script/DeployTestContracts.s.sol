@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "forge-std/Script.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -158,5 +159,40 @@ contract TestCommissionDistribution is Ownable {
 
     function getCommissionBalance(address user) external view returns (uint256) {
         return commissions[user];
+    }
+}
+
+/**
+ * Deployment script for E2E test contracts
+ * Usage: forge script script/DeployTestContracts.s.sol --rpc-url http://localhost:8545 --private-key <key> --broadcast
+ */
+contract DeployTestContracts is Script {
+    function run() external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        // Deploy TestUSDT
+        TestUSDT usdt = new TestUSDT();
+        console.log("TestUSDT deployed at:", address(usdt));
+
+        // Deploy TestEggNFT
+        TestEggNFT eggNFT = new TestEggNFT();
+        console.log("TestEggNFT deployed at:", address(eggNFT));
+
+        // Deploy TestAnimalNFT
+        TestAnimalNFT animalNFT = new TestAnimalNFT();
+        console.log("TestAnimalNFT deployed at:", address(animalNFT));
+
+        // Deploy TestFoodNFT
+        TestFoodNFT foodNFT = new TestFoodNFT();
+        console.log("TestFoodNFT deployed at:", address(foodNFT));
+
+        // Deploy TestCommissionDistribution
+        TestCommissionDistribution commission = new TestCommissionDistribution();
+        console.log("TestCommissionDistribution deployed at:", address(commission));
+
+        vm.stopBroadcast();
+
+        console.log("All test contracts deployed successfully!");
     }
 }

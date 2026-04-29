@@ -16,28 +16,28 @@ const MOCK_BLOCKCHAIN = process.env.MOCK_BLOCKCHAIN === 'true'
 
 /**
  * EGG NFT contract address for ChainId 7117 (Anvil testnet)
- * From contracts/contract-addresses.json
+ * Updated to local test contract deployment
  */
-export const EGG_NFT_ADDRESS = '0xb2FE193523A1E6A240141331A80755f5642e7A44'
+export const EGG_NFT_ADDRESS = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'
 
 /**
  * ANIMAL NFT contract address for ChainId 7117 (Anvil testnet)
- * From contracts/contract-addresses.json
+ * Updated to local test contract deployment
  */
-export const ANIMAL_NFT_ADDRESS = '0x35F53aB20B3073903ebDe04aA9b354d1Efe8A99C'
+export const ANIMAL_NFT_ADDRESS = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'
 
 /**
  * FOOD NFT contract address for ChainId 7117 (Anvil testnet)
- * From contracts/contract-addresses.json
+ * Updated to local test contract deployment
  */
-export const FOOD_NFT_ADDRESS = '0xec21A3c068e84ceeD04975627418E867Ec342A02'
+export const FOOD_NFT_ADDRESS = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
 
 /**
  * COMMISSION DISTRIBUTION contract address for ChainId 7117 (Anvil testnet)
  * Phase 48: Referral Commission Journey Test
- * From contracts/contract-addresses.json
+ * Updated to local test contract deployment
  */
-export const COMMISSION_DISTRIBUTION_ADDRESS = '0xa0C50587306F0CCac627D2eaEcb9e5909dB58F3f'
+export const COMMISSION_DISTRIBUTION_ADDRESS = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'
 
 /**
  * Result of triple verification

@@ -156,6 +156,6 @@ test.describe('Buy Egg Journey - Triple Verification Helpers', () => {
     expect(pocketbaseUrl).toBeTruthy()
 
     // Verify contract address is set correctly
-    expect(EGG_NFT_ADDRESS).toBe('0xb2FE193523A1E6A240141331A80755f5642e7A44')
+    expect(EGG_NFT_ADDRESS).toBe('0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512')
   })
 })

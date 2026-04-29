@@ -52,7 +52,7 @@ test.describe('Journey Helpers', () => {
 
     test('verifyEggOwnership on-chain check uses correct contract address', async () => {
       // Verify EGG_NFT_ADDRESS constant is correctly set
-      expect(EGG_NFT_ADDRESS).toBe('0xb2FE193523A1E6A240141331A80755f5642e7A44')
+      expect(EGG_NFT_ADDRESS).toBe('0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512')
     })
 
     test('verifyEggOwnership returns false when on-chain owner mismatches expected', async () => {
@@ -138,7 +138,7 @@ test.describe('Journey Helpers', () => {
   // Phase 47: Marketplace Multi-User Journey Test helpers
   test.describe('ANIMAL_NFT_ADDRESS constant', () => {
     test('ANIMAL_NFT_ADDRESS matches contract-addresses.json ChainId 7117', async () => {
-      expect(ANIMAL_NFT_ADDRESS).toBe('0x35F53aB20B3073903ebDe04aA9b354d1Efe8A99C')
+      expect(ANIMAL_NFT_ADDRESS).toBe('0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0')
     })
 
     test('FOOD_NFT_ADDRESS matches contract-addresses.json ChainId 7117', async () => {
@@ -295,7 +295,7 @@ test.describe('Journey Helpers', () => {
   test.describe('COMMISSION_DISTRIBUTION_ADDRESS constant', () => {
     test('COMMISSION_DISTRIBUTION_ADDRESS matches contract-addresses.json ChainId 7117', async () => {
       // Per D-13: Commission contract address from contracts/contract-addresses.json
-      expect(COMMISSION_DISTRIBUTION_ADDRESS).toBe('0xa0C50587306F0CCac627D2eaEcb9e5909dB58F3f')
+      expect(COMMISSION_DISTRIBUTION_ADDRESS).toBe('0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9')
     })
   })
 
