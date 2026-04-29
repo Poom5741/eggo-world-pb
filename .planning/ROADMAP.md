@@ -66,16 +66,14 @@ Plans:
 4. Treasury address receives 46% of mint proceeds with withdrawal path
 5. Owner cannot burn arbitrary user NFTs (function restricted or removed)
 6. mintFood uses msg.sender instead of buyer parameter (no approval theft)
-   **Plans**: TBD
+   **Plans**: 4 plans
 
 Plans:
 
-- [ ] 49-01: Fix XOR operator misuse in mint prices (SEC-01)
-- [ ] 49-02: Fix TierBadge token ID reuse with monotonic counter (SEC-02)
-- [ ] 49-03: Fix currency mismatch in CommissionDistribution (SEC-03)
-- [ ] 49-04: Fix treasury lock and add withdrawal path (SEC-04)
-- [ ] 49-05: Remove or restrict owner burnNFT function (SEC-05)
-- [ ] 49-06: Fix mintFood approval theft vulnerability (SEC-06)
+- [ ] 49-01-PLAN.md — Fix XOR operator misuse in mint prices (SEC-01)
+- [ ] 49-02-PLAN.md — Fix TierBadge token ID reuse with monotonic counter (SEC-02)
+- [ ] 49-03-PLAN.md — Fix currency mismatch and add treasury routing (SEC-03, SEC-04)
+- [ ] 49-04-PLAN.md — Remove burnNFT and fix mintFood approval theft (SEC-05, SEC-06)
 
 #### Phase 50: High-Severity Security Fixes
 
@@ -178,7 +176,7 @@ Phases execute in numeric order: 49 → 50 → 51 → 52 → 53
 
 | Phase                              | Milestone | Plans Complete | Status      | Completed |
 | ---------------------------------- | --------- | -------------- | ----------- | --------- |
-| 49. Critical Security Fixes        | v0.5.0    | 0/6            | Not started | -         |
+| 49. Critical Security Fixes        | v0.5.0    | 0/4            | Not started | -         |
 | 50. High-Severity Security Fixes   | v0.5.0    | 0/7            | Not started | -         |
 | 51. Medium-Severity Security Fixes | v0.5.0    | 0/8            | Not started | -         |
 | 52. E2E Test Fixes                 | v0.5.0    | 0/4            | Not started | -         |
