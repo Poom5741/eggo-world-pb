@@ -13,9 +13,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  output: 'export',
+  // Only use static export for production builds, not dev mode
+  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
   trailingSlash: true,  // Important for static export
-  distDir: 'out',       // Output directory for static export
+  distDir: process.env.NODE_ENV === 'production' ? 'out' : '.next',       // Output directory for static export
 }
 
 export default withBundleAnalyzer(nextConfig)
