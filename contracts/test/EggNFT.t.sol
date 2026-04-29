@@ -22,7 +22,7 @@ contract EggNFTTest is Test {
     address public referrerG4;
     address public coinStorReserve;
     
-    uint256 public constant MINT_PRICE = 25 * 10^18;
+    uint256 public constant MINT_PRICE = 25 * 10**18;  // Fixed: was 10^18 (XOR)
     uint256 public constant INITIAL_BALANCE = 1000 * 10^18;
     uint256 public vrfSubscriptionId;
     bytes32 public vrfKeyHash = bytes32(uint256(0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26));
