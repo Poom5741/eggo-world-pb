@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "bun --hot next dev",
     "build": "next build",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "start": "next start",
     "lint": "eslint .",
     "test": "bun test",
