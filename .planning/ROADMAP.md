@@ -89,17 +89,17 @@ Plans:
 5. Duplicate VRF requests prevented (hatchEgg cannot be called twice)
 6. NFT transfers during VRF pending don't allow double claiming
 7. distributeCommission restricted to authorized callers (not owner)
-   **Plans**: TBD
+   **Plans**: 7 plans (6 completed, 1 deferred)
 
 Plans:
 
-- [ ] 50-01: Add self-referral guards (SEC-07)
-- [ ] 50-02: Improve randomness with VRF for breeding and food (SEC-08)
-- [ ] 50-03: Fix setMintPrice no-op function (SEC-09)
-- [ ] 50-04: Add food count check for breeding eggs (SEC-10)
-- [ ] 50-05: Prevent duplicate VRF requests (SEC-11)
-- [ ] 50-06: Handle NFT transfer during VRF pending (SEC-12)
-- [ ] 50-07: Restrict distributeCommission to authorized callers (SEC-13)
+- [x] 50-01: Add self-referral guards (SEC-07)
+- [ ] 50-02: Improve randomness with VRF for breeding and food (SEC-08) — DEFERRED
+- [x] 50-03: Fix setMintPrice no-op function (SEC-09)
+- [x] 50-04: Add food count check for breeding eggs (SEC-10)
+- [x] 50-05: Prevent duplicate VRF requests (SEC-11)
+- [x] 50-06: Handle NFT transfer during VRF pending (SEC-12)
+- [x] 50-07: Restrict distributeCommission to authorized callers (SEC-13)
 
 #### Phase 51: Medium-Severity Security Fixes
 
