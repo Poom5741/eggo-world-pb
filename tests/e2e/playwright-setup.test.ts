@@ -44,6 +44,15 @@ test('seed E2E test data', async () => {
     }
   }
   for (const egg of sellerEggs) {
+    // Fix egg_id: set it to token_id so card renders correct ID (e.g. "Egg #800001")
+    const eggTokenId = egg.token_id || egg.get?.('token_id') || 0
+    if (eggTokenId && (egg.egg_id === 0 || egg.egg_id === undefined)) {
+      await fetch(`${PB_URL}/api/collections/egg_nfts/records/${egg.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sellerAuth.token}` },
+        body: JSON.stringify({ egg_id: eggTokenId }),
+      })
+    }
     await pbCreate('marketplace_listings', sellerAuth.token, {
       seller: sellerAuth.id, nft_id: egg.id, nft_type: 'Egg',
       name: 'Egg', price: 50, status: 'active', rarity: 'Common',
@@ -66,6 +75,15 @@ test('seed E2E test data', async () => {
     }
   }
   for (const animal of sellerAnimals) {
+    // Fix animal_id: set it to token_id so card renders correct ID (e.g. "Chicken #900001")
+    const animalTokenId = animal.token_id || animal.get?.('token_id') || 0
+    if (animalTokenId && (animal.animal_id === 0 || animal.animal_id === undefined)) {
+      await fetch(`${PB_URL}/api/collections/animal_nfts/records/${animal.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sellerAuth.token}` },
+        body: JSON.stringify({ animal_id: animalTokenId }),
+      })
+    }
     await pbCreate('marketplace_listings', sellerAuth.token, {
       seller: sellerAuth.id, nft_id: animal.id, nft_type: 'Animal',
       name: animal.species || 'Animal', price: 100, status: 'active', rarity: 'Common',
@@ -96,19 +114,29 @@ test('seed E2E test data', async () => {
   }
 
   // 5. Ensure buyer has at least one egg (for Feed+Hatch test)
-  const buyerEggs = await pbList('egg_nfts', buyerAuth.token, `owner='${buyerAuth.id}'`)
+  let buyerEggs = await pbList('egg_nfts', buyerAuth.token, `owner='${buyerAuth.id}'`)
   if (buyerEggs.length === 0) {
-    await pbCreate('egg_nfts', buyerAuth.token, {
-      token_id: 801000, owner: buyerAuth.id, owner_wallet: buyerAuth.wallet,
+    const newEgg = await pbCreate('egg_nfts', buyerAuth.token, {
+      token_id: 801000, egg_id: 801000, owner: buyerAuth.id, owner_wallet: buyerAuth.wallet,
       rarity: 'common', food_count: 2, max_feed: 10, is_hatched: false, is_fed: false,
       generation: 0,
       contract_address: '0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8',
       minted_at: new Date().toISOString(),
       tx_hash: `${txHash}1`,
     })
-    console.log('[setup] Created buyer egg for feed/hatch test')
-  } else {
-    console.log(`[setup] Buyer already has ${buyerEggs.length} egg(s)`)
+    if (newEgg.id) console.log('[setup] Created buyer egg for feed/hatch test')
+    buyerEggs = await pbList('egg_nfts', buyerAuth.token, `owner='${buyerAuth.id}'`)
+  }
+  // Fix egg_id on buyer's eggs too
+  for (const egg of buyerEggs) {
+    const eggTokenId = egg.token_id || 0
+    if (eggTokenId && (egg.egg_id === 0 || egg.egg_id === undefined)) {
+      await fetch(`${PB_URL}/api/collections/egg_nfts/records/${egg.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${buyerAuth.token}` },
+        body: JSON.stringify({ egg_id: eggTokenId }),
+      })
+    }
   }
 
   // 6. Reset USDT balances
