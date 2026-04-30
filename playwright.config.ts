@@ -4,15 +4,16 @@ import { defineConfig, devices } from '@playwright/test'
  * Playwright configuration for E2E testing
  * Phase 41: Framework Setup + Docker Environment
  *
- * Tests run against static export from apps/web/out/
+ * Tests run against dev server (POCKETBASE_URL env var)
  * Services (PocketBase, wallet-api, Anvil) provided by docker-compose.e2e.yml
+ *
+ * Setup project seeds test data before journey tests run.
  */
 export default defineConfig({
   // Test directory - existing E2E test location (D-13)
   testDir: './tests/e2e',
 
   // Match Playwright test files
-  // Note: Phase 19 manual test script excluded (standalone Node.js, not Playwright)
   testMatch: '**/playwright-*.test.{js,ts}',
 
   // Global test settings
@@ -38,37 +39,43 @@ export default defineConfig({
 
   // Shared settings for all tests
   use: {
-    // Base URL for frontend (D-04: static export compatibility)
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:3000',
-
-    // Trace on failure for debugging
     trace: 'on-first-retry',
-
-    // Screenshot on failure
     screenshot: 'only-on-failure',
-
-    // Video on failure (helpful for CI debugging)
     video: 'retain-on-failure',
-
-    // Headless mode (D-15: CI-friendly default)
     headless: true,
   },
 
-  // Configure projects for browsers (D-15)
+  // Global setup: seed test data before any test runs
+  globalSetup: undefined,
+
+  // Configure projects for browsers
   projects: [
+    // Setup project: seeds test data
     {
-      name: 'chromium',
+      name: 'setup',
+      testMatch: '**/playwright-setup.test.ts',
       use: { ...devices['Desktop Chrome'] },
     },
-    // Firefox and Safari can be added later as needed
+    // Main test project: depends on setup
+    {
+      name: 'chromium',
+      testMatch: '**/playwright-*.test.{js,ts}',
+      testIgnore: '**/playwright-setup.test.ts',
+      dependencies: ['setup'],
+      use: { ...devices['Desktop Chrome'] },
+    },
   ],
 
-  // Static file server for frontend preview (D-04)
-  // Serves from apps/web/out/ directory
+  // Next.js dev server for frontend
   webServer: {
-    command: 'npx serve apps/web/out -l 3000',
+    command: 'bun run dev',
     port: 3000,
-    timeout: 10000,
+    timeout: 30000,
     reuseExistingServer: !process.env.CI,
+    cwd: './apps/web',
+    env: {
+      NEXT_PUBLIC_POCKETBASE_URL: 'http://localhost:8091',
+    },
   },
 })

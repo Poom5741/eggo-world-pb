@@ -104,14 +104,19 @@ export async function e2eLogin(
   // Click E2E login button
   await page.click('[data-testid="e2e-login-button"]')
 
-  // Wait for redirect to complete (dashboard or redirectTo - trailing slash for static export)
-  await page.waitForURL(/dashboard|redirectTo/, { timeout: 15000 })
+  // Wait for redirect to complete — the redirect goes to /dashboard/ or redirectTo path
+  // BUT the current URL already contains 'redirectTo' in query params, so we wait
+  // for the actual target path (the path changes after window.location.href is called)
+  const targetPath = redirectTo ? `${redirectTo}/` : '/dashboard/'
+  await page.waitForURL(`**${targetPath}`, { timeout: 15000 })
 
   // Wait for page to load after redirect
-  await page.waitForLoadState('networkidle')
+  await page.waitForLoadState('domcontentloaded')
+
+  // Give the page time to populate data (polling hooks, auth restoration)
+  await page.waitForTimeout(2000)
 
   // Verify authentication by checking for authenticated UI elements
-  // The sidebar navigation only appears when user is authenticated
   const sidebar = page.locator('nav, [data-testid="sidebar"], a[href*="/dashboard"]')
   await expect(sidebar.first()).toBeVisible({ timeout: 5000 })
 
