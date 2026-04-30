@@ -216,6 +216,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         require(props.food_count >= MAX_FOOD_COUNT, "Not enough food consumed");
         require(animalNFTContract != address(0), "AnimalNFT contract not set");
         require(s_subscriptionId != 0, "VRF subscription not set");
+        require(tokenToRequestId[tokenId] == 0, "Hatch already requested");
         
         // Request VRF randomness
         requestId = s_vrfCoordinator.requestRandomWords(VRFV2PlusClient.RandomWordsRequest({
@@ -323,6 +324,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         EggProperties storage props = _eggProperties[tokenId];
         require(!props.is_hatched, "Egg already hatched");
         require(props.is_breeding_egg, "Not a breeding egg");
+        require(props.food_count >= MAX_FOOD_COUNT, "Not enough food consumed");
         require(animalNFTContract != address(0), "AnimalNFT contract not set");
         
         // Breeding eggs use the pre-determined rarity seed
@@ -526,6 +528,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         address from = _ownerOf(tokenId);
         
         if (from != address(0)) {
+            require(tokenToRequestId[tokenId] == 0, "Cannot transfer during VRF pending");
             _eggProperties[tokenId].owner = to;
             
             // Reset referral chain upon transfer, but ONLY for breeding eggs
