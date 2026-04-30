@@ -25,34 +25,35 @@ test.describe('Feed + Hatch Journey', () => {
     // Login as test_buyer
     await e2eLogin(page, 'test_buyer', '/eggs')
 
-    // Wait for page to load
-    await page.waitForLoadState('networkidle')
+    // Wait for egg cards to render (data loads async after auth restore)
+    const eggCard = page.locator('[data-egg-id], .bg-surface-container-lowest.p-6.rounded-xl.clay-card').first()
+    await expect(eggCard).toBeVisible({ timeout: 15000 })
 
-    // Verify user has at least one egg in inventory
-    const eggCards = page.locator('.egg-card, [data-egg-id], .bg-surface-container-low')
-    const count = await eggCards.count()
-    expect(count).toBeGreaterThan(0)
+    // Get egg tokenId from the rendered page (card already visible from the wait above)
+    // Use the egg card's data-egg-id attribute or token text
+    let cardText = await eggCard.textContent()
+    let idMatch = cardText?.match(/#\s*(\d+)/) || cardText?.match(/Egg\s*#?(\d+)/i)
+    if (idMatch) {
+      eggTokenId = parseInt(idMatch[1], 10)
+    }
 
-    // Get egg tokenId from PocketBase
-    const { pocketbaseUrl } = getE2EContext()
-    
-    // Get authenticated user ID from page
-    // For test_buyer, we use the wallet address to find the user
-    const response = await fetch(
-      `${pocketbaseUrl}/api/collections/users/records?filter=(wallet='${TEST_USERS.test_buyer.walletAddress}')`
-    )
-    
-    if (response.ok) {
-      const data = await response.json()
-      if (data.items && data.items.length > 0) {
-        const userId = data.items[0].id
-        eggTokenId = await getEggTokenIdForUser(userId) || 0
+    // Fallback: try extracting from PocketBase
+    if (!eggTokenId) {
+      const { pocketbaseUrl } = getE2EContext()
+      const response = await fetch(
+        `${pocketbaseUrl}/api/collections/egg_nfts/records?filter=(owner_wallet='${TEST_USERS.test_buyer.walletAddress}')&perPage=1`
+      )
+      if (response.ok) {
+        const data = await response.json()
+        if (data.items?.length > 0) {
+          eggTokenId = data.items[0].token_id || data.items[0].egg_id || 0
+        }
       }
     }
 
     // If we couldn't get from PocketBase, extract from page
     if (!eggTokenId) {
-      const firstEggCard = eggCards.first()
+      const firstEggCard = eggCard
       const eggIdText = await firstEggCard.getAttribute('data-egg-id').catch(() => '') || ''
       if (eggIdText) {
         eggTokenId = parseInt(eggIdText, 10)

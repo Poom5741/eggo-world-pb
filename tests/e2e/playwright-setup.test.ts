@@ -73,9 +73,9 @@ test('seed E2E test data', async () => {
   }
   console.log(`[setup] Created ${sellerAnimals.length} animal listings`)
 
-  // Extra: create duplicate listings so the buy test doesn't exhaust supply
+  // Extra: create enough egg listings so tests don't exhaust supply (need 3+ eggs for serial tests)
   let stableEggs = await pbList('egg_nfts', sellerAuth.token, `owner='${sellerAuth.id}'`)
-  if (stableEggs.length < 2) {
+  if (stableEggs.length < 5) {
     // Transfer another egg from buyer
     const buyerEggs2 = await pbList('egg_nfts', buyerAuth.token, `owner='${buyerAuth.id}'`)
     if (buyerEggs2.length > 0) {

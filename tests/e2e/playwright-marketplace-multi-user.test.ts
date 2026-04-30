@@ -37,37 +37,36 @@ test.describe('Marketplace Multi-User Journey', () => {
     // Login as seller
     await e2eLogin(page, 'test_seller', '/animals')
 
-    // Wait for page to load
-    await page.waitForLoadState('networkidle')
+    // Wait for animal cards to render (data loads async after auth restore)
+    const animalCard = page.locator('[data-animal-id], .bg-surface-container-lowest.p-6.rounded-xl.clay-card').first()
+    await expect(animalCard).toBeVisible({ timeout: 15000 })
 
-    // Verify seller has at least one Animal NFT (using card pattern from buy-egg-journey)
-    const animalCards = page.locator('.bg-surface-container-lowest.p-6.rounded-xl.clay-card')
-    const count = await animalCards.count()
+    // Capture seller's on-chain Animal NFT balance before listing
+    sellerBalanceBefore = await getBalanceOf(
+      ANIMAL_NFT_ADDRESS,
+      TEST_USERS.test_seller.walletAddress
+    )
 
-    // If seller has animals, capture the first one's token ID
-    if (count > 0) {
-      // Capture seller's on-chain Animal NFT balance before listing
-      sellerBalanceBefore = await getBalanceOf(
-        ANIMAL_NFT_ADDRESS,
-        TEST_USERS.test_seller.walletAddress
-      )
-
-      // Get the first animal card and extract token ID from text
-      const firstCard = animalCards.first()
-      const cardText = await firstCard.textContent()
-      
-      // Extract animal_id from text like "Chicken #123"
-      const idMatch = cardText?.match(/#\s*(\d+)/)
-      if (idMatch) {
-        tokenId = parseInt(idMatch[1], 10)
-      }
-      
-      expect(tokenId).toBeGreaterThan(0)
+    // Get the first animal card and extract token ID
+    // Try data-animal-id attribute first, then fall back to PocketBase
+    const dataId = await animalCard.getAttribute('data-animal-id').catch(() => null)
+    if (dataId) {
+      tokenId = parseInt(dataId, 10)
     } else {
-      // Skip if seller has no animals - test requires pre-configured seller inventory
-      // This is documented in plan assumptions
-      test.skip()
+      // Fallback: query PocketBase for animal token_id
+      const { pocketbaseUrl } = getE2EContext()
+      const pbRes = await fetch(
+        `${pocketbaseUrl}/api/collections/animal_nfts/records?filter=(owner_wallet='${TEST_USERS.test_seller.walletAddress}')&perPage=1&sort=-created`
+      )
+      if (pbRes.ok) {
+        const pbData = await pbRes.json()
+        if (pbData.items?.length > 0) {
+          tokenId = pbData.items[0].token_id || 0
+        }
+      }
     }
+    
+    expect(tokenId).toBeGreaterThan(0)
   })
 
   /**
