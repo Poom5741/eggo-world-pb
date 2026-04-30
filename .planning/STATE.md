@@ -2,42 +2,23 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-29)
+See: .planning/PROJECT.md
 
-**Core value:** Gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals with USDT and 4-level MLM referral commissions
-**Current focus:** v0.5.0 Phase 50 — High-Severity Security Fixes (completed)
+**Core value:** Gamified NFT marketplace on BSC
+**Current focus:** v0.5.0 Phase 51 — Medium-Severity Security Fixes (completed)
 
 ## Current Position
 
-Phase: 50 of 53 (High-Severity Security Fixes)
-Plan: All 7 plans complete
-Status: Phase 50 complete — all high-severity fixes committed
-Last activity: 2026-04-30 — Phase 50 complete, 15/15 Wave 1 tests pass, Wave 2 contract changes verified
-
-Progress: [████████░░] 75%
+Phase: 51 of 53
+Status: Phase 51 complete
+Progress: [██████████] 87%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 16 (Phase 42-49 + Phase 50 7 plans)
-- Average duration: 10.4 min
-- Total execution time: 89 min
-
-**By Phase:**
-
-| Phase | Plans | Total  | Avg/Plan |
-| ----- | ----- | ------ | -------- |
-| 41    | 2/2   | —      | —        |
-| 42    | 2/2   | 35 min | 17.5 min |
-| 43    | 1/1   | 8 min  | 8 min    |
-| 44    | 1/1   | 5 min  | 5 min    |
-| 45    | 1/1   | 15 min | 15 min   |
-| 46    | 1/1   | 5 min  | 5 min    |
-| 47    | 1/1   | 10 min | 10 min   |
-| 48    | 1/1   | 8 min  | 8 min    |
-| 49    | 4/4   | —      | —        |
-| 50    | 7/7   | 30 min | 4.3 min  |
+- Total plans completed: 23 (Phase 42-51)
+- Phase 51: 7 medium-severity fixes in 1 commit
 
 **Recent Trend:**
 
