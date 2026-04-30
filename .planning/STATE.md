@@ -5,22 +5,22 @@
 See: .planning/PROJECT.md (updated 2026-04-29)
 
 **Core value:** Gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals with USDT and 4-level MLM referral commissions
-**Current focus:** v0.5.0 Phase 49 — Critical Security Fixes
+**Current focus:** v0.5.0 Phase 50 — High-Severity Security Fixes (completed)
 
 ## Current Position
 
 Phase: 50 of 53 (High-Severity Security Fixes)
-Plan: Not started
-Status: Phase 50 context gathered — 17 decisions captured across 4 gray areas
-Last activity: 2026-04-29 — Phase 50 context complete, ready for planning
+Plan: All 7 plans complete
+Status: Phase 50 complete — all high-severity fixes committed
+Last activity: 2026-04-30 — Phase 50 complete, 15/15 Wave 1 tests pass, Wave 2 contract changes verified
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 9 (Phase 42 + Phase 43 + Phase 44 + Phase 45 + Phase 46 + Phase 47 + Phase 48 + Phase 49-01)
+- Total plans completed: 16 (Phase 42-49 + Phase 50 7 plans)
 - Average duration: 10.4 min
 - Total execution time: 89 min
 
@@ -36,12 +36,13 @@ Progress: [░░░░░░░░░░] 0%
 | 46    | 1/1   | 5 min  | 5 min    |
 | 47    | 1/1   | 10 min | 10 min   |
 | 48    | 1/1   | 8 min  | 8 min    |
-| 49    | 1/6   | 3 min  | 3 min    |
+| 49    | 4/4   | —      | —        |
+| 50    | 7/7   | 30 min | 4.3 min  |
 
 **Recent Trend:**
 
-- Last 5 plans: 45-01 (15min), 46-01 (5min), 47-01 (10min), 48-01 (8min), 49-01 (3min)
-- Trend: Fast execution, autonomous plans
+- Last 5 plans: 50-01, 50-03, 50-07, 50-04, 50-05, 50-06 (all Phase 50)
+- Trend: Phase 50 complete — 7 security fixes, 15/15 tests passing
 
 _Updated after each plan completion_
 
@@ -52,10 +53,13 @@ _Updated after each plan completion_
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- Phase 48: Referral Commission Journey Test (1 plan)
-  - D-48-01: Double verification pattern for commissions (on-chain + PocketBase)
-  - D-48-02: COMMISSION_DISTRIBUTION_ADDRESS from contract-addresses.json ChainId 7117
-  - D-48-03: Skip-on-env pattern for journey tests without full E2E setup
+- Phase 50: High-Severity Security Fixes (7 plans)
+  - D-50-01: Self-referral guard message = "Self-referral" (single consistent error)
+  - D-50-02: CommissionDistribution.remove owner from authorize → only EggNFT + FoodNFT can distribute
+
+### Blockers/Concerns
+
+None. Phase 51 (Medium-Severity) is next — requires discuss phase first.
 
 ### Pending Todos
 
@@ -78,6 +82,7 @@ Items acknowledged and carried forward from v0.4.0 milestone close:
 
 ## Session Continuity
 
-Last session: 2026-04-29
-Stopped at: Plan 49-01 complete, XOR operator fix committed
+Last session: 2026-04-30
+Stopped at Phase: 50 complete — all 7 plans committed, 15/15 tests pass
+Next: Phase 51 (Medium-Severity Security Fixes) need discuss phase
 Resume file: None
