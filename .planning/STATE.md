@@ -5,13 +5,13 @@
 See: .planning/PROJECT.md
 
 **Core value:** Gamified NFT marketplace on BSC
-**Current focus:** v0.5.0 Phase 51 — Medium-Severity Security Fixes (completed)
+**Current focus:** v0.5.0 Phase 53 — Production Readiness (planned, code ready)
 
 ## Current Position
 
-Phase: 51 of 53
-Status: Phase 51 complete
-Progress: [██████████] 87%
+Phase: 53 of 53
+Status: Phase 52 code committed, Phase 53 planned — infra blocked
+Progress: [███████████] 92%
 
 ## Performance Metrics
 
@@ -40,7 +40,9 @@ Recent decisions affecting current work:
 
 ### Blockers/Concerns
 
-None. Phase 51 (Medium-Severity) is next — requires discuss phase first.
+1. **Local PocketBase crash** — JSVM infinite recursion on startup after migration cleanup. Root cause unknown.
+2. **E2E test users blocked** — No admin access to e2e PB; PB requires LINE OAuth flow for user creation.
+3. **Contract build** — `forge build` fails on import path issues with test files using `../../src/` relative paths.
 
 ### Pending Todos
 
@@ -64,6 +66,20 @@ Items acknowledged and carried forward from v0.4.0 milestone close:
 ## Session Continuity
 
 Last session: 2026-04-30
-Stopped at Phase: 50 complete — all 7 plans committed, 15/15 tests pass
-Next: Phase 51 (Medium-Severity Security Fixes) need discuss phase
-Resume file: None
+Stopped at Phase: 53 planned, milestone v0.5.0 ~90% complete
+
+### What Got Done
+
+- Phase 52 code committed: timeout fix, sync hooks, retry utilities, docker-compose fixes
+- `22-listen-nft-events.pb.js` fixed (removed setInterval)
+- Dockerfile restored as PB build source
+- Test user creation script created
+- Phase 53 plans written
+
+### Next Session Priorities
+
+1. Fix local PocketBase (JSVM crash, migration cleanup)
+2. Create E2E test users in production PB
+3. Verify contract tests pass (import path issues)
+4. Complete Phase 53 verification
+5. Close v0.5.0 milestone
