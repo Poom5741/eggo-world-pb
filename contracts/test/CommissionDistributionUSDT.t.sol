@@ -14,8 +14,8 @@ contract CommissionDistributionUSDTTest is Test {
     address public referrerG2;
     address public coinStor;
     
-    uint256 public constant TEST_AMOUNT = 100 * 10^18; // 100 USDT
-    uint256 public constant INITIAL_BALANCE = 10000 * 10^18;
+    uint256 public constant TEST_AMOUNT = 100 * 10**18; // 100 USDT
+    uint256 public constant INITIAL_BALANCE = 10000 * 10**18;
     
     // TDG Test Specification:
     // 1. USDT balance tracking works correctly

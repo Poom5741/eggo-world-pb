@@ -19,6 +19,9 @@ routerAdd("POST", "/api/v2/sync-blockchain", (e) => {
   console.log("=== Starting Blockchain Sync ===");
   
   try {
+    const requestInfo = e.requestInfo();
+    if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+    
     // Determine RPC URL based on environment
     const rpcUrl = $os.getenv("BSC_RPC_URL") || RPC_CONFIG.local;
     
@@ -123,7 +126,7 @@ routerAdd("POST", "/api/v2/sync-blockchain", (e) => {
       code: "SYNC_ERROR"
     });
   }
-}, $apis.requireAuth());
+});
 
 // GET endpoint for backwards compatibility
 routerAdd("GET", "/api/v2/sync-blockchain", (e) => {
@@ -133,6 +136,6 @@ routerAdd("GET", "/api/v2/sync-blockchain", (e) => {
     error: "GET method not allowed. Use POST to trigger blockchain sync.",
     code: "METHOD_NOT_ALLOWED"
   });
-}, $apis.requireAuth());
+});
 
 console.log("Blockchain sync service endpoints registered");

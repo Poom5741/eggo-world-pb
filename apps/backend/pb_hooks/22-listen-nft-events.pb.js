@@ -218,7 +218,8 @@ routerAdd("GET", "/api/v2/nfts/listen", async (e) => {
 // Manual trigger endpoint for processing transfers
 routerAdd("POST", "/api/v2/nfts/process-transfers", async (e) => {
     try {
-        e.requireAuth(); // Require authentication
+        const requestInfo = e.requestInfo();
+        if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
         
         const body = e.parseBody();
         const { contract_types } = body;
@@ -245,23 +246,9 @@ routerAdd("POST", "/api/v2/nfts/process-transfers", async (e) => {
     }
 });
 
-// Run NFT listening in the background every 60 seconds
-(function() {
-    const intervalId = setInterval(async () => {
-        try {
-            const result = await processTransferEvents("EggNFT");
-            console.log("Background EggNFT sync:", result);
-            
-            const animalResult = await processTransferEvents("AnimalNFT");
-            console.log("Background AnimalNFT sync:", animalResult);
-        } catch (error) {
-            console.error("Background NFT sync error:", error);
-        }
-    }, 60000); // 60 seconds
-    
-    // Keep reference to interval to allow cleanup if needed
-    globalThis.nftEventListenerInterval = intervalId;
-    console.log("NFT event listener started: polls every 60s for Transfer events");
-})();
+// Note: Background polling not available in PocketBase JSVM (no setInterval).
+// Sync is triggered externally via:
+// 1. External cron job calling GET /api/v2/nfts/listen
+// 2. Wallet-api / sync script calling POST /api/v2/nfts/process-transfers
 
 console.log("NFT event listener endpoints registered: GET /api/v2/nfts/listen, POST /api/v2/nfts/process-transfers");

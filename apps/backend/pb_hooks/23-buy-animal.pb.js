@@ -94,7 +94,11 @@ routerAdd("POST", "/api/v2/buy-animal", (e) => {
     }
     const ROYALTY_TOTAL_PERCENT = 10 // RESALE-02
   try {
-    const buyer = $apis.requireAuth(e)
+    const requestInfo = e.requestInfo()
+    const buyerId = requestInfo.auth?.id
+    if (!buyerId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+    const buyer = $app.findRecordById("users", buyerId)
+    if (!buyer) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
     const body = e.parseBody()
     const { listing_id } = body

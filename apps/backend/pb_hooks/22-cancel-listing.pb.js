@@ -5,7 +5,11 @@
 
 routerAdd("POST", "/api/v2/cancel-listing", (e) => {
     try {
-        const seller = $apis.requireAuth(e);
+        const requestInfo = e.requestInfo();
+        const sellerId = requestInfo.auth?.id;
+        if (!sellerId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        const seller = $app.findRecordById("users", sellerId);
+        if (!seller) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         const body = e.parseBody();
         const { listing_id } = body;

@@ -4,7 +4,8 @@
 console.log("Setting up transfer USDT endpoint...");
 
 routerAdd("POST", "/api/v2/wallet/transfer", (e) => {
-    const { users } = e.requireAuth();
+    const requestInfo = e.requestInfo();
+    if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
     const body = e.parseBody();
     const { from_address, to_address, amount } = body;
     

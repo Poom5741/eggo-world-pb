@@ -18,8 +18,8 @@ contract AnvilIntegrationTest is Test {
     address public referrerG2;
     address public coinStorReserve;
     
-    uint256 public constant MINT_PRICE = 25 * 10^18;
-    uint256 public constant INITIAL_BALANCE = 1000 * 10^18;
+    uint256 public constant MINT_PRICE = 25 * 10**18;
+    uint256 public constant INITIAL_BALANCE = 1000 * 10**18;
     
     function setUp() public {
         deployer = address(this);

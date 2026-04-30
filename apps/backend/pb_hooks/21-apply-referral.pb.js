@@ -6,8 +6,11 @@ console.log("Setting up apply referral endpoint...");
 // Endpoint to apply a referral code to the authenticated user
 routerAdd('POST', '/api/referrals/apply', function(e) {
     // Require authentication
-    var auth = e.requireAuth();
-    var users = auth.users;
+    var requestInfo = e.requestInfo();
+    var userId = requestInfo.auth ? requestInfo.auth.id : null;
+    if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+    var users = $app.findRecordById("users", userId);
+    if (!users) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
     
     // Parse body
     var body = e.parseBody();

@@ -7,6 +7,9 @@ console.log("=== COLLECTIONS MIGRATION HOOK LOADED ===");
 routerAdd('POST', '/api/admin/migrate-missing-collections', (e) => {
     console.log("=== STARTING COLLECTIONS MIGRATION ===");
     
+    const requestInfo = e.requestInfo();
+    if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+    
     const collectionsDir = '/pb_collections/';
     const fs = require('fs');
     
@@ -62,6 +65,6 @@ routerAdd('POST', '/api/admin/migrate-missing-collections', (e) => {
             results
         });
     }
-}, $apis.requireAuth());
+});
 
 console.log("Collections migration hook registered");

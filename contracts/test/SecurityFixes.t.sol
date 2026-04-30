@@ -51,21 +51,21 @@ contract SecurityFixesTest is Test {
 
     function testEggNFTMintPrice() public view {
         // Expected: 25e18 (25 USDT)
-        // Buggy value: 25 * 10^18 = 25 * 24 = 600 wei
+        // Buggy value: 25 * 10**18 = 25 * 24 = 600 wei
         uint256 expectedMintPrice = 25 * 10**18;
         assertEq(eggNFT.mintPrice(), expectedMintPrice, "EggNFT MINT_PRICE should be 25e18");
     }
 
     function testEggNFTBreedingFee() public view {
         // Expected: 5e18 (5 USDT)
-        // Buggy value: 5 * 10^18 = 5 * 24 = 120 wei
+        // Buggy value: 5 * 10**18 = 5 * 24 = 120 wei
         uint256 expectedBreedingFee = 5 * 10**18;
         assertEq(eggNFT.BREEDING_FEE(), expectedBreedingFee, "EggNFT BREEDING_FEE should be 5e18");
     }
 
     function testFoodNFTMintPrice() public view {
         // Expected: 5e17 (0.50 USDT)
-        // Buggy value: 0.50 * 10^18 ≈ 12 wei
+        // Buggy value: 0.50 * 10**18 ≈ 12 wei
         uint256 expectedMintPrice = 5 * 10**17;
         assertEq(foodNFT.MINT_PRICE(), expectedMintPrice, "FoodNFT MINT_PRICE should be 5e17");
     }

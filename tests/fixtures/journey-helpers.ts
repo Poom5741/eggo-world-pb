@@ -19,6 +19,7 @@ const MOCK_BLOCKCHAIN = process.env.MOCK_BLOCKCHAIN === 'true'
  * Updated to local test contract deployment
  */
 export const EGG_NFT_ADDRESS = '0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8'
+// Note: Tests that check EGG_NFT_ADDRESS must use this value ^
 
 /**
  * ANIMAL NFT contract address for ChainId 7117 (Anvil testnet)

@@ -73,7 +73,8 @@ async function checkPendingConfirmations(userId) {
 }
 
 routerAdd("POST", "/api/v2/deposit/poll", async (e) => {
-    e.requireAuth();
+    const requestInfo = e.requestInfo();
+    if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
     const body = e.parseBody();
     const { user_address } = body;
     
@@ -248,10 +249,12 @@ routerAdd("POST", "/api/v2/deposit/poll", async (e) => {
 
 // Confirmation checker endpoint
 routerAdd("POST", "/api/v2/deposit/check-confirmations", async (e) => {
-    e.requireAuth();
+    const requestInfo = e.requestInfo();
+    const userId = requestInfo.auth?.id;
+    if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
     
     try {
-        const newlyConfirmed = await checkPendingConfirmations(e.auth.id);
+        const newlyConfirmed = await checkPendingConfirmations(userId);
         
         e.json(200, {
             success: true,

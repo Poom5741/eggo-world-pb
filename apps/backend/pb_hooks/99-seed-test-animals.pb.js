@@ -8,8 +8,13 @@ routerAdd("POST", "/api/v2/seed-test-animals", (e) => {
         
         // Try to get from auth first
         try {
-            const user = $apis.requireAuth(e);
-            userId = user.id || (typeof user.get === 'function' ? user.get('id') : null);
+            const requestInfo = e.requestInfo();
+            userId = requestInfo.auth ? requestInfo.auth.id : null;
+            if (!userId) {
+                // If no auth, check request body
+                const body = requestInfo.body || {};
+                userId = body.user_id;
+            }
         } catch (authErr) {
             // If no auth, check request body
             const requestInfo = e.requestInfo();

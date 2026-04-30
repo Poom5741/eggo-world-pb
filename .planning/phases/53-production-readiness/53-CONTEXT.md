@@ -37,8 +37,13 @@ Implement reliable blockchain synchronization and achieve >95% test pass rate. F
 
 ### PROD-04: >95% test pass rate
 
-**Status:** ❌ Not started
-**Remaining:** Run test suite, fix failing tests
+**Status:** ❌ Verified — 93% (below 95% threshold)
+**Blockers:**
+
+- 12 tests fail due to PocketBase AUTH_REQUIRED (mock gap)
+- `use-marketplace-sync.test.ts` hangs (async loop)
+- 9 tests fail due to text split across DOM elements
+  **Remaining:** Fix test mocks, update UI text matchers, fix hanging test
 
 ## Key Decisions
 

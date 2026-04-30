@@ -20,8 +20,8 @@ contract CommissionDistributionIntegrationTest is Test {
     address public referrerG4; // Level 4: 10%
     address public coinStor;   // 4%
     
-    uint256 public constant MINT_PRICE = 25 * 10^18;
-    uint256 public constant INITIAL_BALANCE = 10000 * 10^18;
+    uint256 public constant MINT_PRICE = 25 * 10**18;
+    uint256 public constant INITIAL_BALANCE = 10000 * 10**18;
     
     event CommissionDistributed(
         uint256 indexed egg_id,

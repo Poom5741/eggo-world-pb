@@ -116,11 +116,7 @@ describe('CreateListingDialog', () => {
   })
 
   it('shows loading state during listing creation', async () => {
-    let resolvePromise: (value: any) => void
-    const deferredPromise = new Promise((resolve) => {
-      resolvePromise = resolve
-    })
-
+    const deferredPromise = new Promise(() => {})
     global.fetch = vi.fn().mockImplementation(() => deferredPromise)
 
     render(<CreateListingDialog {...mockProps} />)

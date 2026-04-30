@@ -70,6 +70,9 @@ export default function Eggs() {
   // State for mint modal - สถานะสำหรับ mint modal
   const [isMintModalOpen, setIsMintModalOpen] = useState(false)
   
+  // State for user feedback messages - ข้อความแจ้งเตือนชั่วคราว
+  const [message, setMessage] = useState<{ type: string; text: string } | null>(null)
+  
   // Get authenticated user (after hydration) using getUser() for v0.25.2 compat
   const [user, setUser] = useState<any>(null)
   const [authReady, setAuthReady] = useState(false)
@@ -152,10 +155,14 @@ export default function Eggs() {
     }
   }
   
-  // Handle play action
+  // Handle play action - interaction with the egg (cosmetic/animation only)
+  // Note: Full play mechanic is P2 and awaiting game design spec
   const handlePlayEgg = (eggId: number) => {
-    // TODO: Implement play interaction
-    console.log('Play with egg:', eggId)
+    const egg = eggs.find(e => e.egg_id === eggId)
+    if (egg) {
+      setMessage({ type: 'info', text: `🎮 Egg #${egg.egg_id} is happy! Play feature coming soon — stay tuned!` })
+      setTimeout(() => setMessage(null), 4000)
+    }
   }
   
   // Handle hatch button click - จัดการการคลิกปุ่มฟักไข่
@@ -296,6 +303,15 @@ export default function Eggs() {
             </div>
           </div>
         </div>
+        
+        {/* User feedback message - ข้อความแจ้งเตือน */}
+        {message && (
+          <div className="mb-6 p-4 rounded-xl clay-card bg-primary-container text-on-primary-container flex items-center gap-3 animate-in slide-in-from-top-2 fade-in duration-300">
+            <span className="material-symbols-outlined">{message.type === 'info' ? 'info' : 'warning'}</span>
+            <span className="font-medium">{message.text}</span>
+            <button onClick={() => setMessage(null)} className="ml-auto material-symbols-outlined hover:opacity-70">close</button>
+          </div>
+        )}
         
         {/* Featured Egg Hero - ไข่ที่ใกล้จะฟักที่สุด */}
         {eggs.length > 0 && (

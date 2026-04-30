@@ -40,7 +40,11 @@ var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 routerAdd("POST", "/api/v2/upgrade-egg-rarity", (e) => {
     try {
-        const user = $apis.requireAuth(e);
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        const user = $app.findRecordById("users", userId);
+        if (!user) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         const body = e.parseBody();
         const { egg_token_id, food_ids } = body;

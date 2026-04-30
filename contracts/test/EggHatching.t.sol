@@ -23,7 +23,7 @@ contract EggHatchingTest is Test {
     address public user2 = address(4);
     address public referrer = address(5);
     
-    uint256 constant MINT_PRICE = 25 * 10^18;
+    uint256 constant MINT_PRICE = 25 * 10**18;
     uint256 constant MAX_FOOD_COUNT = 10;
     uint256 constant INITIAL_FOOD_COUNT = 2;
     uint256 public vrfSubscriptionId;
@@ -84,7 +84,7 @@ contract EggHatchingTest is Test {
     
     function _feedEgg(uint256 eggTokenId, uint256 quantity) internal {
         vm.startPrank(user1);
-        uint256 foodCost = quantity * 50 * 10^16;
+        uint256 foodCost = quantity * 50 * 10**16;
         usdtToken.mint(user1, foodCost);
         usdtToken.approve(address(foodNFT), foodCost);
         uint256[] memory foodIds = foodNFT.mintFood(quantity, referrer);
@@ -95,7 +95,7 @@ contract EggHatchingTest is Test {
     // ==================== BASIC HATCHING TESTS (VRF TWO-PHASE) ====================
     
     function test_HatchEgg_VRFRequest_ReturnsRequestId() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -115,7 +115,7 @@ contract EggHatchingTest is Test {
     }
     
     function test_ClaimHatch_Success_AfterVRFFulfillment() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -138,7 +138,7 @@ contract EggHatchingTest is Test {
     }
     
     function test_HatchEgg_AnimalNFTHasCorrectProperties() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -175,7 +175,7 @@ contract EggHatchingTest is Test {
     }
     
     function test_HatchEgg_EggMarkedAsHatched() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -199,7 +199,7 @@ contract EggHatchingTest is Test {
     // ==================== VERIFICATION TESTS ====================
     
     function test_HatchEgg_RevertWhen_InsufficientFood() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (5 * 0.50 * 10^18));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (5 * 0.50 * 10**18));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 5);
@@ -214,7 +214,7 @@ contract EggHatchingTest is Test {
     }
     
     function test_ClaimHatch_RevertWhen_VRFNotFulfilled() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -229,7 +229,7 @@ contract EggHatchingTest is Test {
     }
     
     function test_ClaimHatch_RevertWhen_AlreadyHatched() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -245,7 +245,7 @@ contract EggHatchingTest is Test {
     }
     
     function test_HatchEgg_RevertWhen_NotOwner() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -259,7 +259,7 @@ contract EggHatchingTest is Test {
     // ==================== FOOD TYPE INFLUENCE TESTS ====================
     
     function test_HatchEgg_SpeciesVariesWithFoodTypes() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (16 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (16 * 50 * 10**16));
         
         uint256 eggTokenId1 = _mintEgg(user1, referrer);
         uint256 eggTokenId2 = _mintEgg(user1, referrer);
@@ -286,7 +286,7 @@ contract EggHatchingTest is Test {
     // ==================== EDGE CASES ====================
     
     function test_HatchEgg_Exactly10FoodItems() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -304,7 +304,7 @@ contract EggHatchingTest is Test {
     }
     
     function test_HatchEgg_MoreThan10FoodItems() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (12 * 0.50 * 10^18));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (12 * 0.50 * 10**18));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 12);
@@ -322,7 +322,7 @@ contract EggHatchingTest is Test {
     }
     
     function test_HatchEgg_OwnershipTransferBeforeHatching() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -344,7 +344,7 @@ contract EggHatchingTest is Test {
     // ==================== INTEGRATION TESTS ====================
     
     function test_HatchEgg_FullFlow_MintFeedHatch() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         
@@ -378,7 +378,7 @@ contract EggHatchingTest is Test {
         uint256 legendaryCount = 0;
         
         uint256 numEggs = 100;
-        uint256 totalCost = MINT_PRICE * numEggs + (8 * 50 * 10^16) * numEggs;
+        uint256 totalCost = MINT_PRICE * numEggs + (8 * 50 * 10**16) * numEggs;
         _mintAndApproveUSDT(user1, totalCost);
         
         uint256[] memory eggTokenIds = new uint256[](numEggs);

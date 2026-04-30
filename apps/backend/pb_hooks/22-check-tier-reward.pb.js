@@ -33,9 +33,12 @@ var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 routerAdd("POST", "/api/v2/check-tier-reward", (e) => {
     try {
-        const user = $apis.requireAuth(e);
-        
         const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        const user = $app.findRecordById("users", userId);
+        if (!user) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+        
         const body = requestInfo.body || {};
         const { tier } = body;
         
@@ -255,7 +258,11 @@ routerAdd("POST", "/api/v2/check-tier-reward", (e) => {
  */
 routerAdd("GET", "/api/v2/check-tier-reward", (e) => {
     try {
-        const user = $apis.requireAuth(e);
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        const user = $app.findRecordById("users", userId);
+        if (!user) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         // Try to get fields from user object directly (auth record)
         let lifetimeFoodItems = 0;

@@ -23,7 +23,7 @@ contract EggFeedingTest is Test {
     
     uint256 public constant EGG_MINT_PRICE = 25 * 10**18;
     uint256 public constant FOOD_MINT_PRICE = 5 * 10**17;
-    uint256 public constant INITIAL_BALANCE = 10000 * 10^18;
+    uint256 public constant INITIAL_BALANCE = 10000 * 10**18;
     
     event EggFed(uint256 indexed egg_id, uint256[] food_ids, address indexed feeder);
     

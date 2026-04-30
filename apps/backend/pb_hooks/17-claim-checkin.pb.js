@@ -30,20 +30,24 @@ var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 routerAdd("POST", "/api/v2/check-in", async (e) => {
     try {
-        const user = $apis.requireAuth(e);
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        const user = $app.findRecordById("users", userId);
+        if (!user) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         // Get or create user_stats record
         let stats
         try {
-            stats = $app.dao().findFirstRecordByData(
+            stats = $app.findFirstRecordByData(
                 "user_stats",
                 "user",
                 user.id
             );
         } catch (err) {
             // Create new user_stats if doesn't exist
-            const statsCollection = $app.dao().findCollectionByNameOrType("user_stats");
-            stats = new Record(statsCollection);
+            const statsCollection = $app.findCollectionByNameOrId("user_stats");
+            stats = $app.newRecord(statsCollection);
             stats.set("user", user.id);
             stats.set("check_in_streak", 0);
             stats.set("last_check_in", null);
@@ -118,13 +122,13 @@ routerAdd("POST", "/api/v2/check-in", async (e) => {
                     });
                     
                     // Create food_nfts record
-                    const foodCollection = $app.dao().findCollectionByNameOrType("food_nfts");
-                    const foodRecord = new Record(foodCollection);
+                    const foodCollection = $app.findCollectionByNameOrId("food_nfts");
+                    const foodRecord = $app.newRecord(foodCollection);
                     foodRecord.set("owner", user.id);
                     foodRecord.set("token_id", mintData.data?.token_id || 0);
                     foodRecord.set("tx_hash", mintData.data?.tx_hash || "");
                     foodRecord.set("food_type", "grain");
-                    $app.dao().saveRecord(foodRecord);
+                    $app.save(foodRecord);
                 } else {
                     mintResults.push({
                         index: i + 1,
@@ -147,7 +151,7 @@ routerAdd("POST", "/api/v2/check-in", async (e) => {
         stats.set("check_in_streak", newStreak);
         stats.set("last_check_in", now);
         stats.set("check_in_count", (stats.get("check_in_count") || 0) + 1);
-        $app.dao().saveRecord(stats);
+        $app.save(stats);
         
         // Calculate success count
         const successCount = mintResults.filter(r => r.success).length;

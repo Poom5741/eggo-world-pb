@@ -1,5 +1,6 @@
 routerAdd("POST", "/api/v2/hot-wallet/balance", (e) => {
-    const { users } = e.requireAuth();
+    const requestInfo = e.requestInfo();
+    if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
     const body = e.parseBody();
     const { user_address } = body;
     
