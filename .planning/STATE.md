@@ -53,7 +53,17 @@ Recent decisions affecting current work:
 
 ### Blockers/Concerns
 
-None yet.
+**1. E2E Test Data Lifecycle** (updated Apr 30)
+
+- Market listings consumed on each test run, no auto-regeneration
+- Need seed-on-startup mechanism before E2E test execution
+- Auth persistence fixed, egg/animals pages work when data exists
+
+### Quick Tasks Completed
+
+| #      | Description                                                 | Date       | Commit  | Directory                                                             |
+| ------ | ----------------------------------------------------------- | ---------- | ------- | --------------------------------------------------------------------- |
+| 260430 | Fix wallet-api ABIs, auth persistence, buy flow, hook fixes | 2026-04-30 | 2a469f1 | [260430-fix-e2e-journey-tests](./quick/260430-fix-e2e-journey-tests/) |
 
 ## Deferred Items
 
