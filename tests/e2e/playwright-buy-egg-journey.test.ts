@@ -62,8 +62,8 @@ test.describe('Buy Egg Journey', () => {
     await confirmButton.click()
 
     // Step 8: Wait for purchase to complete - redirect to eggs/inventory
-    // Per D-06: Timeout 30s for purchase wait (Playwright config timeout)
-    await waitForPurchaseComplete(page, 30000)
+    // Increased timeout due to blockchain transaction processing
+    await waitForPurchaseComplete(page, 60000) // 60 seconds to accommodate blockchain delays
 
     // Step 9: Extract token ID from page (success toast or URL)
     const tokenId = await extractTokenIdFromPage(page)

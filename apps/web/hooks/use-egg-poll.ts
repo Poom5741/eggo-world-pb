@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/pocketbase/client'
+import { fetchJsonWithRetry } from '../lib/fetch-retry'
 
 /**
  * Egg NFT data structure
@@ -77,14 +78,19 @@ export function useEggPoll(
       // Get PocketBase client
       const pb = createClient()
       
-      // Fetch from egg_nfts collection with filter and sort
-      // กรองตามเจ้าของและเรียงตาม food_count (มากไปน้อย)
-      const records = await pb.collection('egg_nfts').getList(1, 100, {
-        filter: `owner = "${userId}" && is_hatched = false`,
-        sort: '-food_count', // Sort by food_count descending (eggs closest to hatching first)
-      })
+      // Use retry logic via direct fetch with the retry utility
+      const url = `${pb.baseUrl}/api/collections/egg_nfts/records`
+      const queryString = `filter=owner="${userId}" && is_hatched=false&sort=-food_count&page=1&perPage=100`
+      
+      const response = await fetchJsonWithRetry(url + (queryString ? '?' + queryString : ''), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': pb.authStore.token || ''
+        },
+      });
 
-      setEggs(records.items as EggData[])
+      setEggs(response.items as EggData[])
       setError(null)
       setErrorCount(0) // Reset error count on success - รีเซ็ตจำนวนข้อผิดพลาดเมื่อสำเร็จ
       setLastUpdated(new Date())

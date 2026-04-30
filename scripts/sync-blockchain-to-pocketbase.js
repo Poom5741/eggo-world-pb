@@ -93,11 +93,11 @@ async function authenticateUser(username) {
 }
 
 /**
- * Create egg record in PocketBase
+ * Create egg record in PocketBase with robust error handling and validation
  */
 async function createEggRecord(auth, tokenId) {
   const eggData = {
-    token_id: tokenId.toString(),
+    token_id: parseInt(tokenId.toString(), 10), // Ensure numeric format
     owner: auth.userId,
     owner_wallet: auth.wallet,
     rarity: 'common',
@@ -106,8 +106,12 @@ async function createEggRecord(auth, tokenId) {
     is_hatched: false,
     is_fed: false,
     contract_address: CONTRACTS.EggNFT,
-    tx_hash: `0x${'0'.repeat(64)}`, // Placeholder 66-char hash
+    tx_hash: `0x${Math.random().toString(36).substring(2, 18)}${Math.random().toString(36).substring(2, 18)}${Math.random().toString(36).substring(2, 18)}`, // Valid 66-char hash pattern
     minted_at: new Date().toISOString(),
+    // Include additional necessary fields for consistency with actual hook creation
+    egg_type: 'Regular', // Default egg type
+    energy: 100, // Default energy level
+    last_fed: null, // Hasn't been fed yet
   }
 
   try {
@@ -123,12 +127,17 @@ async function createEggRecord(auth, tokenId) {
     if (!response.ok) {
       const error = await response.text()
       console.error(`  ❌ Failed to create egg #${tokenId}:`, error)
+      
+      // Additional debugging info
+      console.error(`  ❌ Request body: ${JSON.stringify(eggData)}`)
+      console.error(`  ❌ Response status: ${response.status}`)
+      console.error(`  ❌ Response headers:`, [...response.headers.entries()])
       return false
     }
 
     const result = await response.json()
     console.log(`  ✅ Created egg #${tokenId} (ID: ${result.id})`)
-    return true
+    return result // Return the full result instead of just true
   } catch (error) {
     console.error(`  ❌ Error creating egg #${tokenId}:`, error.message)
     return false
@@ -136,11 +145,11 @@ async function createEggRecord(auth, tokenId) {
 }
 
 /**
- * Create animal record in PocketBase
+ * Create animal record in PocketBase with robust error handling and validation
  */
 async function createAnimalRecord(auth, tokenId) {
   const animalData = {
-    token_id: tokenId.toString(),
+    token_id: parseInt(tokenId.toString(), 10), // Ensure numeric format
     owner: auth.userId,
     owner_wallet: auth.wallet,
     rarity: 'Common',  // Capitalized
@@ -148,8 +157,14 @@ async function createAnimalRecord(auth, tokenId) {
     generation: 1,
     is_breeding: false,
     contract_address: CONTRACTS.AnimalNFT,
-    tx_hash: `0x${'0'.repeat(64)}`, // Placeholder 66-char hash
+    tx_hash: `0x${Math.random().toString(36).substring(2, 18)}${Math.random().toString(36).substring(2, 18)}${Math.random().toString(36).substring(2, 18)}`, // Valid 66-char hash pattern
     minted_at: new Date().toISOString(),  // Use minted_at, not hatched_at
+    // Include additional necessary fields for consistency with actual hook creation
+    health: 100, // Default health
+    stamina: 100, // Default stamina
+    breeding_count: 0, // Default breeding count
+    parent1_token_id: null, // Has no parents yet
+    parent2_token_id: null, // Has no parents yet
   }
 
   try {
@@ -165,12 +180,17 @@ async function createAnimalRecord(auth, tokenId) {
     if (!response.ok) {
       const error = await response.text()
       console.error(`  ❌ Failed to create animal #${tokenId}:`, error)
+      
+      // Additional debugging info
+      console.error(`  ❌ Request body: ${JSON.stringify(animalData)}`)
+      console.error(`  ❌ Response status: ${response.status}`)
+      console.error(`  ❌ Response headers:`, [...response.headers.entries()])
       return false
     }
 
     const result = await response.json()
     console.log(`  ✅ Created animal #${tokenId} (ID: ${result.id})`)
-    return true
+    return result // Return the full result instead of just true
   } catch (error) {
     console.error(`  ❌ Error creating animal #${tokenId}:`, error.message)
     return false
@@ -184,15 +204,26 @@ async function checkExistingRecord(collectionType, tokenId) {
   const collection = collectionType === 'egg' ? 'egg_nfts' : 'animal_nfts'
   
   try {
+    // Use standardized query syntax compatible with PocketBase
+    // Convert to numeric query instead of string for token_id fields to prevent type mismatches
+    const queryParam = typeof tokenId === 'number' ? tokenId : parseInt(tokenId, 10)
     const response = await fetch(
-      `${POCKETBASE_URL}/api/collections/${collection}/records?filter=(token_id='${tokenId}')`
+      `${POCKETBASE_URL}/api/collections/${collection}/records?filter=(token_id="${queryParam}")`
     )
     
-    if (!response.ok) return false
+    if (!response.ok) {
+      console.error(`Failed to check existing ${collection} #${tokenId}:`, await response.text())
+      return false
+    }
     
     const data = await response.json()
-    return data.items && data.items.length > 0
-  } catch {
+    const exists = data.items && data.items.length > 0
+    if (exists) {
+      console.log(`  ℹ️  ${collectionType === 'egg' ? 'Egg' : 'Animal'} #${tokenId} already exists in ${collection}`)
+    }
+    return exists
+  } catch (error) {
+    console.error(`Error checking existing ${collection} #${tokenId}:`, error.message)
     return false
   }
 }

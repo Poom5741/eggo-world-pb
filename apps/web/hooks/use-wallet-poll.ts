@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { fetchWithRetry } from '@/lib/fetch-retry'
 
 /**
  * Wallet balance data structure
@@ -40,6 +41,8 @@ export function useWalletPoll(
   const [balance, setBalance] = useState<WalletBalance>({ usdt: '0', native: '0' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [pollInterval, setPollInterval] = useState(intervalMs)
+  const [errorCount, setErrorCount] = useState(0)
 
   /**
    * Fetch wallet balance from Wallet API
@@ -51,16 +54,21 @@ export function useWalletPoll(
       // No wallet address, set zero balance
       setBalance({ usdt: '0', native: '0' })
       setError(null)
+      setErrorCount(0) // Reset error count when not polling
       return
     }
 
     setLoading(true)
     try {
-      // Fetch from Wallet API endpoint
-      const res = await fetch('http://localhost:3001/api/v1/wallet/balance', {
+      // Use the retry utility for wallet API calls
+      const res = await fetchWithRetry('http://localhost:3001/api/v1/wallet/balance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_address: walletAddress })
+        body: JSON.stringify({ user_address: walletAddress }),
+        retries: 3,
+        backoffDelay: 1000,
+        backoffFactor: 2,
+        maxDelay: 30000
       })
 
       if (!res.ok) {
@@ -75,26 +83,34 @@ export function useWalletPoll(
         })
       }
       setError(null)
+      setErrorCount(0) // Reset error count on success 
+      setPollInterval(intervalMs) // Reset to normal interval 
     } catch (err: any) {
       // Handle error
       setError(err.message || 'Unknown error occurred')
+      
+      // Exponential backoff: 30s → 60s → 120s → 5min (max)
+      const newErrorCount = errorCount + 1
+      setErrorCount(newErrorCount)
+      const backoffInterval = Math.min(30000 * Math.pow(2, newErrorCount), 300000)
+      setPollInterval(backoffInterval)
     } finally {
       setLoading(false)
     }
-  }, [walletAddress])
+  }, [walletAddress, errorCount, intervalMs])
 
   useEffect(() => {
     // Initial fetch
     fetchBalance()
 
-    // Poll every intervalMs (per D-11: 30 seconds)
-    const pollInterval = setInterval(fetchBalance, intervalMs)
+    // Poll every pollInterval (with exponential backoff on errors)
+    const pollIntervalId = setInterval(fetchBalance, pollInterval)
 
     // Cleanup on unmount
     return () => {
-      clearInterval(pollInterval)
+      clearInterval(pollIntervalId)
     }
-  }, [fetchBalance, intervalMs])
+  }, [fetchBalance, pollInterval])
 
   return { balance, loading, error, refresh: fetchBalance }
 }

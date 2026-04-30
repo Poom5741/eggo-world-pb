@@ -18,7 +18,7 @@
 version: '3.8'
 
 services:
-  # PocketBase - Local E2E instance
+  # PocketBase - Local E2E instance  
   # Uses a dedicated volume (pb_data.e2e) so production data is untouched.
   pocketbase:
     build:
@@ -27,6 +27,8 @@ services:
     container_name: e2e-pocketbase
     ports:
       - "8091:8090"   # host 8091 -> container 8090 to avoid clashing with local dev PB
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Allow reaching host network
     environment:
       # App / wallet
       - NODE_ENV=development
@@ -35,11 +37,11 @@ services:
       - PB_PUBLIC_URL=http://localhost:8091
       - ENCRYPTION=${E2E_ENCRYPTION_KEY:-4nWpfKByg2u3tkbbHAZ34div}
       - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-e2e_master_key_change_me_32chars!!}
-      - WALLET_API_URL=http://wallet-api:3001
-      - WALLET_SRV_URL=http://wallet-api:3001
+      - WALLET_API_URL=http://e2e-wallet-api:3001    # Fixed hostname for docker network
+      - WALLET_SRV_URL=http://e2e-wallet-api:3001    # Fixed hostname for docker network
 
-      # Blockchain - point at local Anvil
-      - BSC_RPC_URL=http://anvil:8545
+      # Blockchain - point at local Anvil (matching service name)
+      - BSC_RPC_URL=http://e2e-anvil:8545            # Fixed hostname for docker network
       - BSC_CHAIN_ID=7117
       - MOCK_BLOCKCHAIN=true
 
@@ -56,9 +58,9 @@ services:
       - LINE_CALLBACK_URL=http://localhost:8091/api/oauth2-redirect
     volumes:
       - ./apps/backend/pb_data.e2e:/pb_data
-      - ./apps/backend/pb_hooks:/pb/pb_hooks:ro
+      - ./apps/backend/pb_hooks.e2e:/pb/pb_hooks:ro  # Use e2e hooks for isolated testing
       - ./apps/backend/pb_public:/pb/pb_public:ro
-      - ./apps/backend/pb_migrations:/pb/pb_migrations:ro
+      - ./apps/backend/pb_migrations.e2e:/pb/pb_migrations:ro  # Use e2e migrations to prevent schema conflicts
     command:
       - serve
       - --http=0.0.0.0:8090
@@ -72,6 +74,8 @@ services:
     depends_on:
       anvil:
         condition: service_healthy
+      wallet-api:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1"]
       interval: 10s
@@ -83,25 +87,27 @@ services:
   wallet-api:
     build:
       context: ./wallet-api
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile  
     container_name: e2e-wallet-api
     ports:
       - "3001:3001"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Allow reaching host network
     environment:
       - NODE_ENV=development
       - PORT=3001
       - MIN_PASSWORD_LENGTH=12
       - MAX_PASSWORD_LENGTH=120
       - PUBLIC_ENCRYPTION=false
-      - CORS_ORIGIN=*
+      - CORS_ORIGIN=*  # Allow all origins for e2e testing to ensure connectivity
       - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-e2e_master_key_change_me_32chars!!}
       # DACC mnemonic for gas sponsorship (use test mnemonic for E2E)
-      - DACC_MNEMONIC=${DACC_MNEMONIC:-test test test test test test test test test test test junk}
+      - DACC_MNEMONIC=${DACC_MNEMONIC:-test test test test test test test test test test test test junk}
       - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-test@e2e.local}
       - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-test-password}
-      # E2E specific: Anvil RPC endpoint
-      - RPC_URL=http://anvil:8545
-      - POCKETBASE_URL=http://pocketbase:8090
+      # E2E specific: Anvil RPC endpoint - fixed hostname for docker services  
+      - RPC_URL=http://e2e-anvil:8545
+      - POCKETBASE_URL=http://e2e-pocketbase:8090  # Use correct service name
       - EGG_NFT_ADDRESS=${EGG_NFT_ADDRESS:-0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512}
     networks:
       - e2e-test-network
