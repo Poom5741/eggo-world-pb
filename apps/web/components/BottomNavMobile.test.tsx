@@ -48,12 +48,12 @@ describe('BottomNavMobile', () => {
     expect(icons.length).toBeLessThanOrEqual(5)
   })
 
-  it('includes: Dashboard, Eggs, Marketplace, Referrals links', () => {
+  it('includes: Dashboard, Eggs, Mint, Marketplace links', () => {
     render(<BottomNavMobile />)
     expect(screen.getByText('Dashboard')).toBeInTheDocument()
     expect(screen.getByText('Eggs')).toBeInTheDocument()
+    expect(screen.getByText('Mint')).toBeInTheDocument()
     expect(screen.getByText('Marketplace')).toBeInTheDocument()
-    expect(screen.getByText('Referrals')).toBeInTheDocument()
   })
 
   it('fixed position at bottom (bottom-0, h-20 or h-24)', () => {

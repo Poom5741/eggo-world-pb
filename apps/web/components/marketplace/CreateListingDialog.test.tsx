@@ -1,29 +1,12 @@
-/**
- * Tests for CreateListingDialog component
- * 
- * @tests
- * - Dialog opens with NFT details pre-filled
- * - Price validation (min price by NFT type)
- * - Create Listing button calls createListing contract
- * - Success state after listing created
- * - Error state on rejection
- * - Loading state during transaction
- */
-
 import { describe, it, expect, vi, beforeEach } from 'bun:test'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { CreateListingDialog } from './CreateListingDialog'
-import * as marketplace from '@/lib/contracts/marketplace'
-import * as eggNft from '@/lib/contracts/eggNft'
 
-// Mock contract functions
-vi.mock('@/lib/contracts/marketplace', () => ({
-  approveNFTForMarketplace: vi.fn(),
-  createListing: vi.fn(),
-}))
-
-vi.mock('@/lib/contracts/eggNft', () => ({
-  getSigner: vi.fn(),
+// Mock PocketBase client
+vi.mock('@/lib/pocketbase/client', () => ({
+  createClient: vi.fn(() => ({
+    authStore: { token: 'mock-token' },
+  })),
 }))
 
 describe('CreateListingDialog', () => {
@@ -38,133 +21,119 @@ describe('CreateListingDialog', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    global.fetch = vi.fn()
   })
 
-  it('เปิด对话框พร้อมข้อมูล NFT ที่กรอกไว้แล้ว (opens with NFT details pre-filled)', () => {
+  it('opens with NFT details pre-filled', () => {
     render(<CreateListingDialog {...mockProps} />)
-    
-    // ตรวจสอบว่าแสดงชื่อ NFT
+
     expect(screen.getByText('Test Egg')).toBeInTheDocument()
-    // ตรวจสอบว่าแสดงประเภท NFT
     expect(screen.getByText('EGG')).toBeInTheDocument()
-    // ตรวจสอบว่าแสดง dialog title
     expect(screen.getByRole('heading', { name: /Create Listing/i })).toBeInTheDocument()
   })
 
-  it('ตรวจสอบราคาขั้นต่ำตามประเภท NFT (validates minimum price by NFT type)', async () => {
+  it('validates minimum price by NFT type', () => {
     render(<CreateListingDialog {...mockProps} />)
-    
+
     const priceInput = screen.getByPlaceholderText(/Min 1/i)
-    const createButton = screen.getByText('Create Listing')
-    
-    // พยามสร้าง listing ด้วยราคาที่ต่ำกว่า minimum
+    const createButtons = screen.getAllByText('Create Listing')
+    const createButton = createButtons[createButtons.length - 1]
+
     fireEvent.change(priceInput, { target: { value: '0.5' } })
-    fireEvent.click(createButton)
-    
-    await waitFor(() => {
-      expect(screen.getByText(/Minimum price is 1 USDT/i)).toBeInTheDocument()
-    })
+    expect(createButton).toBeDisabled()
+
+    fireEvent.change(priceInput, { target: { value: '1' } })
+    expect(createButton).not.toBeDisabled()
   })
 
-  it('เรียก approveNFTForMarketplace ก่อนสร้าง listing (calls approveNFTForMarketplace before creating listing)', async () => {
-    const mockSigner = { address: '0x123' }
-    ;(eggNft.getSigner as ReturnType<typeof vi.fn>).mockResolvedValue(mockSigner as any)
-    ;(marketplace.approveNFTForMarketplace as ReturnType<typeof vi.fn>).mockResolvedValue(true)
-    ;(marketplace.createListing as ReturnType<typeof vi.fn>).mockResolvedValue(true)
-    
+  it('calls PocketBase API to create listing', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ success: true }),
+    })
+    global.fetch = mockFetch
+
     render(<CreateListingDialog {...mockProps} />)
-    
+
     const priceInput = screen.getByPlaceholderText(/Min 1/i)
-    // หาปุ่ม Create Listing ในส่วน footer (ปุ่มเดียวที่เปิดใช้งานและไม่ disabled)
-    const createButton = screen.getAllByRole('button', { name: /Create Listing/i })[0]
-    
-    // กรอก price ที่ถูกต้อง
+    const createButtons = screen.getAllByText('Create Listing')
+    const createButton = createButtons[createButtons.length - 1]
+
     fireEvent.change(priceInput, { target: { value: '100' } })
     fireEvent.click(createButton)
-    
-    // รอให้ approve เสร็จ
+
     await waitFor(() => {
-      expect(marketplace.approveNFTForMarketplace).toHaveBeenCalledWith(mockSigner)
+      expect(mockFetch).toHaveBeenCalled()
     })
-    
-    // รอให้ createListing ถูกเรียก
-    await waitFor(() => {
-      expect(marketplace.createListing).toHaveBeenCalledWith(
-        mockSigner,
-        'Egg',
-        '123',
-        expect.any(BigInt)
-      )
-    })
+
+    const callUrl = mockFetch.mock.calls[0][0]
+    expect(callUrl).toContain('/api/v2/list-animal')
   })
 
-  it('แสดงสถานะสำเร็จหลังจากสร้าง listing สำเร็จ (shows success state after listing created)', async () => {
-    const mockSigner = { address: '0x123' }
-    ;(eggNft.getSigner as ReturnType<typeof vi.fn>).mockResolvedValue(mockSigner as any)
-    ;(marketplace.approveNFTForMarketplace as ReturnType<typeof vi.fn>).mockResolvedValue(true)
-    ;(marketplace.createListing as ReturnType<typeof vi.fn>).mockResolvedValue(true)
-    
+  it('shows success state after listing created', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ success: true }),
+    })
+
     render(<CreateListingDialog {...mockProps} />)
-    
+
     const priceInput = screen.getByPlaceholderText(/Min 1/i)
-    const createButton = screen.getAllByRole('button', { name: /Create Listing/i })[0]
-    
+    const createButtons = screen.getAllByText('Create Listing')
+    const createButton = createButtons[createButtons.length - 1]
+
     fireEvent.change(priceInput, { target: { value: '100' } })
     fireEvent.click(createButton)
-    
-    // รอให้ transaction เสร็จ
+
     await waitFor(() => {
-      expect(marketplace.createListing).toHaveBeenCalled()
+      expect(mockProps.onSuccess).toHaveBeenCalled()
     })
-    
-    // ตรวจสอบว่า onSuccess ถูกเรียก
-    expect(mockProps.onSuccess).toHaveBeenCalled()
-    // ตรวจสอบว่า dialog ปิด
+
     expect(mockProps.onOpenChange).toHaveBeenCalledWith(false)
   })
 
-  it('แสดงสถานะ error เมื่อผู้ใช้ปฏิเสธ transaction (shows error state on rejection)', async () => {
-    const mockSigner = { address: '0x123' }
-    ;(eggNft.getSigner as ReturnType<typeof vi.fn>).mockResolvedValue(mockSigner as any)
-    ;(marketplace.approveNFTForMarketplace as ReturnType<typeof vi.fn>).mockRejectedValue(
-      new Error('User rejected the approval transaction')
-    )
-    
+  it('shows error state when API call fails', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({
+        success: false,
+        error: { message: 'Insufficient balance' },
+      }),
+    })
+
     render(<CreateListingDialog {...mockProps} />)
-    
+
     const priceInput = screen.getByPlaceholderText(/Min 1/i)
-    const createButton = screen.getAllByRole('button', { name: /Create Listing/i })[0]
-    
+    const createButtons = screen.getAllByText('Create Listing')
+    const createButton = createButtons[createButtons.length - 1]
+
     fireEvent.change(priceInput, { target: { value: '100' } })
     fireEvent.click(createButton)
-    
-    // รอให้ error แสดง
+
     await waitFor(() => {
-      expect(screen.getByText(/User rejected/i)).toBeInTheDocument()
+      expect(screen.getByText(/Insufficient balance/i)).toBeInTheDocument()
     })
   })
 
-  it('แสดง loading state ระหว่างทำรายการ (shows loading state during transaction)', async () => {
-    const mockSigner = { address: '0x123' }
-    ;(eggNft.getSigner as ReturnType<typeof vi.fn>).mockResolvedValue(mockSigner as any)
-    ;(marketplace.approveNFTForMarketplace as ReturnType<typeof vi.fn>).mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 100))
-    )
-    ;(marketplace.createListing as ReturnType<typeof vi.fn>).mockResolvedValue(true)
-    
+  it('shows loading state during listing creation', async () => {
+    let resolvePromise: (value: any) => void
+    const deferredPromise = new Promise((resolve) => {
+      resolvePromise = resolve
+    })
+
+    global.fetch = vi.fn().mockImplementation(() => deferredPromise)
+
     render(<CreateListingDialog {...mockProps} />)
-    
+
     const priceInput = screen.getByPlaceholderText(/Min 1/i)
-    const createButton = screen.getAllByRole('button', { name: /Create Listing/i })[0]
-    
+    const createButtons = screen.getAllByText('Create Listing')
+    const createButton = createButtons[createButtons.length - 1]
+
     fireEvent.change(priceInput, { target: { value: '100' } })
     fireEvent.click(createButton)
-    
-    // ตรวจสอบ loading state
-    expect(screen.getByText(/Approving.../i)).toBeInTheDocument()
-    
+
     await waitFor(() => {
-      expect(screen.getByText(/Creating.../i)).toBeInTheDocument()
+      expect(screen.getByText('Creating Listing...')).toBeInTheDocument()
     })
   })
 })

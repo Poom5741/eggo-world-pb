@@ -59,9 +59,11 @@ describe('Eggs Page', () => {
       expect(content).toContain('onFeed={handleFeedEgg}')
     })
 
-    it('imports FeedDialog component', () => {
+    it('uses dynamic import for FeedDialog component', () => {
       const content = getEggsPageContent()
-      expect(content).toMatch(/import.*FeedDialog.*from.*components.*eggs.*feed-dialog/)
+      expect(content).toMatch(/FeedDialog/)
+      expect(content).toMatch(/dynamic/)
+      expect(content).toMatch(/feed-dialog/)
     })
   })
 })

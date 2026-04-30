@@ -86,6 +86,9 @@ export function useMarketplaceSync(
   // Track if component is mounted - เช็คว่า component ยัง mount อยู่หรือไม่
   const isMounted = useRef(true)
 
+  // Track error count via ref to avoid cyclic dependency in fetchListings
+  const errorCountRef = useRef(0)
+
   // Track if tab is visible - เช็คว่า tab ยังเปิดอยู่หรือไม่
   const [_isVisible, setIsVisible] = useState(true)
 
@@ -102,6 +105,7 @@ export function useMarketplaceSync(
           setListings([listing])
           setError(null)
           setErrorCount(0)
+          errorCountRef.current = 0
           setLastUpdated(new Date())
           setCurrentInterval(intervalMs)
         }
@@ -115,6 +119,7 @@ export function useMarketplaceSync(
           setListings(fetchedListings)
           setError(null)
           setErrorCount(0)
+          errorCountRef.current = 0
           setLastUpdated(new Date())
           setCurrentInterval(intervalMs)
         }
@@ -127,7 +132,8 @@ export function useMarketplaceSync(
       
       // Exponential backoff: 30s → 60s → 120s → 240s → 480s → 5min (max)
       // per D-20: min(30000 * Math.pow(2, errorCount), 300000)
-      const newErrorCount = errorCount + 1
+      const newErrorCount = errorCountRef.current + 1
+      errorCountRef.current = newErrorCount
       setErrorCount(newErrorCount)
       const backoffInterval = Math.min(30000 * Math.pow(2, newErrorCount), 300000)
       setCurrentInterval(backoffInterval)
@@ -137,7 +143,7 @@ export function useMarketplaceSync(
         setSyncing(false)
       }
     }
-  }, [listingId, errorCount, intervalMs])
+  }, [listingId, intervalMs])
 
   // Initial fetch and polling setup - การดึงข้อมูลครั้งแรกและตั้งค่า polling
   useEffect(() => {

@@ -88,7 +88,9 @@ test('renders selection checkbox when onSelect is provided', () => {
 
   render(<FoodCard food={food} onSelect={() => {}} />);
   
-  const checkbox = screen.getByLabelText(/select to feed/i);
+  const card = screen.getByRole('button', { name: /Select Grain food/ });
+  expect(card).toBeInTheDocument();
+  const checkbox = document.getElementById('food-1');
   expect(checkbox).toBeInTheDocument();
 });
 
@@ -103,7 +105,7 @@ test('does not render checkbox when disableSelection is true', () => {
 
   render(<FoodCard food={food} onSelect={() => {}} disableSelection />);
   
-  expect(screen.queryByLabelText(/select to feed/i)).not.toBeInTheDocument();
+  expect(document.getElementById('food-1')).toBeNull();
 });
 
 test('does not render checkbox when food is consumed', () => {
@@ -117,5 +119,5 @@ test('does not render checkbox when food is consumed', () => {
 
   render(<FoodCard food={food} onSelect={() => {}} />);
   
-  expect(screen.queryByLabelText(/select to feed/i)).not.toBeInTheDocument();
+  expect(document.getElementById('food-1')).toBeNull();
 });

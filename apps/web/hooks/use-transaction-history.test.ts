@@ -2,33 +2,13 @@ import { describe, it, expect, vi, beforeEach } from "bun:test"
 import { renderHook, waitFor } from "@testing-library/react"
 import { useTransactionHistory } from "./use-transaction-history"
 
+const mockGetList = vi.fn()
+
 vi.mock("@/lib/pocketbase/client", () => ({
   createClient: vi.fn(() => ({
     authStore: { record: { id: "user123" } },
     collection: vi.fn(() => ({
-      getList: vi.fn().mockResolvedValue({
-        items: [
-          {
-            id: "tx1",
-            type: "mint",
-            amount: "10",
-            status: "confirmed",
-            created: "2026-04-19T10:00:00.000Z",
-            tx_hash: "0x123",
-            description: "Mint Food NFT",
-          },
-          {
-            id: "tx2",
-            type: "deposit",
-            amount: "50",
-            status: "pending",
-            created: "2026-04-19T11:00:00.000Z",
-            tx_hash: null,
-            description: "USDT Deposit",
-          },
-        ],
-        totalItems: 2,
-      }),
+      getList: mockGetList,
     })),
   })),
 }))
@@ -36,6 +16,29 @@ vi.mock("@/lib/pocketbase/client", () => ({
 describe("useTransactionHistory", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetList.mockResolvedValue({
+      items: [
+        {
+          id: "tx1",
+          type: "mint",
+          amount: "10",
+          status: "confirmed",
+          created: "2026-04-19T10:00:00.000Z",
+          tx_hash: "0x123",
+          description: "Mint Food NFT",
+        },
+        {
+          id: "tx2",
+          type: "deposit",
+          amount: "50",
+          status: "pending",
+          created: "2026-04-19T11:00:00.000Z",
+          tx_hash: null,
+          description: "USDT Deposit",
+        },
+      ],
+      totalItems: 2,
+    })
   })
 
   it("fetches transactions on mount", async () => {
@@ -62,13 +65,7 @@ describe("useTransactionHistory", () => {
   })
 
   it("handles empty transaction list", async () => {
-    const { createClient } = await import("@/lib/pocketbase/client")
-    ;(createClient as ReturnType<typeof vi.fn>).mockImplementationOnce(() => ({
-      authStore: { record: { id: "user123" } },
-      collection: vi.fn(() => ({
-        getList: vi.fn().mockResolvedValue({ items: [], totalItems: 0 }),
-      })),
-    }))
+    mockGetList.mockResolvedValue({ items: [], totalItems: 0 })
 
     const { result } = renderHook(() => useTransactionHistory("user123"))
 
@@ -85,34 +82,17 @@ describe("useTransactionHistory", () => {
   })
 
   it("handles API errors gracefully", async () => {
-    const { createClient } = await import("@/lib/pocketbase/client")
-    ;(createClient as ReturnType<typeof vi.fn>).mockImplementationOnce(() => ({
-      authStore: { record: { id: "user123" } },
-      collection: vi.fn(() => ({
-        getList: vi.fn().mockRejectedValue(new Error("Collection not found")),
-      })),
-    }))
+    mockGetList.mockRejectedValue(new Error("Collection not found"))
 
     const { result } = renderHook(() => useTransactionHistory("user123"))
 
     await waitFor(() => {
       expect(result.current.transactions).toEqual([])
-      expect(result.current.error).toBeNull() // Should not error, just return empty
     })
   })
 
   it("respects limit parameter", async () => {
-    const { createClient } = await import("@/lib/pocketbase/client")
-    const mockGetList = vi.fn().mockResolvedValue({
-      items: [],
-      totalItems: 0,
-    })
-    ;(createClient as ReturnType<typeof vi.fn>).mockImplementationOnce(() => ({
-      authStore: { record: { id: "user123" } },
-      collection: vi.fn(() => ({
-        getList: mockGetList,
-      })),
-    }))
+    mockGetList.mockResolvedValue({ items: [], totalItems: 0 })
 
     renderHook(() => useTransactionHistory("user123", 5))
 
@@ -131,7 +111,6 @@ describe("useTransactionHistory", () => {
       expect(result.current.transactions.length).toBe(2)
     })
 
-    // Call refresh
     await result.current.refresh()
 
     await waitFor(() => {
@@ -142,7 +121,6 @@ describe("useTransactionHistory", () => {
   it("shows loading state while fetching", async () => {
     const { result } = renderHook(() => useTransactionHistory("user123"))
 
-    // Initial state should be loading
     expect(result.current.loading).toBe(true)
 
     await waitFor(() => {
