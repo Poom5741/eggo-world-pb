@@ -53,7 +53,7 @@ contract SecurityFixesTest is Test {
         // Expected: 25e18 (25 USDT)
         // Buggy value: 25 * 10^18 = 25 * 24 = 600 wei
         uint256 expectedMintPrice = 25 * 10**18;
-        assertEq(eggNFT.MINT_PRICE(), expectedMintPrice, "EggNFT MINT_PRICE should be 25e18");
+        assertEq(eggNFT.mintPrice(), expectedMintPrice, "EggNFT MINT_PRICE should be 25e18");
     }
 
     function testEggNFTBreedingFee() public view {
@@ -79,7 +79,7 @@ contract SecurityFixesTest is Test {
         // If XOR was used, these would be tiny values (600, 120, 12)
         // With correct exponentiation, they should be large values
         
-        uint256 eggMintPrice = eggNFT.MINT_PRICE();
+        uint256 eggMintPrice = eggNFT.mintPrice();
         uint256 eggBreedingFee = eggNFT.BREEDING_FEE();
         uint256 foodMintPrice = foodNFT.MINT_PRICE();
         

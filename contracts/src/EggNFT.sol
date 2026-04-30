@@ -19,7 +19,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     IERC20 public immutable usdtToken;
     address public animalNFTContract;
     
-    uint256 public constant MINT_PRICE = 25 * 10**18;        // Fixed: was 10^18 (XOR), now 10**18 (exponentiation)
+    uint256 public mintPrice = 25 * 10**18;       // Mutable, initialized to 25 USDT
     uint256 public constant BREEDING_FEE = 5 * 10**18;       // Fixed: was 10^18 (XOR), now 10**18 (exponentiation)
     uint256 public constant UPGRADE_FEE = 0; // No fee — users already paid for food NFTs
     uint256 public constant MAX_FOOD_COUNT = 10;
@@ -117,6 +117,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     }
     
     function mintEgg(address referrer) external nonReentrant whenNotPaused returns (uint256) {
+        require(referrer != msg.sender, "Self-referral");
         address[4] memory referralChain;
         referralChain[0] = referrer;
 
@@ -124,13 +125,16 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     }
 
     function mintEggWithChain(address[4] calldata referralChain) external nonReentrant whenNotPaused returns (uint256) {
+        for (uint256 i = 0; i < 4; i++) {
+            require(referralChain[i] != msg.sender, "Self-referral");
+        }
         return _mintEggWithChain(msg.sender, referralChain);
     }
     
     function _mintEggWithChain(address buyer, address[4] memory referralChain) private returns (uint256) {
-        usdtToken.safeTransferFrom(buyer, commissionDistribution, MINT_PRICE);
+        usdtToken.safeTransferFrom(buyer, commissionDistribution, mintPrice);
         
-        CommissionDistribution(commissionDistribution).distributeCommission(referralChain, MINT_PRICE);
+        CommissionDistribution(commissionDistribution).distributeCommission(referralChain, mintPrice);
         
         _nextTokenId++;
         _nextEggId++;
@@ -363,8 +367,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         return animalTokenId;
     }
     
-    function upgradeEggRarity(uint256 eggTokenId, uint256[] calldata foodIds) external nonReentrant {
-        require(ownerOf(eggTokenId) == msg.sender, "Not owner");
+    function upgradeEggRarity(uint256 eggTokenId, uint256[] calldata foodIds) external nonReentrant whenNotPaused {
+        require(_ownerOf(eggTokenId) == msg.sender, "Not owner");
         require(foodIds.length > 0, "No food items");
         
         EggProperties storage props = _eggProperties[eggTokenId];
@@ -395,7 +399,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         uint256 parent1TokenId,
         uint256 parent2TokenId,
         address referrer
-    ) external nonReentrant returns (uint256) {
+    ) external nonReentrant whenNotPaused returns (uint256) {
+        require(referrer != msg.sender, "Self-referral");
         require(parent1TokenId != parent2TokenId, "Cannot breed same animal");
         require(AnimalNFT(animalNFTContract).ownerOf(parent1TokenId) == msg.sender, "Not owner of parent1");
         require(AnimalNFT(animalNFTContract).ownerOf(parent2TokenId) == msg.sender, "Not owner of parent2");
@@ -458,7 +463,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         uint256 egg_token_id,
         uint256[] calldata food_ids,
         FoodType[] calldata food_types
-    ) external onlyAuthorizedFoodNFTContract {
+    ) external onlyAuthorizedFoodNFTContract whenNotPaused {
         require(food_ids.length == food_types.length, "Arrays length mismatch");
         
         EggProperties storage props = _eggProperties[egg_token_id];
@@ -509,10 +514,6 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         return _eggProperties[tokenId].referral_chain;
     }
     
-    function mintPrice() external pure returns (uint256) {
-        return MINT_PRICE;
-    }
-    
     function totalSupply() external view returns (uint256) {
         return _nextTokenId - 1;
     }
@@ -526,12 +527,23 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         
         if (from != address(0)) {
             _eggProperties[tokenId].owner = to;
+            
+            // Reset referral chain upon transfer, but ONLY for breeding eggs
+            EggProperties storage props = _eggProperties[tokenId];
+            if (props.is_breeding_egg) {
+                // Clear the referral chain to prevent referral bonuses from being misused
+                for (uint256 i = 0; i < 4; i++) {
+                    props.referral_chain[i] = address(0);
+                }
+            }
         }
         
         return super._update(to, tokenId, auth);
     }
     
     function setMintPrice(uint256 newPrice) external onlyOwner {
+        require(newPrice >= 1e18 && newPrice <= 1000e18, "Price bounds: 1-1000 USDT");
+        mintPrice = newPrice;
         emit MintPriceUpdated(newPrice);
     }
 

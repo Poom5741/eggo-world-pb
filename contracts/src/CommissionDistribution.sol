@@ -56,7 +56,7 @@ contract CommissionDistribution {
     }
     
     function distributeCommission(address[4] calldata referralChain, uint256 amount) external {
-        require(msg.sender == owner || msg.sender == eggNFTContract || msg.sender == foodNFTContract, "Not authorized");
+        require(msg.sender == eggNFTContract || msg.sender == foodNFTContract, "Not authorized");
         require(amount > 0, "Amount must be greater than 0");
         
         uint256 totalDistributed = 0;

@@ -6,6 +6,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {IERC5192} from "./interfaces/IERC5192.sol";
 
 /// @title TierBadge - Soulbound Achievement NFTs for Egg World
@@ -13,6 +15,7 @@ import {IERC5192} from "./interfaces/IERC5192.sol";
 /// @dev Implements ERC-5192 soulbound standard on top of ERC-721
 contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
     
+    using SafeERC20 for IERC20;
     /// @notice Tier definition structure
     struct Tier {
         string name;
@@ -151,16 +154,14 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
         userHighestTier[user] = tierId;
         
         // Transfer USDT reward from CoinStor reserve
-        bool rewardSuccess = usdtToken.transferFrom(
+        try IERC20(address(usdtToken)).transferFrom(
             coinstorReserve,
             user,
             tier.rewardAmount
-        );
-        
-        if (!rewardSuccess) {
-            // Note: Badge is minted but reward failed. This is acceptable per D-09:
-            // "Failed transactions logged but don't rollback PocketBase state"
-            // In production, operator should manually resolve failed transfers
+        ) returns (bool) {
+            // Transfer succeeded
+        } catch {
+            // Handle Safe ERC20 transfer failure gracefully
             emit TierClaimFailed(user, tierId, "USDT transfer failed");
         }
         
@@ -248,7 +249,7 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
             '},{"trait_type":"Soulbound","value":"true"}]}'
         );
         
-        return string.concat("data:application/json;base64,", _encodeBase64(bytes(json)));
+        return string.concat("data:application/json;base64,", Base64.encode(bytes(json)));
     }
     
     /// @dev Convert uint256 to string
