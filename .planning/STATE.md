@@ -5,13 +5,13 @@
 See: .planning/PROJECT.md
 
 **Core value:** Gamified NFT marketplace on BSC
-**Current focus:** v0.5.0 Phase 53 — Production Readiness (planned, code ready)
+**Current focus:** v0.5.0 Phase 53 — Production Readiness (verification done, pass rate below threshold)
 
 ## Current Position
 
 Phase: 53 of 53
-Status: Phase 52 code committed, Phase 53 planned — infra blocked
-Progress: [███████████] 92%
+Status: Phase 53 verification complete — 93% test pass rate (blocker), production hooks deployed
+Progress: [███████████] 95%
 
 ## Performance Metrics
 
@@ -41,13 +41,14 @@ Recent decisions affecting current work:
 ### Blockers/Concerns
 
 1. **Local PocketBase crash** — JSVM infinite recursion on startup after migration cleanup. Root cause unknown.
-2. **E2E test users blocked** — No admin access to e2e PB; PB requires LINE OAuth flow for user creation.
-3. **Contract build** — `forge build` fails on import path issues with test files using `../../src/` relative paths.
+2. ~~**E2E test users blocked** — No admin access to e2e PB~~ → **RESOLVED** via production server admin API
+3. **Contract build** — `forge build` succeeds (test file import warnings only, non-blocking).
+4. **Test pass rate 93% (below 95% threshold)** — 12 tests fail due to PocketBase AUTH_REQUIRED in mock env; `hooks/use-marketplace-sync.test.ts` hangs the test runner.
+5. **UI test drift** — 9 tests fail due to text split across DOM elements (badges/icons in complex React output).
 
 ### Pending Todos
 
-- Create test users in production PocketBase (test_buyer, test_seller, test_referrer, test_admin)
-- Create test_buyer_poor user with 0 USDT balance (Anvil Account 4 wallet)
+- [x] Create test users in production PocketBase (all 5 created: test_buyer, test_seller, test_referrer, test_admin, test_buyer_poor)
 - Password pattern: {username}\_e2e_test_password
 
 ### Blockers/Concerns
@@ -66,20 +67,22 @@ Items acknowledged and carried forward from v0.4.0 milestone close:
 ## Session Continuity
 
 Last session: 2026-04-30
-Stopped at Phase: 53 planned, milestone v0.5.0 ~90% complete
+Stopped at Phase: 53 verification complete, milestone v0.5.0 ~95% complete
 
 ### What Got Done
 
-- Phase 52 code committed: timeout fix, sync hooks, retry utilities, docker-compose fixes
-- `22-listen-nft-events.pb.js` fixed (removed setInterval)
-- Dockerfile restored as PB build source
-- Test user creation script created
-- Phase 53 plans written
+- Phase 53 execution: ran all verification checks
+- `forge build` — compiler run successful (220s, 106 files, warnings only)
+- `forge test --match-contract SecurityFixes` — 13/13 tests passed ✅
+- `bun test` (apps/web) — 34/35 files completed, ~93% pass rate (below 95% threshold)
+- Identified 21 failing tests across 8 files + 1 hanging test file
+- Documented all blockers in STATE.md and 53-SUMMARY.md
+- Key finding: PocketBase AUTH_REQUIRED errors in tests highlight mock gap for production endpoints
 
 ### Next Session Priorities
 
-1. Fix local PocketBase (JSVM crash, migration cleanup)
-2. Create E2E test users in production PB
-3. Verify contract tests pass (import path issues)
-4. Complete Phase 53 verification
+1. Fix test mocks for PocketBase-dependent components (CreateListingDialog, BuyFlow, CommissionBreakdown)
+2. Fix `use-marketplace-sync.test.ts` async hang
+3. Update UI tests from `getByText` to `getAllByText`/function matchers (9 split-text failures)
+4. Re-run full test suite to confirm >95% pass rate
 5. Close v0.5.0 milestone
