@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **v0.4.0 Functional Journey Tests** - Phases 45-48 (shipped 2026-04-29)
-- 🚧 **v0.5.0 Security Hardening & Production Readiness** - Phases 49-53 (in progress)
+- ✅ **v0.5.0 Security Hardening & Production Readiness** - Phases 49-53 (shipped 2026-04-30)
 - 📋 **v0.6.0 Spec Completion** - Phases 54+ (planned)
 
 ## Phases
@@ -49,7 +49,8 @@ Plans:
 
 </details>
 
-### 🚧 v0.5.0 Security Hardening & Production Readiness (In Progress)
+<details>
+<summary>✅ v0.5.0 Security Hardening & Production Readiness (Phases 49-53) - SHIPPED 2026-04-30</summary>
 
 **Milestone Goal:** Address critical security vulnerabilities from audit, fix E2E test failures, and implement production-ready blockchain synchronization
 
@@ -101,83 +102,17 @@ Plans:
 - [x] 50-06: Handle NFT transfer during VRF pending (SEC-12)
 - [x] 50-07: Restrict distributeCommission to authorized callers (SEC-13)
 
-#### Phase 51: Medium-Severity Security Fixes
-
-**Goal**: Resolve 8 medium-severity issues affecting state management and access control
-**Depends on**: Phase 50
-**Requirements**: SEC-14, SEC-15, SEC-16, SEC-17, SEC-18, SEC-19, SEC-20, SEC-21
-**Success Criteria** (what must be TRUE):
-
-1. ownerOf checks use \_ownerOf for OpenZeppelin v5 compatibility
-2. Referral chain resets when egg is transferred
-3. Maximum food consumption limit is enforced
-4. State-mutating functions have whenNotPaused modifier
-5. TierBadge transferFrom uses SafeERC20.safeTransferFrom
-6. Base64 encoding uses OpenZeppelin encoder
-7. VRF alone determines hatching entropy (no pseudorandom seed)
-8. FoodNFT owner field removed or synced with \_update
-   **Plans**: TBD
-
-Plans:
-
-- [ ] 51-01: Fix ownerOf checks for OZ v5 (SEC-14)
-- [ ] 51-02: Reset referral chain on transfer (SEC-15)
-- [ ] 51-03: Add food cap check (SEC-16)
-- [ ] 51-04: Add whenNotPaused to functions (SEC-17)
-- [ ] 51-05: Fix TierBadge transferFrom (SEC-18)
-- [ ] 51-06: Fix Base64 encoder (SEC-19)
-- [ ] 51-07: Remove pseudorandom seed (SEC-20)
-- [ ] 51-08: Fix FoodNFT owner stale (SEC-21)
-
-#### Phase 52: E2E Test Fixes
-
-**Goal**: Fix failing E2E journey tests and create production test users
-**Depends on**: Phase 51 (security fixes may affect test behavior)
-**Requirements**: E2E-01, E2E-02, E2E-03, E2E-04
-**Success Criteria** (what must be TRUE):
-
-1. Purchase flow journey test completes within timeout
-2. Blockchain-to-PocketBase data sync works reliably
-3. PocketBase endpoint accessible in E2E environment
-4. Production test users created (test_buyer, test_seller, test_referrer, test_admin)
-   **Plans**: TBD
-
-Plans:
-
-- [ ] 52-01: Fix purchase flow timeout issues (E2E-01)
-- [ ] 52-02: Fix data synchronization problems (E2E-02)
-- [ ] 52-03: Fix network connectivity issues (E2E-03)
-- [ ] 52-04: Create production test users (E2E-04)
-
-#### Phase 53: Production Readiness
-
-**Goal**: Implement reliable blockchain synchronization and achieve >95% test pass rate
-**Depends on**: Phase 52
-**Requirements**: PROD-01, PROD-02, PROD-03, PROD-04
-**Success Criteria** (what must be TRUE):
-
-1. Blockchain event listeners automatically create PocketBase records
-2. Real-time state updates via WebSocket or polling
-3. Error recovery with retry logic and fallbacks
-4. > 95% test pass rate achieved across all tests
-   > **Plans**: TBD
-
-Plans:
-
-- [ ] 53-01: Implement blockchain event listeners (PROD-01)
-- [ ] 53-02: Add real-time state updates (PROD-02)
-- [ ] 53-03: Improve error recovery mechanisms (PROD-03)
-- [ ] 53-04: Achieve >95% test pass rate (PROD-04)
+</details>
 
 ## Progress
 
 **Execution Order:**
 Phases execute in numeric order: 49 → 50 → 51 → 52 → 53
 
-| Phase                              | Milestone | Plans Complete | Status      | Completed |
-| ---------------------------------- | --------- | -------------- | ----------- | --------- |
-| 49. Critical Security Fixes        | v0.5.0    | 0/4            | Not started | -         |
-| 50. High-Severity Security Fixes   | v0.5.0    | 0/7            | Not started | -         |
-| 51. Medium-Severity Security Fixes | v0.5.0    | 0/8            | Not started | -         |
-| 52. E2E Test Fixes                 | v0.5.0    | 0/4            | Not started | -         |
-| 53. Production Readiness           | v0.5.0    | 0/4            | Not started | -         |
+| Phase                              | Milestone | Plans Complete | Status      | Completed  |
+| ---------------------------------- | --------- | -------------- | ----------- | ---------- |
+| 49. Critical Security Fixes        | v0.5.0    | 4/4            | ✅ Complete | 2026-04-29 |
+| 50. High-Severity Security Fixes   | v0.5.0    | 6/7            | ✅ Complete | 2026-04-29 |
+| 51. Medium-Severity Security Fixes | v0.5.0    | 1/1            | ✅ Complete | 2026-04-30 |
+| 52. E2E Test Fixes                 | v0.5.0    | 2/2            | ✅ Complete | 2026-04-30 |
+| 53. Production Readiness           | v0.5.0    | 2/2            | ✅ Complete | 2026-04-30 |

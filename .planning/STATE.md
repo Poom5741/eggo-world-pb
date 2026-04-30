@@ -5,12 +5,12 @@
 See: .planning/PROJECT.md
 
 **Core value:** Gamified NFT marketplace on BSC
-**Current focus:** v0.5.0 Phase 53 — Production Readiness (verification done, pass rate below threshold)
+**Current focus:** v0.5.0 — SHIPPED 2026-04-30
 
 ## Current Position
 
 Phase: 53 of 53
-Status: All phases complete — 100% test pass rate, production hooks deployed, test users created
+Status: ✅ v0.5.0 SHIPPED — 16/16 plans, 350/350 tests, all verification criteria met
 Progress: [████████████████████] 100%
 
 ## Performance Metrics
