@@ -114,7 +114,7 @@ contract EggFeedingTest is Test {
         foodNFT.feedEgg(egg_token_id, food_ids, address(eggNFT));
         vm.stopPrank();
         
-        (,,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[0]);
+        (,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[0]);
         assertTrue(is_consumed, "Food should be consumed");
         
         uint256 balance = foodNFT.balanceOf(buyer, food_ids[0]);
@@ -204,7 +204,7 @@ contract EggFeedingTest is Test {
         vm.stopPrank();
         
         for (uint256 i = 0; i < food_ids.length; i++) {
-            (,,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[i]);
+            (,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[i]);
             assertTrue(is_consumed, "Food should be consumed");
             
             uint256 balance = foodNFT.balanceOf(buyer, food_ids[i]);

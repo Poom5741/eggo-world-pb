@@ -122,7 +122,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         console.log("\n--- Step 4: Verifying Food NFTs Burned ---");
         uint256 burnedCount = 0;
         for (uint256 i = 0; i < food_ids.length; i++) {
-            (,,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[i]);
+            (,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[i]);
             if (is_consumed) {
                 burnedCount++;
             }
@@ -156,8 +156,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         // Verify ownership
         uint256 ownedCount = 0;
         for (uint256 i = 0; i < food_ids.length; i++) {
-            (, address owner,,,) = foodNFT.getFoodProperties(food_ids[i]);
-            if (owner == buyer) {
+            if (foodNFT.balanceOf(buyer, food_ids[i]) > 0) {
                 ownedCount++;
             }
         }
@@ -181,7 +180,7 @@ contract FoodNFTAnvilIntegrationTest is Test {
         
         for (uint256 i = 0; i < totalMints; i++) {
             uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
-            (,, FoodType foodType,,) = foodNFT.getFoodProperties(food_ids[0]);
+            (,FoodType foodType,,) = foodNFT.getFoodProperties(food_ids[0]);
             
             if (foodType == FoodType.Grain) grainCount++;
             else if (foodType == FoodType.Fish) fishCount++;

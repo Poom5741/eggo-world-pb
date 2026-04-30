@@ -77,8 +77,8 @@ contract FoodNFTTest is Test {
         
         assertEq(food_ids.length, 1, "Should mint 1 Food NFT");
         
-        (, address foodOwner,,,) = foodNFT.getFoodProperties(food_ids[0]);
-        assertEq(foodOwner, buyer, "Buyer should own the food NFT");
+        (,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[0]);
+        assertEq(foodNFT.balanceOf(buyer, food_ids[0]), 1, "Buyer should own the food NFT");
     }
     
     function test_BatchMint10FoodNFTs() public {
@@ -91,8 +91,8 @@ contract FoodNFTTest is Test {
         assertEq(food_ids.length, 10, "Should mint 10 Food NFTs");
         
         for (uint256 i = 0; i < food_ids.length; i++) {
-            (, address foodOwner,,,) = foodNFT.getFoodProperties(food_ids[i]);
-            assertEq(foodOwner, buyer);
+            (,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[i]);
+            assertEq(foodNFT.balanceOf(buyer, food_ids[i]), 1, "Should own food NFT");
         }
     }
     
@@ -128,7 +128,7 @@ contract FoodNFTTest is Test {
         
         for (uint256 i = 0; i < totalMints; i++) {
             uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
-            (,, FoodType foodType,,) = foodNFT.getFoodProperties(food_ids[0]);
+            (, FoodType foodType,,) = foodNFT.getFoodProperties(food_ids[0]);
             
             if (foodType == FoodType.Grain) grainCount++;
             else if (foodType == FoodType.Fish) fishCount++;
@@ -165,7 +165,7 @@ contract FoodNFTTest is Test {
         assertEq(foodCount, 12, "Egg should have 12 food items (2 initial + 10)");
         
         for (uint256 i = 0; i < food_ids.length; i++) {
-            (,,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[i]);
+            (,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[i]);
             assertTrue(is_consumed, "Food should be consumed");
         }
     }
@@ -331,8 +331,8 @@ contract FoodNFTTest is Test {
         vm.stopPrank();
         
         for (uint256 i = 0; i < food_ids.length; i++) {
-            (, address foodOwner,,,) = foodNFT.getFoodProperties(food_ids[i]);
-            assertEq(foodOwner, buyer, "Buyer should own food NFT");
+            (,,bool is_consumed,) = foodNFT.getFoodProperties(food_ids[i]);
+            assertEq(foodNFT.balanceOf(buyer, food_ids[i]), 1, "Buyer should own food NFT");
         }
     }
 }

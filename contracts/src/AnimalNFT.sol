@@ -128,7 +128,7 @@ contract AnimalNFT is ERC721, Ownable {
             uint256 rarity_upgrade_count
         )
     {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         
         AnimalProperties memory props = _animalProperties[tokenId];
         
@@ -153,17 +153,17 @@ contract AnimalNFT is ERC721, Ownable {
     }
     
     function getRarity(uint256 tokenId) external view returns (Rarity) {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         return _animalProperties[tokenId].rarity;
     }
     
     function getSpecies(uint256 tokenId) external view returns (Species) {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         return _animalProperties[tokenId].species;
     }
     
     function getGeneration(uint256 tokenId) external view returns (uint256) {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         return _animalProperties[tokenId].generation;
     }
     
@@ -176,7 +176,7 @@ contract AnimalNFT is ERC721, Ownable {
     }
     
     function canBreed(uint256 tokenId) external view returns (bool) {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         uint256 lastBred = _lastBredTimestamp[tokenId];
         return lastBred == 0 || block.timestamp >= lastBred + BREED_COOLDOWN;
     }

@@ -186,7 +186,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         uint256 rarity_upgrade_count,
         uint256 generation
     ) {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         
         EggProperties memory props = _eggProperties[tokenId];
         return (
@@ -267,11 +267,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         uint256 randomWord = hatchRandomness[requestId];
         require(randomWord != 0, "VRF randomness not yet fulfilled");
         
-        // Calculate final seed using VRF randomness
-        uint256 finalSeed = uint256(keccak256(abi.encodePacked(
-            props.rarity_seed,
-            randomWord
-        )));
+        // Calculate final seed using VRF randomness only (dropped pseudorandom rarity_seed mixing)
+        uint256 finalSeed = randomWord;
         
         // Determine rarity and species
         Rarity rarity = _calculateRarity(finalSeed, props.rarity_upgrade_count);
@@ -470,6 +467,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         
         EggProperties storage props = _eggProperties[egg_token_id];
         require(!props.is_hatched, "Egg already hatched");
+        require(props.food_count + food_ids.length <= MAX_FOOD_COUNT + MAX_UPGRADE_FOOD, "Food cap exceeded");
         
         for (uint256 i = 0; i < food_ids.length; i++) {
             _foodTypeHistory[egg_token_id][props.food_count] = food_types[i];
@@ -482,7 +480,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         view
         returns (FoodType[] memory)
     {
-        require(ownerOf(egg_token_id) != address(0), "Token does not exist");
+        require(_ownerOf(egg_token_id) != address(0), "Token does not exist");
         
         EggProperties memory props = _eggProperties[egg_token_id];
         FoodType[] memory history = new FoodType[](props.food_count);
@@ -502,17 +500,17 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     }
     
     function getFoodCount(uint256 tokenId) external view returns (uint256) {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         return _eggProperties[tokenId].food_count;
     }
     
     function isEggHatched(uint256 tokenId) external view returns (bool) {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         return _eggProperties[tokenId].is_hatched;
     }
     
     function getReferralChain(uint256 tokenId) external view returns (address[4] memory) {
-        require(ownerOf(tokenId) != address(0), "Token does not exist");
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
         return _eggProperties[tokenId].referral_chain;
     }
     
@@ -665,7 +663,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     }
     
     function getAnimalId(uint256 eggTokenId) external view returns (uint256) {
-        require(ownerOf(eggTokenId) != address(0), "Token does not exist");
+        require(_ownerOf(eggTokenId) != address(0), "Token does not exist");
         return _eggProperties[eggTokenId].animal_token_id;
     }
     

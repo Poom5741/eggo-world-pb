@@ -153,17 +153,8 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
         tokenTier[tokenId] = tierId;  // Map tokenId → tierId
         userHighestTier[user] = tierId;
         
-        // Transfer USDT reward from CoinStor reserve
-        try IERC20(address(usdtToken)).transferFrom(
-            coinstorReserve,
-            user,
-            tier.rewardAmount
-        ) returns (bool) {
-            // Transfer succeeded
-        } catch {
-            // Handle Safe ERC20 transfer failure gracefully
-            emit TierClaimFailed(user, tierId, "USDT transfer failed");
-        }
+        // Transfer USDT reward from CoinStor reserve (reverts on failure — don't mint if can't pay)
+        SafeERC20.safeTransferFrom(usdtToken, coinstorReserve, user, tier.rewardAmount);
         
         // Emit soulbound locked event
         emit Locked(tokenId);
@@ -268,40 +259,5 @@ contract TierBadge is ERC721, Ownable, IERC5192, ReentrancyGuard {
             value /= 10;
         }
         return string(buffer);
-    }
-    
-    /// @dev Base64 encode bytes
-    function _encodeBase64(bytes memory data) internal pure returns (string memory) {
-        bytes memory TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        uint256 len = data.length;
-        if (len == 0) return "";
-        uint256 encodedLen = 4 * ((len + 2) / 3);
-        bytes memory result = new bytes(encodedLen + 32);
-        
-        uint256 i;
-        uint256 j;
-        
-        for (i = 0; i < len; i += 3) {
-            uint256 a = i < len ? uint256(uint8(data[i])) : 0;
-            uint256 b = i + 1 < len ? uint256(uint8(data[i + 1])) : 0;
-            uint256 c = i + 2 < len ? uint256(uint8(data[i + 2])) : 0;
-            
-            uint256 triple = (a << 16) | (b << 8) | c;
-            
-            result[j++] = TABLE[triple >> 18 & 0x3F];
-            result[j++] = TABLE[triple >> 12 & 0x3F];
-            result[j++] = TABLE[triple >> 6 & 0x3F];
-            result[j++] = TABLE[triple & 0x3F];
-        }
-        
-        // Padding
-        if (len % 3 == 1) {
-            result[encodedLen - 2] = bytes1(uint8(61)); // '='
-            result[encodedLen - 1] = bytes1(uint8(61)); // '='
-        } else if (len % 3 == 2) {
-            result[encodedLen - 1] = bytes1(uint8(61)); // '='
-        }
-        
-        return string(result);
     }
 }

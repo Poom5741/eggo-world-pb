@@ -81,7 +81,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         
         assertEq(address(foodNFT.usdtToken()), address(mockUSDT));
         assertEq(foodNFT.MINT_PRICE(), FOOD_MINT_PRICE);
-        assertEq(eggNFT.MINT_PRICE(), EGG_MINT_PRICE);
+        assertEq(eggNFT.mintPrice(), EGG_MINT_PRICE);
         
         console.log("[OK] All contracts deployed successfully");
     }
@@ -413,15 +413,15 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("=======================================================");
         uint256 totalFood = batch1.length + batch2.length + batch3.length;
         for (uint256 i = 0; i < batch1.length; i++) {
-            (,,,bool consumed,) = foodNFT.getFoodProperties(batch1[i]);
+            (,,bool consumed,) = foodNFT.getFoodProperties(batch1[i]);
             require(consumed, "Food should be consumed");
         }
         for (uint256 i = 0; i < batch2.length; i++) {
-            (,,,bool consumed,) = foodNFT.getFoodProperties(batch2[i]);
+            (,,bool consumed,) = foodNFT.getFoodProperties(batch2[i]);
             require(consumed, "Food should be consumed");
         }
         for (uint256 i = 0; i < batch3.length; i++) {
-            (,,,bool consumed,) = foodNFT.getFoodProperties(batch3[i]);
+            (,,bool consumed,) = foodNFT.getFoodProperties(batch3[i]);
             require(consumed, "Food should be consumed");
         }
         console.log("Total food items burned: %s", totalFood);
