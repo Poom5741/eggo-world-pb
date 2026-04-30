@@ -14,45 +14,27 @@ export function createClient(): PocketBase {
       const stored = localStorage.getItem('pocketbase_auth')
       if (stored) {
         try {
-          const { token, model } = JSON.parse(stored)
-          pb.authStore.save(token, model)
+          const { token, record } = JSON.parse(stored)
+          // PocketBase v0.25.2: use 'record' key (not 'model') for compat
+          const model = record || JSON.parse(stored).model
+          if (token && model?.id) {
+            pb.authStore.save(token, model)
+          }
         } catch {
           localStorage.removeItem('pocketbase_auth')
         }
       }
 
-      // Step 2: Fallback to pb_auth cookie if localStorage is empty
-      // This handles direct page access where cookie exists but localStorage might be out of sync
-      if (!pb.authStore.token) {
-        const cookieName = 'pb_auth='
-        const cookies = document.cookie.split(';')
-        const pbAuthCookie = cookies.find(cookie => {
-          const trimmed = cookie.trim()
-          return trimmed.startsWith(cookieName)
-        })
-        
-        if (pbAuthCookie) {
-          const token = pbAuthCookie.substring(cookieName.length).trim()
-          if (token) {
-            // Attempt to reload user data with the cookie token
-            // This is a best-effort attempt; if it fails, auth will still work via onChange
-            console.log('[PocketBase] Restored auth from cookie')
-            // We don't save the model yet - it will be populated via onChange when user data is fetched
-            pb.authStore.save(token, null)
-          }
-        }
-      }
+      // Step 2: Don't save token without model from cookie - it clears the model
+      // Instead, rely on localStorage which is set by handleE2eLogin
 
       // Subscribe to authStore changes to sync with localStorage and cookie
       pb.authStore.onChange((token, model) => {
         if (token && model) {
-          // บันทึก auth ใน localStorage สำหรับ client-side
-          localStorage.setItem('pocketbase_auth', JSON.stringify({ token, model }))
-          // ตั้งค่า cookie pb_auth เพื่อให้ middleware อ่านได้
+          localStorage.setItem('pocketbase_auth', JSON.stringify({ token, record: model }))
           document.cookie = `pb_auth=${token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
         } else {
           localStorage.removeItem('pocketbase_auth')
-          // ลบ cookie เมื่อ logout
           document.cookie = 'pb_auth=; path=/; max-age=0'
         }
       })
@@ -75,30 +57,46 @@ export function isAuthenticated(): boolean {
 
 export function getUser() {
   const client = createClient()
-  return client.authStore.record || client.authStore.model
+  const record = client.authStore.record
+  const model = client.authStore.model
+  return record?.id ? record : model?.id ? model : null
 }
 
-// NEW: Restore user model from token
+// Restore user model from token or localStorage
 export async function restoreAuth(client: PocketBase): Promise<boolean> {
-  if (!client.authStore.token) {
-    return false
+  // First check localStorage for complete auth data
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('pocketbase_auth')
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        const record = parsed.record || parsed.model
+        if (parsed.token && record?.id) {
+          client.authStore.save(parsed.token, record)
+          return true
+        }
+      } catch {}
+    }
   }
   
-  if (client.authStore.record?.id) {
-    return true // Already has user data
+  // Fallback: try to refresh auth with existing token
+  if (client.authStore.token && !getUser()) {
+    try {
+      const refreshedRecord = await client.collection('users').authRefresh()
+      const record = refreshedRecord?.record || refreshedRecord
+      if (record?.id) {
+        client.authStore.save(client.authStore.token, record)
+        console.log('[PocketBase] Auth restored via refresh:', record.id)
+        return true
+      }
+    } catch (error) {
+      console.warn('[PocketBase] Auth refresh failed:', error)
+      client.authStore.clear()
+      return false
+    }
   }
   
-  try {
-    // Refresh auth to get user model from token
-    const refreshedRecord = await client.collection('users').authRefresh()
-    console.log('[PocketBase] Auth restored:', refreshedRecord.record?.id)
-    return !!refreshedRecord.record?.id
-  } catch (error) {
-    console.warn('[PocketBase] Auth refresh failed:', error)
-    // Token is invalid - clear auth
-    client.authStore.clear()
-    return false
-  }
+  return !!getUser()
 }
 
 export function logout() {

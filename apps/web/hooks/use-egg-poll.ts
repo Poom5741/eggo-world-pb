@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/pocketbase/client'
+import { createClient, restoreAuth } from '@/lib/pocketbase/client'
 import { fetchJsonWithRetry } from '../lib/fetch-retry'
 
 /**
@@ -57,7 +57,7 @@ export function useEggPoll(
   intervalMs: number = 30000 // 30 seconds per D-16
 ): UseEggPollReturn {
   const [eggs, setEggs] = useState<EggData[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [pollInterval, setPollInterval] = useState(intervalMs)
   const [errorCount, setErrorCount] = useState(0)
@@ -70,6 +70,7 @@ export function useEggPoll(
   const fetchEggs = useCallback(async () => {
     // No user ID, empty string, or "null" string - skip fetch
     if (!userId || userId === '' || userId === 'null') {
+      setLoading(false)
       return
     }
 
@@ -77,6 +78,9 @@ export function useEggPoll(
     try {
       // Get PocketBase client
       const pb = createClient()
+      
+      // Ensure auth is restored before making API call
+      await restoreAuth(pb)
       
       // Use retry logic via direct fetch with the retry utility
       const url = `${pb.baseUrl}/api/collections/egg_nfts/records`

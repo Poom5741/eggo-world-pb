@@ -9,7 +9,7 @@ import { AnimalCard } from '@/components/animal-nft/AnimalCard'
 import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog'
 import { BreedingDialog } from '@/components/breeding/BreedingDialog'
 import { BreedingResult } from '@/hooks/use-breeding'
-import { createClient } from '@/lib/pocketbase/client'
+import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
 import { toast } from 'sonner'
 
 export default function Animals() {
@@ -27,17 +27,36 @@ export default function Animals() {
   const [breedingDialogOpen, setBreedingDialogOpen] = useState(false)
   const [breedingParent1, setBreedingParent1] = useState<AnimalData | null>(null)
 
-  const user = isHydrated ? pb.authStore.record : null
+  const [user, setUser] = useState<any>(null)
+  const [authReady, setAuthReady] = useState(false)
+
+  useEffect(() => {
+    if (isHydrated) {
+      restoreAuth(pb).then((restored) => {
+        const u = getUser()
+        setUser(u)
+        setAuthReady(true)
+        if (restored) console.log('[Animals] Auth restored:', u?.id)
+      })
+    }
+  }, [isHydrated])
 
   // Use user ID for querying animal_nfts (owner field is a relation to users collection)
   const effectiveUserId = user?.id || ''
   const { animals, loading, refresh, polling } = useAnimalPoll(effectiveUserId, 30000)
 
   useEffect(() => {
-    if (isHydrated && !user) {
+    if (authReady && !user) {
       router.push('/auth/login')
     }
-  }, [isHydrated, user, router])
+  }, [authReady, user, router])
+
+  // Force refresh animals when auth becomes ready
+  useEffect(() => {
+    if (authReady && user?.id) {
+      refresh()
+    }
+  }, [authReady, user?.id])
 
   // ฟังก์ชันจัดการเมื่อผู้ใช้กดปุ่มขาย
   // Handler when user clicks sell button
@@ -70,7 +89,7 @@ export default function Animals() {
     setIsCreatingListing(false)
   }
 
-  if (!isHydrated || loading) {
+  if (!authReady || loading) {
     return (
       <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
@@ -97,11 +116,7 @@ export default function Animals() {
     )
   }
 
-  if (!user) {
-    return null
-  }
-  // Not authenticated
-  if (!user) {
+  if (authReady && !user) {
     return null
   }
   

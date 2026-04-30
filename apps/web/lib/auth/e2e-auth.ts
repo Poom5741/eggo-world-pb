@@ -120,11 +120,11 @@ export async function handleE2eLogin(testUser: E2ETestUser, redirectTo?: string)
       throw lastError || new Error('All authentication attempts failed')
     }
 
-    // Store auth token in localStorage in the format PocketBase client expects
-    // client.ts line 17 expects: { token, model } (not { token, record })
+    // Store auth token in localStorage
+    // PocketBase v0.25.2 client uses 'record' key from API response
     const authStorage = {
       token: authData.token,
-      model: authData.record,  // PocketBase API returns 'record', but client expects 'model'
+      record: authData.record,
     }
     localStorage.setItem('pocketbase_auth', JSON.stringify(authStorage))
 

@@ -18,26 +18,26 @@ const MOCK_BLOCKCHAIN = process.env.MOCK_BLOCKCHAIN === 'true'
  * EGG NFT contract address for ChainId 7117 (Anvil testnet)
  * Updated to local test contract deployment
  */
-export const EGG_NFT_ADDRESS = '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512'
+export const EGG_NFT_ADDRESS = '0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8'
 
 /**
  * ANIMAL NFT contract address for ChainId 7117 (Anvil testnet)
  * Updated to local test contract deployment
  */
-export const ANIMAL_NFT_ADDRESS = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'
+export const ANIMAL_NFT_ADDRESS = '0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9'
 
 /**
  * FOOD NFT contract address for ChainId 7117 (Anvil testnet)
  * Updated to local test contract deployment
  */
-export const FOOD_NFT_ADDRESS = '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9'
+export const FOOD_NFT_ADDRESS = '0x851356ae760d987E095750cCeb3bC6014560891C'
 
 /**
  * COMMISSION DISTRIBUTION contract address for ChainId 7117 (Anvil testnet)
  * Phase 48: Referral Commission Journey Test
  * Updated to local test contract deployment
  */
-export const COMMISSION_DISTRIBUTION_ADDRESS = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'
+export const COMMISSION_DISTRIBUTION_ADDRESS = '0x9E545E3C0baAB3E08CdfD552C960A1050f373042'
 
 /**
  * Result of triple verification
@@ -124,7 +124,7 @@ export async function verifyEggOwnership(
   let pbOwnerId = ''
   try {
     const response = await fetch(
-      `${pocketbaseUrl}/api/collections/eggs/records?filter=(token_id='${tokenId}')`
+      `${pocketbaseUrl}/api/collections/egg_nfts/records?filter=(token_id='${tokenId}')`
     )
     if (response.ok) {
       const data = await response.json()
@@ -333,7 +333,7 @@ export async function getAnimalTokenIdForUser(userId: string): Promise<number | 
 
   try {
     const response = await fetch(
-      `${pocketbaseUrl}/api/collections/animals/records?filter=(owner='${userId}')&sort=-created&pageSize=1`
+      `${pocketbaseUrl}/api/collections/animal_nfts/records?filter=(owner='${userId}')&sort=-created&pageSize=1`
     )
 
     if (response.ok) {
@@ -447,6 +447,22 @@ export async function isErrorToastVisible(page: Page): Promise<boolean> {
  * @param timeoutMs - Timeout in milliseconds (default 30s)
  */
 export async function waitForPurchaseComplete(page: Page, timeoutMs = 30000): Promise<void> {
+  // Debug: log current URL before waiting
+  const currentUrl = page.url()
+  console.log(`[waitForPurchaseComplete] Starting wait. Current URL: ${currentUrl}`)
+
+  // Try to find error text on page
+  const pageText = await page.locator('body').textContent().catch(() => '') || ''
+  const hasError = pageText.includes('Purchase Failed') || pageText.includes('error')
+  console.log(`[waitForPurchaseComplete] Page has error text: ${hasError}`)
+  
+  if (hasError) {
+    // Log the error text
+    const errorEl = page.locator('[class*="error"], [role="alert"], [data-sonner-toast]').first()
+    const errorText = await errorEl.textContent().catch(() => 'unknown')
+    console.log(`[waitForPurchaseComplete] Error found: ${errorText}`)
+  }
+
   // Wait for redirect to eggs/inventory page
   await page.waitForURL(/eggs|inventory/, { timeout: timeoutMs })
   await page.waitForLoadState('networkidle')
@@ -531,7 +547,7 @@ export async function verifyOwnershipTransfer(
   let pbOwnerAfter = ''
   try {
     const response = await fetch(
-      `${pocketbaseUrl}/api/collections/animals/records?filter=(token_id='${tokenId}')`
+      `${pocketbaseUrl}/api/collections/animal_nfts/records?filter=(token_id='${tokenId}')`
     )
     if (response.ok) {
       const data = await response.json()
@@ -693,7 +709,7 @@ export async function verifyAnimalOwnership(
   let pbOwnerId = ''
   try {
     const response = await fetch(
-      `${pocketbaseUrl}/api/collections/animals/records?filter=(token_id='${tokenId}')`
+      `${pocketbaseUrl}/api/collections/animal_nfts/records?filter=(token_id='${tokenId}')`
     )
     if (response.ok) {
       const data = await response.json()

@@ -144,7 +144,7 @@ test.describe('Referral Commission Journey', () => {
     expect(anvilRpcUrl).toBeTruthy()
 
     // Verify contract address is set correctly
-    expect(COMMISSION_DISTRIBUTION_ADDRESS).toBe('0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9')
+    expect(COMMISSION_DISTRIBUTION_ADDRESS).toBe('0x9E545E3C0baAB3E08CdfD552C960A1050f373042')
 
     // Verify test_referrer address is correct (Per D-06)
     expect(TEST_USERS.test_referrer.walletAddress).toBe('0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC')
@@ -202,7 +202,7 @@ test.describe('Referral Commission Helpers Integration', () => {
     expect(typeof verifyCommissionBalance).toBe('function')
 
     // Verify contract address constant
-    expect(COMMISSION_DISTRIBUTION_ADDRESS).toBe('0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9')
+    expect(COMMISSION_DISTRIBUTION_ADDRESS).toBe('0x9E545E3C0baAB3E08CdfD552C960A1050f373042')
   })
 
   /**

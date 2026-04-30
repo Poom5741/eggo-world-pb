@@ -7,7 +7,7 @@ import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { useEggPoll, EggData } from '@/hooks/use-egg-poll'
 import { FeaturedEggHero } from '@/components/eggs/featured-egg-hero'
 import { EggCard } from '@/components/eggs/egg-card'
-import { createClient } from '@/lib/pocketbase/client'
+import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
 import { Egg } from 'lucide-react'
 import dynamic from 'next/dynamic'
 
@@ -70,17 +70,30 @@ export default function Eggs() {
   // State for mint modal - สถานะสำหรับ mint modal
   const [isMintModalOpen, setIsMintModalOpen] = useState(false)
   
-  // Get authenticated user (after hydration)
-  const user = isHydrated ? pb.authStore.record : null
+  // Get authenticated user (after hydration) using getUser() for v0.25.2 compat
+  const [user, setUser] = useState<any>(null)
+  const [authReady, setAuthReady] = useState(false)
+  
+  useEffect(() => {
+    if (isHydrated) {
+      // Try to restore auth from token if model is missing
+      restoreAuth(pb).then((restored) => {
+        const u = getUser()
+        setUser(u)
+        setAuthReady(true)
+        if (restored) {
+          console.log('[Eggs] Auth restored, user:', u?.id)
+        }
+      })
+    }
+  }, [isHydrated])
   
   // Fetch user profile to get wallet if not in auth record
   const [_userWallet, _setUserWallet] = useState<string | undefined>(undefined)
   
   useEffect(() => {
-    if (isHydrated && user?.id) {
-      // Fetch full user record to get wallet field
+    if (authReady && user?.id) {
       pb.collection('users').getOne(user.id).then((userData: any) => {
-        // Ensure wallet is a valid string, not null/undefined/"null"
         const wallet = userData.wallet
         if (wallet && typeof wallet === 'string' && wallet !== 'null') {
           _setUserWallet(wallet)
@@ -89,17 +102,24 @@ export default function Eggs() {
         }
       }).catch(console.error)
     }
-  }, [isHydrated, user?.id])
+  }, [authReady, user?.id])
   
   // Fetch eggs with auto-polling (uses user ID since owner is relation to users)
   const { eggs, loading, refresh, polling } = useEggPoll(user?.id, 30000)
   
-  // Auth guard - redirect to login if not authenticated
+  // Force refresh eggs when auth becomes ready
   useEffect(() => {
-    if (isHydrated && !user) {
+    if (authReady && user?.id) {
+      refresh()
+    }
+  }, [authReady, user?.id])
+  
+  // Auth guard - redirect to login if not authenticated (wait for authReady)
+  useEffect(() => {
+    if (authReady && !user) {
       router.push('/auth/login')
     }
-  }, [isHydrated, user, router])
+  }, [authReady, user, router])
   
   // Refresh eggs when page gains focus (e.g., after breeding success navigation)
   // รีเฟรชไข่เมื่อหน้ากลับมาโฟกัส (เช่น หลังจากนำทางจาก breeding success)
@@ -162,8 +182,8 @@ export default function Eggs() {
     refresh()
   }
   
-  // Loading state - แสดงสถานะกำลังโหลด
-  if (!isHydrated || loading) {
+  // Loading state - แสดงสถานะกำลังโหลด (wait for authReady + egg poll)
+  if (!authReady || loading) {
     return (
       <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
@@ -199,7 +219,7 @@ export default function Eggs() {
   }
   
   // Not authenticated - จะถูก redirect ไป login
-  if (!user) {
+  if (authReady && !user) {
     return null
   }
   

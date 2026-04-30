@@ -93,26 +93,32 @@ function logGasSponsorship(operation, userId, receipt) {
 
 // Minimal ABI for EggNFT (mintEgg function)
 const EGG_NFT_ABI = [
-  "function mintEgg(uint256 eggId) external payable returns (uint256)",
+  "function mintEgg(address referrer) external returns (uint256)",
+  "function mintEggWithChain(address[4] calldata referrers) external returns (uint256)",
   "function mintPrice() external view returns (uint256)",
   "function tokenOfOwnerByIndex(address owner, uint256 index) external view returns (uint256)",
   "function ownerOf(uint256 tokenId) external view returns (address)",
-  "function setFoodNFTContract(address _foodNft) external",
-  "function setAnimalNFTContract(address _animalNft) external",
-  "function feedEgg(uint256 eggTokenId, uint256[] calldata foodTokenIds) external",
+  "function getFoodCount(uint256 tokenId) external view returns (uint256)",
+  "function isEggHatched(uint256 tokenId) external view returns (bool)",
+  "function getEggProperties(uint256 tokenId) external view returns (uint256,address,uint256,bool,uint256,address[4],uint256,uint256,uint256,bool,uint256,uint256)",
+  "function recordFoodConsumption(uint256 eggTokenId, uint256[] calldata foodTokenIds, uint8[] calldata foodTypes) external",
+  "function hatchEgg(uint256 tokenId) external returns (uint256)",
   "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
 ];
 
 // Minimal ABI for FoodNFT (mint function)
 const FOOD_NFT_ABI = [
-  "function mint(address to, uint256 foodType, uint256 quantity) external payable returns (uint256[] memory)",
-  "function mintPrice() external view returns (uint256)",
-  "function setEggNFTContract(address _eggNft) external"
+  "function mintFood(uint256 quantity, address referrer) external returns (uint256[] memory)",
+  "function MINT_PRICE() external view returns (uint256)",
+  "function feedEgg(uint256 eggTokenId, uint256[] calldata foodTokenIds, address eggNftContract) external",
+  "function setEggNFTContract(address _eggNft) external",
+  "function burnFood(uint256 tokenId) external",
+  "function burnFoodFor(address user, uint256 tokenId) external"
 ];
 
 // Minimal ABI for CommissionDistribution
 const COMMISSION_ABI = [
-  "function claimCommission() external returns (uint256)",
+  "function claimCommissionUSDT() external",
   "function getCommissionBalance(address user) external view returns (uint256)",
   "function setEggNFTContract(address _eggNft) external",
   "function setFoodNFTContract(address _foodNft) external"

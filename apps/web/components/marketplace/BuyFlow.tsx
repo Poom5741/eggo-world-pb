@@ -219,8 +219,8 @@ export function BuyFlow({
       setIsDialogOpen(false)
       setIsPurchasing(false)
       
-      // Redirect ไป inventory
-      router.push('/inventory')
+      // Redirect ไป inventory (eggs page) - use window.location for static export compatibility
+      window.location.href = '/eggs/'
     } catch (err: unknown) {
       console.error('Purchase error:', err)
       setIsPurchasing(false)
