@@ -236,10 +236,9 @@ export default function Home() {
             <div>
               <h4 className="font-black mb-6">Resources</h4>
               <ul className="space-y-4 text-[var(--on-surface)]-variant">
-                <li><Link href="/coming-soon" className="hover:text-[var(--primary)]" aria-disabled="true">Documentation</Link></li>
-                <li><Link href="/coming-soon" className="hover:text-[var(--primary)]" aria-disabled="true">Hatching Guide</Link></li>
-                <li><Link href="/coming-soon" className="hover:text-[var(--primary)]" aria-disabled="true">Tokenomics</Link></li>
-                <li><Link href="/coming-soon" className="hover:text-[var(--primary)]" aria-disabled="true">Support</Link></li>
+                <li><Link href="/eggs" className="hover:text-[var(--primary)]">Hatching Guide</Link></li>
+                <li><Link href="/dashboard/tiers" className="hover:text-[var(--primary)]">Tokenomics</Link></li>
+                <li><Link href="/support" className="hover:text-[var(--primary)]">Support</Link></li>
               </ul>
             </div>
 
@@ -256,8 +255,8 @@ export default function Home() {
           <div className="max-w-7xl mx-auto py-8 flex flex-col md:flex-row justify-between items-center text-sm text-[var(--on-surface)]-variant/60">
             <p>© 2024 EggoWorld Labs. All rights reserved.</p>
             <div className="flex space-x-8 mt-4 md:mt-0">
-              <Link href="/coming-soon" aria-disabled="true">Privacy Policy</Link>
-              <Link href="/coming-soon" aria-disabled="true">Terms of Service</Link>
+              <Link href="/legal/privacy">Privacy Policy</Link>
+              <Link href="/legal/terms">Terms of Service</Link>
             </div>
           </div>
         </footer>

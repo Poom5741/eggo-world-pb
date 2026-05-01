@@ -473,3 +473,217 @@ function fetchWithRetry(url, options, maxRetries = 3) {
         }
     }
 }
+
+/**
+ * Request Breed (VRF Phase 1)
+ * POST /api/v2/breed-animals/request
+ * 
+ * Validates parents, deducts fee, requests VRF via wallet-api
+ */
+routerAdd("POST", "/api/v2/breed-animals/request", (e) => {
+    try {
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        const user = $app.findRecordById("users", userId);
+        if (!user) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+        
+        const body = e.parseBody();
+        const { parent1_token_id, parent2_token_id, referrer_address } = body;
+        
+        if (!parent1_token_id || !parent2_token_id) {
+            return e.json(400, { success: false, error: { message: "parent1_token_id and parent2_token_id required", code: "VALIDATION_ERROR" } });
+        }
+        if (parent1_token_id === parent2_token_id) {
+            return e.json(400, { success: false, error: { message: "Cannot breed same animal", code: "CANNOT_BREED_SAME_ANIMAL" } });
+        }
+        
+        // Check USDT balance for breeding fee
+        const wallet = $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', { '@owner': userId });
+        if (!wallet) { return e.json(400, { success: false, error: { message: "Wallet not found", code: "WALLET_NOT_FOUND" } }); }
+        
+        const currentBalance = parseFloat(wallet.get('usdt_balance') || '0');
+        if (currentBalance < BREEDING_FEE) {
+            return e.json(400, { success: false, error: { message: "Insufficient balance for breeding fee (" + BREEDING_FEE + " USDT)", code: "INSUFFICIENT_BALANCE" } });
+        }
+        
+        // Deduct fee
+        wallet.set('usdt_balance', (currentBalance - BREEDING_FEE).toString());
+        $app.dao().saveRecord(wallet);
+        user.set('usdt_balance', (parseFloat(user.get('usdt_balance') || '0') - BREEDING_FEE).toString());
+        $app.dao().saveRecord(user);
+        
+        // Build referral chain & create commission records
+        let referralChain = [null, null, null, null];
+        if (referrer_address) {
+            const referrerWallet = $app.dao().findFirstRecordByFilter('user_wallets', 'wallet = {:wallet}', { '@wallet': referrer_address });
+            if (referrerWallet) {
+                referralChain[0] = referrerWallet.get('wallet');
+                buildReferralChain($app.findRecordById('users', referrerWallet.get('owner')), referralChain, 1);
+            }
+        }
+        if (referralChain[0]) {
+            createCommissionRecords(referralChain, BREEDING_FEE, null, 'breeding');
+        }
+        
+        // Call wallet-api to request VRF breed
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
+        const requestResponse = $http.send({
+            url: WALLET_SRV_URL + '/api/wallet/request-breed',
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: userId,
+                parent1TokenId: parent1_token_id,
+                parent2TokenId: parent2_token_id,
+                referrer: referrer_address || '',
+                eggNftAddress: eggNftAddress
+            })
+        });
+        
+        let responseData;
+        if (requestResponse.json && typeof requestResponse.json === 'object') {
+            responseData = requestResponse.json;
+        } else if (requestResponse.body) {
+            var bodyStr = '';
+            if (Array.isArray(requestResponse.body)) {
+                for (var i = 0; i < requestResponse.body.length; i++) {
+                    bodyStr += String.fromCharCode(requestResponse.body[i]);
+                }
+            } else { bodyStr = requestResponse.body; }
+            responseData = JSON.parse(bodyStr);
+        }
+        
+        if (!responseData || !responseData.success) {
+            return e.json(500, { success: false, error: { message: "VRF breed request failed", code: "BREED_REQUEST_FAILED" } });
+        }
+        
+        return e.json(200, {
+            success: true,
+            data: {
+                request_id: responseData.data.requestId,
+                tx_hash: responseData.data.txHash,
+                status: "vrf_requested",
+                message: "Breed requested. VRF randomness pending — call claim endpoint after ~2 minutes."
+            }
+        });
+    } catch (error) {
+        console.error("Breed request failed:", error);
+        return e.json(500, { success: false, error: { message: error.message, code: "BREED_REQUEST_FAILED" } });
+    }
+});
+
+/**
+ * Claim Breed (VRF Phase 2)
+ * POST /api/v2/breed-animals/claim
+ * 
+ * Claims breed after VRF fulfillment, creates egg record
+ */
+routerAdd("POST", "/api/v2/breed-animals/claim", (e) => {
+    try {
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        
+        const body = e.parseBody();
+        const { request_id } = body;
+        if (!request_id) { return e.json(400, { success: false, error: { message: "request_id required", code: "VALIDATION_ERROR" } }); }
+        
+        // Call wallet-api to claim breed (VRF phase 2)
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
+        const claimResponse = $http.send({
+            url: WALLET_SRV_URL + '/api/wallet/claim-breed',
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: userId,
+                requestId: request_id,
+                eggNftAddress: eggNftAddress
+            })
+        });
+        
+        let responseData;
+        if (claimResponse.json && typeof claimResponse.json === 'object') {
+            responseData = claimResponse.json;
+        } else if (claimResponse.body) {
+            var bodyStr2 = '';
+            if (Array.isArray(claimResponse.body)) {
+                for (var j = 0; j < claimResponse.body.length; j++) {
+                    bodyStr2 += String.fromCharCode(claimResponse.body[j]);
+                }
+            } else { bodyStr2 = claimResponse.body; }
+            responseData = JSON.parse(bodyStr2);
+        }
+        
+        if (!responseData || !responseData.success) {
+            return e.json(400, { success: false, error: { message: "VRF not yet fulfilled or claim failed", code: "BREED_CLAIM_FAILED" } });
+        }
+        
+        const eggTokenId = responseData.data.egg_token_id;
+        const txHash = responseData.data.txHash;
+        
+        // Get parent info from pending breed (stored in request)
+        // Calculate generation and other properties
+        const parent1TokenId = body.parent1_token_id;
+        const parent2TokenId = body.parent2_token_id;
+        const childGeneration = body.child_generation || 1;
+        
+        // Create breeding egg record in PocketBase
+        const eggRecords = $app.dao().findRecordsByFilter('egg_nfts', 'token_id', 'DESC', 1, 1);
+        const nextTokenId = eggRecords.length > 0 ? (eggRecords[0].get('token_id') || 0) + 1 : 1;
+        const now = new Date().toISOString();
+        
+        var breedingEgg;
+        try {
+            breedingEgg = $app.createRecord('egg_nfts');
+        } catch (err) {
+            breedingEgg = $app.dao().createRecord($app.dao().getCollectionByNameOrId('egg_nfts'));
+        }
+        breedingEgg.set('egg_id', nextTokenId - 1);
+        breedingEgg.set('owner', userId);
+        breedingEgg.set('token_id', nextTokenId);
+        breedingEgg.set('contract_address', eggNftAddress);
+        breedingEgg.set('food_count', INITIAL_FOOD_COUNT);
+        breedingEgg.set('is_hatched', false);
+        breedingEgg.set('is_breeding_egg', true);
+        breedingEgg.set('generation', childGeneration);
+        breedingEgg.set('parent1_animal_id', parent1TokenId);
+        breedingEgg.set('parent2_animal_id', parent2TokenId);
+        breedingEgg.set('rarity_upgrade_count', 0);
+        breedingEgg.set('tx_hash', txHash || '');
+        breedingEgg.set('minted_at', now);
+        $app.save(breedingEgg);
+        
+        // Set parent cooldowns
+        if (body.parent1_record_id) {
+            var parent1 = $app.findRecordById('animal_nfts', body.parent1_record_id);
+            if (parent1) {
+                parent1.set('last_bred_at', now);
+                $app.save(parent1);
+            }
+        }
+        if (body.parent2_record_id) {
+            var parent2 = $app.findRecordById('animal_nfts', body.parent2_record_id);
+            if (parent2) {
+                parent2.set('last_bred_at', now);
+                $app.save(parent2);
+            }
+        }
+        
+        return e.json(200, {
+            success: true,
+            data: {
+                egg_id: breedingEgg.id,
+                token_id: nextTokenId,
+                generation: childGeneration,
+                parent1_animal_id: parent1TokenId,
+                parent2_animal_id: parent2TokenId,
+                tx_hash: txHash,
+                status: "confirmed"
+            }
+        });
+    } catch (error) {
+        console.error("Breed claim failed:", error);
+        return e.json(500, { success: false, error: { message: error.message, code: "BREED_CLAIM_FAILED" } });
+    }
+});

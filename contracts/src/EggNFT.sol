@@ -78,6 +78,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     event VRFRequested(uint256 indexed tokenId, uint256 indexed requestId, address indexed requester);
     event VRFulfilled(uint256 indexed requestId, uint256 randomWord);
     event VRFConfigUpdated(uint256 subscriptionId, bytes32 keyHash);
+    event BreedRequested(uint256 indexed requestId, uint256 indexed parent1, uint256 indexed parent2, address requester);
+    event BreedClaimed(uint256 indexed requestId, uint256 indexed eggTokenId, uint256 indexed offspringEggId, Rarity rarity);
     
     // VRF v2.5 state
     uint256 public s_subscriptionId;
@@ -101,6 +103,20 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     mapping(uint256 => PendingHatch) public pendingHatches;
     mapping(uint256 => uint256) private hatchRandomness; // requestId → random word
     mapping(uint256 => uint256) private tokenToRequestId; // tokenId → requestId
+    
+    // Pending breeds: requestId → breed data (H-02: VRF for breeding)
+    struct PendingBreed {
+        address requester;
+        address referrer;
+        uint256 parent1TokenId;
+        uint256 parent2TokenId;
+        Rarity parent1Rarity;
+        Rarity parent2Rarity;
+        uint256 parent1Gen;
+        uint256 parent2Gen;
+    }
+    mapping(uint256 => PendingBreed) public pendingBreeds;
+    uint256 private _nextBreedRequestId;
     
     constructor(
         address payable _commissionDistribution,
@@ -394,29 +410,72 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         emit EggUpgraded(props.egg_id, props.food_count, rarityBonus);
     }
     
-    function breedAnimals(
+    function requestBreed(
         uint256 parent1TokenId,
         uint256 parent2TokenId,
         address referrer
-    ) external nonReentrant whenNotPaused returns (uint256) {
+    ) external nonReentrant whenNotPaused returns (uint256 requestId) {
         require(referrer != msg.sender, "Self-referral");
         require(parent1TokenId != parent2TokenId, "Cannot breed same animal");
         require(AnimalNFT(animalNFTContract).ownerOf(parent1TokenId) == msg.sender, "Not owner of parent1");
         require(AnimalNFT(animalNFTContract).ownerOf(parent2TokenId) == msg.sender, "Not owner of parent2");
         require(AnimalNFT(animalNFTContract).canBreed(parent1TokenId), "Parent 1 on cooldown");
         require(AnimalNFT(animalNFTContract).canBreed(parent2TokenId), "Parent 2 on cooldown");
+        require(animalNFTContract != address(0), "AnimalNFT contract not set");
+        require(s_subscriptionId != 0, "VRF subscription not set");
         
         (,,,Rarity rarity1, uint256 gen1,,,,,) = AnimalNFT(animalNFTContract).getAnimalProperties(parent1TokenId);
         (,,,Rarity rarity2, uint256 gen2,,,,,) = AnimalNFT(animalNFTContract).getAnimalProperties(parent2TokenId);
         
-        uint256 childGeneration = (gen1 > gen2 ? gen1 : gen2) + 1;
-        
+        // Pay breeding fee (USDT) — happens at request time, not at claim
         usdtToken.safeTransferFrom(msg.sender, commissionDistribution, BREEDING_FEE);
         
         address[4] memory referralChain;
         referralChain[0] = referrer;
         CommissionDistribution(commissionDistribution).distributeCommission(referralChain, BREEDING_FEE);
         
+        // Request VRF randomness for offspring rarity
+        requestId = s_vrfCoordinator.requestRandomWords(VRFV2PlusClient.RandomWordsRequest({
+            keyHash: s_keyHash,
+            subId: s_subscriptionId,
+            requestConfirmations: s_requestConfirmations,
+            callbackGasLimit: s_callbackGasLimit,
+            numWords: s_numWords,
+            extraArgs: VRFV2PlusClient._argsToBytes(
+                VRFV2PlusClient.ExtraArgsV1({nativePayment: true})
+            )
+        }));
+        
+        // Store pending breed data
+        pendingBreeds[requestId] = PendingBreed({
+            requester: msg.sender,
+            referrer: referrer,
+            parent1TokenId: parent1TokenId,
+            parent2TokenId: parent2TokenId,
+            parent1Rarity: rarity1,
+            parent2Rarity: rarity2,
+            parent1Gen: gen1,
+            parent2Gen: gen2
+        });
+        
+        emit BreedRequested(requestId, parent1TokenId, parent2TokenId, msg.sender);
+        return requestId;
+    }
+    
+    function claimBreed(uint256 requestId) external nonReentrant whenNotPaused returns (uint256 eggTokenId) {
+        PendingBreed storage breed = pendingBreeds[requestId];
+        require(breed.requester == msg.sender, "Not the requester");
+        require(breed.parent1TokenId != 0, "Breed request not found");
+        
+        uint256 randomWord = hatchRandomness[requestId];
+        require(randomWord != 0, "VRF randomness not yet fulfilled");
+        
+        // Calculate offspring rarity from VRF randomness (H-02 fix)
+        Rarity offspringRarity = _calculateOffspringRarity(breed.parent1Rarity, breed.parent2Rarity, randomWord);
+        
+        uint256 childGeneration = (breed.parent1Gen > breed.parent2Gen ? breed.parent1Gen : breed.parent2Gen) + 1;
+        
+        // Mint breeding egg
         _nextTokenId++;
         _nextEggId++;
         uint256 tokenId = _nextTokenId - 1;
@@ -424,16 +483,8 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         
         _safeMint(msg.sender, tokenId);
         
-        uint256 raritySeed = uint256(keccak256(abi.encodePacked(
-            block.timestamp,
-            block.prevrandao,
-            msg.sender,
-            tokenId,
-            parent1TokenId,
-            parent2TokenId
-        )));
-        
-        Rarity offspringRarity = _calculateOffspringRarity(rarity1, rarity2, raritySeed);
+        address[4] memory referralChain;
+        referralChain[0] = breed.referrer;
         
         _eggProperties[tokenId] = EggProperties({
             egg_id: eggId,
@@ -444,18 +495,24 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
             referral_chain: referralChain,
             animal_token_id: 0,
             is_breeding_egg: true,
-            parent1_animal_id: parent1TokenId,
-            parent2_animal_id: parent2TokenId,
+            parent1_animal_id: breed.parent1TokenId,
+            parent2_animal_id: breed.parent2TokenId,
             rarity_upgrade_count: 0,
             generation: childGeneration
         });
         
-        AnimalNFT(animalNFTContract).recordBreeding(parent1TokenId);
-        AnimalNFT(animalNFTContract).recordBreeding(parent2TokenId);
+        // Record breeding timestamps
+        AnimalNFT(animalNFTContract).recordBreeding(breed.parent1TokenId);
+        AnimalNFT(animalNFTContract).recordBreeding(breed.parent2TokenId);
         
-        emit BreedingEggCreated(eggId, parent1TokenId, parent2TokenId, childGeneration);
+        // Clean up pending breed
+        delete pendingBreeds[requestId];
+        delete hatchRandomness[requestId];
         
-        return eggId;
+        emit BreedClaimed(requestId, tokenId, eggId, offspringRarity);
+        emit BreedingEggCreated(eggId, breed.parent1TokenId, breed.parent2TokenId, childGeneration);
+        
+        return tokenId;
     }
     
     function recordFoodConsumption(
@@ -681,6 +738,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     
     function setVRFConfig(uint256 subscriptionId, bytes32 keyHash) external onlyOwner {
         require(subscriptionId != 0, "Invalid subscription ID");
+        require(keyHash != bytes32(0), "Invalid key hash");
         s_subscriptionId = subscriptionId;
         s_keyHash = keyHash;
         emit VRFConfigUpdated(subscriptionId, keyHash);

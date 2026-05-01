@@ -13,9 +13,9 @@
 **PocketBase OAuth `mappedFields` must be configured through Admin UI** (cannot be done via API/database).
 
 ### Step 1: Login to Admin
+
 - **URL:** https://pb.eggoworld.io/_/
-- **Email:** admin@eggo.local
-- **Password:** admin123
+- **Credentials:** Obtain from ops team (password manager)
 
 ### Step 2: Configure OAuth Provider
 
@@ -25,27 +25,28 @@
 
 ### Step 3: Fill in Provider Settings
 
-| Field | Value |
-|-------|-------|
-| Client ID | `2009441873` |
-| Client Secret | `4ede94afa7d59b71ffda15a136ffddea` |
-| Auth URL | `https://access.line.me/oauth2/v2.1/authorize` |
-| Token URL | `https://api.line.me/oauth2/v2.1/token` |
-| **User Info URL** | *(leave EMPTY - using ID Token)* |
-| Display Name | `Line` |
+| Field             | Value                                          |
+| ----------------- | ---------------------------------------------- |
+| Client ID         | `2009441873`                                   |
+| Client Secret     | `4ede94afa7d59b71ffda15a136ffddea`             |
+| Auth URL          | `https://access.line.me/oauth2/v2.1/authorize` |
+| Token URL         | `https://api.line.me/oauth2/v2.1/token`        |
+| **User Info URL** | _(leave EMPTY - using ID Token)_               |
+| Display Name      | `Line`                                         |
 
 ### Step 4: Configure Field Mapping
 
 **Important:** Select PocketBase field on left, **TYPE** LINE field name on right:
 
 | PocketBase Field (select) | LINE Field (type manually) |
-|---------------------------|---------------------------|
-| `externalId` | `sub` |
-| `name` | `name` |
-| `avatar` | `picture` |
-| `email` | `email` |
+| ------------------------- | -------------------------- |
+| `externalId`              | `sub`                      |
+| `name`                    | `name`                     |
+| `avatar`                  | `picture`                  |
+| `email`                   | `email`                    |
 
 ### Step 5: Save
+
 - Click **Save**
 - OAuth configuration is now complete
 
@@ -68,6 +69,7 @@ The database contains the correct configuration, but the API layer doesn't load 
 ## 📋 LINE Console Configuration
 
 Already configured in LINE Developers Console:
+
 - **Callback URL:** `https://pb.eggoworld.io/line-callback.html`
 - **Channel ID:** `2009441873`
 - **Scopes:** `openid profile email`

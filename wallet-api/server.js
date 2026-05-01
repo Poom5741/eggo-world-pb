@@ -103,6 +103,8 @@ const EGG_NFT_ABI = [
   "function getEggProperties(uint256 tokenId) external view returns (uint256,address,uint256,bool,uint256,address[4],uint256,uint256,uint256,bool,uint256,uint256)",
   "function recordFoodConsumption(uint256 eggTokenId, uint256[] calldata foodTokenIds, uint8[] calldata foodTypes) external",
   "function hatchEgg(uint256 tokenId) external returns (uint256)",
+  "function requestBreed(uint256 parent1TokenId, uint256 parent2TokenId, address referrer) external returns (uint256)",
+  "function claimBreed(uint256 requestId) external returns (uint256)",
   "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
 ];
 
@@ -135,10 +137,10 @@ const MARKETPLACE_ABI = [
 
 // Minimal ABI for AnimalNFT contract (breeding)
 const ANIMAL_NFT_ABI = [
-  "function breedAnimals(uint256 parent1Id, uint256 parent2Id) external returns (uint256)",
   "function canBreed(uint256 tokenId) external view returns (bool)",
   "function getLastBredTimestamp(uint256 tokenId) external view returns (uint256)",
   "function BREED_COOLDOWN() external view returns (uint256)",
+  "function recordBreeding(uint256 tokenId) external",
   "event AnimalBred(uint256 indexed parent1Id, uint256 indexed parent2Id, uint256 indexed childId, uint256 childGeneration)"
 ];
 

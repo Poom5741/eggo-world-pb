@@ -135,7 +135,7 @@ contract PauseModifierTest is Test {
         // Attempt to call breedAnimals when paused - should fail
         vm.startPrank(user);
         vm.expectRevert(bytes("Pausable: paused"));
-        eggNFT.breedAnimals(animal1Id, animal2Id, address(0));
+        eggNFT.requestBreed(animal1Id, animal2Id, address(0));
         vm.stopPrank();
     }
     

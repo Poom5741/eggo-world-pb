@@ -127,7 +127,7 @@ export function HatchReveal({ animal, onClaim }: HatchRevealProps) {
             <li>• Your Animal NFT has been minted to your wallet</li>
             <li>• View it in your inventory</li>
             <li>• List it for sale on the marketplace</li>
-            <li>• Use it for breeding (coming soon)</li>
+            <li>• <Link href="/animals" className="underline hover:text-primary">Use it for breeding</Link></li>
           </ul>
         </div>
       </CardContent>

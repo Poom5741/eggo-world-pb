@@ -94,7 +94,7 @@ contract SelfReferralGuardTest is Test {
         
         vm.startPrank(user1);
         vm.expectRevert(bytes("Self-referral"));
-        eggNFT.breedAnimals(1, 2, user1); // user1 refers itself
+        eggNFT.requestBreed(1, 2, user1); // user1 refers itself
     }
 
     // TEST 4: mintEggWithChain with self referral in beginning of chain should revert

@@ -3,11 +3,13 @@
 ## ✅ What's Been Implemented
 
 ### 1. Docker Configuration Updated
+
 - Production environment variables added to docker-compose.yml
 - Container restarted with new configuration
 - Health check passing
 
 ### 2. Frontend Pages Created
+
 - **line-login.html** - Beautiful login page with LINE button
 - **line-callback.html** - Handles OAuth callback and token exchange
 - **index.html** - Landing page with features overview
@@ -15,6 +17,7 @@
 All pages are in `/root/eggo-world-pb/eggo-pb/pb_public/`
 
 ### 3. OAuth Configuration Attempted
+
 - Client ID: 2009441873
 - Auth URL: https://access.line.me/oauth2/v2.1/authorize
 - Token URL: https://api.line.me/oauth2/v2.1/token
@@ -26,22 +29,26 @@ All pages are in `/root/eggo-world-pb/eggo-pb/pb_public/`
 The API updates didn't persist. You need to manually configure TWO things:
 
 ### Step 1: Set Redirect URL
+
 1. Go to: https://pb.eggoworld.io/_/
-2. Login with: admin@eggo.local / admin123
+2. Login with admin credentials (obtain from ops team)
 3. Navigate to: Settings → Collections → users
 4. Click "OAuth2" tab
 5. Edit the "oidc" provider
 6. Set **Redirect URL** to: `https://pb.eggoworld.io/api/oauth2-redirect`
 
 ### Step 2: Fix Field Mapping
+
 In the same OAuth provider settings:
 
 Change field mapping from:
+
 ```
 id → externalId
 ```
 
 To:
+
 ```
 sub → externalId
 name → name
@@ -56,6 +63,7 @@ The PocketBase API wasn't accepting the PATCH requests for OAuth provider config
 ## 🎯 After Manual Configuration
 
 Test the flow:
+
 1. Visit: https://pb.eggoworld.io/line-login.html
 2. Click "Login with LINE"
 3. Authorize on LINE

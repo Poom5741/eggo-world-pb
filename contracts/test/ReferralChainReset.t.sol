@@ -110,9 +110,15 @@ contract ReferralChainResetTest is Test {
         eggNFT.unpause();
         vm.stopPrank();
 
-        // Create a breeding egg - this will have a referral chain and is_breeding_egg = true
-        vm.prank(buyer);
-        uint256 breedingEggTokenId = eggNFT.breedAnimals(animal1Id, animal2Id, referrer);
+        // Create a breeding egg using VRF two-phase (request → fulfill → claim)
+        vm.startPrank(buyer);
+        mockUSDT.approve(address(eggNFT), 10 * 10**18);
+        uint256 requestId = eggNFT.requestBreed(animal1Id, animal2Id, referrer);
+        vm.warp(block.timestamp + 1);
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        uint256 breedingEggTokenId = eggNFT.claimBreed(requestId);
+        vm.stopPrank();
+        vm.startPrank(buyer);
         
         // Confirm this is a breeding egg and has the referral chain
         (,,,,,,,,, bool isBreedingEgg,,) = eggNFT.getEggProperties(breedingEggTokenId);
@@ -159,9 +165,13 @@ contract ReferralChainResetTest is Test {
         eggNFT.unpause();  // Resume
         vm.stopPrank();
 
-        // Create a breeding egg 
+        // Create a breeding egg using VRF two-phase
         vm.startPrank(buyer);
-        uint256 breedingEggTokenId = eggNFT.breedAnimals(animal1Id, animal2Id, referrer);
+        mockUSDT.approve(address(eggNFT), 10 * 10**18);
+        uint256 requestId = eggNFT.requestBreed(animal1Id, animal2Id, referrer);
+        vm.warp(block.timestamp + 1);
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        uint256 breedingEggTokenId = eggNFT.claimBreed(requestId);
         vm.stopPrank();
 
         // Verify initial state before transfer
