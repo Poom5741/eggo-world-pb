@@ -63,11 +63,11 @@ const CONFIG = {
     // Deployed contract addresses (Phase 1 deployment)
     // Can be overridden per-environment via env vars (E2E uses local Anvil addresses)
     contracts: {
-      MockUSDT: process.env.MOCK_USDT_ADDRESS || "0xc015ebb27696b73E72Bef099b72791D7e666E2d0",
-      CommissionDistribution: process.env.COMMISSION_DISTRIBUTION_ADDRESS || "0x3c48926556e766E4564af0E264A9980e7C3a1787",
-      AnimalNFT: process.env.ANIMAL_NFT_ADDRESS || "0x973F2cA33E96FCC1fdbc48a7880b238b4C6be464",
-      EggNFT: process.env.EGG_NFT_ADDRESS || "0xd7135090d78854820722CbCe0B29481Dd5D4808c",
-      FoodNFT: process.env.FOOD_NFT_ADDRESS || "0xbb0E0FcB40E209f7751A784F6b8d63E9C127D8fC"
+      MockUSDT: process.env.MOCK_USDT_ADDRESS || "0xd4E10E3d006DDcfE76478D0B5eD8f81b43a798aD",
+      CommissionDistribution: process.env.COMMISSION_DISTRIBUTION_ADDRESS || "0xd0e6DDb30c22A3f6f97CdB3E87f778729dCA9982",
+      AnimalNFT: process.env.ANIMAL_NFT_ADDRESS || "0xfffead66182f0c40e9B2A506f1C15e4D8F7Fda72",
+      EggNFT: process.env.EGG_NFT_ADDRESS || "0xc4F507877d829dBEEE92cE27dbe9CfEFAd944D8C",
+      FoodNFT: process.env.FOOD_NFT_ADDRESS || "0xc1544FB4Db60A57F20de56cA170232791Adc1c8E"
     },
 
     // E2E / local testing mode – when true, hooks skip on-chain verification

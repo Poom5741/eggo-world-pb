@@ -133,7 +133,7 @@ routerAdd("POST", "/api/v2/hatch-egg", (e) => {
         }
         
         // Get contract address
-        const contractAddress = process.env.ANIMAL_NFT_CONTRACT_ADDRESS || '0x1234567890123456789012345678901234567890';
+        const contractAddress = process.env.ANIMAL_NFT_CONTRACT_ADDRESS || '0xfffead66182f0c40e9B2A506f1C15e4D8F7Fda72';
         
         // Generate tx hash
         const txHash = `0x${Date.now().toString(16).padStart(64, '0')}`;

@@ -163,8 +163,8 @@ routerAdd("POST", "/api/v2/feed-egg", (e) => {
         }
         
         // Get contract addresses
-        const foodNftAddress = $os.getenv('FOOD_NFT_CONTRACT_ADDRESS') || '0xbb0E0FcB40E209f7751A784F6b8d63E9C127D8fC';
-        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
+        const foodNftAddress = $os.getenv('FOOD_NFT_CONTRACT_ADDRESS') || '0xc1544FB4Db60A57F20de56cA170232791Adc1c8E';
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xc4F507877d829dBEEE92cE27dbe9CfEFAd944D8C';
         
         if (!foodNftAddress || !eggNftAddress) {
             return e.json(500, { 

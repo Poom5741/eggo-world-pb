@@ -237,7 +237,7 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
             }
         }
 
-        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xc4F507877d829dBEEE92cE27dbe9CfEFAd944D8C';
         if (!eggNftAddress) {
             return e.json(500, { 
                 success: false, 

@@ -22,7 +22,32 @@ test('seed E2E test data', async () => {
   const existingActive = await pbList('marketplace_listings', sellerAuth.token, "status='active'")
   if (existingActive.length >= 3) {
     console.log(`[setup] ✅ ${existingActive.length} active listings already exist — skipping listing creation`)
-    // Just reset balances
+    // Always ensure buyer has at least one egg for Feed+Hatch test
+    let buyerEggs = await pbList('egg_nfts', buyerAuth.token, `owner='${buyerAuth.id}'`)
+    if (buyerEggs.length === 0) {
+      const newEgg = await pbCreate('egg_nfts', buyerAuth.token, {
+        token_id: 801000, egg_id: 801000, owner: buyerAuth.id, owner_wallet: buyerAuth.wallet,
+        rarity: 'common', food_count: 2, max_feed: 10, is_hatched: false, is_fed: false,
+        generation: 0,
+        contract_address: '0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8',
+        minted_at: new Date().toISOString(),
+        tx_hash: `0xmock_e2e_${Date.now()}_1`,
+      })
+      if (newEgg.id) console.log('[setup] Created buyer egg for feed/hatch test')
+    }
+    // Always ensure seller has at least one animal for Marketplace test
+    let sellerAnimals = await pbList('animal_nfts', sellerAuth.token, `owner='${sellerAuth.id}'`)
+    if (sellerAnimals.length === 0) {
+      const newAnimal = await pbCreate('animal_nfts', sellerAuth.token, {
+        token_id: 901000, animal_id: 901000, owner: sellerAuth.id, owner_wallet: sellerAuth.wallet,
+        species: 'Chicken', rarity: 'common', generation: 0,
+        food_grain: 5, food_fish: 3, food_insects: 1, food_herb: 1,
+        minted_at: new Date().toISOString(),
+        tx_hash: `0xmock_e2e_${Date.now()}_2`,
+      })
+      if (newAnimal.id) console.log('[setup] Created seller animal for marketplace test')
+    }
+    // Reset balances
     for (const u of [buyerAuth, sellerAuth, referrerAuth]) {
       const wallets = await pbList('user_wallets', u.token, `user_id='${u.id}'`)
       for (const w of wallets) {

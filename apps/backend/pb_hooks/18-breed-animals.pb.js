@@ -265,8 +265,8 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         }
         
         // Get contract addresses from environment
-        const eggContractAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
-        const animalContractAddress = $os.getenv('ANIMAL_NFT_CONTRACT_ADDRESS') || '0x1234567890123456789012345678901234567890';
+        const eggContractAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xc4F507877d829dBEEE92cE27dbe9CfEFAd944D8C';
+        const animalContractAddress = $os.getenv('ANIMAL_NFT_CONTRACT_ADDRESS') || '0xfffead66182f0c40e9B2A506f1C15e4D8F7Fda72';
         
         // Call wallet-api to execute breeding on blockchain
         let txHash = null;
@@ -527,7 +527,7 @@ routerAdd("POST", "/api/v2/breed-animals/request", (e) => {
         }
         
         // Call wallet-api to request VRF breed
-        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xc4F507877d829dBEEE92cE27dbe9CfEFAd944D8C';
         const requestResponse = $http.send({
             url: WALLET_SRV_URL + '/api/wallet/request-breed',
             method: 'POST',
@@ -590,7 +590,7 @@ routerAdd("POST", "/api/v2/breed-animals/claim", (e) => {
         if (!request_id) { return e.json(400, { success: false, error: { message: "request_id required", code: "VALIDATION_ERROR" } }); }
         
         // Call wallet-api to claim breed (VRF phase 2)
-        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xc4F507877d829dBEEE92cE27dbe9CfEFAd944D8C';
         const claimResponse = $http.send({
             url: WALLET_SRV_URL + '/api/wallet/claim-breed',
             method: 'POST',

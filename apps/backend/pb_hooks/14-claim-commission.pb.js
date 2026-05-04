@@ -71,7 +71,7 @@ routerAdd("POST", "/api/v2/claim-commission", (e) => {
                 wallet: wallet.get('wallet'),
                 daccPublicKey: wallet.get('daccPublickey'),
                 pin: wallet.get('pin'),
-                commissionDistributionAddress: $os.getenv("COMMISSION_DISTRIBUTION_ADDRESS") || "0x3c48926556e766E4564af0E264A9980e7C3a1787"
+                commissionDistributionAddress: $os.getenv("COMMISSION_DISTRIBUTION_ADDRESS") || "0xd0e6DDb30c22A3f6f97CdB3E87f778729dCA9982"
             })
         });
 
@@ -115,8 +115,8 @@ routerAdd("POST", "/api/v2/claim-commission", (e) => {
 });
 
 function callClaimCommissionContract(walletAddress, daccPublicKey, pin) {
-    const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xd7135090d78854820722CbCe0B29481Dd5D4808c';
-    const commissionDistributionAddress = $os.getenv('COMMISSION_DISTRIBUTION_ADDRESS') || '0x3c48926556e766E4564af0E264A9980e7C3a1787';
+    const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xc4F507877d829dBEEE92cE27dbe9CfEFAd944D8C';
+    const commissionDistributionAddress = $os.getenv('COMMISSION_DISTRIBUTION_ADDRESS') || '0xd0e6DDb30c22A3f6f97CdB3E87f778729dCA9982';
     
     const response = fetch('http://wallet-api:3001/api/wallet/claim-commission', {
         method: 'POST',
