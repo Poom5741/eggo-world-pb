@@ -3,8 +3,8 @@ routerAdd("PUT", "/api/v2/kyc/submit", (e) => {
     const requestInfo = e.requestInfo();
     const userId = requestInfo.auth?.id;
     if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
-    const users = $app.findRecordById("users", userId);
-    if (!users) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+    let users;
+    try { users = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
     const body = e.parseBody();
     
     try {
@@ -63,13 +63,8 @@ routerAdd("POST", "/api/v2/admin/kyc-review", (e) => {
     }
     
     try {
-        const userToReview = $app.findRecordById("users", user_id);
-        if (!userToReview) {
-            return e.json(404, {
-                success: false,
-                error: { message: "User not found", code: "USER_NOT_FOUND" }
-            });
-        }
+        let userToReview;
+        try { userToReview = $app.findRecordById("users", user_id); } catch (e) { return e.json(404, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         if (action === 'approve') {
             userToReview.set("kyc_verified", true);

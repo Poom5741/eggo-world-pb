@@ -45,13 +45,8 @@ routerAdd("POST", "/api/v2/list-food", (e) => {
             });
         }
 
-        var user = $app.findRecordById("users", userId);
-        if (!user) {
-            return e.json(401, {
-                success: false,
-                error: { message: "User not found", code: "USER_NOT_FOUND" }
-            });
-        }
+        var user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
         var body = requestInfo.body || {};
         var food_id = body.food_id;

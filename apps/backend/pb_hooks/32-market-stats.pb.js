@@ -77,7 +77,8 @@ routerAdd("GET", "/api/v2/platform-stats", (e) => {
     }
 
     // Verify user is admin
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin access required", code: "ADMIN_REQUIRED" } }); }
     const isAdmin = user.get("role") === "admin" || user.get("is_admin") === true
 
     if (!isAdmin) {
@@ -164,7 +165,8 @@ routerAdd("GET", "/api/v2/referral-stats", (e) => {
       })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(500, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
     // Get user's referral chain (who referred them)
     const referralChain = {

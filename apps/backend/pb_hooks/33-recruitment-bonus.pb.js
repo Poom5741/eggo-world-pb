@@ -14,7 +14,8 @@ routerAdd("POST", "/api/v2/claim-recruitment-bonus", (e) => {
       })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(500, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
     // Count direct recruits
     const allUsers = $app.findRecordsByFilter("users", "", "-created", 10000, 0)
@@ -112,7 +113,8 @@ routerAdd("GET", "/api/v2/recruitment-bonus-status", (e) => {
       })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(500, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
     // Count direct recruits
     const allUsers = $app.findRecordsByFilter("users", "", "-created", 10000, 0)

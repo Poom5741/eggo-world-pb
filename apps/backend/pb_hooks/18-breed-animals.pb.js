@@ -79,8 +79,8 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         const requestInfo = e.requestInfo();
         const userId = requestInfo.auth?.id;
         if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
-        const user = $app.findRecordById("users", userId);
-        if (!user) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+        let user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         const body = e.parseBody();
         const { parent1_animal_id, parent2_animal_id, referrer_id } = body;
@@ -244,7 +244,8 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         let referralChain = [null, null, null, null];
         
         if (referrer_id) {
-            const referrer = $app.dao().findRecordById('users', referrer_id);
+            let referrer;
+            try { referrer = $app.findRecordById('users', referrer_id); } catch (e) { referrer = null; }
             if (referrer) {
                 const referrerWallet = $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', {
                     '@owner': referrer.id
@@ -411,7 +412,8 @@ function buildReferralChain(user, chain, level) {
     const referrerId = user.get('referrer_id');
     if (!referrerId) return;
     
-    const referrer = $app.dao().findRecordById('users', referrerId);
+    let referrer;
+    try { referrer = $app.findRecordById('users', referrerId); } catch (e) { return; }
     if (!referrer) return;
     
     const referrerWallet = $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', {
@@ -485,8 +487,8 @@ routerAdd("POST", "/api/v2/breed-animals/request", (e) => {
         const requestInfo = e.requestInfo();
         const userId = requestInfo.auth?.id;
         if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
-        const user = $app.findRecordById("users", userId);
-        if (!user) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+        let user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         const body = e.parseBody();
         const { parent1_token_id, parent2_token_id, referrer_address } = body;
@@ -519,7 +521,9 @@ routerAdd("POST", "/api/v2/breed-animals/request", (e) => {
             const referrerWallet = $app.dao().findFirstRecordByFilter('user_wallets', 'wallet = {:wallet}', { '@wallet': referrer_address });
             if (referrerWallet) {
                 referralChain[0] = referrerWallet.get('wallet');
-                buildReferralChain($app.findRecordById('users', referrerWallet.get('owner')), referralChain, 1);
+                let refUser;
+                try { refUser = $app.findRecordById('users', referrerWallet.get('owner')); } catch (e) { refUser = null; }
+                if (refUser) { buildReferralChain(refUser, referralChain, 1); }
             }
         }
         if (referralChain[0]) {

@@ -11,7 +11,8 @@ routerAdd("POST", "/api/v2/admin/set-platform-fee", (e) => {
       return e.json(401, { success: false, error: { message: "Auth required", code: "AUTH_REQUIRED" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } }); }
     if (user.get("role") !== "admin") {
       return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } })
     }
@@ -47,7 +48,8 @@ routerAdd("POST", "/api/v2/admin/set-breed-cooldown", (e) => {
       return e.json(401, { success: false, error: { message: "Auth required", code: "AUTH_REQUIRED" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } }); }
     if (user.get("role") !== "admin") {
       return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } })
     }
@@ -83,7 +85,8 @@ routerAdd("POST", "/api/v2/admin/update-rarity-weights", (e) => {
       return e.json(401, { success: false, error: { message: "Auth required", code: "AUTH_REQUIRED" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } }); }
     if (user.get("role") !== "admin") {
       return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } })
     }
@@ -125,7 +128,8 @@ routerAdd("POST", "/api/v2/admin/add-species", (e) => {
       return e.json(401, { success: false, error: { message: "Auth required", code: "AUTH_REQUIRED" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } }); }
     if (user.get("role") !== "admin") {
       return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } })
     }

@@ -22,13 +22,8 @@ routerAdd("POST", "/api/v2/fix-user-wallet", (e) => {
         console.log("Fixing wallet for user:", userId)
 
         // Get the user record
-        const user = $app.findRecordById("users", userId)
-        if (!user) {
-            return e.json(404, {
-                success: false,
-                error: { message: "User not found", code: "USER_NOT_FOUND" }
-            })
-        }
+        let user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(404, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
         // Check if wallet already exists
         const existingWallet = user.get("wallet")

@@ -7,7 +7,8 @@ routerAdd("GET", "/api/v2/platform/status", (e) => {
       return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin access required", code: "ADMIN_REQUIRED" } }); }
     if (!user || !user.get("admin")) {
       return e.json(403, { success: false, error: { message: "Admin access required", code: "ADMIN_REQUIRED" } })
     }
@@ -57,7 +58,8 @@ routerAdd("POST", "/api/v2/platform/pause", (e) => {
       return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin access required", code: "ADMIN_REQUIRED" } }); }
     if (!user || !user.get("admin")) {
       return e.json(403, { success: false, error: { message: "Admin access required", code: "ADMIN_REQUIRED" } })
     }
@@ -117,7 +119,8 @@ routerAdd("POST", "/api/v2/platform/unpause", (e) => {
       return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin access required", code: "ADMIN_REQUIRED" } }); }
     if (!user || !user.get("admin")) {
       return e.json(403, { success: false, error: { message: "Admin access required", code: "ADMIN_REQUIRED" } })
     }

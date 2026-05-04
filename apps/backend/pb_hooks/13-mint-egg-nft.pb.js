@@ -108,7 +108,8 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
             commRecord.set('claimed_at', null);
             $app.save(commRecord);
 
-            var referrerUser = $app.findRecordById('users', referrerWallet.get('user_id'));
+            var referrerUser;
+            try { referrerUser = $app.findRecordById('users', referrerWallet.get('user_id')); } catch (e) { continue; }
             var totalEarned = parseFloat(referrerUser.get('usdt_total_earned') || '0');
             referrerUser.set('usdt_total_earned', (totalEarned + commissionAmount).toFixed(2));
             $app.save(referrerUser);
@@ -212,16 +213,8 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
         
         // Build referral chain from users.referral_chain field
         if (referrerId) {
-            const referrer = $app.findRecordById('users', referrerId);
-            if (!referrer) {
-                return e.json(400, { 
-                    success: false, 
-                    error: { 
-                        message: 'Referrer not found',
-                        code: 'REFERRER_NOT_FOUND'
-                    } 
-                });
-            }
+            let referrer;
+            try { referrer = $app.findRecordById('users', referrerId); } catch (e) { return e.json(400, { success: false, error: { message: 'Referrer not found', code: 'REFERRER_NOT_FOUND' } }); }
 
             referralChain[0] = referrer.get('wallet');
             
@@ -229,7 +222,8 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
             const referrerChain = referrer.get('referral_chain') || [];
             for (let i = 0; i < Math.min(referrerChain.length, 3); i++) {
                 if (referrerChain[i]) {
-                    const genUser = $app.findRecordById('users', referrerChain[i]);
+                    let genUser;
+                    try { genUser = $app.findRecordById('users', referrerChain[i]); } catch (e) { genUser = null; }
                     if (genUser) {
                         referralChain[i + 1] = genUser.get('wallet');
                     }

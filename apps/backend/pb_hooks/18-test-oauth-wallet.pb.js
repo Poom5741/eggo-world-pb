@@ -32,7 +32,8 @@ routerAdd("POST", "/api/v2/test-oauth-wallet", (e) => {
         console.log("Test user created:", record.id)
 
         // Fetch user to verify wallet fields
-        var createdUser = $app.findRecordById("users", record.id)
+        var createdUser;
+        try { createdUser = $app.findRecordById("users", record.id); } catch (e) { createdUser = null; }
 
         var wallet = createdUser.get("wallet")
         var daccPublickey = createdUser.get("daccPublickey")

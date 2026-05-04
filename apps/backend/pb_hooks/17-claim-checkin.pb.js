@@ -33,8 +33,8 @@ routerAdd("POST", "/api/v2/check-in", async (e) => {
         const requestInfo = e.requestInfo();
         const userId = requestInfo.auth?.id;
         if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
-        const user = $app.findRecordById("users", userId);
-        if (!user) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+        let user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         // Get or create user_stats record
         let stats

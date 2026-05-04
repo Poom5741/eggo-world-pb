@@ -20,7 +20,8 @@ routerAdd("POST", "/api/v2/burn-nft", (e) => {
     }
 
     // Get user's wallet
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(500, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
     const userWallet = user.get("wallet")
 
     // Verify ownership via wallet-api
@@ -93,7 +94,8 @@ routerAdd("POST", "/api/v2/admin/set-kyc-required", (e) => {
       return e.json(401, { success: false, error: { message: "Auth required", code: "AUTH_REQUIRED" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } }); }
     if (user.get("role") !== "admin") {
       return e.json(403, { success: false, error: { message: "Admin required", code: "ADMIN_REQUIRED" } })
     }
@@ -125,7 +127,8 @@ routerAdd("GET", "/api/v2/kyc-status", (e) => {
       return e.json(401, { success: false, error: { message: "Auth required", code: "AUTH_REQUIRED" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(500, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
     e.json(200, {
       success: true,
@@ -158,7 +161,8 @@ routerAdd("POST", "/api/v2/spend-usdt", (e) => {
       return e.json(400, { success: false, error: { message: "amount and purpose required", code: "VALIDATION_ERROR" } })
     }
 
-    const user = $app.findRecordById("users", userId)
+    let user;
+    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(500, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
     const wallet = $app.findFirstRecordByData("user_wallets", "user_id", userId)
 
     if (!wallet) {

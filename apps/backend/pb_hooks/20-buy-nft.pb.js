@@ -47,10 +47,8 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         if (!buyerRecord) {
             return e.json(401, { success: false, error: { message: 'Authentication required', code: 'AUTH_REQUIRED' } })
         }
-        const buyer = $app.findRecordById("users", buyerRecord.id)
-        if (!buyer) {
-            return e.json(401, { success: false, error: { message: 'User not found', code: 'USER_NOT_FOUND' } })
-        }
+        let buyer;
+        try { buyer = $app.findRecordById("users", buyerRecord.id); } catch (e) { return e.json(401, { success: false, error: { message: 'User not found', code: 'USER_NOT_FOUND' } }); }
         
         const body = requestInfo.body;
         const { listing_id, buyer_address } = body || {};
@@ -146,17 +144,8 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         }
         
         // Get seller info
-        const seller = $app.findRecordById('users', sellerId);
-        
-        if (!seller) {
-            return e.json(404, { 
-                success: false, 
-                error: { 
-                    message: 'Seller not found',
-                    code: 'SELLER_NOT_FOUND'
-                } 
-            });
-        }
+        let seller;
+        try { seller = $app.findRecordById('users', sellerId); } catch (e) { return e.json(404, { success: false, error: { message: 'Seller not found', code: 'SELLER_NOT_FOUND' } }); }
         
         // Check buyer's USDT balance
         const buyerWallet = $app.findFirstRecordByData('user_wallets', 'user_id', buyer.id);
