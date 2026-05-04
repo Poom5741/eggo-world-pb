@@ -1,10 +1,7 @@
 "use client"
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { AuthGuard } from '@/components/auth/AuthGuard'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
-import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { cn } from '@/lib/utils'
 import { Header } from '@/components/header'
 import { Button } from '@/components/ui/button'
@@ -16,47 +13,16 @@ import { TransactionHistory } from '@/components/TransactionHistory'
 import { Loader2, RefreshCw, Wallet as WalletIcon, AlertCircle } from 'lucide-react'
 
 export default function WalletPage() {
-  const router = useRouter()
-  const isHydrated = useIsHydrated()
-  const [user, setUser] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  return (
+    <AuthGuard redirectTo="/auth/login">
+      {(user) => <WalletContent user={user} />}
+    </AuthGuard>
+  )
+}
 
+function WalletContent({ user }: { user: any }) {
   // Get wallet balance with auto-polling
   const { balance, loading: polling, error, refresh } = useWalletPoll(user?.wallet_address || user?.wallet || '')
-
-  useEffect(() => {
-    const pb = createClient()
-
-    if (isAuthenticated()) {
-      const currentUser = getUser()
-      setUser(currentUser)
-      setLoading(false)
-    } else {
-      router.push('/auth/login')
-    }
-
-    pb.authStore.onChange(() => {
-      if (isAuthenticated()) {
-        setUser(getUser())
-        setLoading(false)
-      } else {
-        setUser(null)
-        router.push('/auth/login')
-      }
-    })
-  }, [router])
-
-  if (!isHydrated || loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-body text-foreground">LOADING...</p>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
-  }
 
   return (
     <div className="min-h-screen bg-background">

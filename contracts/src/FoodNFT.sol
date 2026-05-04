@@ -39,6 +39,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable, Pausable {
     mapping(address => bool) public authorizedContracts;
     
     event FoodMinted(uint256[] food_ids, address indexed buyer, uint256 quantity);
+    event FreeFoodMinted(uint256[] food_ids, address indexed recipient, uint256 quantity);
     event EggFed(uint256 indexed egg_id, uint256[] food_ids, address indexed feeder);
     event FoodTypeAssigned(uint256 food_id, FoodType food_type);
     
@@ -99,6 +100,49 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable, Pausable {
         }
         
         emit FoodMinted(food_ids, msg.sender, quantity);  // FIXED: was buyer
+        
+        return food_ids;
+    }
+    
+    /**
+     * @notice Mint free bonus Food NFTs (no USDT charged) — only callable by authorized contracts (EggNFT)
+     * @dev Used when EggNFT auto-mints 2 free Food NFTs with each egg purchase (per spec §2.1)
+     * @param recipient Address receiving the food tokens
+     * @param quantity Number of food tokens to mint
+     * @return food_ids Array of minted food token IDs
+     */
+    function mintFreeFood(address recipient, uint256 quantity)
+        external
+        nonReentrant
+        whenNotPaused
+        returns (uint256[] memory food_ids)
+    {
+        require(authorizedContracts[msg.sender], "Not authorized");
+        require(quantity > 0, "Quantity must be greater than 0");
+        
+        food_ids = new uint256[](quantity);
+        
+        for (uint256 i = 0; i < quantity; i++) {
+            _nextFoodId++;
+            uint256 foodId = _nextFoodId - 1;
+            
+            FoodType foodType = _assignRandomFoodType(foodId);
+            
+            _foodProperties[foodId] = FoodProperties({
+                food_id: foodId,
+                food_type: foodType,
+                is_consumed: false,
+                consumed_by_egg_id: 0
+            });
+            
+            _mint(recipient, foodId, 1, "");
+            
+            emit FoodTypeAssigned(foodId, foodType);
+            
+            food_ids[i] = foodId;
+        }
+        
+        emit FreeFoodMinted(food_ids, recipient, quantity);
         
         return food_ids;
     }

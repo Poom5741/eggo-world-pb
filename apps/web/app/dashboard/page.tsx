@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
-import { createClient, getUser, isAuthenticated, restoreAuth } from '@/lib/pocketbase/client'
+import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { BalanceCard } from '@/components/dashboard/balance-card'
 import { QuickActions } from '@/components/dashboard/quick-actions'
@@ -50,134 +50,29 @@ export default function DashboardPage() {
   // user?.wallet_address or user?.wallet (support both field names for migration)
   const { balance, loading: balanceLoading, refresh: refreshBalance, error: balanceError } = useWalletPoll(user?.wallet_address || user?.wallet || '')
 
-  // Effect: Wait for hydration then check auth state
+  // Effect: Wait for hydration then check auth state (simplified pattern matching eggs/animals)
   useEffect(() => {
     if (!isHydrated) return
 
     const pb = createClient()
-    
-    console.warn('=== Dashboard auth check ===')
-    console.warn('authStore.token exists:', !!pb.authStore.token)
-    console.warn('authStore.record:', pb.authStore.record)
-    const userRecord = getUser()
-    console.warn('getUser():', userRecord)
-    console.warn('authStore.isValid:', pb.authStore.isValid)
-    console.warn('isAuthenticated():', isAuthenticated())
-    
-    // Check 1: Immediately authenticated?
-    if (pb.authStore.token && pb.authStore.record?.id) {
-      console.warn('✓ User authenticated immediately:', userRecord?.id)
-      setUser(userRecord)
-      setAuthReady(true)
-      setLoading(false)
-      fetchDashboardData(userRecord)
-      return
-    }
-    
-    // Check 2: Has token but no record - restore auth from server
-    if (pb.authStore.token && !pb.authStore.record?.id) {
-      console.warn('Has token but no record, restoring auth from server...')
-      restoreAuth(pb)
-        .then((success) => {
-          if (success) {
-            const restoredUser = getUser()
-            console.warn('✓ Auth restored:', restoredUser?.id)
-            setUser(restoredUser)
-            setAuthReady(true)
-            setLoading(false)
-            fetchDashboardData(restoredUser)
-          } else {
-            console.warn('✗ Auth restore failed - not authenticated')
-            setAuthReady(true)
-            setLoading(false)
-            setUser(null)
-            // Will redirect via redirect effect
-          }
-        })
-        .catch((error) => {
-          console.error('Auth restore error:', error)
-          setAuthReady(true)
-          setLoading(false)
-          setUser(null)
-          // Will redirect via redirect effect
-        })
-      return
-    }
-    
-    // Check 3: No token at all - listen for auth changes (OAuth flow)
-    console.warn('No token, listening for auth changes...')
-    const unsubscribe = pb.authStore.onChange(() => {
-      console.warn('Dashboard authStore changed, token exists:', !!pb.authStore.token)
-      const updatedUser = getUser()
-      console.warn('getUser() in onChange:', updatedUser)
-      
-      if (updatedUser && updatedUser.id) {
-        console.warn('Auth restored via onChange:', updatedUser.id)
-        setUser(updatedUser)
+    restoreAuth(pb).then((success) => {
+      if (success) {
+        const u = getUser()
+        setUser(u)
         setAuthReady(true)
         setLoading(false)
-        fetchDashboardData(updatedUser)
-        unsubscribe()
-      } else if (!pb.authStore.token) {
-        // Token was cleared - user logged out
-        console.warn('Auth cleared via onChange - redirecting')
-        setUser(null)
+        if (u) fetchDashboardData(u)
+      } else {
         setAuthReady(true)
         setLoading(false)
-        unsubscribe()
-        // Force redirect
-        setTimeout(() => {
-          window.location.href = '/auth/login'
-        }, 100)
       }
-      // If we have token but no user yet, keep waiting (don't unsubscribe)
     })
-    
-    // Timeout fallback (5 seconds for OAuth flow)
-    const timeout = setTimeout(() => {
-      if (!authReady) {
-        console.warn('Auth check timeout - final state:', {
-          hasToken: !!pb.authStore.token,
-          hasRecord: !!pb.authStore.record?.id,
-          isValid: pb.authStore.isValid
-        })
-        // Final attempt: if token exists but no record, try restore one more time
-        if (pb.authStore.token && !pb.authStore.record?.id) {
-          console.warn('Timeout: trying restoreAuth as last resort...')
-          restoreAuth(pb)
-            .then((success) => {
-              if (success) {
-                const restoredUser = getUser()
-                setUser(restoredUser)
-              }
-              setAuthReady(true)
-              setLoading(false)
-            })
-            .catch(() => {
-              setAuthReady(true)
-              setLoading(false)
-            })
-        } else {
-          // No token - mark ready (will redirect)
-          setAuthReady(true)
-          setLoading(false)
-        }
-      }
-    }, 5000)
-    
-    return () => {
-      clearTimeout(timeout)
-      unsubscribe?.()
-    }
   }, [isHydrated])
 
   // REDIRECT EFFECT - only fires if authReady && !user
   useEffect(() => {
     if (isHydrated && authReady && !user) {
-      console.warn('Not authenticated, redirecting to login')
-      setTimeout(() => {
-        window.location.href = '/auth/login?redirectTo=/dashboard'
-      }, 100)
+      router.push('/auth/login?redirectTo=/dashboard')
     }
   }, [isHydrated, authReady, user])
 

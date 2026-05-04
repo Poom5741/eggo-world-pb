@@ -14,7 +14,7 @@ contract TierBadgeSafeERC20Test is Test {
     address public coinStorReserve;
 
     function setUp() public {
-        owner = msg.sender;
+        owner = address(this);
         user = address(0x1);
         coinStorReserve = address(0x2);
         
@@ -55,7 +55,12 @@ contract TierBadgeSafeERC20Test is Test {
         // Make sure coinStorReserve doesn't approve the contract for transfers
         assertEq(mockUSDT.allowance(coinStorReserve, address(tierBadge)), 0);
         
-        vm.expectRevert("ERC20: insufficient allowance"); // SafeTransferFrom reverts differently when not approved
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                bytes4(keccak256("ERC20InsufficientAllowance(address,uint256,uint256)")),
+                address(tierBadge), 0, 5 * 10**18
+            )
+        );
         vm.prank(owner);
         tierBadge.mintTierBadge(user, 1, 12);
     }
@@ -90,7 +95,12 @@ contract TierBadgeSafeERC20Test is Test {
         vm.stopPrank();
         
         // This should revert because the contract doesn't have enough allowance from reserve to transfer
-        vm.expectRevert("ERC20: insufficient allowance");
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                bytes4(keccak256("ERC20InsufficientAllowance(address,uint256,uint256)")),
+                address(lowBalanceTierBadge), 1 * 10**18, 5 * 10**18
+            )
+        );
         vm.prank(owner);
         lowBalanceTierBadge.mintTierBadge(user, 1, 12); // Seedling rewards 5 * 10**18 USDT but reserve has only 1 * 10**18 approved
     }   

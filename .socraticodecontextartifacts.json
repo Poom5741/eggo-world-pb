@@ -1,0 +1,54 @@
+{
+  "artifacts": [
+    {
+      "name": "pocketbase-collections",
+      "path": "./apps/backend/collections/",
+      "description": "PocketBase collection schemas -- all tables, fields, indexes, and relations. Check this before writing migrations, hooks, or queries to match existing naming conventions and field types."
+    },
+    {
+      "name": "pb-hooks",
+      "path": "./apps/backend/pb_hooks/",
+      "description": "PocketBase hook implementations (NN-feature.pb.js format). Shows all API endpoints, authentication patterns, and business logic. Check before adding new hooks to follow the execution order convention and auth patterns."
+    },
+    {
+      "name": "wallet-api-spec",
+      "path": "./wallet-api/server.js",
+      "description": "Express.js wallet service implementation -- all wallet generation, minting, feeding, and blockchain interaction endpoints. Check before modifying wallet operations or adding new blockchain interactions."
+    },
+    {
+      "name": "smart-contracts",
+      "path": "./contracts/src/",
+      "description": "Solidity smart contracts (EggNFT, FoodNFT, AnimalNFT, Marketplace, TierBadge, CommissionDistribution). Check before any blockchain operations to understand contract interfaces, events, and state variables."
+    },
+    {
+      "name": "deployment-configs",
+      "path": "./apps/backend/docker-compose.yml",
+      "description": "Docker Compose deployment configuration for PocketBase. Shows container setup, volume mounts, and environment variables. Check before deployment changes or infrastructure modifications."
+    },
+    {
+      "name": "nginx-config",
+      "path": "./nginx/",
+      "description": "Nginx reverse proxy configuration for production deployment. Shows routing rules, SSL setup, and proxy headers. Check before modifying production routing or adding new services."
+    },
+    {
+      "name": "frontend-architecture",
+      "path": "./apps/web/",
+      "description": "Next.js 16 frontend with App Router, shadcn/ui components, and PocketBase integration. Shows page structure, component patterns, and authentication flow. Check before adding new pages or modifying UI patterns."
+    },
+    {
+      "name": "reference-implementation",
+      "path": "./resources/mvp-foodcourt/",
+      "description": "Reference MVP implementation with 20+ PocketBase hook examples in Thai. Use as template for new hook implementations and business logic patterns."
+    },
+    {
+      "name": "production-deployment-guide",
+      "path": "./AGENTS.md",
+      "description": "Production deployment guide with SSH access, Docker commands, hook deployment workflow, and common error solutions. Check before any production deployment to avoid costly mistakes."
+    },
+    {
+      "name": "contract-deployment-scripts",
+      "path": "./contracts/script/",
+      "description": "Foundry deployment scripts for smart contracts (Deploy.s.sol, DeployEggNFT.s.sol, etc.). Shows deployment order, constructor arguments, and network configurations."
+    }
+  ]
+}

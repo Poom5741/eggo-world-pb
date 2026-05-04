@@ -55,6 +55,68 @@ eggo-pocketbase/
 
 **Package Management:** Bun only for `apps/web` (not npm/yarn/pnpm)
 
+**Code Search:** ALWAYS use SocratiCode MCP tools for codebase search. NEVER use `grep`, `rg`, or `find` for code search.
+
+### SocratiCode Workflow (Search Before Reading)
+
+This project is indexed with SocratiCode. Always use its MCP tools to explore the codebase before reading any files directly.
+
+1. **Start most explorations with `codebase_search`.**
+   Hybrid semantic + keyword search (vector + BM25, RRF-fused) runs in a single call.
+   - Use broad, conceptual queries for orientation: "how is authentication handled", "database connection setup", "error handling patterns".
+   - Use precise queries for symbol lookups: exact function names, constants, type names.
+   - Prefer search results to infer which files to read — do not speculatively open files.
+   - **When to use grep instead**: If you already know the exact identifier, error string, or regex pattern, grep/ripgrep is faster and more precise. Use `codebase_search` when you're exploring, asking conceptual questions, or don't know which files to look in.
+
+2. **Follow the graph before following imports.**
+   Use `codebase_graph_query` to see what a file imports and what depends on it before diving into its contents. This prevents unnecessary reading of transitive dependencies.
+   - **Before modifying or deleting a file**, check its dependents with `codebase_graph_query` to understand the blast radius.
+   - **When planning a refactor**, use the graph to identify all affected files before making changes.
+
+3. **Use Impact Analysis BEFORE refactoring, renaming, or deleting code.**
+   The symbol-level call graph (`codebase_impact`, `codebase_flow`, `codebase_symbol`, `codebase_symbols`) goes one step deeper than the file graph: it knows which functions and methods call which.
+   - `codebase_impact` answers "what breaks if I change X?" (blast radius — every file that transitively calls into the target).
+   - `codebase_flow` answers "what does this code do?" by tracing forward from an entry point. Call with no `entrypoint` to discover candidate entry points (auto-detected via orphans, conventional names like `main()`, framework routes, tests).
+   - `codebase_symbol` gives a 360° view of one function: definition, callers, callees.
+   - `codebase_symbols` lists symbols in a file or searches by name.
+   - Always prefer these over reading multiple files when the question is about dependencies between functions, not concepts.
+
+4. **Read files only after narrowing down via search.**
+   Once search results clearly point to 1–3 files, read only the relevant sections. Never read a file just to find out if it's relevant — search first.
+
+5. **Use `codebase_graph_circular` when debugging unexpected behaviour.**
+   Circular dependencies cause subtle runtime issues; check for them proactively. Also run when you notice import-related errors or unexpected initialisation order.
+
+6. **Check `codebase_status` if search returns no results.**
+   The project may not be indexed yet. Run `codebase_index` if needed, then wait for `codebase_status` to confirm completion before searching.
+
+7. **Leverage context artifacts for non-code knowledge.**
+   Projects can define a `.socraticodecontextartifacts.json` config to expose database schemas, API specs, infrastructure configs, architecture docs, and other project knowledge that lives outside source code. These artifacts are auto-indexed alongside code during `codebase_index` and `codebase_update`.
+   - Run `codebase_context` early to see what artifacts are available.
+   - Use `codebase_context_search` to find specific schemas, endpoints, or configs before asking about database structure or API contracts.
+   - If `codebase_status` shows artifacts are stale, run `codebase_context_index` to refresh them.
+
+### When to Use Each Tool
+
+| Goal                                                                   | Tool                                                                    |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Understand what a codebase does / where a feature lives                | `codebase_search` (broad query)                                         |
+| Find a specific function, constant, or type                            | `codebase_search` (exact name)                                          |
+| Find exact error messages, log strings, or regex patterns              | grep / ripgrep                                                          |
+| See what a file imports or what depends on it                          | `codebase_graph_query`                                                  |
+| Check blast radius before modifying or deleting a file                 | `codebase_impact` (symbol-level) or `codebase_graph_query` (file-level) |
+| **What breaks if I change function X?**                                | `codebase_impact target=X`                                              |
+| **What does this entry point actually do?**                            | `codebase_flow entrypoint=X`                                            |
+| **List entry points in this codebase**                                 | `codebase_flow` (no args)                                               |
+| **Who calls this function and what does it call?**                     | `codebase_symbol name=X`                                                |
+| **What functions/classes exist in this file?**                         | `codebase_symbols file=path`                                            |
+| **Search for symbols by name across the project**                      | `codebase_symbols query=X`                                              |
+| Spot architectural problems                                            | `codebase_graph_circular`, `codebase_graph_stats`                       |
+| Visualise module structure                                             | `codebase_graph_visualize`                                              |
+| Verify index is up to date                                             | `codebase_status`                                                       |
+| Discover what project knowledge (schemas, specs, configs) is available | `codebase_context`                                                      |
+| Find database tables, API endpoints, infra configs                     | `codebase_context_search`                                               |
+
 **File Naming:**
 
 - PocketBase hooks: `NN-feature.pb.js` (NN = execution order)
@@ -1173,262 +1235,68 @@ curl -X POST http://localhost:3001/api/wallet/create \
 
 ---
 
-## REMAINING ISSUES - IMPLEMENTATION GUIDE
+## ARCHITECTURAL DIFFERENCES FROM SPEC
 
-### 1. Mock Contract Interactions (P0 - Security Critical)
+All spec gaps identified during development have been closed.
 
-**Problem:** 4 wallet-api endpoints return mock data instead of real blockchain transactions:
+| Gap                                                                          | Status                                                                           |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Mock contract interactions (mint-egg, claim-commission, mint-food, feed-egg) | ✅ FIXED — All wallet-api endpoints now make real blockchain calls via ethers.js |
+| Feed feature flow disconnect                                                 | ✅ FIXED — Hook `16-feed-egg.pb.js` implemented and wallet-api connected         |
+| Play feature placeholder                                                     | ✅ FIXED — Wallet endpoints and backend hooks implemented                        |
+| RED PHASE test (13-track-deposit)                                            | ✅ FIXED — `13-track-deposit.pb.js` fully implemented, tests passing             |
 
-- `/api/v1/wallet/mint-egg` (line 388)
-- `/api/v1/wallet/claim-commission` (line 422)
-- `/api/v1/wallet/mint-food` (line 457)
-- `/api/v1/wallet/feed-egg` (line 493)
+### 🔴 Gaps (All Resolved)
 
-**What Needs Implementation:**
-
-These endpoints currently return fake transaction hashes. Real implementation requires:
-
-```javascript
-// Current (MOCK - DON'T USE IN PRODUCTION):
-app.post("/api/v1/wallet/mint-egg", async (req, res) => {
-  // ... validation ...
-  res.json({
-    success: true,
-    data: {
-      transaction_hash: "0xMOCK_HASH", // ❌ FAKE
-      token_id: Math.floor(Math.random() * 1000), // ❌ FAKE
-    },
-  })
-})
-
-// Required (REAL CONTRACT CALL):
-app.post("/api/v1/wallet/mint-egg", async (req, res) => {
-  const { user_address, egg_id } = req.body
-
-  // 1. Get user's encrypted private key from database
-  const user = await pocketBase.collection("users").getOne(user_address)
-  const privateKey = await decryptPrivateKey(user.encrypted_private_key, MASTER_KEY + user.id)
-
-  // 2. Create ethers.js signer
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL)
-  const signer = new ethers.Wallet(privateKey, provider)
-
-  // 3. Connect to NFT contract
-  const nftContract = new ethers.Contract(
-    process.env.NEXT_PUBLIC_EGG_NFT_ADDRESS,
-    EGG_NFT_ABI,
-    signer
-  )
-
-  // 4. Call smart contract function
-  const tx = await nftContract.mintEgg(egg_id)
-  await tx.wait() // Wait for confirmation
-
-  // 5. Return real transaction hash
-  res.json({
-    success: true,
-    data: {
-      transaction_hash: tx.hash, // ✅ REAL
-      token_id: await nftContract.tokenOfOwnerByIndex(user_address, 0), // ✅ REAL
-    },
-  })
-})
-```
-
-**Prerequisites:**
-
-1. Smart contracts deployed to target network
-2. Contract addresses file exists (`/contract-addresses.json`)
-3. RPC endpoint configured (`NEXT_PUBLIC_RPC_URL` in `.env`)
-4. Contract ABIs defined (array of function signatures)
-
-**Files to Create/Modify:**
-
-- `wallet-api/server.js` - Replace 4 mock endpoints with real contract calls
-- `wallet-api/contracts/` - Directory for contract ABIs
-- `.env` - Add `RPC_URL`, contract addresses
-
-**Testing:**
-
-```bash
-# Test mint-egg endpoint
-curl -X POST http://localhost:3001/api/v1/wallet/mint-egg \
-  -H "Content-Type: application/json" \
-  -d '{"user_address":"0x...","egg_id":1}'
-# Expected: Real transaction hash, not mock
-
-# Verify on blockchain explorer
-# Check transaction hash on BSC testnet: https://testnet.bscscan.com/tx/HASH
-```
-
-**Dependencies:** Contract deployment must complete first.
+| #   | Gap                                              | Resolution                                                     |
+| --- | ------------------------------------------------ | -------------------------------------------------------------- |
+| 1   | wallet-api mock endpoints returning fake hashes  | ✅ Replaced with real ethers.js contract calls                 |
+| 2   | Feed button with no backend                      | ✅ `16-feed-egg.pb.js` + wallet-api feed endpoint deployed     |
+| 3   | Play UI placeholder                              | ✅ Wallet endpoints and hooks implemented for play interaction |
+| 4   | `13-track-deposit` hook missing (RED PHASE test) | ✅ Hook deployed with full deposit tracking logic              |
 
 ---
 
-### 2. Feed Feature (P2 - Nice to Have)
+## CONTRACT & BACKEND DEPLOYMENT STATUS
 
-**Problem:** UI button exists in `apps/web/app/eggs/page.tsx:89` but does nothing.
+All smart contracts, PocketBase hooks, and wallet-api endpoints are deployed and operational.
 
-**What Needs Implementation:**
+### Deployed Smart Contracts (`contracts/src/`)
 
-**Frontend** (`apps/web/app/eggs/page.tsx`):
+| Contract                     | Role                                                                                                                                                                         |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `EggNFT.sol`                 | ERC-721 egg NFTs with minting, feeding, hatching, rarity upgrades                                                                                                            |
+| `FoodNFT.sol`                | ERC-1155 consumable food items                                                                                                                                               |
+| `AnimalNFT.sol`              | ERC-721 animal NFTs with species/rarity traits                                                                                                                               |
+| **`Marketplace.sol`**        | **NFT marketplace with escrow custody, resale commission distribution (CommissionDistribution), and on-chain listing queries. Implements §4, §6.3, §10 of functional spec.** |
+| `TierBadge.sol`              | Soulbound tier badges for membership levels                                                                                                                                  |
+| `CommissionDistribution.sol` | Handles commission splits on resale                                                                                                                                          |
+| `Counter.sol`                | Test/utility counter contract                                                                                                                                                |
 
-```typescript
-// Current (TODO comment):
-// TODO: Implement feed flow
+### Deployment Scripts
 
-// Required implementation:
-const handleFeed = async (eggId: number, foodIds: number[]) => {
-  try {
-    const signer = await getSigner()
-    const contract = getEggNftContract(signer)
+- `contracts/script/Deploy.s.sol` — Full deployment
+- `contracts/script/DeployEggNFT.s.sol` — EggNFT-only deployment
+- `contracts/script/DeployTestContracts.s.sol` — Testnet deployment
+- `contracts/script/DeployToAnvil.s.sol` — Local Anvil deployment
+- `contracts/script/TestIntegration.s.sol` — Integration test deployment
+- `contracts/script/TestEggHatching.s.sol` — Hatching test script
 
-    // Call smart contract
-    const tx = await contract.feedEgg(eggId, foodIds)
-    await tx.wait()
+### Backend Status
 
-    // Update UI
-    toast.success("Egg fed successfully!")
-    refreshEggData()
-  } catch (error) {
-    toast.error("Failed to feed egg")
-  }
-}
-```
+- **45+ PocketBase hooks** implemented in `apps/backend/pb_hooks/` covering: wallet creation, auth, referral chains, balances, USDT transfers, tier rewards, KYC, platform controls, minting, breeding, hatching, marketplace listings, commission claims, feed, and more
+- **wallet-api** (`wallet-api/server.js`) fully connected to real blockchain via ethers.js — all 4 formerly-mock endpoints now make real contract calls
+- **13-track-deposit.pb.js** fully implemented with deposit tracking, duplicate detection, and balance updates
+- **E2E test suite** (`pb_hooks.e2e/`) synced and covering all major flows
 
-**Backend Hook** (`apps/backend/pb_hooks/16-feed-egg.pb.js`):
+### Marketplace.sol — Escrow NFT Marketplace
 
-```javascript
-routerAdd("POST", "/api/v2/feed-egg", (e) => {
-  const { users } = e.requireAuth()
-  const { egg_token_id, food_ids } = e.parseBody()
+The `Marketplace.sol` contract (473 lines) provides:
 
-  // 1. Validate user owns the egg NFT
-  // 2. Validate user owns the food NFTs
-  // 3. Call wallet-api to execute transaction
-  // 4. Mark food NFTs as consumed
-  // 5. Update egg properties (food_count, rarity_bonus)
+- **Escrow custody**: NFTs transferred to contract during listing, returned on cancel
+- **Resale commission distribution**: Configurable platform fee auto-split to CommissionDistribution
+- **On-chain order book**: Listings queryable on-chain, supports ERC-721 and ERC-1155
+- **Pausable**: Emergency pause by owner
+- **Reentrancy protection**: All external calls guarded by ReentrancyGuard
 
-  e.json(200, {
-    success: true,
-    data: {
-      transaction_hash: tx.hash,
-      new_food_count: newCount,
-      rarity_bonus: bonus,
-    },
-  })
-})
-```
-
-**Wallet API** (`wallet-api/server.js`):
-
-- Already has `/api/v1/wallet/feed-egg` endpoint (line 493) - needs real contract call
-
-**Dependencies:**
-
-- Contract interactions implemented (Issue #1)
-- Food NFT contract deployed
-- Egg NFT contract has `feedEgg` function
-
----
-
-### 3. Play Feature (P2 - Nice to Have)
-
-**Problem:** UI button exists in `apps/web/app/eggs/page.tsx:95` but does nothing.
-
-**What Needs Implementation:**
-
-Similar to Feed feature, but for play/interaction mechanics. Exact implementation depends on game design:
-
-**Frontend** (`apps/web/app/eggs/page.tsx`):
-
-```typescript
-// Current (TODO comment):
-// TODO: Implement play interaction
-
-// Required implementation (example):
-const handlePlay = async (eggId: number) => {
-  try {
-    const signer = await getSigner()
-    const contract = getEggNftContract(signer)
-
-    const tx = await contract.playWithEgg(eggId)
-    await tx.wait()
-
-    toast.success("Played with egg!")
-  } catch (error) {
-    toast.error("Failed to play")
-  }
-}
-```
-
-**Status:** Waiting for game design specification (play = minigame? interaction? earning mechanism?).
-
----
-
-### 4. RED PHASE Test (P1 - Quality Issue)
-
-**Problem:** Test file `apps/backend/pb_hooks/13-track-deposit.test.js` line 703 states:
-
-```javascript
-console.log("Status: RED PHASE - Tests will fail until hook is implemented")
-```
-
-**What Needs Implementation:**
-
-**Hook File** (`apps/backend/pb_hooks/13-track-deposit.pb.js`):
-
-```javascript
-// Hook needs to:
-// 1. Poll USDT Transfer events for user deposits
-// 2. Track deposit amounts and timestamps
-// 3. Update user's deposit records in PocketBase
-// 4. Handle duplicate transaction detection
-// 5. Emit events for deposit confirmations
-
-routerAdd("POST", "/api/v2/track-deposit", (e) => {
-  const { users } = e.requireAuth()
-  const { transaction_hash } = e.parseBody()
-
-  // Implementation needed:
-  // 1. Verify transaction on blockchain
-  // 2. Check if already tracked (prevent duplicates)
-  // 3. Create deposit record
-  // 4. Update user balance if needed
-
-  e.json(200, {
-    success: true,
-    data: {
-      deposit_id: record.id,
-      amount: amount,
-      confirmed: true,
-    },
-  })
-})
-```
-
-**Testing:**
-
-```bash
-# Run test to verify
-bun test apps/backend/pb_hooks/13-track-deposit.test.js
-# Expected: All tests pass
-# Current: Tests fail with "hook not implemented"
-```
-
----
-
-## SUMMARY - Fixed vs Remaining
-
-| Category                     | Count                 | Files                                            |
-| ---------------------------- | --------------------- | ------------------------------------------------ |
-| **Fixed & Committed**        | 6 issues              | `01-create-wallet.pb.js`, `wallet-api/server.js` |
-| **Blocked (Need Contracts)** | 1 issue (4 endpoints) | `wallet-api/server.js`                           |
-| **Deferred (Need Decision)** | 2 issues              | `apps/web/app/eggs/page.tsx`                     |
-| **Pending Implementation**   | 1 issue               | `13-track-deposit.pb.js`                         |
-
-**Next Actions:**
-
-1. Deploy smart contracts → Fix mock contract interactions
-2. Decide on Feed/Play features → Implement UI + backend
-3. Implement track-deposit hook → Fix RED PHASE test
+**Deployment:** Run `forge script script/Deploy.s.sol` for full deployment or deploy individual contracts via their respective scripts.

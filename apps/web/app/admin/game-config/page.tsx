@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useIsHydrated } from '@/hooks/use-is-hydrated'
+import { AuthGuard } from '@/components/auth/AuthGuard'
 import { createClient } from '@/lib/pocketbase/client'
 import LayoutWrapper from '@/components/LayoutWrapper'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -30,11 +29,15 @@ const DEFAULT_CONFIG: GameConfig = {
 }
 
 export default function GameConfigPage() {
-  const isHydrated = useIsHydrated()
-  const router = useRouter()
+  return (
+    <AuthGuard requireAdmin redirectTo="/auth/login">
+      {() => <GameConfigContent />}
+    </AuthGuard>
+  )
+}
+
+function GameConfigContent() {
   const pb = createClient()
-  const user = isHydrated ? pb.authStore.record : null
-  const isAdmin = user?.admin === true
 
   const [config, setConfig] = useState<GameConfig>(DEFAULT_CONFIG)
   const [loading, setLoading] = useState(true)
@@ -47,13 +50,8 @@ export default function GameConfigPage() {
   const [newSpeciesWeight, setNewSpeciesWeight] = useState(0)
 
   useEffect(() => {
-    if (!isHydrated) return
-    if (!pb.authStore.isValid || !isAdmin) {
-      router.push('/auth/login')
-      return
-    }
     fetchConfig()
-  }, [isHydrated])
+  }, [])
 
   const fetchConfig = async () => {
     try {
@@ -101,22 +99,11 @@ export default function GameConfigPage() {
     }
   }
 
-  if (!isHydrated || loading) {
+  if (loading) {
     return (
       <LayoutWrapper>
         <div className="max-w-4xl mx-auto py-12 px-4">
           <div className="text-center text-on-surface-variant">Loading...</div>
-        </div>
-      </LayoutWrapper>
-    )
-  }
-
-  if (!isAdmin) {
-    return (
-      <LayoutWrapper>
-        <div className="max-w-4xl mx-auto py-12 px-4 text-center">
-          <h2 className="text-2xl font-pixel-style mb-4">Admin Access Required</h2>
-          <Button onClick={() => router.push('/auth/login')}>Go to Login</Button>
         </div>
       </LayoutWrapper>
     )

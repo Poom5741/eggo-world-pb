@@ -48,6 +48,8 @@ contract ReferralChainResetTest is Test {
         // Set up contracts
         eggNFT.setAnimalNFTContract(address(animalNFT));
         commissionDistribution.setEggNFTContract(address(eggNFT));
+        vm.prank(owner);
+        animalNFT.setEggNFTContract(address(eggNFT));
 
         // Set up VRF
         vrfSubscriptionId = vrfCoordinatorMock.createSubscription();
@@ -102,13 +104,14 @@ contract ReferralChainResetTest is Test {
         animalNFT.transferOwnership(buyer);
         vm.stopPrank();
         
-        vm.startPrank(buyer);
-        
-        // Mint some animals to be parents
+        // Mint some animals to be parents (must be called from eggNFT contract)
+        vm.startPrank(address(eggNFT));
         uint256 animal1Id = animalNFT.mintAnimal(buyer, 1, Rarity.Common, Species.Chicken, 0, [uint256(1),1,1,1], 0, 0, 0);
         uint256 animal2Id = animalNFT.mintAnimal(buyer, 2, Rarity.Rare, Species.Duck, 1, [uint256(1),1,1,1], 0, 0, 0);
-        eggNFT.unpause();
         vm.stopPrank();
+        
+        vm.prank(owner);
+        eggNFT.unpause();
 
         // Create a breeding egg using VRF two-phase (request → fulfill → claim)
         vm.startPrank(buyer);
@@ -157,13 +160,14 @@ contract ReferralChainResetTest is Test {
         animalNFT.transferOwnership(buyer);
         vm.stopPrank();
         
-        vm.startPrank(buyer);
-        
-        // Mint animals to represent our existing animals
+        // Mint animals to represent our existing animals (must be called from eggNFT contract)
+        vm.startPrank(address(eggNFT));
         uint256 animal1Id = animalNFT.mintAnimal(buyer, 1, Rarity.Common, Species.Chicken, 0, [uint256(1),1,1,1], 0, 0, 0);
         uint256 animal2Id = animalNFT.mintAnimal(buyer, 2, Rarity.Rare, Species.Duck, 1, [uint256(1),1,1,1], 0, 0, 0);
-        eggNFT.unpause();  // Resume
         vm.stopPrank();
+        
+        vm.prank(owner);
+        eggNFT.unpause();  // Resume
 
         // Create a breeding egg using VRF two-phase
         vm.startPrank(buyer);

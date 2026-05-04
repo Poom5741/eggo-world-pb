@@ -26,7 +26,7 @@ test.describe('Feed + Hatch Journey', () => {
     await e2eLogin(page, 'test_buyer', '/eggs')
 
     // Wait for egg cards to render (data loads async after auth restore)
-    const eggCard = page.locator('[data-egg-id], .bg-surface-container-lowest.p-6.rounded-xl.clay-card').first()
+    const eggCard = page.locator('.bg-surface-container-lowest.p-6.rounded-xl.clay-card').first()
     await expect(eggCard).toBeVisible({ timeout: 15000 })
 
     // Get egg tokenId from the rendered page (card already visible from the wait above)
@@ -138,18 +138,10 @@ test.describe('Feed + Hatch Journey', () => {
     // Wait for eggs page to load
     await page.waitForLoadState('networkidle')
 
-    // Find the egg we want to feed
-    const eggCard = page.locator(`[data-egg-id="${eggTokenId}"]`).first()
-    
-    // If egg not found by data-egg-id, find by egg_id text
-    if (!(await eggCard.isVisible({ timeout: 3000 }).catch(() => false))) {
-      // Find any egg card that needs feeding (food_count < 10)
-      const eggCards = page.locator('.egg-card, .bg-surface-container-low')
-      const firstEgg = eggCards.first()
-      await firstEgg.click()
-    } else {
-      await eggCard.click()
-    }
+    // Find the egg we want to feed using CSS classes (EggCard has no data-egg-id)
+    const eggCard = page.locator('.bg-surface-container-lowest.p-6.rounded-xl.clay-card').filter({ hasText: `#${eggTokenId}` }).first()
+    // Click "Manage Egg" button inside the card to open FeedDialog
+    await eggCard.locator('button:has-text("Manage")').click()
 
     // Wait for egg details/actions
     await page.waitForTimeout(1000)
@@ -336,9 +328,10 @@ test.describe('Feed + Hatch Journey', () => {
     // Wait for eggs page to load
     await page.waitForLoadState('networkidle')
 
-    // Find any egg card and click
-    const eggCards = page.locator('.egg-card, [data-egg-id], .bg-surface-container-low')
-    const count = await eggCards.count()
+    // Find any egg card and click (match EggCard's actual CSS: bg-surface-container-lowest p-6 rounded-xl clay-card)
+    const eggCards = page.locator('.bg-surface-container-lowest.p-6.rounded-xl.clay-card')
+    const eggCardsWithText = eggCards.filter({ hasText: /Egg #/i })
+    const count = await eggCardsWithText.count()
     
     if (count === 0) {
       // No eggs for test_buyer_poor - skip
@@ -347,8 +340,8 @@ test.describe('Feed + Hatch Journey', () => {
       return
     }
 
-    // Click on first egg
-    await eggCards.first().click()
+    // Click on first egg card
+    await eggCardsWithText.first().click()
     await page.waitForTimeout(1000)
 
     // Try to open feed dialog

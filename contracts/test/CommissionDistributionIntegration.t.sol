@@ -40,7 +40,7 @@ contract CommissionDistributionIntegrationTest is Test {
         coinStor = address(0x6);
         
         mockUSDT = new MockUSDT();
-        commissionDist = new CommissionDistribution(coinStor, address(mockUSDT), address(0x5));
+        commissionDist = new CommissionDistribution(coinStor, address(mockUSDT), address(0x9));
         VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
         eggNFT = new EggNFT(payable(address(commissionDist)), address(mockUSDT), address(vrfMock));
         

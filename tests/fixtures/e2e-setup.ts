@@ -30,7 +30,7 @@ export interface E2ETestContext {
  */
 export function getE2EContext(): E2ETestContext {
   return {
-    pocketbaseUrl: process.env.POCKETBASE_URL || 'http://localhost:8090',
+    pocketbaseUrl: process.env.POCKETBASE_URL || 'http://localhost:8091',
     walletApiUrl: process.env.WALLET_API_URL || 'http://localhost:3001',
     anvilRpcUrl: process.env.ANVIL_RPC_URL || 'http://localhost:8545',
   }

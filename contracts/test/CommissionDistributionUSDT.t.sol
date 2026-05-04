@@ -32,6 +32,7 @@ contract CommissionDistributionUSDTTest is Test {
         
         mockUSDT = new MockUSDT();
         commissionDist = new CommissionDistribution(coinStor, address(mockUSDT), address(0x5));
+        commissionDist.setEggNFTContract(address(this));
         
         // Fund contract with USDT for payouts
         mockUSDT.mint(payable(address(commissionDist)), INITIAL_BALANCE);

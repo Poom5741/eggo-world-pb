@@ -200,15 +200,39 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
                 })
             }
             
-            console.log("Calling wallet-api for on-chain purchase: listingId=" + nftId)
+            console.log("Calling wallet-api for on-chain purchase: nftType=" + nftType + ", nftId=" + nftId)
+            
+            // Resolve NFT contract address from type
+            var nftContractAddress = "";
+            if (normalizedNftType === "egg") {
+                nftContractAddress = $os.getenv("EGG_NFT_CONTRACT_ADDRESS") || "";
+            } else if (normalizedNftType === "food") {
+                nftContractAddress = $os.getenv("FOOD_NFT_CONTRACT_ADDRESS") || "";
+            } else if (normalizedNftType === "animal") {
+                nftContractAddress = $os.getenv("ANIMAL_NFT_CONTRACT_ADDRESS") || "";
+            }
+            
+            if (!nftContractAddress) {
+                return e.json(500, {
+                    success: false,
+                    error: {
+                        message: "NFT contract address not configured for type: " + nftType,
+                        code: "CONFIG_ERROR"
+                    }
+                })
+            }
+            
+            var nftTokenId = nft.get("token_id") || nftId;
             
             const walletApiResponse = $http.send({
                 url: walletApiUrl + "/api/wallet/buy-nft",
                 method: "POST",
                 body: JSON.stringify({
                     buyerUserId: buyer.id,
-                    listingId: nftId,
-                    marketplaceAddress: marketplaceContractAddress
+                    nftContract: nftContractAddress,
+                    tokenId: parseInt(nftTokenId),
+                    marketplaceAddress: marketplaceContractAddress,
+                    listingPrice: price
                 }),
                 headers: { "Content-Type": "application/json" },
                 timeout: 120

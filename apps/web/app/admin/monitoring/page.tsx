@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
-import { createClient } from '@/lib/pocketbase/client'
+import { createClient, restoreAuth, getUser } from '@/lib/pocketbase/client'
 import LayoutWrapper from '@/components/LayoutWrapper'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -56,18 +56,35 @@ export default function MonitoringPage() {
   const router = useRouter()
   const isHydrated = useIsHydrated()
   const pb = createClient()
-  const user = pb.authStore.record
+  const [user, setUser] = useState<any>(null)
+  const [authReady, setAuthReady] = useState(false)
   const isAdmin = user?.admin === true
-  const isAuthorized = isHydrated && pb.authStore.isValid && isAdmin
+  const isAuthorized = authReady && pb.authStore.isValid && isAdmin
 
+  // Auth check with restore
   useEffect(() => {
     if (!isHydrated) return
 
+    const pb = createClient()
+    restoreAuth(pb).then((success) => {
+      if (success) {
+        const u = getUser()
+        setUser(u)
+        if (u?.admin) {
+          setAuthReady(true)
+          return
+        }
+      }
+      setAuthReady(true)
+    })
+  }, [isHydrated])
+
+  // Initial data fetch once authorized
+  useEffect(() => {
+    if (!isAuthorized) return
+
     const fetchData = async () => {
-      const user = pb.authStore.record
-      const isAdmin = user?.admin === true
-      if (!isHydrated || !pb?.authStore?.isValid || !isAdmin) {
-        router.push('/auth/login')
+      if (!pb?.authStore?.isValid) {
         return
       }
 
@@ -121,14 +138,13 @@ export default function MonitoringPage() {
         setRecentFailures(recentFailures)
       } catch (error) {
         console.error('Error fetching monitoring data:', error)
-        alert('Failed to load monitoring data. Please try again.')
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchData()
-  }, [isHydrated, router])
+  }, [isAuthorized])
 
   const fetchCoinStorBalance = async () => {
     setCoinStorLoading(true)

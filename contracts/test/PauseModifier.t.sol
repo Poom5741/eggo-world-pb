@@ -51,6 +51,8 @@ contract PauseModifierTest is Test {
         animalNFT = new AnimalNFT();
         animalNFT.transferOwnership(address(eggNFT));
         eggNFT.setAnimalNFTContract(address(animalNFT));
+        vm.prank(address(eggNFT));
+        animalNFT.setEggNFTContract(address(eggNFT));
         commissionDistribution.setEggNFTContract(address(eggNFT));
 
         // Setup VRF
@@ -64,40 +66,43 @@ contract PauseModifierTest is Test {
     }
 
     function test_UpgradeEggRarityPaused() public {
-        // Mint an egg first
+        // Mint two eggs
         vm.startPrank(user);
-        mockUSDT.approve(address(eggNFT), MINT_PRICE);
+        mockUSDT.approve(address(eggNFT), MINT_PRICE * 2);
         uint256 eggTokenId = eggNFT.mintEgg(referrer);
-        uint256 eggTokenId2 = eggNFT.mintEgg(referrer);
+        eggNFT.mintEgg(referrer);
         vm.stopPrank();
 
         // Setup food NFT contract
-        uint256 foodMintPrice = 5 * 10**17; // 0.5 USDT
+        uint256 foodMintPrice = 5 * 10**17;
         MockUSDT foodUsdtToken = new MockUSDT();
         foodUsdtToken.mint(user, 1000 * 10**18);
         
-        FoodNFT foodNFTContract = new FoodNFT{salt:"Test"}(payable(address(coinStorReserve)), address(foodUsdtToken), address(eggNFT));
-        
-        vm.startPrank(user);
-        foodUsdtToken.approve(address(foodNFTContract), foodMintPrice * 5);
-        uint256[] memory foodIds = foodNFTContract.mintFood(5, referrer);
-        vm.stopPrank();
+        FoodNFT foodNFTContract = new FoodNFT{salt:"Test"}(payable(address(commissionDistribution)), address(foodUsdtToken), address(eggNFT));
         
         eggNFT.setFoodNFTContract(address(foodNFTContract));
+        commissionDistribution.setFoodNFTContract(address(foodNFTContract));
+        
+        // Need 8 food items to reach MAX_FOOD_COUNT(10) from INITIAL_FOOD_COUNT(2)
+        uint256 neededFood = 8;
+        vm.startPrank(user);
+        foodUsdtToken.approve(address(foodNFTContract), foodMintPrice * neededFood);
+        uint256[] memory foodIds = foodNFTContract.mintFood(neededFood, referrer);
+        vm.stopPrank();
 
         // Feed the egg to reach the MAX_FOOD_COUNT threshold
         vm.startPrank(user);
-        // Note: The feeding function must be called from somewhere, perhaps FoodNFT needs to be called to feed the egg
-        
-        // Now pause the contract
+        foodNFTContract.feedEgg(eggTokenId, foodIds, address(eggNFT));
         vm.stopPrank();
+
+        // Now pause the contract
         vm.prank(owner);
         eggNFT.pause();
 
         // Try to upgrade egg rarity when paused - should fail
         vm.startPrank(user);
-        vm.expectRevert(bytes("Pausable: paused"));
-        // We can't upgrade yet before feeding the egg, but if we could, this would fail when paused
+        vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
+        eggNFT.upgradeEggRarity(eggTokenId, new uint256[](0));
         vm.stopPrank();
     }
     
@@ -109,16 +114,7 @@ contract PauseModifierTest is Test {
         vm.prank(user);
         mockUSDT.approve(address(eggNFT), MINT_PRICE * 3);
         
-        vm.startPrank(user);
-        uint256 parent1EggId = eggNFT.mintEgg(referrer);
-        uint256 parent2EggId = eggNFT.mintEgg(referrer);
-        vm.stopPrank();
-        
-        // Now manually mint animals for breeding purposes (bypassing the need for hatching)
-        vm.prank(owner); // Need owner to set up egg NFT for animal contract to work properly
-        animalNFT.setEggNFTContract(address(eggNFT));
-        
-        vm.startPrank(owner);
+        vm.startPrank(address(eggNFT));
         uint256 animal1Id = animalNFT.mintAnimal(user, 1, Rarity.Common, Species.Chicken, 0, [uint256(1),1,1,1], 0, 0, 0);
         uint256 animal2Id = animalNFT.mintAnimal(user, 2, Rarity.Rare, Species.Duck, 1, [uint256(1),1,1,1], 0, 0, 0);
         vm.stopPrank();
@@ -134,7 +130,7 @@ contract PauseModifierTest is Test {
         
         // Attempt to call breedAnimals when paused - should fail
         vm.startPrank(user);
-        vm.expectRevert(bytes("Pausable: paused"));
+        vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
         eggNFT.requestBreed(animal1Id, animal2Id, address(0));
         vm.stopPrank();
     }
@@ -165,7 +161,7 @@ contract PauseModifierTest is Test {
         foodTypes[0] = FoodType.Grain;
         
         vm.prank(address(foodNFTContract));
-        vm.expectRevert(bytes("Pausable: paused"));
+        vm.expectRevert(abi.encodeWithSignature("EnforcedPause()"));
         eggNFT.recordFoodConsumption(eggTokenId, foodIds, foodTypes);
     }
     

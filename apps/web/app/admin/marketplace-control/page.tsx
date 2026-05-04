@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useIsHydrated } from '@/hooks/use-is-hydrated'
+import { AuthGuard } from '@/components/auth/AuthGuard'
 import { createClient } from '@/lib/pocketbase/client'
 import LayoutWrapper from '@/components/LayoutWrapper'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -13,11 +13,17 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { Shield, Power, PowerOff, Loader2, TrendingUp, Link } from 'lucide-react'
 
-const pb = createClient()
-
 export default function MarketplaceControlPage() {
-  const isHydrated = useIsHydrated()
+  return (
+    <AuthGuard requireAdmin redirectTo="/auth/login">
+      {() => <MarketplaceControlContent />}
+    </AuthGuard>
+  )
+}
+
+function MarketplaceControlContent() {
   const router = useRouter()
+  const pb = createClient()
   
   const [platformPaused, setPlatformPaused] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -26,17 +32,9 @@ export default function MarketplaceControlPage() {
   const [revenue, setRevenue] = useState({ totalUsdt: 0, transactionCount: 0 })
   
   useEffect(() => {
-    if (!isHydrated) return
-    
-    const user = pb.authStore.record
-    if (!user || !user?.admin) {
-      router.push('/auth/login')
-      return
-    }
-    
     loadPlatformStatus()
     loadRevenueStats()
-  }, [isHydrated, router])
+  }, [])
 
   async function loadRevenueStats() {
     try {
@@ -105,7 +103,7 @@ export default function MarketplaceControlPage() {
     }
   }
 
-  if (!isHydrated || isLoading) {
+  if (isLoading) {
     return (
       <LayoutWrapper>
         <div className="flex items-center justify-center min-h-screen">
@@ -114,8 +112,6 @@ export default function MarketplaceControlPage() {
       </LayoutWrapper>
     )
   }
-
-  const _user = pb.authStore.record as any
   
   return (
     <LayoutWrapper>

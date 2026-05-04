@@ -18,7 +18,27 @@ test('seed E2E test data', async () => {
   const buyerAuth = await authUser('test_buyer')
   const referrerAuth = await authUser('test_referrer')
 
-  // 2. Delete all marketplace listings
+  // Check if enough active listings already exist (from blockchain sync)
+  const existingActive = await pbList('marketplace_listings', sellerAuth.token, "status='active'")
+  if (existingActive.length >= 3) {
+    console.log(`[setup] ✅ ${existingActive.length} active listings already exist — skipping listing creation`)
+    // Just reset balances
+    for (const u of [buyerAuth, sellerAuth, referrerAuth]) {
+      const wallets = await pbList('user_wallets', u.token, `user_id='${u.id}'`)
+      for (const w of wallets) {
+        await fetch(`${PB_URL}/api/collections/user_wallets/records/${w.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${u.token}` },
+          body: JSON.stringify({ usdt_balance: 1000, total_spent: 0 }),
+        })
+      }
+    }
+    console.log('[setup] Reset all wallet balances to 1000 USDT')
+    console.log(`[setup] Done in ${((Date.now()-startTime)/1000).toFixed(1)}s\n`)
+    return
+  }
+
+  // 2. Only clear if we need to recreate (existing listings are insufficient)
   const allListings = await pbList('marketplace_listings', sellerAuth.token)
   for (const item of allListings) {
     await fetch(`${PB_URL}/api/collections/marketplace_listings/records/${item.id}`, {
@@ -122,7 +142,7 @@ test('seed E2E test data', async () => {
       generation: 0,
       contract_address: '0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8',
       minted_at: new Date().toISOString(),
-      tx_hash: `${txHash}1`,
+      tx_hash: `0xmock_e2e_${Date.now()}_1`,
     })
     if (newEgg.id) console.log('[setup] Created buyer egg for feed/hatch test')
     buyerEggs = await pbList('egg_nfts', buyerAuth.token, `owner='${buyerAuth.id}'`)
@@ -187,7 +207,27 @@ async function authUser(username: string) {
   })
   if (!r.ok) throw new Error(`Auth failed for ${username}: ${await r.text()}`)
   const d = await r.json()
-  return { token: d.token, id: d.record.id, wallet: d.record.wallet }
+  // Look up wallet address from egg_nfts or animal_nfts (or use hardcoded Anvil addresses)
+  const userId = d.record.id
+  let wallet = d.record.wallet || ''
+  if (!wallet) {
+    // Try to find from egg_nfts
+    const eggRecords = await pbList('egg_nfts', d.token, `owner='${userId}'`)
+    if (eggRecords.length > 0 && eggRecords[0].owner_wallet) {
+      wallet = eggRecords[0].owner_wallet
+    }
+  }
+  if (!wallet) {
+    // Hardcoded Anvil accounts (deterministic from seed phrase)
+    const anvilWallets: Record<string, string> = {
+      'test_buyer': '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
+      'test_seller': '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+      'test_referrer': '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
+      'test_admin': '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
+    }
+    wallet = anvilWallets[username] || ''
+  }
+  return { token: d.token, id: userId, wallet }
 }
 
 async function pbList(collection: string, token: string, filter?: string) {

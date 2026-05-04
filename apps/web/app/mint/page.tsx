@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import LayoutWithoutNav from '@/components/LayoutWithoutNav'
-import { createClient, isAuthenticated, getUser } from '@/lib/pocketbase/client'
+import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -36,20 +36,22 @@ export default function MintPage() {
   const [referrerId, setReferrerId] = useState('')
   const [confirmationProgress, setConfirmationProgress] = useState<ConfirmationProgress>('idle')
   const [_tokenId, setTokenId] = useState<number | null>(null)
+  const [user, setUser] = useState<any>(null)
+  const [authReady, setAuthReady] = useState(false)
 
-  // Get authenticated user (after hydration)
-  const user = isHydrated ? getUser() : null
-
-  // Auth check - redirect to login if not authenticated
+  // Auth check - restore auth after hydration (matching eggs/animals pattern)
   useEffect(() => {
-    if (isHydrated && !isAuthenticated()) {
-      router.push('/auth/login')
-    }
+    if (!isHydrated) return
+    restoreAuth(pb).then((success) => {
+      if (success) setUser(getUser())
+      setAuthReady(true)
+      if (!success) router.push('/auth/login')
+    })
   }, [isHydrated, router])
 
   // Fetch user's USDT balance
   useEffect(() => {
-    if (!isHydrated || !user?.id) return
+    if (!isHydrated || !authReady || !user?.id) return
 
     const fetchBalance = async () => {
       try {
@@ -211,7 +213,7 @@ export default function MintPage() {
   }
 
   // Don't render if not authenticated (useEffect will redirect)
-  if (!isAuthenticated()) {
+  if (authReady && !user) {
     return null
   }
 

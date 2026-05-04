@@ -1,23 +1,10 @@
 {
   "7117": {
-    "usdt": "0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB",
-    "commission": "0x9E545E3C0baAB3E08CdfD552C960A1050f373042",
-    "animalNft": "0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9",
-    "eggNft": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
-    "foodNft": "0x851356ae760d987E095750cCeb3bC6014560891C"
-  },
-  "56": {
-    "usdt": "USDT_BSC_MAINNET_ADDRESS",
-    "commission": "TO_BE_DEPLOYED",
-    "animalNft": "TO_BE_DEPLOYED",
-    "eggNft": "TO_BE_DEPLOYED",
-    "foodNft": "TO_BE_DEPLOYED"
-  },
-  "97": {
-    "usdt": "USDT_BSC_TESTNET_ADDRESS",
-    "commission": "LEGACY_TESTNET",
-    "animalNft": "LEGACY_TESTNET",
-    "eggNft": "LEGACY_TESTNET",
-    "foodNft": "LEGACY_TESTNET"
+    "usdt": "0xb2FE193523A1E6A240141331A80755f5642e7A44",
+    "commission": "0xec21A3c068e84ceeD04975627418E867Ec342A02",
+    "animalNft": "0x43121fE481F734e442A0D72D9B600a1Af99C4131",
+    "eggNft": "0xf29aa968504694dbF12CBFA3Bf773BdA5369e4C4",
+    "foodNft": "0x40adF3720E6a5d732E91A6A6Bd6A947f562E10ED",
+    "marketplace": "0x5705cC9E3dbFd6E1Ab6B2BF1A2b0Ce22970C2EdA"
   }
 }

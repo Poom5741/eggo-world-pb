@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useIsHydrated } from "@/hooks/use-is-hydrated"
-import { getUser, createClient } from "@/lib/pocketbase/client"
+import { getUser, createClient, restoreAuth } from "@/lib/pocketbase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,18 +51,26 @@ export default function WithdrawPage() {
   const feeAmount = amountValue * withdrawalFeeRate
   const netAmount = amountValue - feeAmount
 
+  const router = useRouter()
+
   useEffect(() => {
     if (!isHydrated) return
 
-    const userRecord = getUser()
-    if (!userRecord) {
-      window.location.href = "/auth/login"
-      return
-    }
-
-    setUser(userRecord)
-    fetchBalance(userRecord.wallet)
-    fetchWithdrawalHistory()
+    const pb = createClient()
+    restoreAuth(pb).then((success) => {
+      if (success) {
+        const userRecord = getUser()
+        if (userRecord) {
+          setUser(userRecord)
+          fetchBalance(userRecord.wallet)
+          fetchWithdrawalHistory()
+          return
+        }
+      }
+      // Redirect with redirectTo preserving intent
+      const redirectUrl = `/auth/login?redirectTo=${encodeURIComponent(window.location.pathname)}`
+      router.push(redirectUrl)
+    })
   }, [isHydrated])
 
   async function fetchBalance(walletAddress: string) {

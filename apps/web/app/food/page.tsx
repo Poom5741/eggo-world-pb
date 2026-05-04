@@ -2,10 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 import LayoutWithoutNav from '@/components/LayoutWithoutNav';
-import { useIsHydrated } from '@/hooks/use-is-hydrated';
 import { useFoodNft } from '@/hooks/use-food-nft';
-import { createClient } from '@/lib/pocketbase/client';
 import { FoodCard, FoodType } from '@/components/food-nft/FoodCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,9 +24,15 @@ import { CreateListingDialog } from '@/components/marketplace/CreateListingDialo
  * - Auth guard (redirects to login if not authenticated)
  */
 export default function FoodInventoryPage() {
+  return (
+    <AuthGuard redirectTo="/auth/login">
+      {(user) => <FoodInventoryContent user={user} />}
+    </AuthGuard>
+  );
+}
+
+function FoodInventoryContent({ user }: { user: any }) {
   const router = useRouter();
-  const isHydrated = useIsHydrated();
-  const pb = createClient();
   const { getUserFoodNfts } = useFoodNft();
   
   // State สำหรับ Food NFT
@@ -38,22 +43,12 @@ export default function FoodInventoryPage() {
   const [sellDialogOpen, setSellDialogOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<any>(null);
   
-  // Get authenticated user (หลัง hydration)
-  const user = isHydrated ? pb.authStore.record : null;
-  
-  // Auth guard - redirect ไป login ถ้าไม่ได้ login
-  useEffect(() => {
-    if (isHydrated && !user) {
-      router.push('/auth/login');
-    }
-  }, [isHydrated, user, router]);
-  
   // Fetch food NFTs when user is available
   useEffect(() => {
-    if (isHydrated && user?.id) {
+    if (user?.id) {
       fetchFoods();
     }
-  }, [isHydrated, user?.id]);
+  }, [user?.id]);
   
   const fetchFoods = async () => {
     if (!user?.id) return;
@@ -76,7 +71,7 @@ export default function FoodInventoryPage() {
   };
   
   // Loading state - แสดงสถานะกำลังโหลด
-  if (!isHydrated || loading) {
+  if (loading) {
     return (
       <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
@@ -100,11 +95,6 @@ export default function FoodInventoryPage() {
         </div>
       </LayoutWithoutNav>
     );
-  }
-  
-  // Not authenticated - จะถูก redirect ไป login
-  if (!user) {
-    return null;
   }
   
   // Empty state - กรณีไม่มี Food NFT

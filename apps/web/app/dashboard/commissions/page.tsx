@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { AuthGuard } from '@/components/auth/AuthGuard'
+import { createClient } from '@/lib/pocketbase/client'
 import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -14,9 +14,14 @@ import { Header } from '@/components/header'
 import { CommissionBreakdown } from '@/components/referrals/CommissionBreakdown'
 
 export default function CommissionsDashboard() {
-  const router = useRouter()
-  const [isHydrated, setIsHydrated] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  return (
+    <AuthGuard redirectTo="/auth/login">
+      {(user) => <CommissionsContent user={user} />}
+    </AuthGuard>
+  )
+}
+
+function CommissionsContent({ user }: { user: any }) {
   const [profile, setProfile] = useState<any>(null)
   const [commissions, setCommissions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -43,31 +48,6 @@ export default function CommissionsDashboard() {
 
     return () => clearInterval(pollInterval)
   }, [user])
-
-  useEffect(() => {
-    setIsHydrated(true)
-    
-    const pb = createClient()
-    
-    if (isAuthenticated()) {
-      const currentUser = getUser()
-      if (currentUser) {
-        setUser(currentUser)
-        fetchData(currentUser.id)
-      }
-    } else {
-      router.push('/auth/login')
-    }
-
-    pb.authStore.onChange(() => {
-      if (isAuthenticated()) {
-        setUser(getUser())
-      } else {
-        setUser(null)
-        router.push('/auth/login')
-      }
-    })
-  }, [router])
 
   const fetchData = async (userId: string) => {
     const pb = createClient()
@@ -196,18 +176,6 @@ export default function CommissionsDashboard() {
       await fetchData(user.id)
       setUpdating(false)
     }
-  }
-
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-body text-foreground">LOADING...</p>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
   }
 
   const usdtTotalEarned = parseFloat(profile?.usdt_total_earned || '0')

@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { getUser, isAuthenticated } from "@/lib/pocketbase/client"
+import { useEffect } from "react"
+import { AuthGuard } from "@/components/auth/AuthGuard"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -16,25 +15,19 @@ import { ArrowLeft, RefreshCw } from "lucide-react"
 import Link from "next/link"
 
 export default function TiersPage() {
-    const router = useRouter()
-    const [isHydrated, setIsHydrated] = useState(false)
-    const [user, setUser] = useState<any>(null)
-    
+  return (
+    <AuthGuard redirectTo="/auth/login">
+      {() => <TiersContent />}
+    </AuthGuard>
+  )
+}
+
+function TiersContent() {
     const { status, isLoading, error, fetchStatus, claim, clearError } = useTierReward()
     
     useEffect(() => {
-        setIsHydrated(true)
-        
-        if (isAuthenticated()) {
-            const currentUser = getUser()
-            if (currentUser) {
-                setUser(currentUser)
-                fetchStatus()
-            }
-        } else {
-            router.push('/auth/login')
-        }
-    }, [router, fetchStatus])
+        fetchStatus()
+    }, [fetchStatus])
     
     const handleClaim = async (tier: string) => {
         const result = await claim(tier)
@@ -46,18 +39,6 @@ export default function TiersPage() {
     // Get claimable tiers
     const claimableTiers = status?.tiers?.filter(t => t.can_claim && !t.claimed) || []
     const hasClaimableTiers = claimableTiers.length > 0
-    
-    if (!isHydrated) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <p className="font-body text-foreground">LOADING...</p>
-            </div>
-        )
-    }
-    
-    if (!user) {
-        return null
-    }
     
     return (
         <div className="min-h-screen bg-background">

@@ -50,6 +50,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     mapping(uint256 => EggProperties) private _eggProperties;
     mapping(uint256 => mapping(uint256 => FoodType)) private _foodTypeHistory;
     mapping(address => bool) public authorizedFoodNFTContracts;
+    mapping(uint256 => uint256) private _eggIdToTokenId; // egg_id → ERC-721 tokenId (for referral chain lookup)
     
     event EggMinted(uint256 indexed egg_id, address indexed buyer, address indexed referrer);
     event EggHatched(uint256 indexed egg_id, uint256 indexed animal_id, Rarity rarity, Species species);
@@ -181,6 +182,14 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
             rarity_upgrade_count: 0,
             generation: 0
         });
+        
+        // Store egg_id → tokenId mapping for referral chain lookup (used by Marketplace resales)
+        _eggIdToTokenId[eggId] = tokenId;
+        
+        // Auto-mint 2 free Food NFTs to buyer (per spec §2.1: "Included Items on Mint: 2× Food NFT")
+        if (foodNFTContract != address(0)) {
+            FoodNFT(foodNFTContract).mintFreeFood(buyer, 2);
+        }
         
         address primaryReferrer = referralChain[0];
         emit EggMinted(eggId, buyer, primaryReferrer);
@@ -501,6 +510,9 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
             generation: childGeneration
         });
         
+        // Store egg_id → tokenId mapping for referral chain lookup
+        _eggIdToTokenId[eggId] = tokenId;
+        
         // Record breeding timestamps
         AnimalNFT(animalNFTContract).recordBreeding(breed.parent1TokenId);
         AnimalNFT(animalNFTContract).recordBreeding(breed.parent2TokenId);
@@ -569,6 +581,28 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     function getReferralChain(uint256 tokenId) external view returns (address[4] memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
         return _eggProperties[tokenId].referral_chain;
+    }
+    
+    /**
+     * @notice Get referral chain by internal egg ID (used by Marketplace for resale commissions)
+     * @param eggId The internal egg_id (sequential number, not ERC-721 tokenId)
+     * @return The 4-level referral chain associated with this egg
+     */
+    function getReferralChainByEggId(uint256 eggId) external view returns (address[4] memory) {
+        uint256 tokenId = _eggIdToTokenId[eggId];
+        require(tokenId != 0, "Egg not found");
+        return _eggProperties[tokenId].referral_chain;
+    }
+    
+    /**
+     * @notice Get ERC-721 tokenId from internal egg_id (used by Marketplace for animal resale tracing)
+     * @param eggId The internal egg_id
+     * @return The ERC-721 tokenId
+     */
+    function getTokenIdByEggId(uint256 eggId) external view returns (uint256) {
+        uint256 tokenId = _eggIdToTokenId[eggId];
+        require(tokenId != 0, "Egg not found");
+        return tokenId;
     }
     
     function totalSupply() external view returns (uint256) {

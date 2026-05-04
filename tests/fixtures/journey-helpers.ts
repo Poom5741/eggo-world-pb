@@ -12,7 +12,10 @@ import { getOwnerOf, getCommissionBalance } from './blockchain-helpers'
 import { getE2EContext } from './e2e-setup'
 
 // Mock blockchain mode - skip on-chain verification when enabled
-const MOCK_BLOCKCHAIN = process.env.MOCK_BLOCKCHAIN === 'true'
+// Read at call time so it respects runtime env changes
+function isMockBlockchain(): boolean {
+  return process.env.MOCK_BLOCKCHAIN === 'true'
+}
 
 /**
  * EGG NFT contract address for ChainId 7117 (Anvil testnet)
@@ -111,7 +114,7 @@ export async function verifyEggOwnership(
   // Per D-07: Use getOwnerOf helper from blockchain-helpers.ts
   // Skip if MOCK_BLOCKCHAIN is enabled
   let onChainOwner = expectedOwner // Default to expected if mocking
-  if (!MOCK_BLOCKCHAIN) {
+  if (!isMockBlockchain()) {
     try {
       onChainOwner = await getOwnerOf(EGG_NFT_ADDRESS, tokenId)
     } catch {
@@ -436,7 +439,15 @@ export async function extractTokenIdFromPage(page: Page): Promise<number> {
  * @returns Whether error toast is visible
  */
 export async function isErrorToastVisible(page: Page): Promise<boolean> {
-  const errorToast = page.locator('[data-sonner-toast][data-type="error"], [data-testid="error-toast"]')
+  // Check sonner toast, radix toast, or error text on page
+  const errorToast = page.locator(
+    '[data-sonner-toast][data-type="error"], ' +
+    '[data-testid="error-toast"], ' +
+    '[role="status"]:has-text("Purchase Failed"), ' +
+    '[role="alert"]:has-text("Purchase Failed"), ' +
+    ':has-text("Purchase Failed"), ' +
+    ':has-text("Wallet Not Found")'
+  )
   return await errorToast.first().isVisible({ timeout: 5000 }).catch(() => false)
 }
 
@@ -534,14 +545,17 @@ export async function verifyOwnershipTransfer(
 ): Promise<OwnershipTransferResult> {
   const { pocketbaseUrl } = getE2EContext()
 
-  // Capture before state from on-chain (assuming transfer already happened)
-  // Note: For real before/after tracking, this would need to be called before purchase
-  // and then called again after purchase. Here we capture current state.
+  // Query on-chain ownership (skip if MOCK_BLOCKCHAIN)
   let onChainOwnerAfter = ''
-  try {
-    onChainOwnerAfter = await getOwnerOf(contractAddress, tokenId)
-  } catch {
-    onChainOwnerAfter = ''
+  if (!isMockBlockchain()) {
+    try {
+      onChainOwnerAfter = await getOwnerOf(contractAddress, tokenId)
+    } catch {
+      onChainOwnerAfter = ''
+    }
+  } else {
+    // In mock mode, assume on-chain matches PocketBase
+    onChainOwnerAfter = buyerWallet
   }
 
   // Query PocketBase for current owner
@@ -592,7 +606,10 @@ export async function verifyOwnershipTransfer(
       pbOwnerBefore: '', // Assumed
       pbOwnerAfter,
     },
-    transferComplete: !sellerHasOwnershipAfter && buyerHasOwnershipAfter,
+    // In mock mode, verify via PocketBase since on-chain may not reflect transfers
+    transferComplete: isMockBlockchain()
+      ? pbOwnerAfter === buyerUserId  // PocketBase-based verification
+      : !sellerHasOwnershipAfter && buyerHasOwnershipAfter,  // On-chain verification
   }
 
   return result

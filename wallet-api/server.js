@@ -126,13 +126,18 @@ const COMMISSION_ABI = [
   "function setFoodNFTContract(address _foodNft) external"
 ];
 
-// Minimal ABI for Marketplace contract
+// Minimal ABI for Marketplace contract (new on-chain escrow per spec §4)
 const MARKETPLACE_ABI = [
-  "function buyNFT(uint256 listingId) external",
-  "function getListedNFT(uint256 listingId) external view returns (tuple(address seller, uint256 price, bool active))",
-  "function createListing(uint256 nftId, uint256 nftType, uint256 price) external",
-  "function cancelListing(uint256 listingId) external",
-  "event NFTSold(uint256 indexed listingId, address indexed seller, address indexed buyer, uint256 price)"
+  "function listNFTForSale(address nftContract, uint256 tokenId, uint256 price, uint8 nftType) external",
+  "function buyNFT(address nftContract, uint256 tokenId) external",
+  "function cancelListing(address nftContract, uint256 tokenId) external",
+  "function updateListingPrice(address nftContract, uint256 tokenId, uint256 newPrice) external",
+  "function getListing(address nftContract, uint256 tokenId) external view returns (address seller, uint256 price, uint256 listedAt, uint8 nftType, uint256 originalEggId, bool active)",
+  "function getMarketStats() external view returns (uint256 floorPrice, uint256 volume24h, uint256 totalSalesCount, uint256 activeListings)",
+  "function totalSales() external view returns (uint256)",
+  "event NFTListed(bytes32 indexed listingId, address indexed nftContract, uint256 tokenId, address seller, uint256 price, uint8 nftType)",
+  "event NFTSold(bytes32 indexed listingId, address indexed buyer, address indexed seller, uint256 price)",
+  "event ListingCancelled(bytes32 indexed listingId, address indexed seller)"
 ];
 
 // Minimal ABI for AnimalNFT contract (breeding)
@@ -1103,21 +1108,21 @@ app.post('/api/wallet/feed-egg', async (req, res) => {
     }
 });
 
-// Buy NFT endpoint (on-chain with gas sponsorship)
+// Buy NFT endpoint (on-chain marketplace escrow with gas sponsorship)
 app.post("/api/wallet/buy-nft", async (req, res) => {
   try {
-    const { buyerUserId, listingId, marketplaceAddress } = req.body
+    const { buyerUserId, nftContract, tokenId, marketplaceAddress, listingPrice } = req.body
 
-    if (!buyerUserId || !listingId || !marketplaceAddress) {
+    if (!buyerUserId || !nftContract || !tokenId || !marketplaceAddress) {
       return res.status(400).json({
         success: false,
         error: {
-          message: "Missing required parameters: buyerUserId, listingId, marketplaceAddress",
+          message: "Missing required parameters: buyerUserId, nftContract, tokenId, marketplaceAddress",
         },
       })
     }
 
-    console.log(`[Buy NFT] Buyer: ${buyerUserId}, Listing: ${listingId}`)
+    console.log(`[Buy NFT] Buyer: ${buyerUserId}, Contract: ${nftContract}, Token: ${tokenId}`)
 
     // Get platform relayer wallet (pays gas for user)
     if (!relayerWallet) {
@@ -1134,22 +1139,8 @@ app.post("/api/wallet/buy-nft", async (req, res) => {
       relayerWallet
     )
 
-    // Get listing details
-    const listing = await marketplaceContract.getListedNFT(listingId)
-    const price = listing[1] // price is second element of tuple
-    const isActive = listing[2] // active flag is third element
-
-    if (!isActive) {
-      return res.status(400).json({
-        success: false,
-        error: { message: "Listing is not active", code: "LISTING_NOT_ACTIVE" },
-      })
-    }
-
-    console.log(`[Buy NFT] Listing price: ${ethers.formatUnits(price, 18)} USDT`)
-
     // Estimate gas with 20% buffer
-    const gasEstimate = await marketplaceContract.buyNFT.estimateGas(listingId)
+    const gasEstimate = await marketplaceContract.buyNFT.estimateGas(nftContract, tokenId)
     const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100)
 
     console.log(`[Buy NFT] Gas estimate: ${gasEstimate}, Gas limit: ${gasLimit}`)
@@ -1157,7 +1148,7 @@ app.post("/api/wallet/buy-nft", async (req, res) => {
     // Execute buyNFT transaction with retry (relayer pays gas)
     const tx = await withRetry(
       async () => {
-        return await marketplaceContract.buyNFT(listingId, {
+        return await marketplaceContract.buyNFT(nftContract, tokenId, {
           gasLimit: gasLimit,
         })
       },
@@ -1185,7 +1176,8 @@ app.post("/api/wallet/buy-nft", async (req, res) => {
         txHash: tx.hash,
         blockNumber: receipt.blockNumber,
         status: "confirmed",
-        listingId: listingId,
+        nftContract: nftContract,
+        tokenId: tokenId,
       },
     })
   } catch (error) {
@@ -1202,6 +1194,145 @@ app.post("/api/wallet/buy-nft", async (req, res) => {
         message: errorMessage,
         code: error.code || "BUY_FAILED",
       },
+    })
+  }
+});
+
+/**
+ * Marketplace: List NFT for sale (on-chain escrow)
+ * POST /api/v1/marketplace/list
+ * 
+ * Calls Marketplace.listNFTForSale() to transfer NFT into escrow and list it.
+ * Requires user to have approved the marketplace contract for the NFT.
+ */
+app.post("/api/v1/marketplace/list", async (req, res) => {
+  try {
+    const { userId, nftContract, tokenId, price, nftType, marketplaceAddress } = req.body
+
+    if (!userId || !nftContract || !tokenId || !price || nftType === undefined || !marketplaceAddress) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Missing required parameters: userId, nftContract, tokenId, price, nftType, marketplaceAddress" },
+      })
+    }
+
+    console.log(`[Marketplace List] User: ${userId}, Contract: ${nftContract}, Token: ${tokenId}, Price: ${price}`)
+
+    if (!relayerWallet) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Relayer wallet not configured", code: "RELAYER_NOT_CONFIGURED" },
+      })
+    }
+
+    const marketplaceContract = new ethers.Contract(
+      marketplaceAddress,
+      MARKETPLACE_ABI,
+      relayerWallet
+    )
+
+    const gasEstimate = await marketplaceContract.listNFTForSale.estimateGas(nftContract, tokenId, BigInt(price), nftType)
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100)
+
+    const tx = await withRetry(
+      async () => {
+        return await marketplaceContract.listNFTForSale(nftContract, tokenId, BigInt(price), nftType, { gasLimit })
+      },
+      3,
+      1000
+    )
+
+    console.log(`[Marketplace List] Tx sent: ${tx.hash}`)
+    const receipt = await tx.wait(CONFIRMATIONS)
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted")
+    }
+
+    logGasSponsorship('Marketplace List', userId, receipt)
+
+    res.json({
+      success: true,
+      data: {
+        txHash: tx.hash,
+        blockNumber: receipt.blockNumber,
+        status: "confirmed",
+      },
+    })
+  } catch (error) {
+    console.error("[Marketplace List] Error:", error.message)
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "LIST_FAILED" },
+    })
+  }
+});
+
+/**
+ * Marketplace: Cancel listing (return NFT from escrow)
+ * POST /api/v1/marketplace/cancel
+ * 
+ * Calls Marketplace.cancelListing() to return NFT to seller.
+ */
+app.post("/api/v1/marketplace/cancel", async (req, res) => {
+  try {
+    const { userId, nftContract, tokenId, marketplaceAddress } = req.body
+
+    if (!userId || !nftContract || !tokenId || !marketplaceAddress) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Missing required parameters: userId, nftContract, tokenId, marketplaceAddress" },
+      })
+    }
+
+    console.log(`[Marketplace Cancel] User: ${userId}, Contract: ${nftContract}, Token: ${tokenId}`)
+
+    if (!relayerWallet) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Relayer wallet not configured", code: "RELAYER_NOT_CONFIGURED" },
+      })
+    }
+
+    const marketplaceContract = new ethers.Contract(
+      marketplaceAddress,
+      MARKETPLACE_ABI,
+      relayerWallet
+    )
+
+    const gasEstimate = await marketplaceContract.cancelListing.estimateGas(nftContract, tokenId)
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100)
+
+    const tx = await withRetry(
+      async () => {
+        return await marketplaceContract.cancelListing(nftContract, tokenId, { gasLimit })
+      },
+      3,
+      1000
+    )
+
+    console.log(`[Marketplace Cancel] Tx sent: ${tx.hash}`)
+    const receipt = await tx.wait(CONFIRMATIONS)
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted")
+    }
+
+    logGasSponsorship('Marketplace Cancel', userId, receipt)
+
+    res.json({
+      success: true,
+      data: {
+        txHash: tx.hash,
+        blockNumber: receipt.blockNumber,
+        status: "confirmed",
+      },
+    })
+  } catch (error) {
+    console.error("[Marketplace Cancel] Error:", error.message)
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "CANCEL_FAILED" },
     })
   }
 });

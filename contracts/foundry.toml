@@ -31,3 +31,9 @@ chain0xl3 = { key = "${BLOCKSCOUT_API_KEY}", url = "https://exp.0xl3.com/api" }
 runs = 256
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+
+
+[fs_permissions]
+access = "read-write"
+path = "./contract-addresses.json"

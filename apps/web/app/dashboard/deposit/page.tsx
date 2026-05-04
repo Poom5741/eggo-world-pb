@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useIsHydrated } from "@/hooks/use-is-hydrated"
-import { getUser, createClient } from "@/lib/pocketbase/client"
+import { getUser, createClient, restoreAuth } from "@/lib/pocketbase/client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Wallet, Download, RefreshCw, Copy } from "lucide-react"
@@ -68,22 +69,30 @@ export default function DepositPage() {
     }
   }
 
+  const router = useRouter()
+
   useEffect(() => {
     if (!isHydrated) return
 
-    const userRecord = getUser()
-    if (!userRecord) {
-      window.location.href = "/auth/login"
-      return
-    }
-
-    const typedUser: User = {
-      id: userRecord.id,
-      wallet: userRecord.wallet
-    }
-    setUser(typedUser)
-    fetchInitialData(typedUser.wallet)
-    fetchDepositsFromCollection(typedUser.id)
+    const pb = createClient()
+    restoreAuth(pb).then((success) => {
+      if (success) {
+        const userRecord = getUser()
+        if (userRecord) {
+          const typedUser: User = {
+            id: userRecord.id,
+            wallet: userRecord.wallet
+          }
+          setUser(typedUser)
+          fetchInitialData(typedUser.wallet)
+          fetchDepositsFromCollection(typedUser.id)
+          return
+        }
+      }
+      // Redirect with redirectTo preserving intent
+      const redirectUrl = `/auth/login?redirectTo=${encodeURIComponent(window.location.pathname)}`
+      router.push(redirectUrl)
+    })
   }, [isHydrated])
 
   useEffect(() => {

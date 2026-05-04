@@ -1,10 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { AuthGuard } from '@/components/auth/AuthGuard'
+import { createClient } from '@/lib/pocketbase/client'
 import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
-import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -37,34 +36,24 @@ interface ReferralData {
 }
 
 export default function ReferralDashboardPage() {
-  const router = useRouter()
-  const isHydrated = useIsHydrated()
-  const [user, setUser] = useState<any>(null)
+  return (
+    <AuthGuard redirectTo="/auth/login">
+      {(user) => <ReferralContent user={user} />}
+    </AuthGuard>
+  )
+}
+
+function ReferralContent({ user }: { user: any }) {
   const [referralData, setReferralData] = useState<ReferralData | null>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const pb = createClient()
-    
-    if (isAuthenticated()) {
-      const currentUser = getUser()
-      setUser(currentUser)
-      fetchReferralData(currentUser.id)
-    } else {
-      router.push('/auth/login')
+    if (user?.id) {
+      fetchReferralData(user.id)
     }
-
-    pb.authStore.onChange(() => {
-      if (isAuthenticated()) {
-        setUser(getUser())
-      } else {
-        setUser(null)
-        router.push('/auth/login')
-      }
-    })
-  }, [router])
+  }, [user?.id])
 
   const fetchReferralData = async (userId: string) => {
     const pb = createClient()
@@ -135,18 +124,6 @@ export default function ReferralDashboardPage() {
       month: 'short',
       day: 'numeric'
     })
-  }
-
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
   }
 
   if (error) {

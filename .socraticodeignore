@@ -1,0 +1,61 @@
+# SocratiCode-specific ignore rules
+# These are in addition to .gitignore rules
+
+# Build artifacts (already in .gitignore but be explicit)
+.next/
+out/
+dist/
+build/
+
+# Dependencies (already in .gitignore)
+node_modules/
+bun.lockb
+package-lock.json
+
+# PocketBase binary (large, download instead)
+pocketbase
+pocketbase.exe
+
+# Docker volumes (data, not code)
+pb_data/
+
+# Generated/compiled files
+*.pb_schema.json
+
+# IDE and editor files (already in .gitignore)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Test coverage reports
+coverage/
+.nyc_output/
+
+# Environment files with secrets
+.env
+.env.local
+.env.production
+
+# GSD planning files (internal agent use)
+.planning/
+.tmp/
+
+# Flux task files
+.flux/
+
+# OpenCode context files (already indexed separately)
+.opencode/

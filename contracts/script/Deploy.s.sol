@@ -6,6 +6,7 @@ import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {EggNFT} from "../src/EggNFT.sol";
 import {FoodNFT} from "../src/FoodNFT.sol";
 import {AnimalNFT} from "../src/AnimalNFT.sol";
+import {Marketplace} from "../src/Marketplace.sol";
 import {MockUSDT} from "../test/MockUSDT.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
@@ -92,6 +93,15 @@ contract Deploy is Script {
         );
         console.log("[OK] FoodNFT deployed at:", address(foodNFT));
         
+        // Deploy Marketplace (escrow contract for secondary sales)
+        Marketplace marketplace = new Marketplace(
+            usdtAddress,
+            payable(address(commissionDistribution)),
+            address(eggNFT),
+            address(animalNFT)
+        );
+        console.log("[OK] Marketplace deployed at:", address(marketplace));
+        
         // Link contracts
         commissionDistribution.setEggNFTContract(address(eggNFT));
         console.log("[OK] EggNFT contract set on CommissionDistribution");
@@ -108,16 +118,12 @@ contract Deploy is Script {
         animalNFT.setEggNFTContract(address(eggNFT));
         console.log("[OK] EggNFT contract set on AnimalNFT");
         
+        commissionDistribution.setMarketplaceContract(address(marketplace));
+        console.log("[OK] Marketplace contract set on CommissionDistribution");
+        
         vm.stopBroadcast();
         
-        // Save deployment addresses to JSON file
-        string memory deploymentData = vm.toString(block.chainid);
-        vm.writeJson(
-            deploymentData,
-            "contract-addresses.json"
-        );
-        
-        // Print summary
+        // Print summary (addresses saved to broadcast log automatically)
         console.log("\n========== Deployment Summary ==========");
         console.log("Network:", block.chainid);
         console.log("USDT Token:", usdtAddress);
@@ -125,6 +131,7 @@ contract Deploy is Script {
         console.log("AnimalNFT:", address(animalNFT));
         console.log("EggNFT:", address(eggNFT));
         console.log("FoodNFT:", address(foodNFT));
+        console.log("Marketplace:", address(marketplace));
         console.log("CoinStor Reserve:", coinStorReserve);
         console.log("Egg Mint Price: 25 USDT");
         console.log("Food Mint Price: 0.50 USDT");
@@ -152,7 +159,8 @@ contract Deploy is Script {
         console.log('    "commission": "%s",', payable(address(commissionDistribution)));
         console.log('    "animalNft": "%s",', address(animalNFT));
         console.log('    "eggNft": "%s",', address(eggNFT));
-        console.log('    "foodNft": "%s"', address(foodNFT));
+        console.log('    "foodNft": "%s",', address(foodNFT));
+        console.log('    "marketplace": "%s"', address(marketplace));
         console.log("  }");
         console.log("}");
         console.log("DEPLOYMENT_ADDRESSES_END");
