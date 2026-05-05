@@ -33,7 +33,7 @@ routerAdd("POST", "/api/v2/list-animal", (e) => {
         }
 
         var user;
-        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+        try { user = $app.findRecordById("users", userId); } catch (err) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
         var body = requestInfo.body || {};
         var animal_id = body.animal_id;
@@ -53,7 +53,8 @@ routerAdd("POST", "/api/v2/list-animal", (e) => {
             });
         }
 
-        var animal = $app.findFirstRecordByData("animal_nfts", "token_id", parseInt(animal_id));
+        var animal;
+        try { animal = $app.findFirstRecordByData("animal_nfts", "token_id", parseInt(animal_id)); } catch (err) { return e.json(400, { success: false, error: { message: "Animal not found", code: "ANIMAL_NOT_FOUND" } }); }
 
         if (!animal) {
             return e.json(400, {

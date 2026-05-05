@@ -48,7 +48,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
             return e.json(401, { success: false, error: { message: 'Authentication required', code: 'AUTH_REQUIRED' } })
         }
         let buyer;
-        try { buyer = $app.findRecordById("users", buyerRecord.id); } catch (e) { return e.json(401, { success: false, error: { message: 'User not found', code: 'USER_NOT_FOUND' } }); }
+        try { buyer = $app.findRecordById("users", buyerRecord.id); } catch (err) { return e.json(401, { success: false, error: { message: 'User not found', code: 'USER_NOT_FOUND' } }); }
         
         const body = requestInfo.body;
         const { listing_id, buyer_address } = body || {};
@@ -65,7 +65,8 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         }
         
         // Find the marketplace listing
-        const listing = $app.findRecordById('marketplace_listings', listing_id);
+        let listing;
+        try { listing = $app.findRecordById('marketplace_listings', listing_id); } catch (err) { return e.json(404, { success: false, error: { message: 'Listing not found', code: 'LISTING_NOT_FOUND' } }); }
         
         if (!listing) {
             return e.json(404, { 
@@ -119,7 +120,8 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         
         // Determine collection name and find NFT record
         const collectionName = normalizedNftType === 'egg' ? 'egg_nfts' : normalizedNftType === 'food' ? 'food_nfts' : 'animal_nfts';
-        const nft = $app.findRecordById(collectionName, nftId);
+        let nft;
+        try { nft = $app.findRecordById(collectionName, nftId); } catch (err) { return e.json(404, { success: false, error: { message: 'NFT not found', code: 'NFT_NOT_FOUND' } }); }
         
         if (!nft) {
             return e.json(404, { 
@@ -145,7 +147,7 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         
         // Get seller info
         let seller;
-        try { seller = $app.findRecordById('users', sellerId); } catch (e) { return e.json(404, { success: false, error: { message: 'Seller not found', code: 'SELLER_NOT_FOUND' } }); }
+        try { seller = $app.findRecordById('users', sellerId); } catch (err) { return e.json(404, { success: false, error: { message: 'Seller not found', code: 'SELLER_NOT_FOUND' } }); }
         
         // Check buyer's USDT balance
         const buyerWallet = $app.findFirstRecordByData('user_wallets', 'user_id', buyer.id);

@@ -44,7 +44,7 @@ routerAdd("POST", "/api/v2/list-egg", (e) => {
         }
 
         var user;
-        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+        try { user = $app.findRecordById("users", userId); } catch (err) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
         var body = requestInfo.body || {};
         var egg_id = body.egg_id;
@@ -64,7 +64,8 @@ routerAdd("POST", "/api/v2/list-egg", (e) => {
             });
         }
 
-        var egg = $app.findFirstRecordByData("egg_nfts", "egg_id", parseInt(egg_id));
+        var egg;
+        try { egg = $app.findFirstRecordByData("egg_nfts", "egg_id", parseInt(egg_id)); } catch (err) { return e.json(400, { success: false, error: { message: "Egg not found", code: "EGG_NOT_FOUND" } }); }
 
         if (!egg) {
             return e.json(400, {

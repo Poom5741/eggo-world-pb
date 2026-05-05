@@ -46,7 +46,7 @@ routerAdd("POST", "/api/v2/list-food", (e) => {
         }
 
         var user;
-        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+        try { user = $app.findRecordById("users", userId); } catch (err) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
 
         var body = requestInfo.body || {};
         var food_id = body.food_id;
@@ -74,7 +74,8 @@ routerAdd("POST", "/api/v2/list-food", (e) => {
             });
         }
 
-        var food = $app.findFirstRecordByData("food_nfts", "food_id", parseInt(food_id));
+        var food;
+        try { food = $app.findFirstRecordByData("food_nfts", "food_id", parseInt(food_id)); } catch (err) { return e.json(400, { success: false, error: { message: "Food not found", code: "FOOD_NOT_FOUND" } }); }
 
         if (!food) {
             return e.json(400, {
