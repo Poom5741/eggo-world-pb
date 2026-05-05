@@ -60,6 +60,14 @@ export function useWalletPoll(
       return
     }
 
+    // Validate EVM wallet address format (0x + 40 hex chars)
+    if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+      setBalance({ usdt: '0', native: '0' })
+      setError(null)
+      setErrorCount(0)
+      return
+    }
+
     setLoading(true)
     try {
       const pb = createClient()
@@ -77,6 +85,15 @@ export function useWalletPoll(
         },
         body: JSON.stringify({ user_address: walletAddress }),
       })
+
+      // Handle 4xx errors gracefully — wallet may not exist yet
+      if (res.status >= 400 && res.status < 500) {
+        setBalance({ usdt: '0', native: '0' })
+        setError(null)
+        setErrorCount(0)
+        setPollInterval(intervalMs)
+        return
+      }
 
       if (!res.ok) {
         throw new Error(`Failed to fetch balance: ${res.status} ${res.statusText}`)
