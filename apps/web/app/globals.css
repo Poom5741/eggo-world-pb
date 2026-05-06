@@ -780,3 +780,10 @@
   will-change: background;
   transform: translateZ(0);
 }
+
+/* iOS input zoom prevention */
+@media screen and (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}

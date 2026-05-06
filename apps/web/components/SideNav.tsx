@@ -42,7 +42,7 @@ export default function SideNav() {
           <AuthLink 
             key={item.href}
             href={item.href}
-            className="flex items-center space-x-4 px-4 py-3 text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300 hover:translate-x-2 active-side-nav"
+            className="flex items-center space-x-4 px-4 py-3 min-h-[44px] text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300 hover:translate-x-2 active-side-nav"
           >
             <span className="material-symbols-outlined">{item.icon}</span>
             <span className="font-medium font-headline">{item.label}</span>
