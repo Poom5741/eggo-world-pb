@@ -216,15 +216,6 @@ export function BuyFlow({
     }
   }, [listingId, nftType, nftName, isHydrated, toast, router])
 
-  /**
-   * ปิด dialog
-   * Close dialog
-   */
-  const handleClose = useCallback(() => {
-    setIsDialogOpen(false)
-    setError(null)
-  }, [])
-
   return (
     <>
       {/* ปุ่มซื้อ NFT */}

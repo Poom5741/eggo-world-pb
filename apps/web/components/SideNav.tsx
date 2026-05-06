@@ -11,9 +11,9 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
   { icon: 'egg', label: 'Eggs', href: '/eggs' },
-  { icon: 'pets', label: 'Animals', href: '/animals' },
-  { icon: 'storefront', label: 'Marketplace', href: '/marketplace' },
-  { icon: 'group_add', label: 'Referrals', href: '/referrals' },
+  { icon: 'storefront', label: 'Market', href: '/marketplace' },
+  { icon: 'account_balance_wallet', label: 'Wallet', href: '/wallet' },
+  { icon: 'person', label: 'Profile', href: '/settings' },
 ]
 
 // SideNav - Desktop side navigation component

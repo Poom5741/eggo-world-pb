@@ -7,11 +7,17 @@ const mockLink = ({ children, href }: { children: React.ReactNode; href: string 
   <a href={href} data-testid="mock-link">{children}</a>
 )
 
+// Mock usePathname
+const mockUsePathname = () => '/'
+
 // Override the module resolution for next/link
 const originalRequire = require
 require = function(path: string) {
   if (path === 'next/link') {
     return { default: mockLink }
+  }
+  if (path === 'next/navigation') {
+    return { usePathname: mockUsePathname }
   }
   return originalRequire.apply(this, arguments as any)
 } as any
@@ -48,12 +54,13 @@ describe('BottomNavMobile', () => {
     expect(icons.length).toBeLessThanOrEqual(5)
   })
 
-  it('includes: Dashboard, Eggs, Marketplace, Referrals links', () => {
+  it('includes: Dashboard, Eggs, Market, Wallet, Profile links', () => {
     render(<BottomNavMobile />)
     expect(screen.getByText('Dashboard')).toBeInTheDocument()
     expect(screen.getByText('Eggs')).toBeInTheDocument()
-    expect(screen.getByText('Marketplace')).toBeInTheDocument()
-    expect(screen.getByText('Referrals')).toBeInTheDocument()
+    expect(screen.getByText('Market')).toBeInTheDocument()
+    expect(screen.getByText('Wallet')).toBeInTheDocument()
+    expect(screen.getByText('Profile')).toBeInTheDocument()
   })
 
   it('fixed position at bottom (bottom-0, h-20 or h-24)', () => {

@@ -16,7 +16,7 @@ import { createClient } from '@/lib/pocketbase/client'
 // Mock PocketBase client
 vi.mock('@/lib/pocketbase/client', () => ({
   createClient: vi.fn(() => ({
-    collection: vi.fn((name: string) => ({
+    collection: vi.fn((_name: string) => ({
       getList: vi.fn(),
     })),
   })),
