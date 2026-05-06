@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Loader2, Egg, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react'
-import { Header } from '@/components/header'
+import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { 
   getSigner, 
   getEggNftContract, 
@@ -190,140 +190,134 @@ export default function HatchEggPage() {
   const canHatch = foodCount >= MAX_FOOD_COUNT
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="pt-20 pb-12">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="space-y-8">
-            {/* Back Button */}
-            <Button
-              variant="outline"
-              onClick={() => router.push(`/eggs/${params.id}`)}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Egg
-            </Button>
+    <LayoutWithoutNav>
+      <div className="space-y-8">
+        {/* Back Button */}
+        <Button
+          variant="outline"
+          onClick={() => router.push(`/eggs/${params.id}`)}
+          className="gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Egg
+        </Button>
 
-            {/* Hatch Card */}
-            {!hatchedAnimal ? (
-              <Card className="border-4 border-primary/50 bg-card">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <Egg className="w-12 h-12 text-primary animate-pulse" />
-                    <div>
-                      <CardTitle className="font-[var(--font-pixel)] text-xl text-foreground">
-                        HATCH YOUR EGG
-                      </CardTitle>
-                      <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
-                        Egg #{egg?.token_id || params.id}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Food Count Progress */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-[var(--font-pixel)] text-xs text-foreground">
-                        FOOD CONSUMED
-                      </span>
-                      <Badge variant={canHatch ? 'default' : 'secondary'}>
-                        {foodCount} / {MAX_FOOD_COUNT}
-                      </Badge>
-                    </div>
-                    <Progress 
-                      value={(foodCount / MAX_FOOD_COUNT) * 100} 
-                      className="h-3 border-2 border-primary"
-                    />
-                  </div>
+        {/* Hatch Card */}
+        {!hatchedAnimal ? (
+          <Card className="border-4 border-primary/50 bg-card">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <Egg className="w-12 h-12 text-primary animate-pulse" />
+                <div>
+                  <CardTitle className="font-[var(--font-pixel)] text-xl text-foreground">
+                    HATCH YOUR EGG
+                  </CardTitle>
+                  <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+                    Egg #{egg?.token_id || params.id}
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Food Count Progress */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-[var(--font-pixel)] text-xs text-foreground">
+                    FOOD CONSUMED
+                  </span>
+                  <Badge variant={canHatch ? 'default' : 'secondary'}>
+                    {foodCount} / {MAX_FOOD_COUNT}
+                  </Badge>
+                </div>
+                <Progress 
+                  value={(foodCount / MAX_FOOD_COUNT) * 100} 
+                  className="h-3 border-2 border-primary"
+                />
+              </div>
 
-                  {/* Validation Error */}
-                  {!canHatch && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="font-[var(--font-pixel)] text-xs">
-                        Your egg needs {MAX_FOOD_COUNT - foodCount} more food items before it can hatch.
-                        Go feed it first!
-                      </AlertDescription>
-                    </Alert>
-                  )}
+              {/* Validation Error */}
+              {!canHatch && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="font-[var(--font-pixel)] text-xs">
+                    Your egg needs {MAX_FOOD_COUNT - foodCount} more food items before it can hatch.
+                    Go feed it first!
+                  </AlertDescription>
+                </Alert>
+              )}
 
-                  {/* What Happens */}
-                  {canHatch && (
-                    <div className="bg-secondary/30 border-2 border-primary/30 p-4 space-y-3">
-                      <h3 className="font-[var(--font-pixel)] text-xs text-primary">
-                        WHAT HAPPENS NEXT:
-                      </h3>
-                      <ul className="space-y-2 font-[var(--font-pixel)] text-xs text-foreground">
-                        <li className="flex items-start gap-2">
-                          <CheckCircle2 className="w-3 h-3 text-primary mt-0.5" />
-                          <span>Your egg will hatch into a random Animal NFT</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CheckCircle2 className="w-3 h-3 text-primary mt-0.5" />
-                          <span>Rarity: Common (60%), Rare (25%), Epic (12%), or Legendary (3%)</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CheckCircle2 className="w-3 h-3 text-primary mt-0.5" />
-                          <span>Species determined by food distribution</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CheckCircle2 className="w-3 h-3 text-primary mt-0.5" />
-                          <span>Animal will be added to your inventory</span>
-                        </li>
-                      </ul>
-                    </div>
-                  )}
+              {/* What Happens */}
+              {canHatch && (
+                <div className="bg-secondary/30 border-2 border-primary/30 p-4 space-y-3">
+                  <h3 className="font-[var(--font-pixel)] text-xs text-primary">
+                    WHAT HAPPENS NEXT:
+                  </h3>
+                  <ul className="space-y-2 font-[var(--font-pixel)] text-xs text-foreground">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-3 h-3 text-primary mt-0.5" />
+                      <span>Your egg will hatch into a random Animal NFT</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-3 h-3 text-primary mt-0.5" />
+                      <span>Rarity: Common (60%), Rare (25%), Epic (12%), or Legendary (3%)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-3 h-3 text-primary mt-0.5" />
+                      <span>Species determined by food distribution</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="w-3 h-3 text-primary mt-0.5" />
+                      <span>Animal will be added to your inventory</span>
+                    </li>
+                  </ul>
+                </div>
+              )}
 
-                  {/* Error Message */}
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription className="font-[var(--font-pixel)] text-xs">
-                        {error}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={handleHatch}
-                    disabled={loading || !canHatch}
-                    variant="clay"
-                    size="clay-xl"
-                    className="w-full"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        HATCHING...
-                      </>
-                    ) : (
-                      <>
-                        <Egg className="mr-2 h-4 w-4" />
-                        HATCH EGG
-                      </>
-                    )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ) : (
-              // Show Reveal
-              <HatchReveal 
-                animal={{
-                  animalId: hatchedAnimal.animalId,
-                  rarity: hatchedAnimal.rarity,
-                  species: hatchedAnimal.species,
-                  generation: hatchedAnimal.generation,
-                }}
-                onClaim={handleClaim}
-              />
-            )}
-          </div>
-        </div>
-      </main>
-    </div>
+              {/* Error Message */}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="font-[var(--font-pixel)] text-xs">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button
+                onClick={handleHatch}
+                disabled={loading || !canHatch}
+                variant="clay"
+                size="clay-xl"
+                className="w-full"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    HATCHING...
+                  </>
+                ) : (
+                  <>
+                    <Egg className="mr-2 h-4 w-4" />
+                    HATCH EGG
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        ) : (
+          // Show Reveal
+          <HatchReveal 
+            animal={{
+              animalId: hatchedAnimal.animalId,
+              rarity: hatchedAnimal.rarity,
+              species: hatchedAnimal.species,
+              generation: hatchedAnimal.generation,
+            }}
+            onClaim={handleClaim}
+          />
+        )}
+      </div>
+    </LayoutWithoutNav>
   )
 }
