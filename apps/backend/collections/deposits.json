@@ -77,6 +77,45 @@
       },
       {
         "hidden": false,
+        "id": "number_block_number",
+        "max": 999999999,
+        "min": 0,
+        "name": "block_number",
+        "onlyInt": true,
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
+        "id": "text_block_hash",
+        "max": 66,
+        "min": 66,
+        "name": "block_hash",
+        "pattern": "^0x[a-fA-F0-9]{64}$",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
+      },
+      {
+        "hidden": false,
+        "id": "number_confirmations",
+        "max": 999,
+        "min": 0,
+        "name": "confirmations",
+        "onlyInt": true,
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
         "id": "select_status",
         "max": 20,
         "min": 0,
@@ -125,7 +164,9 @@
     "indexes": [
       "CREATE UNIQUE INDEX `idx_deposits_tx_hash` ON `deposits` (`tx_hash`)",
       "CREATE INDEX `idx_deposits_user` ON `deposits` (`user`)",
-      "CREATE INDEX `idx_deposits_status` ON `deposits` (`status`)"
+      "CREATE INDEX `idx_deposits_status` ON `deposits` (`status`)",
+      "CREATE INDEX `idx_deposits_block_number` ON `deposits` (`block_number`)",
+      "CREATE INDEX `idx_deposits_confirmations` ON `deposits` (`confirmations`)"
     ],
     "system": false
   }

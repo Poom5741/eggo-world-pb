@@ -60,13 +60,13 @@ const CONFIG = {
     platformAddress: process.env.PLATFORM_ADDRESS || "0x0000000000000000000000000000000000000000", // Platform fee recipient
     platformFeePercent: 4, // 4% CoinStor fee
     
-    // Deployed contract addresses (Phase 1 deployment)
+    // Deployed contract addresses (Phase 12 deployment - chain 7117)
     contracts: {
-      MockUSDT: "0xc015ebb27696b73E72Bef099b72791D7e666E2d0",
-      CommissionDistribution: "0x3c48926556e766E4564af0E264A9980e7C3a1787",
-      AnimalNFT: "0x973F2cA33E96FCC1fdbc48a7880b238b4C6be464",
-      EggNFT: "0xd7135090d78854820722CbCe0B29481Dd5D4808c",
-      FoodNFT: "0xbb0E0FcB40E209f7751A784F6b8d63E9C127D8fC"
+      MockUSDT: "0x93886105218Ca14b370ACA538b13895295916028",
+      CommissionDistribution: "0xa0C50587306F0CCac627D2eaEcb9e5909dB58F3f",
+      AnimalNFT: "0x35F53aB20B3073903ebDe04aA9b354d1Efe8A99C",
+      EggNFT: "0xb2FE193523A1E6A240141331A80755f5642e7A44",
+      FoodNFT: "0xec21A3c068e84ceeD04975627418E867Ec342A02"
     },
     
     // Sync settings
