@@ -2,7 +2,7 @@
 
 **Milestone:** Security & Quality  
 **Created:** 2026-04-18  
-**Status:** Not started  
+**Status:** In progress (2/5 phases complete)  
 **Phases:** 5 (12-16)  
 **Granularity:** Standard (from config: 2-week timeline, solo developer)  
 **Coverage:** 16/16 requirements mapped ✓
@@ -11,8 +11,8 @@
 
 ## Phases
 
-- [ ] **Phase 12: Wallet-API Contract Integration** — Replace 4 mock blockchain endpoints with real ethers.js contract calls
-- [ ] **Phase 13: USDT Deposit Tracking** — Implement event polling service with 12-block confirmation wait
+- [x] **Phase 12: Wallet-API Contract Integration** — Replace 4 mock blockchain endpoints with real ethers.js contract calls
+- [x] **Phase 13: USDT Deposit Tracking** — Implement event polling service with 12-block confirmation wait
 - [ ] **Phase 14: Mobile Responsive Polish** — Bottom tab bar, touch targets, responsive breakpoints (320px-1440px)
 - [ ] **Phase 15: Feed Feature** — Wire Feed button, food picker UI, progress tracking, hatch animation
 - [ ] **Phase 16: Play Feature + Test Infrastructure** — Daily check-in reward system, fix vi.mock failures, increase test coverage
@@ -49,11 +49,16 @@
 **Requirements:** SEC-05, SEC-06, SEC-07, SEC-08  
 **Success Criteria** (what must be TRUE):
 
-1. System polls USDT Transfer events every 30 seconds and detects deposits within 60 seconds
-2. Deposit shows "pending" state until 12 block confirmations, then transitions to "confirmed"
-3. Duplicate deposit attempts (same tx_hash) are rejected with existing record returned
-4. User receives in-app notification when deposit is confirmed with updated balance
-   **Plans**: TBD
+1. ✅ System polls USDT Transfer events every 30 seconds and detects deposits within 60 seconds
+2. ✅ Deposit shows "pending" state until 12 block confirmations, then transitions to "confirmed"
+3. ✅ Duplicate deposit attempts (same tx_hash) are rejected with existing record returned
+4. ✅ User receives in-app notification when deposit is confirmed with updated balance
+   **Plans**: 3 plans (6 tasks total)
+
+   Plans:
+   - [x] 13-01-PLAN.md — Config & Schema Update (contract addresses + deposits collection)
+   - [x] 13-02-PLAN.md — Hook Rewrite (background polling, confirmation tracking, reorg detection)
+   - [x] 13-03-PLAN.md — Test Suite Update (44 tests, 8 suites, bun:test)
 
 ---
 
@@ -109,13 +114,13 @@
 
 ## Progress Table
 
-| Phase                                  | Plans Complete | Status      | Completed |
-| -------------------------------------- | -------------- | ----------- | --------- |
-| 12. Wallet-API Contract Integration    | 0/4            | Not started | -         |
-| 13. USDT Deposit Tracking              | 0/4            | Not started | -         |
-| 14. Mobile Responsive Polish           | 0/4            | Not started | -         |
-| 15. Feed Feature                       | 0/4            | Not started | -         |
-| 16. Play Feature + Test Infrastructure | 0/7            | Not started | -         |
+| Phase                                  | Plans Complete | Status      | Completed  |
+| -------------------------------------- | -------------- | ----------- | ---------- |
+| 12. Wallet-API Contract Integration    | 3/3            | ✅ Complete | 2026-04-18 |
+| 13. USDT Deposit Tracking              | 3/3            | ✅ Complete | 2026-05-06 |
+| 14. Mobile Responsive Polish           | 0/4            | Not started | -          |
+| 15. Feed Feature                       | 0/4            | Not started | -          |
+| 16. Play Feature + Test Infrastructure | 0/7            | Not started | -          |
 
 ---
 
@@ -165,7 +170,7 @@ Phase 14 (Mobile Polish) → Independent, can run parallel
 **Research flags:**
 
 - Phase 12: ❌ No research needed (standard ethers.js patterns)
-- Phase 13: ⚠️ Maybe (BSC reorg behavior validation during planning)
+- Phase 13: ❌ No research needed (standard deposit tracking patterns, reorg detection implemented)
 - Phase 14: ❌ No research needed (standard responsive patterns)
 - Phase 15: ❌ No research needed (standard database ACID)
 - Phase 16: ❌ No research needed (existing test infrastructure)
@@ -174,4 +179,4 @@ Phase 14 (Mobile Polish) → Independent, can run parallel
 
 ---
 
-_Last updated: 2026-04-18 — Roadmap created by gsd-roadmapper_
+_Last updated: 2026-05-07 — Roadmap updated by gsd-manager_

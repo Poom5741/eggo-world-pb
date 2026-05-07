@@ -11,7 +11,7 @@
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** Phase 12 — Wallet-API Contract Integration (P0 security-critical foundation)
+**Current Focus:** Phase 14 — Mobile Responsive Polish (independent, can run parallel)
 
 **Constraints:**
 
@@ -24,31 +24,37 @@
 
 ## Current Position
 
-**Phase:** 12 — Wallet-API Contract Integration  
-**Plan:** Context captured, ready for planning  
-**Status:** Context gathered (2026-04-18)
+**Next Phase:** 14 — Mobile Responsive Polish  
+**Status:** Plans created, ready for execution
 
 ```
-Progress: [----------] 0/5 phases complete
-          Phase 12 → Next
+Progress: [████----] 2/5 phases complete
+          Phase 12 ✅ | Phase 13 ✅ | Phase 14 → Next
 ```
 
-**Active Phase Goals:**
+**Completed Phases:**
 
-- Replace 4 mock blockchain endpoints with real ethers.js/dacc-js contract calls
-- Implement private key decryption via dacc-js (passwordSecretkey pattern)
-- Add gas sponsorship via USDT (meta-transaction flow)
-- Auto-retry transient errors (3x, nonce bump, exponential backoff)
-- Deploy to 0xl3 testnet (Chain ID: 7117, https://0xl3.com/)
+### Phase 12: Wallet-API Contract Integration ✅
 
-**Key Decisions:**
+**Goal:** Replace 4 mock blockchain endpoints with real ethers.js contract calls  
+**Status:** ✅ SHIPPED TO PRODUCTION (PR #2)  
+**Plans:** 3/3 executed
 
-- Private key: dacc-js with passwordSecretkey (reference pattern)
-- Gas strategy: platform sponsors via USDT payment flow
-- Deployment: 0xl3 testnet first (free gas for testing)
-- ALL designs follow `/resources/pkbase-wallet` reference
+- ✅ 12-01: Contract deployment infrastructure (Deploy.s.sol, contract-addresses.json)
+- ✅ 12-02: Replace mint-egg and mint-food mocks with real contract calls
+- ✅ 12-03: Replace claim-commission and feed-egg mocks, add gas sponsorship
 
-**Next Action:** Run `/gsd-plan-phase 12` to decompose phase into executable plans
+### Phase 13: USDT Deposit Tracking ✅
+
+**Goal:** Automated USDT deposit tracking with 12-block confirmation wait  
+**Status:** ✅ All tests passing (44/44), all SEC requirements satisfied  
+**Plans:** 3/3 executed
+
+- ✅ 13-01: Config & Schema Update (contract addresses + deposits collection fields)
+- ✅ 13-02: Hook Rewrite (background polling, confirmation tracking, reorg detection)
+- ✅ 13-03: Test Suite Update (44 tests, 8 suites, bun:test)
+
+**Next Action:** Execute Phase 14 (Mobile Responsive Polish) or Phase 15 (Feed Feature)
 
 ---
 
@@ -56,8 +62,8 @@ Progress: [----------] 0/5 phases complete
 
 | Metric                     | Value           | Target |
 | -------------------------- | --------------- | ------ |
-| **Phases Complete**        | 0/5             | 5/5    |
-| **Requirements Satisfied** | 0/16            | 16/16  |
+| **Phases Complete**        | 2/5             | 5/5    |
+| **Requirements Satisfied** | 8/16            | 16/16  |
 | **Test Coverage**          | 70%             | 80%+   |
 | **Test Failures**          | 9 vi.mock       | 0      |
 | **Build Time**             | 2.5s (Bun)      | < 5s   |
@@ -102,31 +108,30 @@ Progress: [----------] 0/5 phases complete
 
 ### Known Issues (v0.0.7 Scope)
 
-1. **Mock blockchain calls** — 4 wallet-api endpoints return fake transaction hashes (SEC-01 to SEC-04)
-2. **Test setup** — 9 vi.mock failures (pre-existing, QUAL-01)
-3. **Feed/Play buttons** — TODO in UI, need real implementation (FEAT-01 to FEAT-07)
-4. **Track deposit hook** — Not implemented, tests in RED PHASE (SEC-05 to SEC-08)
+1. **Test setup** — 9 vi.mock failures (pre-existing, QUAL-01) — Phase 16 scope
+2. **Feed/Play buttons** — TODO in UI, need real implementation (FEAT-01 to FEAT-07) — Phase 15/16 scope
+3. **Mobile responsive** — Bottom tab bar, touch targets, breakpoints — Phase 14 scope
 
 ---
 
 ### Technical Debt
 
-**Security (P0 — Blocks Launch):**
+**Security (P0):**
 
-- wallet-api/server.js lines 388, 422, 457, 493 return mock data
-- Must replace with real ethers.js contract calls before production
+- ✅ RESOLVED — Phase 12 replaced all 4 mock endpoints with real ethers.js contract calls
+- ✅ RESOLVED — Phase 12 shipped to production
 
 **Quality (P1):**
 
-- 9 test files with vi.mock setup failures
-- Test coverage at 70%, target 80%+
-- Track-deposit hook (13-track-deposit.pb.js) not implemented
+- 9 test files with vi.mock setup failures — Phase 16 scope
+- Test coverage at 70%, target 80%+ — Phase 16 scope
+- ✅ RESOLVED — Phase 13 deposit hook (13-track-deposit.pb.js) fully implemented with 44 passing tests
 
 **Mobile (P2):**
 
-- Bottom tab bar needed for mobile (< 640px)
-- Touch targets need 44×44px minimum (WCAG 2.2)
-- Breakpoints need testing: 320px, 375px, 768px, 1024px, 1440px
+- Bottom tab bar needed for mobile (< 640px) — Phase 14 scope
+- Touch targets need 44×44px minimum (WCAG 2.2) — Phase 14 scope
+- Breakpoints need testing: 320px, 375px, 768px, 1024px, 1440px — Phase 14 scope
 
 ---
 
@@ -145,36 +150,37 @@ Progress: [----------] 0/5 phases complete
 
 ## Session Continuity
 
-**Last Session:** 2026-04-18 — Phase 12 context gathered
+**Last Session:** 2026-05-07 — Phase 13 documentation completed
 
 **Session Notes:**
 
-- Phase 12 CONTEXT.md created with 17 implementation decisions
-- Key decisions: dacc-js decryption, USDT gas sponsorship, 0xl3 testnet (7117), auto-retry errors
-- ALL designs follow `/resources/pkbase-wallet` reference implementation
-- Context committed: `.planning/phases/12-wallet-api-contract-integration/12-CONTEXT.md`
+- Phase 12: ✅ Completed and shipped to production (PR #2)
+- Phase 13: ✅ Fully implemented with 44 passing tests
+  - 13-01: Contract addresses updated in 00-config.pb.js
+  - 13-02: Background polling hook (13-track-deposit.pb.js, 386 lines)
+  - 13-03: Test suite (44 tests, 8 suites, all passing)
+- Summary/verification documents created for all 3 plans
 
 **Files to Preserve:**
 
 - `.planning/ROADMAP.md` — Phase structure with success criteria
 - `.planning/STATE.md` — This file (project memory)
-- `.planning/REQUIREMENTS.md` — 16 requirements with traceability
-- `.planning/phases/12-*/12-CONTEXT.md` — Phase 12 implementation decisions
-- `.planning/research/SUMMARY.md` — Research synthesis
+- `.planning/phases/13-usdt-deposit-tracking/` — All plan, summary, verification docs
+- `.planning/phases/12-wallet-api-contract-integration/` — Phase 12 artifacts
 
 **Next Session Actions:**
 
-1. Run `/gsd-plan-phase 12` — Decompose Wallet-API integration into executable plans
-2. Verify 0xl3 testnet RPC access (https://rpc.0xl3.com, Chain ID: 7117)
-3. Check contract deployment prerequisites (Foundry, deployer wallet)
+1. Execute Phase 14 (Mobile Responsive Polish) — plans exist, can run parallel
+2. Or execute Phase 15 (Feed Feature) — depends on Phase 12 (done ✅)
+3. Or execute Phase 16 (Play Feature + Test Infrastructure)
 
 **Context Handoff:**
 
-- Roadmap has 5 phases (12-16) with 100% requirement coverage
-- Phase 12 blocks Phases 15 and 16 (contract infrastructure)
-- Phase 14 can run in parallel (mobile polish is independent)
-- P0 security issues (SEC-01 to SEC-08) must be fixed before launch
-- Reference implementation at `/resources/pkbase-wallet` is canonical source
+- Phases 12 (Wallet-API) and 13 (USDT Deposit) complete ✅
+- Phase 14 (Mobile Responsive) — independent, plans created
+- Phase 15 (Feed Feature) — depends on Phase 12 (resolved), plans created
+- Phase 16 (Play Feature + Test Infrastructure) — plans created
+- 8/16 requirements satisfied (all SEC requirements = SEC-01 to SEC-08)
 
 ---
 
@@ -191,8 +197,7 @@ Progress: [----------] 0/5 phases complete
 - PocketBase: `http://localhost:8090` (Docker)
 - Frontend: `http://localhost:3000` (Bun)
 - Wallet API: `http://localhost:3001` (Bun)
-- Network: 0xl3 testnet (Chain ID: 7117, https://rpc.0xl3.com) ← Phase 12 deployment target
-- Network: BSC testnet (Chain ID: 97) ← Legacy, use 0xl3 for Phase 12
+- Network: 0xl3 testnet (Chain ID: 7117, https://rpc.0xl3.com) ← Phase 12 deployed
 
 **SSH Access:**
 
@@ -214,4 +219,4 @@ Progress: [----------] 0/5 phases complete
 
 ---
 
-_Last updated: 2026-04-18 — Roadmap created by gsd-roadmapper_
+_Last updated: 2026-05-07 — Updated by gsd-manager_
