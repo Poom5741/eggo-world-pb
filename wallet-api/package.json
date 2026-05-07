@@ -2,12 +2,13 @@
   "name": "wallet-api",
   "version": "2.0.0",
   "description": "Wallet API service using dacc-js with Bun and Express",
-  "main": "src/index.ts",
+  "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "start": "bun src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target bun",
+    "dev": "bun --watch server.js",
+    "start": "bun server.js",
+    "start:ts": "bun src/index.ts",
+    "build": "bun build server.js --outdir dist --target bun",
     "test": "bun test"
   },
   "packageManager": "bun@1.0.0",

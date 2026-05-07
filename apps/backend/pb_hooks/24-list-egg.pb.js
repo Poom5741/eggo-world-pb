@@ -142,11 +142,15 @@ routerAdd("POST", "/api/v2/list-egg", (e) => {
         var mockBlockchain = ($os.getenv("MOCK_BLOCKCHAIN") || "").toLowerCase() === "true";
         if (!mockBlockchain) {
             try {
-                var walletApiUrl = $os.getenv("WALLET_API_URL") || "http://localhost:3001";
+                var walletApiUrl = $os.getenv("WALLET_API_URL");
                 var marketplaceContractAddress = $os.getenv("MARKETPLACE_CONTRACT_ADDRESS");
                 var eggTokenId = egg.get("token_id");
                 var nftContractAddress = $os.getenv("EGG_NFT_CONTRACT_ADDRESS");
-
+    
+                if (!walletApiUrl) {
+                    console.error("WALLET_API_URL not configured");
+                    return e.json(500, { success: false, error: { message: "WALLET_API_URL not configured", code: "CONFIG_ERROR" } });
+                }
                 if (marketplaceContractAddress && nftContractAddress) {
                     console.log("Listing on Marketplace contract: egg_id=" + egg_id + ", token_id=" + eggTokenId);
 

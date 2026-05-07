@@ -84,16 +84,22 @@ export default function Eggs() {
     }
   }
   
-  // Handle feed action
+  // Handle feed action - เปิด FeedDialog เมื่อคลิก FEED ME
   const handleFeedEgg = (eggId: number) => {
-    // TODO: Implement feed flow
-    console.log('Feed egg:', eggId)
+    const egg = eggs.find(e => e.egg_id === eggId)
+    if (egg) {
+      setFeedingEgg(egg)
+      setFeedDialogOpen(true)
+    }
   }
   
-  // Handle play action
+  // Handle play action - แสดงข้อความแจ้งเตือน (รอ game design spec)
   const handlePlayEgg = (eggId: number) => {
-    // TODO: Implement play interaction
-    console.log('Play with egg:', eggId)
+    const egg = eggs.find(e => e.egg_id === eggId)
+    if (egg) {
+      setFeedingEgg(egg)
+      setFeedDialogOpen(true)
+    }
   }
   
   // Handle hatch button click - จัดการการคลิกปุ่มฟักไข่

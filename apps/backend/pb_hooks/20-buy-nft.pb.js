@@ -178,9 +178,18 @@ routerAdd("POST", "/api/v2/marketplace/buy", (e) => {
         
         if (!mockBlockchain) {
             // Call wallet-api for on-chain purchase (gas sponsored by platform)
-            const walletApiUrl = $os.getenv("WALLET_API_URL") || "http://localhost:3001"
+            const walletApiUrl = $os.getenv("WALLET_API_URL")
             const marketplaceContractAddress = $os.getenv("MARKETPLACE_CONTRACT_ADDRESS")
             
+            if (!walletApiUrl) {
+                return e.json(500, {
+                    success: false,
+                    error: {
+                        message: "WALLET_API_URL environment variable not configured",
+                        code: "CONFIG_ERROR"
+                    }
+                })
+            }
             if (!marketplaceContractAddress) {
                 return e.json(500, {
                     success: false,

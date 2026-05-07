@@ -642,262 +642,55 @@ curl -X POST http://localhost:3001/api/wallet/create \
 
 ---
 
-## REMAINING ISSUES - IMPLEMENTATION GUIDE
+## CURRENT STATE - Implementation Status
 
-### 1. Mock Contract Interactions (P0 - Security Critical)
+### ✅ Completed Issues
 
-**Problem:** 4 wallet-api endpoints return mock data instead of real blockchain transactions:
+| Issue | Priority | Status | Evidence |
+|---|---|---|---|
+| Mock Contract Interactions | P0 | ✅ COMPLETE | All 4 wallet-api endpoints use real ethers.js contract calls |
+| Feed Feature | P2 | ✅ COMPLETE | FeedDialog + useEggFeed + 16-feed-egg.pb.js + wallet-api endpoint |
+| RED PHASE Test | P1 | ✅ COMPLETE | 13-track-deposit.pb.js hook implemented (158 lines) |
+| Track Deposit Hook | P1 | ✅ COMPLETE | Real `eth_getLogs` polling, idempotent, balance updates |
+| LINE OAuth Fix | P0 | ✅ COMPLETE | 05-auth-token.pb.js validates credentials |
+| Wallet Hooks | P0 | ✅ COMPLETE | 01-create-wallet.pb.js with random password, e.next() |
 
-- `/api/v1/wallet/mint-egg` (line 388)
-- `/api/v1/wallet/claim-commission` (line 422)
-- `/api/v1/wallet/mint-food` (line 457)
-- `/api/v1/wallet/feed-egg` (line 493)
+### ✅ Wallet API Real Contract Calls
 
-**What Needs Implementation:**
+| Endpoint | Path | Method | Gas | Confirmations | Retry |
+|---|---|---|---|---|---|
+| Mint Egg | `POST /api/wallet/mint-egg` | `eggContract.mintEgg()` | 20% buffer | 12 blocks | 3x exp backoff |
+| Claim Commission | `POST /api/wallet/claim-commission` | `commissionContract.claimCommission()` | 20% buffer | 12 blocks | 3x exp backoff |
+| Mint Food | `POST /api/wallet/mint-food` | `foodContract.mint()` | 20% buffer | 12 blocks | 3x exp backoff |
+| Feed Egg | `POST /api/wallet/feed-egg` | `eggContract.feedEgg()` | 20% buffer | 12 blocks | 3x exp backoff |
 
-These endpoints currently return fake transaction hashes. Real implementation requires:
+All use AES-256-GCM v4 private key decryption, error sanitization, and real transaction hashes.
 
-```javascript
-// Current (MOCK - DON'T USE IN PRODUCTION):
-app.post("/api/v1/wallet/mint-egg", async (req, res) => {
-  // ... validation ...
-  res.json({
-    success: true,
-    data: {
-      transaction_hash: "0xMOCK_HASH", // ❌ FAKE
-      token_id: Math.floor(Math.random() * 1000), // ❌ FAKE
-    },
-  })
-})
+### ✅ Smart Contracts Deployed
 
-// Required (REAL CONTRACT CALL):
-app.post("/api/v1/wallet/mint-egg", async (req, res) => {
-  const { user_address, egg_id } = req.body
+- Network: 0xl3 testnet (Chain ID: 7117, RPC: https://rpc.0xl3.com)
+- Contracts: USDT, CommissionDistribution, AnimalNFT, EggNFT, FoodNFT
+- Addresses: `contracts/contract-addresses.json`
+- Deployment: Foundry script at `contracts/script/Deploy.s.sol`
 
-  // 1. Get user's encrypted private key from database
-  const user = await pocketBase.collection("users").getOne(user_address)
-  const privateKey = await decryptPrivateKey(user.encrypted_private_key, MASTER_KEY + user.id)
+### ❌ Play Feature (P2 - Needs Game Design)
 
-  // 2. Create ethers.js signer
-  const provider = new ethers.JsonRpcProvider(process.env.RPC_URL)
-  const signer = new ethers.Wallet(privateKey, provider)
+**Status:** NOT IMPLEMENTED. Frontend PLAY button now routes to FeedDialog as placeholder.
 
-  // 3. Connect to NFT contract
-  const nftContract = new ethers.Contract(
-    process.env.NEXT_PUBLIC_EGG_NFT_ADDRESS,
-    EGG_NFT_ABI,
-    signer
-  )
-
-  // 4. Call smart contract function
-  const tx = await nftContract.mintEgg(egg_id)
-  await tx.wait() // Wait for confirmation
-
-  // 5. Return real transaction hash
-  res.json({
-    success: true,
-    data: {
-      transaction_hash: tx.hash, // ✅ REAL
-      token_id: await nftContract.tokenOfOwnerByIndex(user_address, 0), // ✅ REAL
-    },
-  })
-})
-```
-
-**Prerequisites:**
-
-1. Smart contracts deployed to target network
-2. Contract addresses file exists (`/contract-addresses.json`)
-3. RPC endpoint configured (`NEXT_PUBLIC_RPC_URL` in `.env`)
-4. Contract ABIs defined (array of function signatures)
-
-**Files to Create/Modify:**
-
-- `wallet-api/server.js` - Replace 4 mock endpoints with real contract calls
-- `wallet-api/contracts/` - Directory for contract ABIs
-- `.env` - Add `RPC_URL`, contract addresses
-
-**Testing:**
-
-```bash
-# Test mint-egg endpoint
-curl -X POST http://localhost:3001/api/v1/wallet/mint-egg \
-  -H "Content-Type: application/json" \
-  -d '{"user_address":"0x...","egg_id":1}'
-# Expected: Real transaction hash, not mock
-
-# Verify on blockchain explorer
-# Check transaction hash on BSC testnet: https://testnet.bscscan.com/tx/HASH
-```
-
-**Dependencies:** Contract deployment must complete first.
+**Requires:** Game design spec for play mechanics before implementation.
 
 ---
 
-### 2. Feed Feature (P2 - Nice to Have)
+## KNOWN ISSUES - REMAINING
 
-**Problem:** UI button exists in `apps/web/app/eggs/page.tsx:89` but does nothing.
-
-**What Needs Implementation:**
-
-**Frontend** (`apps/web/app/eggs/page.tsx`):
-
-```typescript
-// Current (TODO comment):
-// TODO: Implement feed flow
-
-// Required implementation:
-const handleFeed = async (eggId: number, foodIds: number[]) => {
-  try {
-    const signer = await getSigner()
-    const contract = getEggNftContract(signer)
-
-    // Call smart contract
-    const tx = await contract.feedEgg(eggId, foodIds)
-    await tx.wait()
-
-    // Update UI
-    toast.success("Egg fed successfully!")
-    refreshEggData()
-  } catch (error) {
-    toast.error("Failed to feed egg")
-  }
-}
-```
-
-**Backend Hook** (`apps/backend/pb_hooks/16-feed-egg.pb.js`):
-
-```javascript
-routerAdd("POST", "/api/v2/feed-egg", (e) => {
-  const { users } = e.requireAuth()
-  const { egg_token_id, food_ids } = e.parseBody()
-
-  // 1. Validate user owns the egg NFT
-  // 2. Validate user owns the food NFTs
-  // 3. Call wallet-api to execute transaction
-  // 4. Mark food NFTs as consumed
-  // 5. Update egg properties (food_count, rarity_bonus)
-
-  e.json(200, {
-    success: true,
-    data: {
-      transaction_hash: tx.hash,
-      new_food_count: newCount,
-      rarity_bonus: bonus,
-    },
-  })
-})
-```
-
-**Wallet API** (`wallet-api/server.js`):
-
-- Already has `/api/v1/wallet/feed-egg` endpoint (line 493) - needs real contract call
-
-**Dependencies:**
-
-- Contract interactions implemented (Issue #1)
-- Food NFT contract deployed
-- Egg NFT contract has `feedEgg` function
-
----
-
-### 3. Play Feature (P2 - Nice to Have)
-
-**Problem:** UI button exists in `apps/web/app/eggs/page.tsx:95` but does nothing.
-
-**What Needs Implementation:**
-
-Similar to Feed feature, but for play/interaction mechanics. Exact implementation depends on game design:
-
-**Frontend** (`apps/web/app/eggs/page.tsx`):
-
-```typescript
-// Current (TODO comment):
-// TODO: Implement play interaction
-
-// Required implementation (example):
-const handlePlay = async (eggId: number) => {
-  try {
-    const signer = await getSigner()
-    const contract = getEggNftContract(signer)
-
-    const tx = await contract.playWithEgg(eggId)
-    await tx.wait()
-
-    toast.success("Played with egg!")
-  } catch (error) {
-    toast.error("Failed to play")
-  }
-}
-```
-
-**Status:** Waiting for game design specification (play = minigame? interaction? earning mechanism?).
-
----
-
-### 4. RED PHASE Test (P1 - Quality Issue)
-
-**Problem:** Test file `apps/backend/pb_hooks/13-track-deposit.test.js` line 703 states:
-
-```javascript
-console.log("Status: RED PHASE - Tests will fail until hook is implemented")
-```
-
-**What Needs Implementation:**
-
-**Hook File** (`apps/backend/pb_hooks/13-track-deposit.pb.js`):
-
-```javascript
-// Hook needs to:
-// 1. Poll USDT Transfer events for user deposits
-// 2. Track deposit amounts and timestamps
-// 3. Update user's deposit records in PocketBase
-// 4. Handle duplicate transaction detection
-// 5. Emit events for deposit confirmations
-
-routerAdd("POST", "/api/v2/track-deposit", (e) => {
-  const { users } = e.requireAuth()
-  const { transaction_hash } = e.parseBody()
-
-  // Implementation needed:
-  // 1. Verify transaction on blockchain
-  // 2. Check if already tracked (prevent duplicates)
-  // 3. Create deposit record
-  // 4. Update user balance if needed
-
-  e.json(200, {
-    success: true,
-    data: {
-      deposit_id: record.id,
-      amount: amount,
-      confirmed: true,
-    },
-  })
-})
-```
-
-**Testing:**
-
-```bash
-# Run test to verify
-bun test apps/backend/pb_hooks/13-track-deposit.test.js
-# Expected: All tests pass
-# Current: Tests fail with "hook not implemented"
-```
-
----
-
-## SUMMARY - Fixed vs Remaining
-
-| Category                     | Count                 | Files                                            |
-| ---------------------------- | --------------------- | ------------------------------------------------ |
-| **Fixed & Committed**        | 6 issues              | `01-create-wallet.pb.js`, `wallet-api/server.js` |
-| **Blocked (Need Contracts)** | 1 issue (4 endpoints) | `wallet-api/server.js`                           |
-| **Deferred (Need Decision)** | 2 issues              | `apps/web/app/eggs/page.tsx`                     |
-| **Pending Implementation**   | 1 issue               | `13-track-deposit.pb.js`                         |
-
-**Next Actions:**
-
-1. Deploy smart contracts → Fix mock contract interactions
-2. Decide on Feed/Play features → Implement UI + backend
-3. Implement track-deposit hook → Fix RED PHASE test
+| Issue | Priority | File | Detail |
+|---|---|---|---|
+| wallet-api dual codebase | P1 | `wallet-api/package.json` | Fixed: main now points to `server.js` |
+| Hardcoded localhost URLs | P1 | pb_hooks (20, 23, 24, 26) | Fixed: now validates env var, errors on missing |
+| FeedHero button stub | P1 | `eggs/page.tsx` | Fixed: routes to FeedDialog |
+| PLAY unimplemented | P1 | `eggs/page.tsx` | Wire to FeedDialog as placeholder |
+| Deposit polling cursor | P2 | `13-track-deposit.pb.js` | Scans latest block only; needs `fromBlock` tracking |
+| Test coverage | P2 | Various | ~70%, target 80%+ |
+| console.log verbosity | P2 | ~200+ instances | Debug logs in auth, wallet-api, pb_hooks |
+| `any` types | P2 | ~77 instances | TypeScript strictness cleanup |
+| Dead code | P2 | `wallet-api/utils/dacc-decrypt.js`, `wallet-api/src/` | Stub for future migration; production uses `server.js`

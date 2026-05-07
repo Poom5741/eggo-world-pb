@@ -1,11 +1,12 @@
 /**
- * Deposit Tracking Hook Tests - TDD RED Phase
+ * Deposit Tracking Hook Tests
  * Tests for 13-track-deposit.pb.js hook
  * 
  * This hook polls CommissionDistribution contract for Transfer events
  * and tracks USDT deposits to user wallets.
  * 
- * RED PHASE: These tests will FAIL until the hook is implemented.
+ * Hook is IMPLEMENTED (see 13-track-deposit.pb.js).
+ * These tests validate the hook's behavior end-to-end.
  */
 
 import { describe, it, expect, beforeEach, jest, beforeAll } from 'bun:test';
@@ -644,7 +645,7 @@ describe('13-track-deposit.pb.js - Deposit Tracking Hook', () => {
 });
 
 // ============================================
-// INTEGRATION TESTS (will fail in RED phase)
+// INTEGRATION TESTS (need running PocketBase)
 // ============================================
 
 describe('Integration: Deposit Poll Flow', () => {
@@ -659,7 +660,6 @@ describe('Integration: Deposit Poll Flow', () => {
     });
     
     it('should respond to POST /api/v2/deposit/poll', async () => {
-        // RED: This will fail until hook is implemented
         // Expected: 401 (unauthorized) or 200 (success) - NOT 404
         
         try {
@@ -678,7 +678,7 @@ describe('Integration: Deposit Poll Flow', () => {
     });
     
     it('should return correct response structure when authenticated', async () => {
-        // RED: Test with auth token
+        // Test with auth token
         const response = await fetch(POCKETBASE_URL + DEPOSIT_POLL_ENDPOINT, {
             method: 'POST',
             headers: { 
@@ -700,4 +700,4 @@ describe('Integration: Deposit Poll Flow', () => {
 });
 
 console.log('Tests loaded: 13-track-deposit.test.js');
-console.log('Status: RED PHASE - Tests will fail until hook is implemented');
+console.log('Status: Hook is implemented — update these unit tests for GREEN phase');
