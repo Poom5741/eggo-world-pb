@@ -12,6 +12,7 @@ export type NavItem = {
 export const NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
   { icon: 'egg', label: 'Eggs', href: '/eggs' },
+  { icon: 'add_circle', label: 'Mint', href: '/mint' },
   { icon: 'storefront', label: 'Market', href: '/marketplace' },
   { icon: 'account_balance_wallet', label: 'Wallet', href: '/wallet' },
   { icon: 'person', label: 'Profile', href: '/settings' },
