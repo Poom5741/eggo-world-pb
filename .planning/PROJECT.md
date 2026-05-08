@@ -11,137 +11,168 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Core Game Loop
+## Current Milestone: v0.6.0 Quick Production Release
 
-```
-BUY EGG NFT (25 USDT)
-      │
-      ▼
-RECEIVE 2× FOOD NFTs (bonus)
-      │
-      ▼
-BUY MORE FOOD NFTs (0.50 USDT each)
-      │
-      ▼
-FEED EGG 10 FOOD ITEMS → HATCH
-      │
-      ▼
-RECEIVE ANIMAL NFT (random rarity)
-      │
-      ▼
-SELL / HOLD / BREED on Marketplace
-```
+**Status:** Active — Requirements definition started
+**Goal:** Ship a production-ready release focusing on core money flows — egg minting and referral commission distribution
 
-## Key Features
+**Previous Milestone:** v0.5.0 Security Hardening & Production Readiness
 
-### NFT Types
+### Target Features
 
-1. **Egg NFT** (25 USDT) — Comes with 2 Food NFTs bonus, requires 10 food to hatch
-2. **Food NFT** (0.50 USDT) — Consumable to feed eggs, 4 types (Grain, Fish, Insects, Herbs)
-3. **Animal NFT** — Hatched from eggs, 4 rarity tiers (Common 60%, Rare 25%, Epic 12%, Legendary 3%)
-
-### Referral System (4-Level MLM)
-
-- **G1** (Direct referrer): 20% commission
-- **G2**: 10% commission
-- **G3**: 10% commission
-- **G4**: 10% commission
-- **Total payout**: 50% of Egg NFT sale ($12.50 from $25)
-
-### CoinStor Reserve
-
-- 4% of every transaction goes to platform reserve
-- Used for: liquidity, ecosystem rewards, emergency payouts
-
-## Technical Stack
-
-**Frontend:** Next.js 16 (Bun runtime, static export for Cloudflare Pages)
-
-- shadcn/ui components, Tailwind CSS 4
-- PocketBase client for auth
-- Ethers v6 / dacc-js for wallet interactions
-
-**Backend:** PocketBase
-
-- LINE OAuth authentication
-- Auto-wallet creation hooks
-- User and NFT metadata storage
-
-**Wallet API:** Express.js (TypeScript, Bun runtime)
-
-- Wallet generation with dacc-js v0.0.5
-- USDT balance management
-- Transaction signing
-
-**Smart Contracts:** Foundry (Solidity 0.8.20)
-
-- ERC-1155 NFT contracts (Egg, Food, Animal)
-- Marketplace contract with escrow
-- Commission distribution engine
-- USDT (BEP-20) integration
-
-**Infrastructure:**
-
-- Docker for PocketBase
-- Nginx reverse proxy
-- BSC testnet/mainnet deployment
+| Feature                     | Priority | Description                                                                    |
+| --------------------------- | -------- | ------------------------------------------------------------------------------ |
+| Egg Mint Production Flow    | P0       | Ensure end-to-end egg mint flow is production-ready with proper error handling |
+| Referral Commission Payouts | P0       | Ensure referral commissions distribute correctly and users can claim payouts   |
+| Frontend for Money Flows    | P0       | UI pages and components for egg mint and commission claiming flows             |
+| Production Hardening        | P1       | Monitoring, error recovery, final verification for money-related operations    |
 
 ---
 
-## Current State: v0.0.6 SHIPPED ✅
+## Milestone Archive
+
+### v0.2.0 — Functional Spec 100% Completion 🔄 ACTIVE
+
+**Started:** 2026-04-25
+**Phases:** 5 (32-36) planned
+**Gaps:** 12 spec functions to implement
+
+**What's Planned:**
+
+- 📊 Marketplace stats API (floor price, 24h volume, active listings)
+- 💰 Recruitment bonus USDT rewards with multipliers
+- 🔀 VRF integration for verifiable randomness
+- ⚙️ Admin game config (fee %, cooldown, rarity weights, species)
+- 🔥 NFT burn function + KYC toggle
+
+---
+
+### v0.1.0 — UAT Gap Closure ✅ ARCHIVED
+
+**Shipped:** 2026-04-25  
+**Duration:** 1 day  
+**Phases:** 1 (Phase 31)  
+**Plans:** 3
+
+**What Was Delivered:**
+
+- ✅ Fixed polling badge visibility (minimum 2-second display duration)
+- ✅ Fixed breeding dialog Parent 2 selection bug (defensive ID filtering)
+- ✅ Fixed marketplace detail page routing (ID validation + server-side redirect)
+
+**Human UAT Pending:** 3 tests in 31-HUMAN-UAT.md
+
+**Key Patterns:**
+
+- Minimum display duration: useState + useRef + useEffect for timeout management
+- Defensive ID filtering: Use PocketBase record.id when blockchain token_id unreliable
+- Server-side redirect: Next.js redirect() for invalid route params
+
+---
+
+### v0.0.9 — Feature Completion & Cloudflare Deployment ✅ ARCHIVED
+
+**Shipped:** 2026-04-24  
+**Duration:** 2 days  
+**Phases:** 6 (25-30)
+
+**What Was Delivered:**
+
+- ✅ Rarity upgrade system (MAX_UPGRADE_FOOD=490, RarityUpgradeDialog)
+- ✅ Wallet withdrawal (withdrawUSDT endpoint, withdrawal modal)
+- ✅ Admin controls (platform pause/unpause, fee configuration)
+- ✅ Cloudflare Pages deployment (static export, CI/CD)
+- ✅ UAT bug fixes (Phase 26, 31)
+
+---
+
+### v0.0.8 — NFT Ecosystem Complete ✅ ARCHIVED
+
+**Shipped:** 2026-04-22  
+**Phases:** 5 (20-24)
+
+**What Was Delivered:**
+
+- ✅ Breeding system: Animal selection dialog, cooldown validation
+- ✅ Tier rewards & badges: TierBadge.sol (ERC-5192), dashboard integration
+- ✅ Secondary market: resale_listings, royalty distribution
+- ✅ Admin dashboard: Error boundaries, monitoring
+- ✅ Onboarding tutorial: Walkthrough overlay
+
+---
+
+### v0.0.7 — Security & Quality ✅ ARCHIVED
+
+**Shipped:** 2026-04-22  
+**Phases:** 8 (12-19)  
+**Commits:** 119
+
+**What Was Delivered:**
+
+- ✅ Real smart contract integration (4 endpoints, 0xl3 testnet deployment)
+- ✅ Complete NFT mint flow (contract → PocketBase → marketplace → Buy Now)
+- ✅ LINE OAuth wallet auto-creation fix
+- ✅ 80%+ test coverage (49 new tests)
+- ✅ Feed & play features with daily check-in
+- ✅ Gas sponsorship system with relayer wallet
+- ✅ Mobile responsive + WCAG 2.2 AA compliance
+
+---
+
+### v0.0.6 — Frontend Migration & Integration ✅ ARCHIVED
 
 **Shipped:** 2026-04-18  
-**Milestone:** Frontend Migration & Integration  
+**Audited:** 2026-04-19 (Final Audit: v0.0.6-FINAL-AUDIT.md)  
 **Duration:** 13 days (2026-04-05 → 2026-04-18)
 
-### What Was Delivered
+**What Was Delivered:**
 
-**Phases Completed:** 5 phases (14 plans, 25 tasks)
+- ✅ Claymorphism UI with Material Symbols icons
+- ✅ LINE OAuth authentication flow
+- ✅ Real-time wallet balance (exponential backoff 30s→5min)
+- ✅ Buddy Chain referral visualization (G1 20%, G2-G4 10%)
+- ✅ Egg management with feed/hatch flows
+- ✅ NFT marketplace with buy/sell flows
+- ✅ Smart contract integration (Phase 12)
+- ✅ Mobile responsive polish (Phase 14)
+- ✅ Feed feature with manual food selection (Phase 15)
+- ✅ Documentation sync with traceability (Phase 13)
 
-1. **Claymorphism UI** — Modern design with Material Symbols icons, responsive navigation
-2. **Real-time Wallet** — Auto-polling USDT balance with exponential backoff (30s→5min)
-3. **Buddy Chain Referrals** — 4-level visualization (G1 20%, G2-G4 10%)
-4. **Egg Management** — Feed/hatch flows with 12-second animation sequence
-5. **NFT Marketplace** — Complete buy/sell flows with USDT approval and escrow
-6. **Documentation** — Updated REQUIREMENTS.md with accurate traceability
-
-**Requirements Satisfied:** 25/25 (100% of v0.0.6 scope)
-
-### Current Codebase State
-
-- **LOC:** ~60K TypeScript/JavaScript
-- **Tests:** 268/277 passing (9 pre-existing setup issues)
-- **Build:** 2.5s (Bun)
-- **Deployment:** Static export for Cloudflare Pages
-
----
-
-## Current Milestone: v0.0.7 Security & Quality
-
-**Goal:** Address technical debt, improve security, and complete mobile polish
-
-**Target features:**
-
-- **Security (P0):** Replace 4 mock blockchain endpoints in wallet-api with real ethers.js contract calls
-- **Quality (P1):** Fix 9 vi.mock test failures, implement track-deposit hook (USDT polling)
-- **Mobile Polish (P2):** Responsive breakpoints (320px-1440px), touch interactions, wire Feed/Play buttons
-- **Features (P2):** Complete remaining marketplace features, implement Feed feature
+**Requirements Satisfied:** 19/19 scoped (100%)  
+**Phases Completed:** 5/5 (8, 9, 10, 11, 13)  
+**Final Audit:** `.planning/milestones/v0.0.6-FINAL-AUDIT.md`
 
 ---
 
 ## Requirements
 
-### Validated (v0.0.6)
+### Validated (v0.0.6 — ARCHIVED)
 
 - ✓ FOUND-01 → FOUND-06 (Phase 8) — Claymorphism UI, LINE OAuth, navigation
 - ✓ FOUND-07 (Phase 9) — Wallet auto-polling
-- ✓ DASH-01 → DASH-05 (Phase 9) — Dashboard components
+- ✓ DASH-01 → DASH-02 (Phase 9) — Dashboard balance + referrals
 - ✓ EGG-01 → EGG-07 (Phase 10) — Egg management
-- ✓ MKT-01 → MKT-06 (Phase 11) — Marketplace with buy/sell
+- ✓ MKT-02 → MKT-04 (Phase 11) — Marketplace buy/sell flows
 
-### Active (v0.0.7)
+**v0.0.6 Final Score:** 19/19 scoped requirements (100%)  
+**Deferred to v0.0.7:** MKT-01/05/06, MOB-01/02/03/04/05
 
-Requirements being defined — see REQUIREMENTS.md
+### Active (v0.0.7 — In Progress)
+
+**Security (P0):**
+
+- ✅ SEC-01 → SEC-04 (Phase 12) — Real blockchain contract calls
+- ⏸️ SEC-05 → SEC-08 (Phase 13) — USDT deposit tracking (pending)
+
+**Quality (P1):**
+
+- ✅ QUAL-03 → QUAL-06 (Phase 14) — Mobile responsive polish, WCAG 2.2 AA
+- ✅ FEAT-01 → FEAT-04 (Phase 15) — Feed feature with manual selection
+- ⏸️ QUAL-01 → QUAL-02 (Phase 16) — Test infrastructure, coverage 80%+ (pending)
+
+**Features (P2):**
+
+- ⏸️ FEAT-05 → FEAT-09 (Phase 16) — Play feature, daily check-in (pending)
 
 ### Out of Scope
 
@@ -167,25 +198,26 @@ Requirements being defined — see REQUIREMENTS.md
 
 ## Context
 
-**Current state after v0.0.6:**
+**Current state after v0.0.6 archival:**
 
-- Frontend: Complete claymorphism migration with TDD
-- Backend: PocketBase with LINE OAuth, auto-wallet hooks
+- Frontend: Complete claymorphism migration with mobile responsive polish
+- Backend: PocketBase with LINE OAuth, auto-wallet hooks, real contract calls
 - Marketplace: Full buy/sell functionality operational
-- Integration: All E2E flows verified (Auth→Dashboard→Eggs→Marketplace)
+- Integration: All E2E flows verified (Auth→Dashboard→Eggs→Marketplace→Feed)
+- Mobile: WCAG 2.2 AA compliant, 5 breakpoints tested, touch targets 44x44px
 
-**Known Issues:**
+**Known Issues (v0.0.7 Remaining):**
 
-1. **Mock blockchain calls** — 4 wallet-api endpoints need real implementation
-2. **Test setup** — 9 vi.mock failures (pre-existing, not v0.0.6 regressions)
-3. **Feed/Play buttons** — TODO in UI, functionality deferred
-4. **Track deposit hook** — Not implemented, tests in RED PHASE
+1. **USDT deposit tracking** — Event polling service not implemented (SEC-05 to SEC-08)
+2. **Test setup** — 9 vi.mock failures (pre-existing, QUAL-01)
+3. **Play feature** — Daily check-in reward system not implemented (FEAT-05 to FEAT-09)
+4. **Test coverage** — Currently 70%, target 80%+ (QUAL-02)
 
 **User Feedback:**
 
-- Initial testing shows positive response to claymorphism design
+- Positive response to claymorphism design and hatch animation
 - Buddy Chain visualization well-received for gamification
-- Hatch animation praised for building anticipation
+- Feed feature manual selection preferred over auto-fill (Phase 15 decision)
 
 ---
 
@@ -198,4 +230,76 @@ Requirements being defined — see REQUIREMENTS.md
 
 ---
 
-_Last updated: 2026-04-18 — Milestone v0.0.7 Security & Quality started_
+## Current State (v0.0.7 Shipped)
+
+**Shipped:** 2026-04-22  
+**Duration:** 5 days (2026-04-18 → 2026-04-22)  
+**Commits:** 119
+
+### What Shipped
+
+- ✅ Real smart contract integration (4 endpoints, 0xl3 testnet deployment)
+- ✅ Complete NFT mint flow (contract → PocketBase → marketplace → Buy Now)
+- ✅ LINE OAuth wallet auto-creation fix
+- ✅ 80%+ test coverage (49 new tests)
+- ✅ Feed & play features with daily check-in
+- ✅ Gas sponsorship system with relayer wallet
+- ✅ Mobile responsive + WCAG 2.2 AA compliance
+
+### Known Gaps (Phase 20) → NOW v0.0.8
+
+- Feed-egg foodCount validation
+- 10 UAT scenarios (manual testing required)
+- Gas sponsorship documentation
+- Empty state UI for /eggs page
+
+### Active Milestone: v0.0.8 NFT Ecosystem Complete
+
+**Phases:** 20-24 (5 phases planned)
+
+1. **Phase 20: Gap Closure & UAT** — Complete deferred validation, documentation, UAT execution
+2. **Phase 21: Breeding System** — Animal breeding mechanics, cooldowns, fees
+3. **Phase 22: Tier Rewards** — Seedling/Grower/Farmer badges with USDT rewards
+4. **Phase 23: Secondary Market** — Animal NFT resale with royalties
+5. **Phase 24: Polish & Launch Prep** — Production hardening, monitoring, onboarding
+
+<details>
+<summary>Previous State (v0.0.6 Archived)</summary>
+
+## Previous State
+
+**v0.0.6 Frontend Migration & Integration** (Shipped: 2026-04-18)
+
+- Claymorphism UI migration with Material Symbols icons
+- Real-time wallet with exponential backoff polling
+- Buddy Chain referral visualization
+- Egg management with feed/hatch flows
+- NFT marketplace with complete buy/sell flows
+- Mobile responsive polish with WCAG 2.2 AA compliance
+
+</details>
+
+---
+
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
+---
+
+_Last updated: 2026-05-08 — v0.6.0 Quick Production Release milestone started_
