@@ -1,0 +1,18 @@
+{
+  "model": "openrouter/anthropic/claude-sonnet-4-6",
+  "permissions": {
+    "allow": ["Bash(test:*)"],
+    "deny": []
+  },
+  "maxTokens": null,
+  "maxIterations": null,
+  "thinkingBudget": null,
+  "searchEngine": null,
+  "allowedTools": null,
+  "disallowedTools": null,
+  "windowWidth": null,
+  "windowHeight": null,
+  "teamEnabled": false,
+  "showRawResponse": null,
+  "kms": null
+}

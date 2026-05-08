@@ -1,0 +1,127 @@
+[
+  {
+    "name": "EggoWorld #1",
+    "description": "EggoWorld is a gamified NFT collection on BNB SmartChain. Each Egg is a unique 8-bit character ready for adventure. Collect, hatch, and earn through the EggoWorld ecosystem.",
+    "image": "ipfs://YOUR_CID_HERE/1.png",
+    "edition": 1,
+    "attributes": [
+      {
+        "trait_type": "Background",
+        "value": "Dungeon"
+      },
+      {
+        "trait_type": "Egg Color",
+        "value": "Black"
+      },
+      {
+        "trait_type": "Expression",
+        "value": "Angry"
+      },
+      {
+        "trait_type": "Accessory",
+        "value": "Bow"
+      }
+    ],
+    "compiler": "EggoWorld NFT Composer v1.0"
+  },
+  {
+    "name": "EggoWorld #2",
+    "description": "EggoWorld is a gamified NFT collection on BNB SmartChain. Each Egg is a unique 8-bit character ready for adventure. Collect, hatch, and earn through the EggoWorld ecosystem.",
+    "image": "ipfs://YOUR_CID_HERE/2.png",
+    "edition": 2,
+    "attributes": [
+      {
+        "trait_type": "Background",
+        "value": "Dungeon"
+      },
+      {
+        "trait_type": "Egg Color",
+        "value": "Black"
+      },
+      {
+        "trait_type": "Expression",
+        "value": "Angry"
+      },
+      {
+        "trait_type": "Accessory",
+        "value": "Cap"
+      }
+    ],
+    "compiler": "EggoWorld NFT Composer v1.0"
+  },
+  {
+    "name": "EggoWorld #3",
+    "description": "EggoWorld is a gamified NFT collection on BNB SmartChain. Each Egg is a unique 8-bit character ready for adventure. Collect, hatch, and earn through the EggoWorld ecosystem.",
+    "image": "ipfs://YOUR_CID_HERE/3.png",
+    "edition": 3,
+    "attributes": [
+      {
+        "trait_type": "Background",
+        "value": "Dungeon"
+      },
+      {
+        "trait_type": "Egg Color",
+        "value": "Black"
+      },
+      {
+        "trait_type": "Expression",
+        "value": "Angry"
+      },
+      {
+        "trait_type": "Accessory",
+        "value": "Crown"
+      }
+    ],
+    "compiler": "EggoWorld NFT Composer v1.0"
+  },
+  {
+    "name": "EggoWorld #4",
+    "description": "EggoWorld is a gamified NFT collection on BNB SmartChain. Each Egg is a unique 8-bit character ready for adventure. Collect, hatch, and earn through the EggoWorld ecosystem.",
+    "image": "ipfs://YOUR_CID_HERE/4.png",
+    "edition": 4,
+    "attributes": [
+      {
+        "trait_type": "Background",
+        "value": "Dungeon"
+      },
+      {
+        "trait_type": "Egg Color",
+        "value": "Black"
+      },
+      {
+        "trait_type": "Expression",
+        "value": "Angry"
+      },
+      {
+        "trait_type": "Accessory",
+        "value": "Glasses"
+      }
+    ],
+    "compiler": "EggoWorld NFT Composer v1.0"
+  },
+  {
+    "name": "EggoWorld #5",
+    "description": "EggoWorld is a gamified NFT collection on BNB SmartChain. Each Egg is a unique 8-bit character ready for adventure. Collect, hatch, and earn through the EggoWorld ecosystem.",
+    "image": "ipfs://YOUR_CID_HERE/5.png",
+    "edition": 5,
+    "attributes": [
+      {
+        "trait_type": "Background",
+        "value": "Dungeon"
+      },
+      {
+        "trait_type": "Egg Color",
+        "value": "Black"
+      },
+      {
+        "trait_type": "Expression",
+        "value": "Angry"
+      },
+      {
+        "trait_type": "Accessory",
+        "value": "Halo"
+      }
+    ],
+    "compiler": "EggoWorld NFT Composer v1.0"
+  }
+]

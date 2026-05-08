@@ -1,0 +1,20 @@
+{
+  "name": "nft-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "generate_layers_replicate.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gen:chaingpt": "node generate_layers_chaingpt.js",
+    "gen:replicate": "node generate_layers_replicate.js",
+    "gen:replicate:resume": "node generate_layers_replicate.js --skip-existing"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@chaingpt/nft": "^0.1.2",
+    "replicate": "^1.0.1"
+  }
+}

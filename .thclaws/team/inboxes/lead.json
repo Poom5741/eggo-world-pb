@@ -1,0 +1,18 @@
+[
+  {
+    "id": "cca9a23d-83b0-4ea3-b5d8-ce840a7898fe",
+    "from": "user",
+    "text": "Analysis this codebase on quality and security of smartcontract",
+    "timestamp": 1777178544,
+    "read": true,
+    "summary": "Analysis this codebase on quality and security of"
+  },
+  {
+    "id": "9d2449b0-8381-4c21-98da-d77911ea4fdd",
+    "from": "user",
+    "text": "document it down in /docs folder",
+    "timestamp": 1777178703,
+    "read": true,
+    "summary": "document it down in /docs folder"
+  }
+]

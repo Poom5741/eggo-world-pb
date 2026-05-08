@@ -20,6 +20,401 @@
       "source": "addyosmani/web-quality-skills",
       "sourceType": "github",
       "computedHash": "f1fed683b76913d26fbf1aa1e008e6932f7771701fc3a79925b042236aa4681a"
+    },
+    "gsd-add-backlog": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-add-backlog"
+    },
+    "gsd-add-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-add-phase"
+    },
+    "gsd-add-tests": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-add-tests"
+    },
+    "gsd-add-todo": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-add-todo"
+    },
+    "gsd-ai-integration-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-ai-integration-phase"
+    },
+    "gsd-analyze-dependencies": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-analyze-dependencies"
+    },
+    "gsd-audit-fix": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-audit-fix"
+    },
+    "gsd-audit-milestone": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-audit-milestone"
+    },
+    "gsd-audit-uat": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-audit-uat"
+    },
+    "gsd-autonomous": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-autonomous"
+    },
+    "gsd-check-todos": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-check-todos"
+    },
+    "gsd-cleanup": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-cleanup"
+    },
+    "gsd-code-review": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-code-review"
+    },
+    "gsd-code-review-fix": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-code-review-fix"
+    },
+    "gsd-complete-milestone": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-complete-milestone"
+    },
+    "gsd-debug": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-debug"
+    },
+    "gsd-discuss-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-discuss-phase"
+    },
+    "gsd-do": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-do"
+    },
+    "gsd-docs-update": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-docs-update"
+    },
+    "gsd-eval-review": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-eval-review"
+    },
+    "gsd-execute-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-execute-phase"
+    },
+    "gsd-explore": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-explore"
+    },
+    "gsd-extract_learnings": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-extract_learnings"
+    },
+    "gsd-fast": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-fast"
+    },
+    "gsd-forensics": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-forensics"
+    },
+    "gsd-from-gsd2": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-from-gsd2"
+    },
+    "gsd-graphify": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-graphify"
+    },
+    "gsd-health": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-health"
+    },
+    "gsd-help": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-help"
+    },
+    "gsd-import": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-import"
+    },
+    "gsd-inbox": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-inbox"
+    },
+    "gsd-insert-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-insert-phase"
+    },
+    "gsd-intel": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-intel"
+    },
+    "gsd-join-discord": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-join-discord"
+    },
+    "gsd-list-phase-assumptions": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-list-phase-assumptions"
+    },
+    "gsd-list-workspaces": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-list-workspaces"
+    },
+    "gsd-manager": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-manager"
+    },
+    "gsd-map-codebase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-map-codebase"
+    },
+    "gsd-milestone-summary": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-milestone-summary"
+    },
+    "gsd-new-milestone": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-new-milestone"
+    },
+    "gsd-new-project": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-new-project"
+    },
+    "gsd-new-workspace": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-new-workspace"
+    },
+    "gsd-next": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-next"
+    },
+    "gsd-note": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-note"
+    },
+    "gsd-pause-work": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-pause-work"
+    },
+    "gsd-plan-milestone-gaps": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-plan-milestone-gaps"
+    },
+    "gsd-plan-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-plan-phase"
+    },
+    "gsd-plant-seed": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-plant-seed"
+    },
+    "gsd-pr-branch": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-pr-branch"
+    },
+    "gsd-profile-user": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-profile-user"
+    },
+    "gsd-progress": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-progress"
+    },
+    "gsd-quick": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-quick"
+    },
+    "gsd-reapply-patches": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-reapply-patches"
+    },
+    "gsd-remove-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-remove-phase"
+    },
+    "gsd-remove-workspace": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-remove-workspace"
+    },
+    "gsd-research-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-research-phase"
+    },
+    "gsd-resume-work": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-resume-work"
+    },
+    "gsd-review": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-review"
+    },
+    "gsd-review-backlog": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-review-backlog"
+    },
+    "gsd-scan": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-scan"
+    },
+    "gsd-secure-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-secure-phase"
+    },
+    "gsd-session-report": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-session-report"
+    },
+    "gsd-set-profile": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-set-profile"
+    },
+    "gsd-settings": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-settings"
+    },
+    "gsd-ship": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-ship"
+    },
+    "gsd-sketch": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-sketch"
+    },
+    "gsd-sketch-wrap-up": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-sketch-wrap-up"
+    },
+    "gsd-spike": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-spike"
+    },
+    "gsd-spike-wrap-up": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-spike-wrap-up"
+    },
+    "gsd-spec-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-spec-phase"
+    },
+    "gsd-stats": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-stats"
+    },
+    "gsd-thread": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-thread"
+    },
+    "gsd-ui-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-ui-phase"
+    },
+    "gsd-ui-review": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-ui-review"
+    },
+    "gsd-undo": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-undo"
+    },
+    "gsd-update": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-update"
+    },
+    "gsd-validate-phase": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-validate-phase"
+    },
+    "gsd-verify-work": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-verify-work"
+    },
+    "gsd-workstreams": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "~/.qwen/skills/gsd-workstreams"
     }
   }
 }

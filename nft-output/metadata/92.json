@@ -1,0 +1,25 @@
+{
+  "name": "EggoWorld #92",
+  "description": "EggoWorld is a gamified NFT collection on BNB SmartChain. Each Egg is a unique 8-bit character ready for adventure. Collect, hatch, and earn through the EggoWorld ecosystem.",
+  "image": "ipfs://YOUR_CID_HERE/92.png",
+  "edition": 92,
+  "attributes": [
+    {
+      "trait_type": "Background",
+      "value": "Dungeon"
+    },
+    {
+      "trait_type": "Egg Color",
+      "value": "Blue"
+    },
+    {
+      "trait_type": "Expression",
+      "value": "Sleepy"
+    },
+    {
+      "trait_type": "Accessory",
+      "value": "Cap"
+    }
+  ],
+  "compiler": "EggoWorld NFT Composer v1.0"
+}
