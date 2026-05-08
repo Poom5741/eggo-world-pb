@@ -170,5 +170,21 @@ _Note: M-02 (SEC-15) referral chain reset was already completed in Phase 50._
 
 ---
 
+## Self-Check: PASSED
+
+- ✅ `contracts/src/EggNFT.sol` — FOUND
+- ✅ `contracts/src/AnimalNFT.sol` — FOUND
+- ✅ `contracts/src/FoodNFT.sol` — FOUND
+- ✅ `contracts/src/TierBadge.sol` — FOUND
+- ✅ `contracts/src/CommissionDistribution.sol` — FOUND
+- ✅ Commit `00a2b26` — feat(51): apply 7 medium-severity security fixes
+- ✅ Commit `8746a29` — docs(51): complete Phase 51 plan
+- ✅ `.planning/phases/51-medium-severity-security-fixes/51-01-SUMMARY.md` — FOUND
+- ✅ STATE.md updated with Phase 51 completion
+- ✅ ROADMAP.md updated with Phase 51 completion
+- ✅ REQUIREMENTS.md updated (SEC-14 through SEC-21 marked completed)
+
+---
+
 _Phase: 51-medium-severity-security-fixes_
 _Completed: 2026-05-08_
