@@ -1,8 +1,9 @@
 ---
-status: awaiting_human_verify
+status: resolved
 trigger: "LINE OAuth signup fails with daccPublickey validation error"
 created: "2026-04-15T22:30:00+07:00"
-updated: "2026-04-15T22:30:00+07:00"
+updated: "2026-04-22T00:00:00+07:00"
+resolved: "2026-04-22T00:00:00+07:00"
 ---
 
 ## Current Focus
@@ -22,12 +23,11 @@ started: When testing LINE OAuth signup
 
 ## Eliminated
 
-
 ## Evidence
 
 - timestamp: "2026-04-15T22:31:00+07:00"
   checked: users.json collection schema
-  found: daccPublickey field has pattern "^daccPublickey_" which requires value to start with "daccPublickey_"
+  found: daccPublickey field has pattern "^daccPublickey*" which requires value to start with "daccPublickey*"
   implication: Value must be formatted as daccPublickey_0x...
 
 - timestamp: "2026-04-15T22:32:00+07:00"
@@ -38,16 +38,17 @@ started: When testing LINE OAuth signup
 - timestamp: "2026-04-15T22:33:00+07:00"
   checked: wallet-api/server.js /api/wallet/create endpoint (before fix)
   found: Returns data.publicKey (raw Ethereum public key 0x04...), NOT data.daccPublickey
-  implication: responseData.data.daccPublickey is undefined, so hook falls back to address (0x...) which doesn't match pattern ^daccPublickey_
+  implication: responseData.data.daccPublickey is undefined, so hook falls back to address (0x...) which doesn't match pattern ^daccPublickey\_
 
 - timestamp: "2026-04-15T22:35:00+07:00"
   checked: wallet-api/server.js /api/wallet/create endpoint (after fix)
-  found: Now returns data.daccPublickey with format daccPublickey_${address} matching pattern
+  found: Now returns data.daccPublickey with format daccPublickey\_${address} matching pattern
   implication: Fix applied - daccPublickey will now match validation pattern
 
 ## Resolution
 
-root_cause: Wallet API (/api/wallet/create) returns publicKey in raw Ethereum format (0x04...) but users collection requires pattern ^daccPublickey_. Hook falls back to address (0x...) when daccPublickey is undefined, which also doesn't match pattern.
-fix: Updated wallet-api/server.js /api/wallet/create endpoint to return daccPublickey field with format daccPublickey_${address} to match validation pattern. Also kept publicKey field for backward compatibility.
-verification: Test wallet creation endpoint to verify daccPublickey format matches pattern, then test LINE OAuth signup flow
+root*cause: Wallet API (/api/wallet/create) returns publicKey in raw Ethereum format (0x04...) but users collection requires pattern ^daccPublickey*. Hook falls back to address (0x...) when daccPublickey is undefined, which also doesn't match pattern.
+fix: Updated wallet-api/server.js /api/wallet/create endpoint to return daccPublickey field with format daccPublickey\_${address} to match validation pattern. Also kept publicKey field for backward compatibility.
+verification: Fix deployed in Phase 18. LINE OAuth wallet auto-creation working for new users.
 files_changed: [wallet-api/server.js]
+resolved_by: "Phase 18 - Fix LINE OAuth Wallet Auto-Creation"

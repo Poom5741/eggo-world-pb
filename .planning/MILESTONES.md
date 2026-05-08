@@ -1,56 +1,51 @@
 # Milestones
 
-## v0.0.6 Frontend Migration & Integration (Shipped: 2026-04-18)
+## v0.5.0 Security Hardening & Production Readiness
 
-**Phases completed:** 7 phases, 14 plans, 25 tasks
+- **Status:** ✅ SHIPPED
+- **Date:** 2026-04-30
+- **Phases:** 49-53
+- **Plans:** 16
+- **Accomplishments:**
+  - Fixed 6 critical security vulnerabilities (XOR operator, TierBadge token IDs, treasury routing, burnNFT, mintFood approval theft)
+  - Fixed 7+ high-severity security issues (self-referral guards, VRF guards, setMintPrice, food count checks, duplicate VRF prevention)
+  - Fixed 7 medium-severity security issues (ownerOf compatibility, referral chain reset, food cap, whenNotPaused, SafeERC20, Base64, rarity_seed)
+  - Implemented NFT event listener hook for blockchain sync (deployed on production)
+  - Implemented retry utility with circuit breaker pattern for API resilience
+  - Created 5 E2E test users on production PocketBase
+  - Fixed 21 failing frontend tests → 350/350 = 100% pass rate
+  - Deployed blockchain sync hooks to production PocketBase
+- **Key metrics:** 350/350 tests passing, 100% plans complete, all verification criteria met
 
-**Key accomplishments:**
+## v0.4.0 Functional Journey Tests
 
-- None
-- Total: 16 tests passing across 3 components
-- Landing page, Join page, and OAuth callback handler with claymorphism design, Material Symbols icons, and full TDD test coverage (18 tests)
-- Completed:
-- None
-- Purpose:
-- FeaturedEggHero Component (`apps/web/components/eggs/featured-egg-hero.tsx`):
-- Phase 10 Plan 03: Hatch Flow Implementation
-- Part A - HatchRevealModal (`apps/web/components/eggs/hatch-reveal-modal.tsx`):
-- One-liner:
-- None
-- One-liner:
-- Completed:
+- **Status:** ✅ SHIPPED
+- **Date:** 2026-04-29
+- **Phases:** 45-48
+- **Plans:** 4
+- **Accomplishments:**
+  - Triple verification pattern for NFT ownership (UI + on-chain + PocketBase)
+  - Complete E2E journey tests for core user flows (buy, feed/hatch, marketplace, referral)
+  - Reusable test helpers and utilities for journey testing
+  - Multi-user journey testing with bilateral ownership verification
+  - Commission verification infrastructure for referral system
+  - Robust test infrastructure with skip-on-env pattern for graceful degradation
+- **Known deferred items at close:** 14 (see STATE.md Deferred Items)
 
----
+## v0.3.0 E2E Flow Testing
 
-## v2.0 Contract Interactions & Game Features (Planned)
+- **Status:** ✅ SHIPPED
+- **Date:** 2026-04-28
+- **Phases:** 41-44
+- **Plans:** 6
 
-**Status:** Planning
+## v0.2.0 Functional Spec 100%
 
-**Priority Issues:**
-
-- **P0:** Mock contract interactions (4 wallet-api endpoints)
-- **P1:** RED PHASE test (track-deposit hook)
-- **P2:** Feed feature (UI + backend + wallet-api)
-- **P2:** Play feature (game design needed)
-
-**Phases:** 5 planned (see .planning/milestones/v2.0/ROADMAP.md)
-
-**Dependencies:** Contract deployment must complete before wallet-api implementation
-
----
-
-## v0.0.5 Claymorphism UI Launch (Shipped: 2026-04-05)
-
-**Phases completed:** 7 phases, 26 plans, 40 tasks
-
-**Key accomplishments:**
-
-- **Smart Contracts Foundation:** Deployed 5 contracts to 0XL3 testnet (MockUSDT, CommissionDistribution, AnimalNFT, EggNFT, FoodNFT) with cross-contract wiring
-- **Backend Integration:** Built PocketBase event sync hook with block polling, crash recovery, and 5 event handlers
-- **Frontend Marketplace:** Delivered 5 plans covering hatch flow, wallet page, product detail, referral dashboard, and polling integration
-- **LINE Wallet Integration:** Migrated wallet API to TypeScript + dacc-js v0.0.5, integrated with LINE OAuth signup flow
-- **Testing & Launch:** Security fixes, integration tests, production deployment, and UI polish (63 tests passing)
-- **Auth Flow Revamp:** Fixed double-click OAuth issue, enhanced header with user info/navigation, unified redirect to `/dashboard`
-- **Claymorphism Redesign:** Complete UI redesign with hybrid "Clay Frames, Pixel Content" aesthetic — 12+ components, 14+ pages, WCAG AA compliant
+- **Status:** ✅ SHIPPED
+- **Date:** 2026-04-26
+- **Phases:** 32-40
+- **Plans:** 11
 
 ---
+
+_Last updated: 2026-04-30_

@@ -19,23 +19,26 @@
 ## 🔧 Manual Configuration Steps
 
 ### 1. Login to Admin Panel
+
 - **URL:** https://pb.eggoworld.io/_/
-- **Email:** `admin@eggo.local`
-- **Password:** `admin123`
+- **Credentials:** Obtain from ops team (password manager)
 
 ### 2. Navigate to OAuth Settings
+
 1. Click **Settings** (gear icon) in left sidebar
 2. Scroll to **Collections** section
 3. Click on **users** collection
 4. Click **OAuth2** tab at top
 
 ### 3. Edit OAuth Provider
+
 1. Find "oidc" (Line) provider
 2. Click **Edit** button (pencil icon)
 
 ### 4. Fill Provider Settings
 
 **Basic Settings:**
+
 ```
 Client ID: 2009441873
 Client Secret: 4ede94afa7d59b71ffda15a136ffddea
@@ -51,16 +54,17 @@ Display Name: Line
 
 This is the CRITICAL step:
 
-| On LEFT (Dropdown) | On RIGHT (Type manually) |
-|-------------------|-------------------------|
-| Select: `externalId` | Type: `sub` |
-| Select: `name` | Type: `name` |
-| Select: `avatar` | Type: `picture` |
-| Select: `email` | Type: `email` |
+| On LEFT (Dropdown)   | On RIGHT (Type manually) |
+| -------------------- | ------------------------ |
+| Select: `externalId` | Type: `sub`              |
+| Select: `name`       | Type: `name`             |
+| Select: `avatar`     | Type: `picture`          |
+| Select: `email`      | Type: `email`            |
 
 **Important:** The RIGHT side is a text input, NOT a dropdown. Type the exact field names.
 
 ### 6. Save
+
 Click **Save** button at bottom.
 
 ## 🧪 Test After Configuration
@@ -76,10 +80,12 @@ Click **Save** button at bottom.
 ## 📋 What to Expect
 
 **If OAuth mapping is NOT configured:**
+
 - Error: "Failed to create record"
 - Because `externalId` field is empty
 
 **If OAuth mapping IS configured:**
+
 - User created successfully
 - Wallet auto-generated
 - Redirected to success page

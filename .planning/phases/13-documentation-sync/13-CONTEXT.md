@@ -1,116 +1,156 @@
-# Phase 13: Documentation Sync - Context
+# Phase 13 Context: USDT Deposit Tracking
 
-**Gathered:** 2026-04-18
-**Status:** Ready for planning
-**Source:** Roadmap analysis + verified phase summaries
+## Phase Info
 
-<domain>
-## Phase Boundary
+**Number:** 13  
+**Name:** USDT Deposit Tracking  
+**Goal:** Users see USDT deposits automatically tracked and confirmed after 12 blocks  
+**Depends on:** Phase 12 (contract infrastructure)  
+**Requirements:** SEC-05, SEC-06, SEC-07, SEC-08
 
-Update REQUIREMENTS.md to reflect verified completion status from Phases 8-11:
+## Current State Analysis
 
-- Phase 8 (Foundation & Auth): 6/6 requirements verified ✅
-- Phase 9 (Dashboard & Wallet): 3/6 requirements verified (DASH-01, FOUND-07, DASH-02) ✅
-- Phase 10 (Egg Management): 7/7 requirements verified ✅
-- Phase 11 (Marketplace): 2/6 requirements verified (MKT-02, MKT-03) ✅
+### What Already Exists
 
-Update traceability table to map requirements to actual phase numbers (currently shows Phase 13 for FOUND/DASH requirements due to placeholder).
+**Backend Hook:** `apps/backend/pb_hooks/13-track-deposit.pb.js`
 
-**What this phase delivers:**
+- ✅ POST `/api/v2/deposit/poll` endpoint implemented
+- ✅ Polls CommissionDistribution contract for Transfer events
+- ✅ Filters by user wallet address (topics[2])
+- ✅ Parses event data (from, to, amount)
+- ✅ Duplicate detection via tx_hash lookup
+- ✅ Updates user_wallet.usdt_balance
+- ✅ Creates deposit records in PocketBase
+- ✅ Database schema: `apps/backend/collections/deposits.json`
+  - Unique index on tx_hash
+  - Status field: pending/confirmed/failed
+  - Relations: user, amount, tx_hash, from_address, confirmed_at
 
-- Accurate REQUIREMENTS.md checkpoint status
-- Correct phase-to-requirement traceability
-- Updated coverage metrics
+**Frontend Page:** `apps/web/app/dashboard/deposit/page.tsx`
 
-</domain>
+- ✅ Displays wallet address with QR code
+- ✅ Auto-polling every 30 seconds
+- ✅ Shows balance and deposit history
+- ✅ Handles authentication errors
 
-<decisions>
-## Implementation Decisions
+**Tests:** `apps/backend/pb_hooks/13-track-deposit.test.js`
 
-### REQUIREMENTS.md Updates (Locked)
+- ✅ Test file exists (703 lines)
+- ⚠️ Tests are in RED phase (written but hook implementation incomplete)
 
-- Update Phase 8 requirements (FOUND-01 through FOUND-06) → check as complete ✅
-- Update FOUND-07 (Phase 9) → check as complete ✅
-- Update DASH-01, DASH-02 (Phase 9) → check as complete ✅
-- Update Phase 10 requirements (EGG-01 through EGG-07) → check as complete ✅
-- Update MKT-02, MKT-03 (Phase 11) → check as complete ✅
-- Keep DASH-03, DASH-04, DASH-05, MKT-01, MKT-04, MKT-05, MKT-06 as incomplete (deferred to Phase 14)
-- Keep MOB requirements (MOB-01 through MOB-05) as incomplete (Phase 15)
+### Critical Gaps (BLOCKERS)
 
-### Traceability Table Updates (Locked)
+#### 1. SEC-05: Block Tracking Missing
 
-- Change FOUND-01/02/03/04 phase mapping FROM Phase 13 TO Phase 8
-- Change FOUND-07, DASH-01, DASH-02 phase mapping FROM Phase 13 TO Phase 9
-- Verify all other phase mappings match actual implementation phases (8, 9, 10, 11, 14, 15)
+**Problem:** Hook polls `fromBlock: "latest"` to `toBlock: "latest"` — only checks current block
+**Impact:** Misses deposits from previous blocks if poll misses them
+**Required:**
 
-### Coverage Metrics (Locked)
+- Track `last_polled_block` in database or config
+- Poll range: `last_polled_block` → `current_block`
+- Update `last_polled_block` after successful poll
 
-- Update "Total v1 requirements: 30" ✓
-- Update "Mapped to phases: 30/30 ✓"
-- Calculate and update verified count: 18/30 requirements verified across Phases 8-11
+#### 2. SEC-06: No Block Confirmation Wait
 
-### OpenCode's Discretion
+**Problem:** Deposits marked as "confirmed" immediately (line 123: `status: "confirmed"`)
+**Impact:** Vulnerable to chain reorgs — deposits could disappear
+**Required:**
 
-- Format of coverage metrics table
-- Whether to add summary section for verified requirements by phase
-- Exact text for "Last Updated" timestamp
+- Store deposit with `status: "pending"` initially
+- Track `block_number` and `block_hash` in deposit record
+- Implement confirmation checker:
+  - Poll block height every 30s
+  - When `current_block - deposit_block >= 12`, mark confirmed
+  - Verify parent hash continuity (reorg detection)
 
-</decisions>
+#### 3. SEC-07: Duplicate Detection Incomplete
 
-<canonical_refs>
+**Problem:** Uses `$app.findFirstRecordByData` which throws if not found (catch block masks errors)
+**Impact:** Race conditions could create duplicates under concurrent polls
+**Required:**
 
-## Canonical References
+- Rely on database unique constraint (already exists: `idx_deposits_tx_hash`)
+- Use try-catch on `$app.save(depositRecord)` for duplicate detection
+- Log duplicate attempts with warning level
+- Return existing deposit record if duplicate detected
 
-**MANDATORY - Read before implementation:**
+#### 4. SEC-08: User Notification Missing
 
-- `.planning/ROADMAP.md` — Phase goals, requirements mapping, success criteria
-- `.planning/STATE.md` — Current state, completion summary
-- `.planning/REQUIREMENTS.md` — File to be updated (read current state first)
-- `.planning/phases/08-foundation-auth/08-*-SUMMARY.md` — Phase 8 verification evidence
-- `.planning/phases/09-dashboard-wallet/09-*-SUMMARY.md` — Phase 9 verification evidence
-- `.planning/phases/10-egg-management/10-*-SUMMARY.md` — Phase 10 verification evidence
-- `.planning/phases/11-marketplace/11-01-SUMMARY.md` — Phase 11 Plan 01 verification
+**Problem:** No notification system when deposit confirms
+**Impact:** Users don't know when deposit is confirmed
+**Required:**
 
-</canonical_refs>
+- Frontend: Show pending → confirmed state transition in UI
+- Frontend: Display toast notification on confirmation
+- Frontend: Link tx_hash to BSCScan explorer
+- Backend: Return `pending_count` and `confirmed_count` in poll response
 
-<specifics>
-## Specific Ideas
+### Missing Database Fields
 
-**Verification Evidence from Completed Phases:**
+**deposits collection needs:**
 
-Phase 8 (Foundation & Auth):
+- `block_number` (number) — Block where transaction was included
+- `block_hash` (text) — Block hash for reorg detection
+- `confirmations` (number) — Current confirmation count
+- `log_index` (number) — Event log index (for unique constraint)
 
-- All FOUND-01 through FOUND-06 verified in 08-VERIFICATION.md
-- 18 tests passing, build succeeds
+### Existing Research
 
-Phase 9 (Dashboard & Wallet):
+Research files available:
 
-- DASH-01 (balance display) verified
-- FOUND-07 (auto-polling) verified
-- DASH-02 (referral chain) verified
-- DASH-03/04/05 deferred (quick actions, activity feed, egg count)
+- `.planning/research/FEATURES.md` — USDT deposit tracking patterns
+- `.planning/research/STACK.md` — Polling vs WebSocket tradeoffs
+- `.planning/research/ARCHITECTURE.md` — Polling logic example
+- `.planning/research/PITFALLS.md` — Duplicate deposit tracking pitfalls
 
-Phase 10 (Egg Management):
+**Key findings from research:**
 
-- All EGG-01 through EGG-07 verified in 10-VERIFICATION.md
-- 4/4 plans complete
+- Use polling with `eth_getLogs` (not WebSocket) — matches PocketBase architecture
+- BSC standard: 12-15 block confirmations
+- USDT has 6 decimals on BSC
+- Track `last_polled_block` to prevent re-polling
+- Database unique constraint on `tx_hash` + `log_index`
 
-Phase 11 (Marketplace):
+## Success Criteria
 
-- MKT-02 (product detail page) verified in 11-01-SUMMARY.md
-- MKT-03 (buy flow) verified in 11-01-SUMMARY.md
-- MKT-01, MKT-04, MKT-05, MKT-06 deferred to Phase 14
+1. System polls USDT Transfer events every 30 seconds and detects deposits within 60 seconds
+2. Deposit shows "pending" state until 12 block confirmations, then transitions to "confirmed"
+3. Duplicate deposit attempts (same tx_hash) are rejected with existing record returned
+4. User receives in-app notification when deposit is confirmed with updated balance
 
-</specifics>
+## Technical Constraints
 
-<deferred>
-## Deferred Ideas
+- PocketBase hooks (JavaScript, not Node.js)
+- No persistent state between hook calls (stateless)
+- Must store `last_polled_block` in database or config collection
+- Must handle chain reorgs (rare on BSC but possible)
+- USDT on BSC: 6 decimals, contract: `0x55d398326f99059fF775485246999027B3197955` (mainnet)
+- Current testnet: 0xl3 (Chain ID: 7117)
 
-None — this phase scope is strictly documentation updates for already-verified requirements. All other requirements remain in their current state (incomplete) until Phases 14-15 execution.
+## Recommended Approach
 
-</deferred>
+**Plan 13-01:** Fix existing hook implementation with all 4 SEC requirements
 
----
+**Tasks:**
 
-_Phase: 13-documentation-sync_
-_Context gathered: 2026-04-18 via roadmap analysis_
+1. Add missing fields to deposits collection (block_number, block_hash, confirmations, log_index)
+2. Update hook to track `last_polled_block` in user_wallets collection
+3. Implement 2-phase deposit flow: pending → confirmed after 12 blocks
+4. Add confirmation checker endpoint (or enhance poll endpoint)
+5. Improve duplicate detection with database constraint
+6. Update frontend to show pending/confirmed states with notifications
+7. Fix tests and get them passing
+
+**Files to Modify:**
+
+- `apps/backend/collections/deposits.json` — Add missing fields
+- `apps/backend/pb_hooks/13-track-deposit.pb.js` — Core implementation
+- `apps/web/app/dashboard/deposit/page.tsx` — UI updates
+- `apps/backend/pb_hooks/13-track-deposit.test.js` — Fix tests
+
+## Out of Scope
+
+- WebSocket subscriptions (overkill for PocketBase)
+- Multi-token support (USDT only for MVP)
+- Email/SMS notifications (in-app only)
+- Deposit refunds or chargebacks
