@@ -60,14 +60,21 @@ const CONFIG = {
     platformAddress: process.env.PLATFORM_ADDRESS || "0x0000000000000000000000000000000000000000", // Platform fee recipient
     platformFeePercent: 4, // 4% CoinStor fee
     
-    // Deployed contract addresses (Phase 12 deployment - chain 7117)
+// Deployed contract addresses (v0.6.0 deployment - chain 7117)
+    // Can be overridden per-environment via env vars (E2E uses local Anvil addresses)
     contracts: {
-      MockUSDT: "0x93886105218Ca14b370ACA538b13895295916028",
-      CommissionDistribution: "0xa0C50587306F0CCac627D2eaEcb9e5909dB58F3f",
-      AnimalNFT: "0x35F53aB20B3073903ebDe04aA9b354d1Efe8A99C",
-      EggNFT: "0xb2FE193523A1E6A240141331A80755f5642e7A44",
-      FoodNFT: "0xec21A3c068e84ceeD04975627418E867Ec342A02"
+      MockUSDT: process.env.MOCK_USDT_ADDRESS || "0xCcA613d42D72592615289b888E29c2eB218cfDC9",
+      CommissionDistribution: process.env.COMMISSION_DISTRIBUTION_ADDRESS || "0x9A1411db0344Bb1fDC6f3B6f04419B05C48dD7EF",
+      AnimalNFT: process.env.ANIMAL_NFT_ADDRESS || "0xfd8FaEe6aaB9A2e84F5AaDBf4917fF69CC4411a3",
+      EggNFT: process.env.EGG_NFT_ADDRESS || "0xaEF5bd8f90edB4532E39017746Fe6904d96A90E3",
+      FoodNFT: process.env.FOOD_NFT_ADDRESS || "0xACb93BD52b9520A58bCD24AB0CAd8149Da7C91dB",
+      Marketplace: process.env.MARKETPLACE_ADDRESS || "0x35B1B840b8907c2b87cBf87753524b7ef07A1935"
     },
+
+    // E2E / local testing mode – when true, hooks skip on-chain verification
+    // and trust PocketBase as source of truth. Enables full local E2E runs
+    // without a funded, real-chain RPC.
+    mockBlockchain: (process.env.MOCK_BLOCKCHAIN || "").toLowerCase() === "true",
     
     // Sync settings
     pollingInterval: 30000, // 30 seconds

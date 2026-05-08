@@ -41,7 +41,11 @@ var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 routerAdd("POST", "/api/v2/mint-food", (e) => {
     try {
-        const user = $apis.requireAuth(e);
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        let user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         const body = e.parseBody();
         const { quantity, referrer_id } = body;
@@ -76,7 +80,8 @@ routerAdd("POST", "/api/v2/mint-food", (e) => {
         // Build referral chain
         let referralChain = [];
         if (referrer_id) {
-            const referrer = $app.dao().findRecordById("users", referrer_id);
+            let referrer;
+            try { referrer = $app.findRecordById("users", referrer_id); } catch (e) { referrer = null; }
             if (referrer) {
                 referralChain.push(referrer.get('wallet'));
                 
@@ -99,8 +104,8 @@ routerAdd("POST", "/api/v2/mint-food", (e) => {
         }
         
         // Get contract addresses from settings
-        const foodNftAddress = $app.settings().meta("foodNftContractAddress");
-        const eggNftAddress = $app.settings().meta("eggNftContractAddress");
+        const foodNftAddress = $os.getenv('FOOD_NFT_CONTRACT_ADDRESS') || '0xACb93BD52b9520A58bCD24AB0CAd8149Da7C91dB';
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xaEF5bd8f90edB4532E39017746Fe6904d96A90E3';
         
         if (!foodNftAddress) {
             return e.json(500, { 

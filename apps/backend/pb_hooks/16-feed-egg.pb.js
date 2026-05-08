@@ -42,7 +42,11 @@ var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 
 routerAdd("POST", "/api/v2/feed-egg", (e) => {
     try {
-        const user = $apis.requireAuth(e);
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        let user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         const body = e.parseBody();
         const { egg_token_id, food_ids } = body;
@@ -100,6 +104,20 @@ routerAdd("POST", "/api/v2/feed-egg", (e) => {
             });
         }
         
+        // Check if egg is already full (fast-fail before calling wallet-api)
+        const preFeedFoodCount = egg.get('food_count') || 0;
+        const requestedFoodCount = food_ids.length;
+
+        if (preFeedFoodCount + requestedFoodCount > 10) {
+            return e.json(400, {
+                success: false,
+                error: {
+                    message: 'Cannot feed this egg — it is full and ready to hatch',
+                    code: 'EGG_FULL'
+                }
+            });
+        }
+        
         // Verify user owns all food NFTs and they're not consumed
         const foodCollection = $app.dao().getCollectionByNameOrId("food_nfts");
         const foodTypeDistribution = { grain: 0, fish: 0, insects: 0, herb: 0 };
@@ -145,8 +163,8 @@ routerAdd("POST", "/api/v2/feed-egg", (e) => {
         }
         
         // Get contract addresses
-        const foodNftAddress = $app.settings().meta("foodNftContractAddress");
-        const eggNftAddress = $app.settings().meta("eggNftContractAddress");
+        const foodNftAddress = $os.getenv('FOOD_NFT_CONTRACT_ADDRESS') || '0xACb93BD52b9520A58bCD24AB0CAd8149Da7C91dB';
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xaEF5bd8f90edB4532E39017746Fe6904d96A90E3';
         
         if (!foodNftAddress || !eggNftAddress) {
             return e.json(500, { 
@@ -227,6 +245,20 @@ routerAdd("POST", "/api/v2/feed-egg", (e) => {
         user.set('total_food_consumed', currentTotalConsumed + food_ids.length);
         $app.dao().saveRecord(user);
         
+        // Transaction logging for monitoring dashboard - success case
+        try {
+            const transactionLogsCollection = $app.dao().getCollectionByNameOrId('transaction_logs');
+            const transactionLog = $app.dao().createRecord(transactionLogsCollection);
+            transactionLog.set('user', user.id);
+            transactionLog.set('tx_hash', txHash);
+            transactionLog.set('tx_type', 'feed');
+            transactionLog.set('status', 'success');
+            transactionLog.set('gas_used', null); // Not captured in this flow
+            $app.dao().saveRecord(transactionLog);
+        } catch (logErr) {
+            console.error('Failed to log feed transaction:', logErr);
+        }
+        
         const newFoodCount = egg.get('food_count');
         const readyToHatch = newFoodCount >= 10;
         
@@ -245,6 +277,21 @@ routerAdd("POST", "/api/v2/feed-egg", (e) => {
         
     } catch (error) {
         console.error("Feed egg error:", error);
+        
+        // Transaction logging for monitoring dashboard - error case
+        try {
+            const transactionLogsCollection = $app.dao().getCollectionByNameOrId('transaction_logs');
+            const transactionLog = $app.dao().createRecord(transactionLogsCollection);
+            transactionLog.set('user', e.requestInfo().auth?.id || null);
+            transactionLog.set('tx_hash', null);
+            transactionLog.set('tx_type', 'feed');
+            transactionLog.set('status', 'failed');
+            transactionLog.set('error_message', error.message || String(error));
+            $app.dao().saveRecord(transactionLog);
+        } catch (logErr) {
+            console.error('Failed to log feed error transaction:', logErr);
+        }
+        
         return e.json(500, { 
             success: false, 
             error: { 

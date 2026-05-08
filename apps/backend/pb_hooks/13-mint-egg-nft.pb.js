@@ -113,7 +113,7 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
 
     // Inline helper: create commission records for referral chain
     function createCommissionRecords(buyerId, referralChain, txHash, eggRecordId) {
-        var commissionPercents = [20, 10, 10, 10];
+        var commissionPercents = [25, 15, 10, 5];
         var mintPrice = 25;
         var commissionCollection = $app.findCollectionByNameOrId('commission_records');
 
@@ -133,12 +133,6 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
             commRecord.set('claimed', false);
             commRecord.set('claimed_at', null);
             $app.save(commRecord);
-
-            var referrerUser;
-            try { referrerUser = $app.findRecordById('users', referrerWallet.get('user_id')); } catch (e) { continue; }
-            var totalEarned = parseFloat(referrerUser.get('usdt_total_earned') || '0');
-            referrerUser.set('usdt_total_earned', (totalEarned + commissionAmount).toFixed(2));
-            $app.save(referrerUser);
         }
     }
     try {
@@ -257,7 +251,7 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
             }
         }
 
-        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xc4F507877d829dBEEE92cE27dbe9CfEFAd944D8C';
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xaEF5bd8f90edB4532E39017746Fe6904d96A90E3';
         if (!eggNftAddress) {
             return e.json(500, { 
                 success: false, 

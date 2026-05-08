@@ -36,12 +36,51 @@
  */
 
 const BREEDING_FEE = 5; // 5 USDT
+const BREED_COOLDOWN_HOURS = 48; // 48 hour cooldown per AnimalNFT.sol
 var WALLET_SRV_URL = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
 var INITIAL_FOOD_COUNT = parseInt($os.getenv("INITIAL_FOOD_COUNT") || "2", 10)
 
+/**
+ * Check if an animal is on breeding cooldown
+ * ตรวจสอบว่าสัตว์อยู่ในระยะ cooldown หรือไม่
+ */
+function isOnCooldown(lastBredAt) {
+    if (!lastBredAt) return false;
+    
+    const lastBred = new Date(lastBredAt).getTime();
+    const cooldownMs = BREED_COOLDOWN_HOURS * 60 * 60 * 1000;
+    const cooldownEnd = lastBred + cooldownMs;
+    
+    return Date.now() < cooldownEnd;
+}
+
+/**
+ * Format remaining cooldown time for error messages
+ */
+function formatCooldownRemaining(lastBredAt) {
+    if (!lastBredAt) return '';
+    
+    const lastBred = new Date(lastBredAt).getTime();
+    const cooldownMs = BREED_COOLDOWN_HOURS * 60 * 60 * 1000;
+    const cooldownEnd = lastBred + cooldownMs;
+    const remainingMs = Math.max(0, cooldownEnd - Date.now());
+    
+    const hours = Math.floor(remainingMs / (60 * 60 * 1000));
+    const minutes = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+}
+
 routerAdd("POST", "/api/v2/breed-animals", (e) => {
     try {
-        const user = $apis.requireAuth(e);
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        let user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         const body = e.parseBody();
         const { parent1_animal_id, parent2_animal_id, referrer_id } = body;
@@ -130,6 +169,34 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
             });
         }
         
+        // Check breeding cooldown for parent1 (fast-fail pattern per 16-feed-egg.pb.js)
+        const parent1LastBred = parent1.get('last_bred_at');
+        if (isOnCooldown(parent1LastBred)) {
+            const remaining = formatCooldownRemaining(parent1LastBred);
+            return e.json(400, { 
+                success: false, 
+                error: { 
+                    message: `Parent 1 is on breeding cooldown. Ready in ${remaining}`,
+                    code: 'PARENT1_ON_COOLDOWN',
+                    cooldown_remaining_ms: new Date(parent1LastBred).getTime() + (BREED_COOLDOWN_HOURS * 60 * 60 * 1000) - Date.now()
+                } 
+            });
+        }
+        
+        // Check breeding cooldown for parent2
+        const parent2LastBred = parent2.get('last_bred_at');
+        if (isOnCooldown(parent2LastBred)) {
+            const remaining = formatCooldownRemaining(parent2LastBred);
+            return e.json(400, { 
+                success: false, 
+                error: { 
+                    message: `Parent 2 is on breeding cooldown. Ready in ${remaining}`,
+                    code: 'PARENT2_ON_COOLDOWN',
+                    cooldown_remaining_ms: new Date(parent2LastBred).getTime() + (BREED_COOLDOWN_HOURS * 60 * 60 * 1000) - Date.now()
+                } 
+            });
+        }
+        
         // Get parent generations
         const parent1Gen = parent1.get('generation') || 0;
         const parent2Gen = parent2.get('generation') || 0;
@@ -177,7 +244,8 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         let referralChain = [null, null, null, null];
         
         if (referrer_id) {
-            const referrer = $app.dao().findRecordById('users', referrer_id);
+            let referrer;
+            try { referrer = $app.findRecordById('users', referrer_id); } catch (e) { referrer = null; }
             if (referrer) {
                 const referrerWallet = $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', {
                     '@owner': referrer.id
@@ -197,22 +265,64 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
             createCommissionRecords(referralChain, BREEDING_FEE, null, 'breeding');
         }
         
-        // Get contract address from environment or use default
-        const contractAddress = process.env.EGG_NFT_CONTRACT_ADDRESS || '0x1234567890123456789012345678901234567890';
+        // Get contract addresses from environment
+        const eggContractAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xaEF5bd8f90edB4532E39017746Fe6904d96A90E3';
+        const animalContractAddress = $os.getenv('ANIMAL_NFT_CONTRACT_ADDRESS') || '0xfd8FaEe6aaB9A2e84F5AaDBf4917fF69CC4411a3';
         
-        // Generate tx hash (mock for now, should come from blockchain)
-        const txHash = `0x${Date.now().toString(16).padStart(64, '0')}`;
+        // Call wallet-api to execute breeding on blockchain
+        let txHash = null;
+        let blockchainResult = null;
+        
+        try {
+            const breedResponse = fetch(WALLET_SRV_URL + '/api/wallet/breed-animals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    parent1TokenId: parent1.get('token_id'),
+                    parent2TokenId: parent2.get('token_id'),
+                    animalNftAddress: animalContractAddress
+                })
+            });
+            
+            if (!breedResponse.ok) {
+                const errorData = breedResponse.json();
+                console.error("Wallet API breeding failed:", errorData);
+                // Log but don't rollback - egg record will be created without tx_hash
+                // This is intentional per requirements: "log but don't rollback"
+            } else {
+                blockchainResult = breedResponse.json();
+                if (blockchainResult.success) {
+                    txHash = blockchainResult.data.txHash;
+                    console.log("Blockchain breeding successful:", txHash);
+                } else {
+                    console.error("Blockchain breeding returned error:", blockchainResult.error);
+                }
+            }
+        } catch (apiError) {
+            // Comprehensive error handling - log but don't rollback
+            console.error("Wallet API breeding error (non-critical):", apiError.message);
+            // Continue with egg creation even if blockchain call fails
+            // This ensures the database state is consistent even if blockchain is temporarily unavailable
+        }
         
         // Generate token_id and egg_id
         const eggRecords = $app.dao().findRecordsByFilter('egg_nfts', 'token_id', 'DESC', 1, 1);
         const nextTokenId = eggRecords.length > 0 ? (eggRecords[0].get('token_id') || 0) + 1 : 1;
+        
+        // Set last_bred_at for both parents to enforce cooldown
+        const now = new Date().toISOString();
+        parent1.set('last_bred_at', now);
+        parent2.set('last_bred_at', now);
+        $app.dao().saveRecord(parent1);
+        $app.dao().saveRecord(parent2);
         
         // Create breeding egg record
         const breedingEgg = $app.dao().createRecord($app.dao().getCollectionByNameOrId('egg_nfts'));
         breedingEgg.set('egg_id', nextTokenId - 1);
         breedingEgg.set('owner', user.id);
         breedingEgg.set('token_id', nextTokenId);
-        breedingEgg.set('contract_address', contractAddress);
+        breedingEgg.set('contract_address', eggContractAddress);
         breedingEgg.set('food_count', INITIAL_FOOD_COUNT);
         breedingEgg.set('is_hatched', false);
         breedingEgg.set('is_breeding_egg', true);
@@ -222,25 +332,38 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         breedingEgg.set('rarity_upgrade_count', 0);
         breedingEgg.set('rarity_seed', Math.floor(Math.random() * 1000000));
         breedingEgg.set('referral_chain', referralChain.filter(r => r !== null));
-        breedingEgg.set('tx_hash', txHash);
-        breedingEgg.set('minted_at', new Date().toISOString());
+        breedingEgg.set('tx_hash', txHash || '');
+        
+        // Store blockchain result metadata if available
+        if (blockchainResult && blockchainResult.data) {
+            breedingEgg.set('blockchain_parent1_token_id', blockchainResult.data.parent1TokenId);
+            breedingEgg.set('blockchain_parent2_token_id', blockchainResult.data.parent2TokenId);
+            if (blockchainResult.data.childTokenId) {
+                breedingEgg.set('blockchain_child_token_id', blockchainResult.data.childTokenId);
+            }
+            if (blockchainResult.data.childGeneration) {
+                breedingEgg.set('blockchain_child_generation', blockchainResult.data.childGeneration);
+            }
+        }
+        breedingEgg.set('minted_at', now);
         
         $app.dao().saveRecord(breedingEgg);
         
-        // Call wallet-api to create breeding egg on blockchain (optional)
+        // Log breeding success for monitoring
+        console.log(`Breeding completed: user=${user.id}, parent1=${parent1_animal_id}, parent2=${parent2_animal_id}, egg_token_id=${nextTokenId}, tx_hash=${txHash || 'N/A'}`);
+        
+        // Transaction logging for monitoring dashboard
         try {
-            fetchWithRetry(WALLET_SRV_URL + '/api/v1/breed-animals', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    parent1_token_id: parent1.get('token_id'),
-                    parent2_token_id: parent2.get('token_id'),
-                    referrer: referralChain[0] || null,
-                    user_address: wallet.get('wallet')
-                })
-            });
-        } catch (apiError) {
-            console.error("Wallet API breeding failed (non-critical):", apiError.message);
+            const transactionLogsCollection = $app.dao().getCollectionByNameOrId('transaction_logs');
+            const transactionLog = $app.dao().createRecord(transactionLogsCollection);
+            transactionLog.set('user', user.id);
+            transactionLog.set('tx_hash', txHash || '');
+            transactionLog.set('tx_type', 'breed');
+            transactionLog.set('status', 'success');
+            transactionLog.set('gas_used', null); // Not captured in this flow
+            $app.dao().saveRecord(transactionLog);
+        } catch (logErr) {
+            console.error("Failed to log breeding transaction:", logErr);
         }
         
         return e.json(200, { 
@@ -258,6 +381,21 @@ routerAdd("POST", "/api/v2/breed-animals", (e) => {
         
     } catch (error) {
         console.error("Breed animals failed:", error);
+        
+        // Log breeding failure for monitoring
+        try {
+            const transactionLogsCollection = $app.dao().getCollectionByNameOrId('transaction_logs');
+            const transactionLog = $app.dao().createRecord(transactionLogsCollection);
+            transactionLog.set('user', user ? user.id : null);
+            transactionLog.set('tx_hash', null);
+            transactionLog.set('tx_type', 'breed');
+            transactionLog.set('status', 'failed');
+            transactionLog.set('error_message', error.message || String(error));
+            $app.dao().saveRecord(transactionLog);
+        } catch (logErr) {
+            console.error("Failed to log breeding error transaction:", logErr);
+        }
+        
         return e.json(500, { 
             success: false, 
             error: { 
@@ -274,7 +412,8 @@ function buildReferralChain(user, chain, level) {
     const referrerId = user.get('referrer_id');
     if (!referrerId) return;
     
-    const referrer = $app.dao().findRecordById('users', referrerId);
+    let referrer;
+    try { referrer = $app.findRecordById('users', referrerId); } catch (e) { return; }
     if (!referrer) return;
     
     const referrerWallet = $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', {
@@ -336,3 +475,219 @@ function fetchWithRetry(url, options, maxRetries = 3) {
         }
     }
 }
+
+/**
+ * Request Breed (VRF Phase 1)
+ * POST /api/v2/breed-animals/request
+ * 
+ * Validates parents, deducts fee, requests VRF via wallet-api
+ */
+routerAdd("POST", "/api/v2/breed-animals/request", (e) => {
+    try {
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        let user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
+        
+        const body = e.parseBody();
+        const { parent1_token_id, parent2_token_id, referrer_address } = body;
+        
+        if (!parent1_token_id || !parent2_token_id) {
+            return e.json(400, { success: false, error: { message: "parent1_token_id and parent2_token_id required", code: "VALIDATION_ERROR" } });
+        }
+        if (parent1_token_id === parent2_token_id) {
+            return e.json(400, { success: false, error: { message: "Cannot breed same animal", code: "CANNOT_BREED_SAME_ANIMAL" } });
+        }
+        
+        // Check USDT balance for breeding fee
+        const wallet = $app.dao().findFirstRecordByFilter('user_wallets', 'owner = {:owner}', { '@owner': userId });
+        if (!wallet) { return e.json(400, { success: false, error: { message: "Wallet not found", code: "WALLET_NOT_FOUND" } }); }
+        
+        const currentBalance = parseFloat(wallet.get('usdt_balance') || '0');
+        if (currentBalance < BREEDING_FEE) {
+            return e.json(400, { success: false, error: { message: "Insufficient balance for breeding fee (" + BREEDING_FEE + " USDT)", code: "INSUFFICIENT_BALANCE" } });
+        }
+        
+        // Deduct fee
+        wallet.set('usdt_balance', (currentBalance - BREEDING_FEE).toString());
+        $app.dao().saveRecord(wallet);
+        user.set('usdt_balance', (parseFloat(user.get('usdt_balance') || '0') - BREEDING_FEE).toString());
+        $app.dao().saveRecord(user);
+        
+        // Build referral chain & create commission records
+        let referralChain = [null, null, null, null];
+        if (referrer_address) {
+            const referrerWallet = $app.dao().findFirstRecordByFilter('user_wallets', 'wallet = {:wallet}', { '@wallet': referrer_address });
+            if (referrerWallet) {
+                referralChain[0] = referrerWallet.get('wallet');
+                let refUser;
+                try { refUser = $app.findRecordById('users', referrerWallet.get('owner')); } catch (e) { refUser = null; }
+                if (refUser) { buildReferralChain(refUser, referralChain, 1); }
+            }
+        }
+        if (referralChain[0]) {
+            createCommissionRecords(referralChain, BREEDING_FEE, null, 'breeding');
+        }
+        
+        // Call wallet-api to request VRF breed
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xaEF5bd8f90edB4532E39017746Fe6904d96A90E3';
+        const requestResponse = $http.send({
+            url: WALLET_SRV_URL + '/api/wallet/request-breed',
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: userId,
+                parent1TokenId: parent1_token_id,
+                parent2TokenId: parent2_token_id,
+                referrer: referrer_address || '',
+                eggNftAddress: eggNftAddress
+            })
+        });
+        
+        let responseData;
+        if (requestResponse.json && typeof requestResponse.json === 'object') {
+            responseData = requestResponse.json;
+        } else if (requestResponse.body) {
+            var bodyStr = '';
+            if (Array.isArray(requestResponse.body)) {
+                for (var i = 0; i < requestResponse.body.length; i++) {
+                    bodyStr += String.fromCharCode(requestResponse.body[i]);
+                }
+            } else { bodyStr = requestResponse.body; }
+            responseData = JSON.parse(bodyStr);
+        }
+        
+        if (!responseData || !responseData.success) {
+            return e.json(500, { success: false, error: { message: "VRF breed request failed", code: "BREED_REQUEST_FAILED" } });
+        }
+        
+        return e.json(200, {
+            success: true,
+            data: {
+                request_id: responseData.data.requestId,
+                tx_hash: responseData.data.txHash,
+                status: "vrf_requested",
+                message: "Breed requested. VRF randomness pending — call claim endpoint after ~2 minutes."
+            }
+        });
+    } catch (error) {
+        console.error("Breed request failed:", error);
+        return e.json(500, { success: false, error: { message: error.message, code: "BREED_REQUEST_FAILED" } });
+    }
+});
+
+/**
+ * Claim Breed (VRF Phase 2)
+ * POST /api/v2/breed-animals/claim
+ * 
+ * Claims breed after VRF fulfillment, creates egg record
+ */
+routerAdd("POST", "/api/v2/breed-animals/claim", (e) => {
+    try {
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        
+        const body = e.parseBody();
+        const { request_id } = body;
+        if (!request_id) { return e.json(400, { success: false, error: { message: "request_id required", code: "VALIDATION_ERROR" } }); }
+        
+        // Call wallet-api to claim breed (VRF phase 2)
+        const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xaEF5bd8f90edB4532E39017746Fe6904d96A90E3';
+        const claimResponse = $http.send({
+            url: WALLET_SRV_URL + '/api/wallet/claim-breed',
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId: userId,
+                requestId: request_id,
+                eggNftAddress: eggNftAddress
+            })
+        });
+        
+        let responseData;
+        if (claimResponse.json && typeof claimResponse.json === 'object') {
+            responseData = claimResponse.json;
+        } else if (claimResponse.body) {
+            var bodyStr2 = '';
+            if (Array.isArray(claimResponse.body)) {
+                for (var j = 0; j < claimResponse.body.length; j++) {
+                    bodyStr2 += String.fromCharCode(claimResponse.body[j]);
+                }
+            } else { bodyStr2 = claimResponse.body; }
+            responseData = JSON.parse(bodyStr2);
+        }
+        
+        if (!responseData || !responseData.success) {
+            return e.json(400, { success: false, error: { message: "VRF not yet fulfilled or claim failed", code: "BREED_CLAIM_FAILED" } });
+        }
+        
+        const eggTokenId = responseData.data.egg_token_id;
+        const txHash = responseData.data.txHash;
+        
+        // Get parent info from pending breed (stored in request)
+        // Calculate generation and other properties
+        const parent1TokenId = body.parent1_token_id;
+        const parent2TokenId = body.parent2_token_id;
+        const childGeneration = body.child_generation || 1;
+        
+        // Create breeding egg record in PocketBase
+        const eggRecords = $app.dao().findRecordsByFilter('egg_nfts', 'token_id', 'DESC', 1, 1);
+        const nextTokenId = eggRecords.length > 0 ? (eggRecords[0].get('token_id') || 0) + 1 : 1;
+        const now = new Date().toISOString();
+        
+        var breedingEgg;
+        try {
+            breedingEgg = $app.createRecord('egg_nfts');
+        } catch (err) {
+            breedingEgg = $app.dao().createRecord($app.dao().getCollectionByNameOrId('egg_nfts'));
+        }
+        breedingEgg.set('egg_id', nextTokenId - 1);
+        breedingEgg.set('owner', userId);
+        breedingEgg.set('token_id', nextTokenId);
+        breedingEgg.set('contract_address', eggNftAddress);
+        breedingEgg.set('food_count', INITIAL_FOOD_COUNT);
+        breedingEgg.set('is_hatched', false);
+        breedingEgg.set('is_breeding_egg', true);
+        breedingEgg.set('generation', childGeneration);
+        breedingEgg.set('parent1_animal_id', parent1TokenId);
+        breedingEgg.set('parent2_animal_id', parent2TokenId);
+        breedingEgg.set('rarity_upgrade_count', 0);
+        breedingEgg.set('tx_hash', txHash || '');
+        breedingEgg.set('minted_at', now);
+        $app.save(breedingEgg);
+        
+        // Set parent cooldowns
+        if (body.parent1_record_id) {
+            var parent1 = $app.findRecordById('animal_nfts', body.parent1_record_id);
+            if (parent1) {
+                parent1.set('last_bred_at', now);
+                $app.save(parent1);
+            }
+        }
+        if (body.parent2_record_id) {
+            var parent2 = $app.findRecordById('animal_nfts', body.parent2_record_id);
+            if (parent2) {
+                parent2.set('last_bred_at', now);
+                $app.save(parent2);
+            }
+        }
+        
+        return e.json(200, {
+            success: true,
+            data: {
+                egg_id: breedingEgg.id,
+                token_id: nextTokenId,
+                generation: childGeneration,
+                parent1_animal_id: parent1TokenId,
+                parent2_animal_id: parent2TokenId,
+                tx_hash: txHash,
+                status: "confirmed"
+            }
+        });
+    } catch (error) {
+        console.error("Breed claim failed:", error);
+        return e.json(500, { success: false, error: { message: error.message, code: "BREED_CLAIM_FAILED" } });
+    }
+});

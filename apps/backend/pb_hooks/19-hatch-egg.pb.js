@@ -40,7 +40,11 @@ const RARITY_OPTIONS = ['Common', 'Rare', 'Epic', 'Legendary'];
 
 routerAdd("POST", "/api/v2/hatch-egg", (e) => {
     try {
-        const user = $apis.requireAuth(e);
+        const requestInfo = e.requestInfo();
+        const userId = requestInfo.auth?.id;
+        if (!userId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        let user;
+        try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         const body = e.parseBody();
         const { egg_token_id } = body;
@@ -129,7 +133,7 @@ routerAdd("POST", "/api/v2/hatch-egg", (e) => {
         }
         
         // Get contract address
-        const contractAddress = process.env.ANIMAL_NFT_CONTRACT_ADDRESS || '0x1234567890123456789012345678901234567890';
+        const contractAddress = process.env.ANIMAL_NFT_CONTRACT_ADDRESS || '0xfd8FaEe6aaB9A2e84F5AaDBf4917fF69CC4411a3';
         
         // Generate tx hash
         const txHash = `0x${Date.now().toString(16).padStart(64, '0')}`;
