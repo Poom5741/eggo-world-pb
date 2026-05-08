@@ -722,10 +722,36 @@ app.post('/api/wallet/mint-egg', async (req, res) => {
         console.log(`[Mint Egg] Mint price: ${ethers.formatEther(mintPrice)} ETH`);
         
         // Estimate gas with buffer
-        const gasEstimate = await eggContract.mintEgg.estimateGas(eggId, { value: mintPrice });
-        const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
-        
-        console.log(`[Mint Egg] Gas estimate: ${gasEstimate}, Gas limit: ${gasLimit}`);
+        let gasLimit;
+        try {
+            const gasEstimate = await eggContract.mintEgg.estimateGas(eggId, { value: mintPrice });
+            gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+            console.log(`[Mint Egg] Gas estimate: ${gasEstimate}, Gas limit: ${gasLimit}`);
+        } catch (gasError) {
+            // Provide descriptive error for gas estimation failures
+            let errorCode = 'GAS_ESTIMATION_FAILED';
+            let errorMessage = 'Gas estimation failed. The transaction may fail. Please try again.';
+            
+            // Map specific ethers.js error codes to user-friendly messages
+            if (gasError.code === 'UNPREDICTABLE_GAS_LIMIT') {
+                errorMessage = 'Cannot estimate gas. This transaction would fail. Please check your wallet balance.';
+            } else if (gasError.code === 'CALL_EXCEPTION') {
+                errorCode = 'TRANSACTION_REVERTED';
+                errorMessage = 'Transaction would revert. Please try again or contact support.';
+            } else if (gasError.message?.includes('insufficient funds')) {
+                errorCode = 'INSUFFICIENT_FUNDS_FOR_GAS';
+                errorMessage = 'Insufficient funds for gas. Please add BNB to your wallet.';
+            }
+            
+            console.error('[Mint Egg] Gas estimation failed:', gasError.code || gasError.message);
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: errorMessage,
+                    code: errorCode
+                }
+            });
+        }
         
         // Execute transaction with retry
         const tx = await withRetry(async () => {
