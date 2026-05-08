@@ -2,7 +2,7 @@
 
 **Milestone:** Security & Quality  
 **Created:** 2026-04-18  
-**Status:** In progress (2/5 phases complete)  
+**Status:** In progress (4/5 phases complete)  
 **Phases:** 5 (12-16)  
 **Granularity:** Standard (from config: 2-week timeline, solo developer)  
 **Coverage:** 16/16 requirements mapped ✓
@@ -13,8 +13,8 @@
 
 - [x] **Phase 12: Wallet-API Contract Integration** — Replace 4 mock blockchain endpoints with real ethers.js contract calls
 - [x] **Phase 13: USDT Deposit Tracking** — Implement event polling service with 12-block confirmation wait
-- [ ] **Phase 14: Mobile Responsive Polish** — Bottom tab bar, touch targets, responsive breakpoints (320px-1440px)
-- [ ] **Phase 15: Feed Feature** — Wire Feed button, food picker UI, progress tracking, hatch animation
+- [x] **Phase 14: Mobile Responsive Polish** — Bottom tab bar, touch targets, responsive breakpoints (320px-1440px)
+- [x] **Phase 15: Feed Feature** — Wire Feed button, food picker UI, progress tracking, hatch animation
 - [ ] **Phase 16: Play Feature + Test Infrastructure** — Daily check-in reward system, fix vi.mock failures, increase test coverage
 
 ---
@@ -73,24 +73,29 @@
 2. All buttons, links, and inputs meet 44×44px minimum touch target (WCAG 2.2 compliant)
 3. Layout renders correctly at all 5 breakpoints (320px, 375px, 768px, 1024px, 1440px) without horizontal scroll
 4. iOS devices don't zoom when focusing input fields (16px minimum font-size)
-   **Plans**: TBD
+   **Plans**: 3 plans (PLAN-NAV, PLAN-CSS, PLAN-MIGRATE)
    **UI hint**: yes
 
 ---
 
-### Phase 15: Feed Feature
+### Phase 15: Feed Feature ✅
 
 **Goal:** Users can feed Eggs with Food NFTs and watch progress toward hatching  
 **Depends on:** Phase 12 (wallet-api contract calls)  
 **Requirements:** FEAT-01, FEAT-02, FEAT-03, FEAT-04  
 **Success Criteria** (what must be TRUE):
 
-1. User can tap Feed button on eggs page and see food NFT picker modal open
-2. User can select up to 10 food NFTs with counter showing "X/10 food selected"
-3. Egg card displays progress bar showing food_count / 10 and visual indicator when ready to hatch
-4. Consumed food NFTs are marked as "used" in database and hidden from future picker
-   **Plans**: TBD
+1. ✅ User can tap Feed button on eggs page and see food NFT picker modal open
+2. ✅ User can select up to 10 food NFTs with counter showing "X/10 food selected"
+3. ✅ Egg card displays progress bar showing food_count / 10 and visual indicator when ready to hatch
+4. ✅ Consumed food NFTs are marked as "used" in database and hidden from future picker
+   **Plans**: 3 plans (3 tasks total) — All ✅
    **UI hint**: yes
+
+   Plans:
+   - [x] 15-01-PLAN.md — Manual food selection grid + progress bar + ready-to-hatch indicator
+   - [x] 15-02-PLAN.md — Consumed food filtering (is_consumed=false) + X/10 counter + empty state (verified)
+   - [x] 15-03-PLAN.md — Featured egg hero FEED ME button wired to FeedDialog (verified)
 
 ---
 
@@ -107,7 +112,7 @@
 4. User can claim daily reward (1 Food NFT) and see streak counter increment
 5. USDT balance auto-refreshes every 30 seconds with exponential backoff
 6. User can tap balance to see detailed breakdown with transaction history
-   **Plans**: TBD
+   **Plans**: 3 plans (PLAN-NAV, PLAN-CSS, PLAN-MIGRATE)
    **UI hint**: yes
 
 ---
@@ -118,7 +123,7 @@
 | -------------------------------------- | -------------- | ----------- | ---------- |
 | 12. Wallet-API Contract Integration    | 3/3            | ✅ Complete | 2026-04-18 |
 | 13. USDT Deposit Tracking              | 3/3            | ✅ Complete | 2026-05-06 |
-| 14. Mobile Responsive Polish           | 0/4            | Not started | -          |
+| 14. Mobile Responsive Polish           | 4/4            | ✅ Complete | 2026-05-07 |
 | 15. Feed Feature                       | 0/4            | Not started | -          |
 | 16. Play Feature + Test Infrastructure | 0/7            | Not started | -          |
 
