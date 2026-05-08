@@ -51,10 +51,29 @@ export function useEggNft() {
         })
       })
 
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
+
       const result = await response.json()
 
-      if (!response.ok) {
-        throw new Error(result.error?.message || 'Mint failed')
+      if (!result.success) {
+        let errorMessage = 'Mint failed'
+        if (result.error) {
+          if (typeof result.error === 'string') {
+            errorMessage = result.error
+          } else if (typeof result.error === 'object' && result.error !== null) {
+            if (typeof result.error.message === 'string') {
+              errorMessage = result.error.message
+            } else if (result.error.message && typeof result.error.message === 'object') {
+              errorMessage = JSON.stringify(result.error.message)
+            } else {
+              errorMessage = JSON.stringify(result.error)
+            }
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       return result.data
@@ -126,10 +145,29 @@ export function useEggNft() {
         }
       })
 
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
+
       const result = await response.json()
 
-      if (!response.ok) {
-        throw new Error(result.error?.message || 'Claim failed')
+      if (!result.success) {
+        let errorMessage = 'Claim failed'
+        if (result.error) {
+          if (typeof result.error === 'string') {
+            errorMessage = result.error
+          } else if (typeof result.error === 'object' && result.error !== null) {
+            if (typeof result.error.message === 'string') {
+              errorMessage = result.error.message
+            } else if (result.error.message && typeof result.error.message === 'object') {
+              errorMessage = JSON.stringify(result.error.message)
+            } else {
+              errorMessage = JSON.stringify(result.error)
+            }
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       return result.data

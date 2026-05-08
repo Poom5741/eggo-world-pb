@@ -115,7 +115,7 @@ function LineLoginContent() {
               />
             </div>
             <div className="animate-pulse">
-              <h1 className="font-[var(--font-pixel)] text-sm text-primary">PROCESSING...</h1>
+              <h1 className="font-body text-sm text-primary">PROCESSING...</h1>
             </div>
             <p className="label mt-4">COMPLETING LOGIN</p>
           </div>
@@ -138,7 +138,7 @@ function LineLoginContent() {
               className="pixelated"
             />
           </div>
-          <h1 className="font-[var(--font-pixel)] text-sm text-accent">ERROR</h1>
+          <h1 className="font-body text-sm text-accent">ERROR</h1>
           <p className="label mt-4">{error}</p>
           <a href="/auth/login" className="btn-primary inline-block mt-6">
             TRY AGAIN
@@ -153,7 +153,7 @@ export default function LineLoginPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     }>
       <LineLoginContent />

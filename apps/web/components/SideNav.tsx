@@ -7,7 +7,8 @@ export type NavItem = {
   href: string
 }
 
-// Navigation items shared between SideNav and BottomNavMobile
+// Single source of truth for navigation items
+// Used by SideNav (desktop) and BottomNavMobile (mobile)
 export const NAV_ITEMS: NavItem[] = [
   { icon: 'dashboard', label: 'Dashboard', href: '/dashboard' },
   { icon: 'egg', label: 'Eggs', href: '/eggs' },
@@ -17,7 +18,7 @@ export const NAV_ITEMS: NavItem[] = [
 ]
 
 // SideNav - Desktop side navigation component
-// Visible on desktop (≥1024px), hidden on mobile
+// Visible on desktop (>=1024px), hidden on mobile
 export default function SideNav() {
   return (
     <aside className="hidden lg:flex flex-col w-72 bg-[var(--surface-container)] rounded-r-[3rem] h-[calc(100vh-2rem)] mt-4 ml-4 mr-2 shadow-[20px_0_40px_rgba(0,0,0,0.06)] sticky top-4 overflow-hidden">

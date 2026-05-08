@@ -43,7 +43,7 @@ export function CommissionBreakdown({
       'shadow-clay-lg rounded-clay-lg p-clay-lg', // Clay container
       'bg-gradient-to-br from-card/80 to-card'
     )}>
-      <h3 className="font-[var(--font-pixel)] text-sm text-primary flex items-center gap-2">
+      <h3 className="font-body text-sm text-primary flex items-center gap-2">
         <Coins className="w-4 h-4 pixelated" />
         COMMISSION BREAKDOWN
       </h3>
@@ -62,7 +62,7 @@ export function CommissionBreakdown({
           >
             <div className="flex items-center gap-clay-md">
               <tier.icon className="w-3 h-3 text-primary pixelated" />
-              <span className="font-[var(--font-pixel)] text-xs text-foreground">
+              <span className="font-body text-xs text-foreground">
                 {tier.label}
               </span>
             </div>
@@ -71,13 +71,13 @@ export function CommissionBreakdown({
                 variant="clay"
                 className={cn(
                   'rounded-clay-full shadow-clay-sm',
-                  'font-[var(--font-pixel)] text-xs',
+                  'font-body text-xs',
                   index === 0 ? 'bg-primary' : 'bg-secondary'
                 )}
               >
                 {tier.percentage}%
               </Badge>
-              <span className="font-[var(--font-pixel)] text-xs text-primary">
+              <span className="font-body text-xs text-primary">
                 {tier.value.toFixed(2)} USDT
               </span>
             </div>
@@ -93,7 +93,7 @@ export function CommissionBreakdown({
         )}>
           <div className="flex items-center gap-clay-md">
             <DollarSign className="w-3 h-3 text-primary pixelated" />
-            <span className="font-[var(--font-pixel)] text-xs text-foreground">
+            <span className="font-body text-xs text-foreground">
               CoinStor Reserve
             </span>
           </div>
@@ -103,12 +103,12 @@ export function CommissionBreakdown({
               className={cn(
                 'rounded-clay-full shadow-clay-sm',
                 'bg-secondary',
-                'font-[var(--font-pixel)] text-xs'
+                'font-body text-xs'
               )}
             >
               {percentages.coinStor}%
             </Badge>
-            <span className="font-[var(--font-pixel)] text-xs text-primary">
+            <span className="font-body text-xs text-primary">
               {coinStor.toFixed(2)} USDT
             </span>
           </div>
@@ -121,7 +121,7 @@ export function CommissionBreakdown({
           'bg-primary/10',
           'border-t-2 border-primary pt-clay'
         )}>
-          <span className="font-[var(--font-pixel)] text-sm text-foreground">
+          <span className="font-body text-sm text-foreground">
             TOTAL
           </span>
           <div className="flex items-center gap-clay-md">
@@ -130,12 +130,12 @@ export function CommissionBreakdown({
               className={cn(
                 'rounded-clay-full shadow-clay-sm',
                 'bg-primary',
-                'font-[var(--font-pixel)] text-xs'
+                'font-body text-xs'
               )}
             >
               100%
             </Badge>
-            <span className="font-[var(--font-pixel)] text-sm text-primary">
+            <span className="font-body text-sm text-primary">
               {total.toFixed(2)} USDT
             </span>
           </div>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
-import { createClient, getUser, isAuthenticated, restoreAuth } from '@/lib/pocketbase/client'
+import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
 import { useWalletPoll } from '@/hooks/use-wallet-poll'
 import { BalanceCard } from '@/components/dashboard/balance-card'
 import { QuickActions } from '@/components/dashboard/quick-actions'
@@ -12,6 +12,14 @@ import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { TierSection } from '@/components/dashboard/tier-section'
+import dynamic from 'next/dynamic'
+
+// Dynamically import the onboarding tutorial to avoid SSR issues and reduce initial bundle
+const OnboardingTutorial = dynamic(() => import('@/components/tutorial/OnboardingTutorial'), {
+  loading: () => null,
+})
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -26,139 +34,45 @@ export default function DashboardPage() {
   const [referralLevels, setReferralLevels] = useState<Array<{ level: number; count: number; percentage: number; commissionRate: number }>>([])
   const [loading, setLoading] = useState(true)
   const [authReady, setAuthReady] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Initialize the tutorial on first visit
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const completed = localStorage.getItem("tutorial_completed");
+    if (!completed) {
+      setShowTutorial(true);
+    }
+  }, [isHydrated]);
 
   // Auto-polling for wallet balance (per D-11: 30 seconds)
   // user?.wallet_address or user?.wallet (support both field names for migration)
   const { balance, loading: balanceLoading, refresh: refreshBalance, error: balanceError } = useWalletPoll(user?.wallet_address || user?.wallet || '')
 
-  // Effect: Wait for hydration then check auth state
+  // Effect: Wait for hydration then check auth state (simplified pattern matching eggs/animals)
   useEffect(() => {
     if (!isHydrated) return
 
     const pb = createClient()
-    
-    console.warn('=== Dashboard auth check ===')
-    console.warn('authStore.token exists:', !!pb.authStore.token)
-    console.warn('authStore.record:', pb.authStore.record)
-    const userRecord = getUser()
-    console.warn('getUser():', userRecord)
-    console.warn('authStore.isValid:', pb.authStore.isValid)
-    console.warn('isAuthenticated():', isAuthenticated())
-    
-    // Check 1: Immediately authenticated?
-    if (pb.authStore.token && pb.authStore.record?.id) {
-      console.warn('✓ User authenticated immediately:', userRecord.id)
-      setUser(userRecord)
-      setAuthReady(true)
-      setLoading(false)
-      fetchDashboardData(userRecord)
-      return
-    }
-    
-    // Check 2: Has token but no record - restore auth from server
-    if (pb.authStore.token && !pb.authStore.record?.id) {
-      console.warn('Has token but no record, restoring auth from server...')
-      restoreAuth(pb)
-        .then((success) => {
-          if (success) {
-            const restoredUser = getUser()
-            console.warn('✓ Auth restored:', restoredUser?.id)
-            setUser(restoredUser)
-            setAuthReady(true)
-            setLoading(false)
-            fetchDashboardData(restoredUser)
-          } else {
-            console.warn('✗ Auth restore failed - not authenticated')
-            setAuthReady(true)
-            setLoading(false)
-            setUser(null)
-            // Will redirect via redirect effect
-          }
-        })
-        .catch((error) => {
-          console.error('Auth restore error:', error)
-          setAuthReady(true)
-          setLoading(false)
-          setUser(null)
-          // Will redirect via redirect effect
-        })
-      return
-    }
-    
-    // Check 3: No token at all - listen for auth changes (OAuth flow)
-    console.warn('No token, listening for auth changes...')
-    const unsubscribe = pb.authStore.onChange(() => {
-      console.warn('Dashboard authStore changed, token exists:', !!pb.authStore.token)
-      const updatedUser = getUser()
-      console.warn('getUser() in onChange:', updatedUser)
-      
-      if (updatedUser && updatedUser.id) {
-        console.warn('Auth restored via onChange:', updatedUser.id)
-        setUser(updatedUser)
+    restoreAuth(pb).then((success) => {
+      if (success) {
+        const u = getUser()
+        setUser(u)
         setAuthReady(true)
         setLoading(false)
-        fetchDashboardData(updatedUser)
-        unsubscribe()
-      } else if (!pb.authStore.token) {
-        // Token was cleared - user logged out
-        console.warn('Auth cleared via onChange - redirecting')
-        setUser(null)
+        if (u) fetchDashboardData(u)
+      } else {
         setAuthReady(true)
         setLoading(false)
-        unsubscribe()
-        // Force redirect
-        setTimeout(() => {
-          window.location.href = '/auth/login'
-        }, 100)
       }
-      // If we have token but no user yet, keep waiting (don't unsubscribe)
     })
-    
-    // Timeout fallback (5 seconds for OAuth flow)
-    const timeout = setTimeout(() => {
-      if (!authReady) {
-        console.warn('Auth check timeout - final state:', {
-          hasToken: !!pb.authStore.token,
-          hasRecord: !!pb.authStore.record?.id,
-          isValid: pb.authStore.isValid
-        })
-        // Final attempt: if token exists but no record, try restore one more time
-        if (pb.authStore.token && !pb.authStore.record?.id) {
-          console.warn('Timeout: trying restoreAuth as last resort...')
-          restoreAuth(pb)
-            .then((success) => {
-              if (success) {
-                const restoredUser = getUser()
-                setUser(restoredUser)
-              }
-              setAuthReady(true)
-              setLoading(false)
-            })
-            .catch(() => {
-              setAuthReady(true)
-              setLoading(false)
-            })
-        } else {
-          // No token - mark ready (will redirect)
-          setAuthReady(true)
-          setLoading(false)
-        }
-      }
-    }, 5000)
-    
-    return () => {
-      clearTimeout(timeout)
-      unsubscribe?.()
-    }
   }, [isHydrated])
 
   // REDIRECT EFFECT - only fires if authReady && !user
   useEffect(() => {
     if (isHydrated && authReady && !user) {
-      console.warn('Not authenticated, redirecting to login')
-      setTimeout(() => {
-        window.location.href = '/auth/login?redirectTo=/dashboard'
-      }, 100)
+      router.push('/auth/login?redirectTo=/dashboard')
     }
   }, [isHydrated, authReady, user])
 
@@ -269,7 +183,7 @@ export default function DashboardPage() {
   if (!isHydrated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     )
   }
@@ -277,7 +191,7 @@ export default function DashboardPage() {
   if (!authReady) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING DASHBOARD...</p>
+        <p className="font-body text-foreground">LOADING DASHBOARD...</p>
       </div>
     )
   }
@@ -285,7 +199,7 @@ export default function DashboardPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">REDIRECTING TO LOGIN...</p>
+        <p className="font-body text-foreground">REDIRECTING TO LOGIN...</p>
       </div>
     )
   }
@@ -325,7 +239,11 @@ export default function DashboardPage() {
             {user?.picture ? (
               <img 
                 className="w-full h-full object-cover" 
-                src={user.picture} 
+                src={user?.picture?.includes('http') ? user.picture : `${pb.baseURL}/api/files/${user.collectionId}/${user.id}/${user.picture}`}
+                onError={({ currentTarget }) => {
+                  currentTarget.onerror = null // Prevent infinite retries
+                  currentTarget.src = '/default-avatar.png'
+                }} 
                 alt="Avatar"
               />
             ) : (
@@ -372,18 +290,27 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Card 3: Referral Earnings */}
-        <div className="bg-surface-container-lowest p-8 rounded-xl clay-card relative group overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:-translate-y-2 transition-transform">
-            <span className="material-symbols-outlined text-5xl text-secondary">groups</span>
-          </div>
-          <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">Referral Earnings</p>
-          <h3 className="pixel-font text-4xl text-secondary">{totalReferralEarnings.toFixed(2)}</h3>
-          <p className="text-xs font-bold text-on-surface-variant/60 mt-2">
-            {referralLevels.reduce((sum, lvl) => sum + lvl.count, 0)} active buddies
-          </p>
-        </div>
+        {/* Card 3: Tier Progress */}
+        <TierSection userId={user?.id} compact />
       </div>
+
+      {/* Referral Earnings Summary */}
+      <Card className="bg-surface-container-lowest p-6 rounded-xl clay-card mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">
+              Referral Earnings
+            </p>
+            <h3 className="pixel-font text-3xl text-secondary">
+              {totalReferralEarnings.toFixed(2)} USDT
+            </h3>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span className="material-symbols-outlined text-2xl">groups</span>
+            <span>{referralLevels.reduce((sum, lvl) => sum + lvl.count, 0)} buddies</span>
+          </div>
+        </div>
+      </Card>
 
       {/* Split Section: Quick Actions + Buddy Chain */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-8">
@@ -424,6 +351,11 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center py-12">
           <p className="pixel-font text-on-surface-variant">LOADING DASHBOARD...</p>
         </div>
+      )}
+
+      {/* Onboarding Tutorial - Appears on first visit */}
+      {showTutorial && (
+        <OnboardingTutorial onDismiss={() => setShowTutorial(false)} />
       )}
     </LayoutWithoutNav>
   )

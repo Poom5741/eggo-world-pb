@@ -211,15 +211,15 @@ export default function Home() {
               <div className="text-3xl font-black italic text-[var(--on-surface)] font-headline">EggoWorld</div>
               <p className="text-[var(--on-surface)]-variant">The future of pet gaming, built with love and clay.</p>
               <div className="flex space-x-4">
-                <div className="w-10 h-10 bg-[var(--surface)]-container flex items-center justify-center rounded-[2rem] hover:bg-[var(--primary-container)] transition-colors cursor-pointer">
+                <button type="button" className="w-10 h-10 bg-[var(--surface)]-container flex items-center justify-center rounded-[2rem] hover:bg-[var(--primary-container)] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" aria-label="Share on social media">
                   <span className="material-symbols-outlined" aria-hidden="true">share</span>
-                </div>
-                <div className="w-10 h-10 bg-[var(--surface)]-container flex items-center justify-center rounded-[2rem] hover:bg-[var(--primary-container)] transition-colors cursor-pointer">
+                </button>
+                <button type="button" className="w-10 h-10 bg-[var(--surface)]-container flex items-center justify-center rounded-[2rem] hover:bg-[var(--primary-container)] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" aria-label="Open community forum">
                   <span className="material-symbols-outlined" aria-hidden="true">forum</span>
-                </div>
-                <div className="w-10 h-10 bg-[var(--surface)]-container flex items-center justify-center rounded-[2rem] hover:bg-[var(--primary-container)] transition-colors cursor-pointer">
+                </button>
+                <button type="button" className="w-10 h-10 bg-[var(--surface)]-container flex items-center justify-center rounded-[2rem] hover:bg-[var(--primary-container)] transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" aria-label="Visit website">
                   <span className="material-symbols-outlined" aria-hidden="true">public</span>
-                </div>
+                </button>
               </div>
             </div>
 
@@ -228,18 +228,17 @@ export default function Home() {
               <ul className="space-y-4 text-[var(--on-surface)]-variant">
                 <li><Link href="/eggs" className="hover:text-[var(--primary)]">All Eggs</Link></li>
                 <li><Link href="/marketplace" className="hover:text-[var(--primary)]">Food Packs</Link></li>
-                <li><Link href="#" className="hover:text-[var(--primary)]">Artifacts</Link></li>
-                <li><Link href="#" className="hover:text-[var(--primary)]">Sell Items</Link></li>
+                <li><Link href="/coming-soon" className="hover:text-[var(--primary)]" aria-disabled="true">Artifacts</Link></li>
+                <li><Link href="/coming-soon" className="hover:text-[var(--primary)]" aria-disabled="true">Sell Items</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-black mb-6">Resources</h4>
               <ul className="space-y-4 text-[var(--on-surface)]-variant">
-                <li><Link href="#" className="hover:text-[var(--primary)]">Documentation</Link></li>
-                <li><Link href="#" className="hover:text-[var(--primary)]">Hatching Guide</Link></li>
-                <li><Link href="#" className="hover:text-[var(--primary)]">Tokenomics</Link></li>
-                <li><Link href="#" className="hover:text-[var(--primary)]">Support</Link></li>
+                <li><Link href="/eggs" className="hover:text-[var(--primary)]">Hatching Guide</Link></li>
+                <li><Link href="/dashboard/tiers" className="hover:text-[var(--primary)]">Tokenomics</Link></li>
+                <li><Link href="/support" className="hover:text-[var(--primary)]">Support</Link></li>
               </ul>
             </div>
 
@@ -247,7 +246,7 @@ export default function Home() {
               <h4 className="font-black mb-6">Newsletter</h4>
               <p className="text-sm text-[var(--on-surface)]-variant mb-4">Get the latest egg-straordinary updates.</p>
               <div className="flex bg-[var(--surface)]-container-high rounded-[2rem] p-1">
-                <input className="bg-transparent border-none focus:ring-0 text-sm flex-grow px-4" placeholder="Email address" type="email"/>
+                <input aria-label="Email address for newsletter" className="bg-transparent border-none focus:ring-0 text-sm flex-grow px-4" placeholder="Email address" type="email"/>
                 <button className="bg-[var(--primary)] text-[var(--on-primary)] p-2 rounded-md material-symbols-outlined" aria-label="Send newsletter signup">send</button>
               </div>
             </div>
@@ -256,8 +255,8 @@ export default function Home() {
           <div className="max-w-7xl mx-auto py-8 flex flex-col md:flex-row justify-between items-center text-sm text-[var(--on-surface)]-variant/60">
             <p>© 2024 EggoWorld Labs. All rights reserved.</p>
             <div className="flex space-x-8 mt-4 md:mt-0">
-              <Link href="#">Privacy Policy</Link>
-              <Link href="#">Terms of Service</Link>
+              <Link href="/legal/privacy">Privacy Policy</Link>
+              <Link href="/legal/terms">Terms of Service</Link>
             </div>
           </div>
         </footer>

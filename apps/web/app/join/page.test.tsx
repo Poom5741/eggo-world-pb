@@ -14,20 +14,20 @@ describe('Join Page', () => {
     expect(container.innerHTML).toContain('svg')
   })
 
-  it('has username input field', () => {
+  it('has LINE login button (not text input)', () => {
     const { container } = render(<Join />)
-    expect(container.innerHTML).toContain('type="text"')
-    expect(container.textContent).toContain('Username')
+    expect(container.textContent).toContain('Login with LINE')
   })
 
-  it('has referral code input field (optional)', () => {
+  it('shows Hatchery Pact link', () => {
     const { container } = render(<Join />)
-    expect(container.textContent).toContain('Referral Code')
+    expect(container.textContent).toContain('Hatchery Pact')
   })
 
-  it('includes "Start Hatching" CTA button', () => {
+  it('shows feature badges', () => {
     const { container } = render(<Join />)
-    expect(container.textContent).toContain('Start Hatching')
+    expect(container.textContent).toContain('Bonus Egg')
+    expect(container.textContent).toContain('Daily Rewards')
   })
 
   it('uses Material Symbols icons', () => {

@@ -13,6 +13,7 @@ import { HatchAnimation } from '@/components/eggs/hatch-animation'
 import { useEggHatch, AnimalData } from '@/hooks/use-egg-hatch'
 import { EggData } from '@/hooks/use-egg-poll'
 import { cn } from '@/lib/utils'
+import { Sparkles, AlertTriangle } from 'lucide-react'
 
 /**
  * Props for HatchRevealModal component
@@ -174,8 +175,8 @@ export function HatchRevealModal({
 
                 {/* Success Message - ข้อความสำเร็จ */}
                 <div className="bg-primary-container/20 p-4 rounded-lg border-2 border-primary-container">
-                  <p className="text-primary font-bold">
-                    🎉 Congratulations! Your {animalData.rarity} {animalData.species} is ready!
+                  <p className="flex items-center gap-2 text-primary font-bold">
+                    <Sparkles className="w-5 h-5" /> Congratulations! Your {animalData.rarity} {animalData.species} is ready!
                   </p>
                 </div>
               </div>
@@ -215,8 +216,8 @@ export function HatchRevealModal({
 
               {/* Warning - คำเตือน */}
               <div className="bg-warning-container/20 p-4 rounded-lg border-2 border-warning-container">
-                <p className="text-warning font-bold text-sm">
-                  ⚠️ Hatching is final! Once hatched, the egg cannot be used again.
+                <p className="flex items-center gap-2 text-warning font-bold text-sm">
+                  <AlertTriangle className="w-5 h-5" /> Hatching is final! Once hatched, the egg cannot be used again.
                 </p>
               </div>
 

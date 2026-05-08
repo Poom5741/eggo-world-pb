@@ -7,7 +7,9 @@ import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { useAnimalPoll, AnimalData } from '@/hooks/use-animal-poll'
 import { AnimalCard } from '@/components/animal-nft/AnimalCard'
 import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog'
-import { createClient } from '@/lib/pocketbase/client'
+import { BreedingDialog } from '@/components/breeding/BreedingDialog'
+import { BreedingResult } from '@/hooks/use-breeding'
+import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
 import { toast } from 'sonner'
 
 export default function Animals() {
@@ -21,40 +23,58 @@ export default function Animals() {
   const [sellDialogOpen, setSellDialogOpen] = useState(false)
   const [_isCreatingListing, setIsCreatingListing] = useState(false)
 
-  const user = isHydrated ? pb.authStore.record : null
+  // State for breeding dialog
+  const [breedingDialogOpen, setBreedingDialogOpen] = useState(false)
+  const [breedingParent1, setBreedingParent1] = useState<AnimalData | null>(null)
 
-  const [userWallet, setUserWallet] = useState<string | undefined>(undefined)
+  const [user, setUser] = useState<any>(null)
+  const [authReady, setAuthReady] = useState(false)
 
   useEffect(() => {
-    if (isHydrated && user?.id) {
-      pb.collection('users').getOne(user.id).then((userData: any) => {
-        const wallet = userData.wallet
-        if (wallet && typeof wallet === 'string' && wallet !== 'null') {
-          setUserWallet(wallet)
-        } else {
-          setUserWallet('')
-        }
-      }).catch(console.error)
+    if (isHydrated) {
+      restoreAuth(pb).then((restored) => {
+        const u = getUser()
+        setUser(u)
+        setAuthReady(true)
+        if (restored) console.log('[Animals] Auth restored:', u?.id)
+      })
     }
-  }, [isHydrated, user?.id])
+  }, [isHydrated])
 
-  const effectiveWalletAddress = userWallet !== undefined
-    ? (userWallet && userWallet !== 'null' ? userWallet : '')
-    : (user?.wallet && user.wallet !== 'null' ? user.wallet : '')
-
-  const { animals, loading, refresh, polling } = useAnimalPoll(effectiveWalletAddress, 30000)
+  // Use user ID for querying animal_nfts (owner field is a relation to users collection)
+  const effectiveUserId = user?.id || ''
+  const { animals, loading, refresh, polling } = useAnimalPoll(effectiveUserId, 30000)
 
   useEffect(() => {
-    if (isHydrated && !user) {
+    if (authReady && !user) {
       router.push('/auth/login')
     }
-  }, [isHydrated, user, router])
+  }, [authReady, user, router])
+
+  // Force refresh animals when auth becomes ready
+  useEffect(() => {
+    if (authReady && user?.id) {
+      refresh()
+    }
+  }, [authReady, user?.id])
 
   // ฟังก์ชันจัดการเมื่อผู้ใช้กดปุ่มขาย
   // Handler when user clicks sell button
   const handleSell = (animal: AnimalData) => {
     setSellingAnimal(animal)
     setSellDialogOpen(true)
+  }
+
+  // Handler when user clicks breed button
+  const handleBreed = (animal: AnimalData) => {
+    setBreedingParent1(animal)
+    setBreedingDialogOpen(true)
+  }
+
+  // Handler when breeding is successful
+  const handleBreedingSuccess = (result: BreedingResult) => {
+    toast.success(`Breeding successful! New egg #${result.token_id} created`)
+    refresh()
   }
 
   // ฟังก์ชันจัดการเมื่อสร้างรายการสำเร็จ
@@ -69,7 +89,7 @@ export default function Animals() {
     setIsCreatingListing(false)
   }
 
-  if (!isHydrated || loading) {
+  if (!authReady || loading) {
     return (
       <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
@@ -96,11 +116,7 @@ export default function Animals() {
     )
   }
 
-  if (!user) {
-    return null
-  }
-  // Not authenticated
-  if (!user) {
+  if (authReady && !user) {
     return null
   }
   
@@ -174,6 +190,8 @@ export default function Animals() {
               key={animal.id}
               animal={animal}
               onSell={handleSell}
+              onBreed={handleBreed}
+              showBreedButton={animals.length >= 2}
               polling={polling}
             />
           ))}
@@ -190,6 +208,14 @@ export default function Animals() {
           onSuccess={handleListingSuccess}
         />
       )}
+
+      <BreedingDialog
+        animals={animals}
+        open={breedingDialogOpen}
+        onOpenChange={setBreedingDialogOpen}
+        onSuccess={handleBreedingSuccess}
+        initialParent1={breedingParent1}
+      />
     </LayoutWithoutNav>
   )
 }

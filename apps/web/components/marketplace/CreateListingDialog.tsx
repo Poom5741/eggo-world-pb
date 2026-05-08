@@ -12,9 +12,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { approveNFTForMarketplace, createListing } from '@/lib/contracts/marketplace'
-import { getSigner } from '@/lib/contracts/eggNft'
-import { parseUnits } from 'ethers'
+import { createClient } from '@/lib/pocketbase/client'
+import { Egg as EggIcon, PawPrint, Wheat } from 'lucide-react'
 
 interface CreateListingDialogProps {
   open: boolean
@@ -53,9 +52,7 @@ export function CreateListingDialog({
 }: CreateListingDialogProps) {
   const [price, setPrice] = useState('')
   const [error, setError] = useState('')
-  const [isApproving, setIsApproving] = useState(false)
   const [isCreatingListing, setIsCreatingListing] = useState(false)
-  const [step, setStep] = useState<'input' | 'approve' | 'listing'>('input')
 
   const minPrice = minPrices[nftType]
 
@@ -67,7 +64,7 @@ export function CreateListingDialog({
     }
   }
 
-  const handleApproveAndList = async () => {
+  const handleCreateListing = async () => {
     try {
       const priceNum = parseFloat(price)
       if (isNaN(priceNum) || priceNum < minPrice) {
@@ -75,39 +72,48 @@ export function CreateListingDialog({
         return
       }
 
-      const signer = await getSigner()
-      
-      // Step 1: Approve NFT transfer
-      setIsApproving(true)
-      setStep('approve')
-      await approveNFTForMarketplace(signer)
-      setIsApproving(false)
-
-      // Step 2: Create listing
       setIsCreatingListing(true)
-      setStep('listing')
-      const priceWei = parseUnits(priceNum.toString(), 18)
-      await createListing(signer, nftType, tokenId, priceWei)
-      setIsCreatingListing(false)
 
-      // Success
+      // Call PocketBase API to create listing
+      const pb = createClient()
+      const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'https://pb.eggoworld.io'
+      const response = await fetch(`${pbUrl}/api/v2/list-animal`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${pb.authStore.token}`,
+        },
+        body: JSON.stringify({
+          animal_id: parseInt(tokenId),
+          price: priceNum,
+        }),
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (!data.success) {
+        throw new Error(data.error?.message || 'Failed to create listing')
+      }
+
+      setIsCreatingListing(false)
       onSuccess()
       handleClose()
     } catch (err: any) {
       console.error('Listing error:', err)
       setError(err.message || 'Failed to create listing')
-      setIsApproving(false)
       setIsCreatingListing(false)
-      setStep('input')
     }
   }
 
   const handleClose = () => {
     setPrice('')
     setError('')
-    setIsApproving(false)
     setIsCreatingListing(false)
-    setStep('input')
     onOpenChange(false)
   }
 
@@ -119,12 +125,14 @@ export function CreateListingDialog({
 
   const commission = price ? calculateCommission(parseFloat(price)) : null
 
-  // NFT Icon mapping
-  const nftIcon = {
-    Egg: '🥚',
-    Food: '🍖',
-    Animal: '🐾',
-  }
+  // NFT Icon mapping (replaces emoji characters)
+  const nftIconComponent = {
+    Egg: EggIcon,
+    Food: Wheat,
+    Animal: PawPrint,
+  } as const
+
+  const NftIcon = nftIconComponent[nftType] || EggIcon
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -136,12 +144,24 @@ export function CreateListingDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {step === 'input' && (
+        {isCreatingListing ? (
+          <div className="space-y-4 py-4 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+              <div className="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+            </div>
+            <h3 className="text-xl font-pixel-style text-on-surface">
+              Creating Listing...
+            </h3>
+            <p className="text-on-surface-variant text-sm">
+              Please wait while we create your listing
+            </p>
+          </div>
+        ) : (
           <div className="space-y-4 py-4">
             {/* NFT Preview */}
             <div className="bg-surface-container p-4 rounded-lg flex items-center gap-4">
-              <div className="w-16 h-16 bg-surface-container-high rounded-lg flex items-center justify-center text-3xl">
-                {nftIcon[nftType]}
+              <div className="w-16 h-16 bg-surface-container-high rounded-lg flex items-center justify-center">
+                <NftIcon className="w-8 h-8" />
               </div>
               <div>
                 <p className="font-bold text-on-surface">{nftName}</p>
@@ -209,55 +229,11 @@ export function CreateListingDialog({
                 </div>
               </div>
             )}
-
-            {/* Info Box */}
-            <div className="bg-surface-container-lowest p-3 rounded-lg border border-surface-container-high">
-              <div className="flex items-start gap-2">
-                <span className="text-xs text-on-surface-variant">
-                  <strong>Note:</strong> Two-step process required:
-                  <br />
-                  1. Approve NFT transfer
-                  <br />
-                  2. Create marketplace listing
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 'approve' && (
-          <div className="space-y-4 py-4 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-              <div className="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-            </div>
-            <h3 className="text-xl font-pixel-style text-on-surface">
-              Step 1/2: Approving NFT
-            </h3>
-            <p className="text-on-surface-variant text-sm">
-              Please confirm the transaction in your wallet
-            </p>
-            <p className="text-xs text-on-surface-variant">
-              This allows the marketplace to transfer your NFT when sold
-            </p>
-          </div>
-        )}
-
-        {step === 'listing' && (
-          <div className="space-y-4 py-4 text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-              <div className="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
-            </div>
-            <h3 className="text-xl font-pixel-style text-on-surface">
-              Step 2/2: Creating Listing
-            </h3>
-            <p className="text-on-surface-variant text-sm">
-              Please confirm the listing transaction
-            </p>
           </div>
         )}
 
         <DialogFooter className="sm:justify-between gap-2">
-          {step === 'input' ? (
+          {!isCreatingListing && (
             <>
               <Button
                 variant="outline"
@@ -267,17 +243,13 @@ export function CreateListingDialog({
                 Cancel
               </Button>
               <Button
-                onClick={handleApproveAndList}
-                disabled={!price || parseFloat(price) < minPrice || isApproving || isCreatingListing}
+                onClick={handleCreateListing}
+                disabled={!price || parseFloat(price) < minPrice || isCreatingListing}
                 className="flex-1 bg-primary text-on-primary hover:bg-primary/90"
               >
-                {isApproving ? 'Approving...' : isCreatingListing ? 'Creating...' : 'Create Listing'}
+                {isCreatingListing ? 'Creating...' : 'Create Listing'}
               </Button>
             </>
-          ) : (
-            <div className="w-full text-center text-sm text-on-surface-variant">
-              Please wait for the transaction to complete...
-            </div>
           )}
         </DialogFooter>
       </DialogContent>

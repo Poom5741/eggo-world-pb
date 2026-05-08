@@ -22,7 +22,10 @@ async function createWalletForUser(userId: string) {
     const walletData = await walletResponse.json()
     
     if (!walletData.success) {
-      throw new Error(`Wallet API error: ${walletData.error?.message}`)
+      const errorMsg = walletData.error?.message && typeof walletData.error.message === 'object' 
+        ? JSON.stringify(walletData.error.message)
+        : String(walletData.error?.message || 'Unknown error')
+      throw new Error(`Wallet API error: ${errorMsg}`)
     }
     
     console.log('Wallet generated:', {
@@ -64,7 +67,10 @@ async function createWalletForUser(userId: string) {
       console.log('✅ Wallet successfully created for user!')
       console.log('User wallet address:', userData.wallet)
     } else {
-      throw new Error(`Failed to update user: ${userData.message}`)
+      const errorMsg = userData.message && typeof userData.message === 'object'
+        ? JSON.stringify(userData.message)
+        : String(userData.message || 'Unknown error')
+      throw new Error(`Failed to update user: ${errorMsg}`)
     }
     
   } catch (error) {

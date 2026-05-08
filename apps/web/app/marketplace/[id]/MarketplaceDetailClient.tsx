@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
@@ -16,15 +16,13 @@ import { UpdatePriceDialog } from '@/components/marketplace/UpdatePriceDialog'
 import { BuyFlow } from '@/components/marketplace/BuyFlow'
 import { parseUnits } from 'ethers'
 
-interface PageProps {
-  params: { id: string }
+interface MarketplaceDetailClientProps {
+  listingId: string
 }
 
-export default function ProductDetail({ params }: PageProps) {
+export default function MarketplaceDetailClient({ listingId }: MarketplaceDetailClientProps) {
   const router = useRouter()
   const isHydrated = useIsHydrated()
-  const unwrappedParams = use(params)
-  const listingId = unwrappedParams.id
 
   // Use marketplace sync hook for single listing - ใช้ hook สำหรับ listing เดียว
   const { 
@@ -179,7 +177,7 @@ export default function ProductDetail({ params }: PageProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card variant="clay" className="shadow-clay-lg overflow-hidden">
             <CardHeader>
-              <CardTitle className="font-[var(--font-pixel)] text-lg">
+              <CardTitle className="font-body text-lg">
                 รูปภาพ NFT | NFT Image
               </CardTitle>
             </CardHeader>
@@ -246,7 +244,7 @@ export default function ProductDetail({ params }: PageProps) {
                     nftType={(listing.nft_type || "Egg").toLowerCase() as "egg" | "food" | "animal"}
                     listingId={listing.id}
                     price={listing.price}
-                    priceWei={parseUnits(listing.price.toString(), 18)}
+                    _priceWei={parseUnits(listing.price.toString(), 18)}
                     nftName={listing.name}
                     _nftImage={listing.image_url || ''}
                   />
@@ -256,7 +254,7 @@ export default function ProductDetail({ params }: PageProps) {
 
             <Card variant="clay" className="shadow-clay-md">
               <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-sm flex items-center gap-2">
+                <CardTitle className="font-body text-sm flex items-center gap-2">
                   <User className="h-5 w-5" />
                   เจ้าของ | Owner
                 </CardTitle>
@@ -288,7 +286,7 @@ export default function ProductDetail({ params }: PageProps) {
 
             <Card variant="clay" className="shadow-clay-md">
               <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-sm">
+                <CardTitle className="font-body text-sm">
                   ส่วนแบ่งและค่าธรรมเนียม | Commission Breakdown
                 </CardTitle>
                 <p className="text-xs text-on-surface-variant">
@@ -334,33 +332,33 @@ export default function ProductDetail({ params }: PageProps) {
 
             <Card variant="clay" className="shadow-clay-sm">
               <CardHeader>
-                <CardTitle className="font-[var(--font-pixel)] text-xs">
+                <CardTitle className="font-body text-xs">
                   ข้อมูลเพิ่มเติม | Additional Information
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-[var(--font-pixel)] text-xs flex items-center gap-2">
+                  <span className="text-muted-foreground font-body text-xs flex items-center gap-2">
                     <Tag className="h-4 w-4" />
                     ประเภท | Type
                   </span>
                   <span className="font-bold">{listing.nft_type}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-[var(--font-pixel)] text-xs flex items-center gap-2">
+                  <span className="text-muted-foreground font-body text-xs flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     อัพเดท | Updated
                   </span>
-                  <span className="font-[var(--font-pixel)] text-xs">
+                  <span className="font-body text-xs">
                     {new Date(listing.updated).toLocaleDateString('th-TH')}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground font-[var(--font-pixel)] text-xs flex items-center gap-2">
+                  <span className="text-muted-foreground font-body text-xs flex items-center gap-2">
                     <Tag className="h-4 w-4" />
                     ID
                   </span>
-                  <span className="font-mono font-[var(--font-pixel)] text-xs truncate max-w-[200px]">
+                  <span className="font-mono font-body text-xs truncate max-w-[200px]">
                     {listing.id}
                   </span>
                 </div>

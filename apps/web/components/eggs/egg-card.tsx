@@ -1,9 +1,13 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { EggData } from '@/hooks/use-egg-poll'
 import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { BreedingBadge } from './BreedingEggTooltip'
+import { RarityUpgradeDialog } from './rarity-upgrade-dialog'
 import { cn } from '@/lib/utils'
+import { Sparkles, Star } from 'lucide-react'
 
 /**
  * Props for EggCard component
@@ -14,6 +18,8 @@ export interface EggCardProps {
   onManage: (eggId: number) => void
   onHatch?: (egg: EggData) => void
   onSell?: (egg: EggData) => void  // ฟังก์ชันขาย NFT
+  onPlay?: (egg: EggData) => void  // ฟังก์ชัน Play button
+  onUpgrade?: (egg: EggData) => void  // ฟังก์ชันอัปเกรดความหายาก
   polling?: boolean
 }
 
@@ -45,7 +51,39 @@ function getRarity(raritySeed?: number): { label: string; color: string } {
  * Displays egg image, name, rarity badge, element type,
  * feeding progress bar (X/10), and "Manage Egg" button
  */
-export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProps) {
+export function EggCard({ egg, onManage, onHatch, onSell, onPlay, onUpgrade, polling }: EggCardProps) {
+  // State for upgrade dialog
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  
+  // State for polling badge with minimum display duration
+  const [showPollingBadge, setShowPollingBadge] = useState(false)
+  const pollingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Minimum 2-second display duration for polling badge
+  useEffect(() => {
+    if (polling) {
+      setShowPollingBadge(true)
+      // Clear any existing timeout
+      if (pollingTimeoutRef.current) {
+        clearTimeout(pollingTimeoutRef.current)
+      }
+    } else if (showPollingBadge) {
+      // Delay hiding the badge by 2 seconds
+      pollingTimeoutRef.current = setTimeout(() => {
+        setShowPollingBadge(false)
+      }, 2000)
+    }
+  }, [polling, showPollingBadge])
+  
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingTimeoutRef.current) {
+        clearTimeout(pollingTimeoutRef.current)
+      }
+    }
+  }, [])
+  
   // Calculate progress percentage
   const progressPercent = (egg.food_count / 10) * 100
   
@@ -55,15 +93,26 @@ export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProp
   return (
     <div className={cn(
       "bg-surface-container-lowest p-6 rounded-xl clay-card",
-      "hover:-translate-y-2 transition-transform duration-300"
+      "hover:-translate-y-2 transition-transform duration-300",
+      egg.food_count >= 10 && !egg.is_hatched && "animate-pulse-glow ring-2 ring-warning"
     )}>
       {/* Egg Image Section - ส่วนแสดงรูปภาพไข่ */}
       <div className="bg-surface-container h-48 rounded-lg mb-6 flex items-center justify-center inner-dip overflow-hidden relative">
         {/* "Updating..." badge during polling - ป้าย "Updating..." ขณะกำลังโพล */}
-        {polling && (
+        {showPollingBadge && (
           <Badge variant="clay" className="absolute top-2 right-2 animate-pulse gap-1">
             <span className="material-symbols-outlined text-xs animate-spin">sync</span>
             Updating...
+          </Badge>
+        )}
+        {/* Breeding egg badge - ป้ายไข่จากการผสมพันธุ์ */}
+        {egg.is_breeding_egg && (
+          <Badge 
+            variant="clay" 
+            className="absolute top-2 left-2 bg-tertiary-container text-on-tertiary-container gap-1"
+          >
+            <span className="material-symbols-outlined text-xs">favorite</span>
+            Breeding Egg
           </Badge>
         )}
         <img
@@ -81,11 +130,28 @@ export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProp
           </h3>
           <p className={cn("text-xs font-bold", rarity.color)}>
             {rarity.label} • {egg.element_type || 'NORMAL'}
+            {egg.is_breeding_egg && egg.generation !== undefined && (
+              <span className="ml-1 text-tertiary">• Gen {egg.generation}</span>
+            )}
           </p>
+          {/* Breeding badge for breeding eggs */}
+          {egg.is_breeding_egg && (
+            <BreedingBadge egg={egg} className="mt-1.5" />
+          )}
         </div>
         {/* Food count badge - แสดงจำนวนอาหาร */}
-        <div className="w-10 h-10 bg-surface-container rounded-full flex items-center justify-center text-primary font-black">
-          {egg.food_count}
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 bg-surface-container rounded-full flex items-center justify-center text-primary font-black">
+            {egg.food_count}
+          </div>
+          {egg.food_count >= 10 && !egg.is_hatched && (
+            <span
+              className="material-symbols-outlined text-warning text-xl animate-pulse-glow"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              sparkle
+            </span>
+          )}
         </div>
       </div>
       
@@ -94,9 +160,24 @@ export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProp
         <Progress value={progressPercent} className="h-2" />
         <div className="flex justify-between text-[10px] font-bold text-on-surface-variant">
           <span>FEEDING PROGRESS</span>
-          <span>{egg.food_count}/10 food items</span>
+          <span>
+            {egg.food_count >= 10 && !egg.is_hatched
+              ? "Ready to hatch!"
+              : `${egg.food_count}/10 food — ${10 - egg.food_count} more to hatch`}
+          </span>
         </div>
       </div>
+      
+      {/* Play Button - ปุ่มเล่น (shows for all eggs) */}
+      {onPlay && (
+        <button
+          onClick={() => onPlay(egg)}
+          className="w-full py-3 bg-tertiary text-on-tertiary rounded-full font-bold text-sm hover:bg-tertiary-container transition-colors flex items-center justify-center gap-2"
+        >
+          <span className="material-symbols-outlined">sports_esports</span>
+          {egg.is_hatched ? 'Daily Check-In' : 'Play'}
+        </button>
+      )}
       
       {/* Manage Button - ปุ่มจัดการ */}
       <div className="space-y-3">
@@ -122,10 +203,33 @@ export function EggCard({ egg, onManage, onHatch, onSell, polling }: EggCardProp
             onClick={() => onHatch && onHatch(egg)}
             className="w-full py-3 bg-primary text-on-primary rounded-full font-black text-lg hover:bg-primary-fixed-dim transition-colors shadow-lg"
           >
-            🎉 HATCH!
+            <Sparkles className="inline w-5 h-5 mr-1" /> HATCH!
+          </button>
+        )}
+        
+        {/* UPGRADE button - shows when egg has 10 food items and not hatched */}
+        {egg.food_count >= 10 && !egg.is_hatched && onUpgrade && (
+          <button
+            onClick={() => setShowUpgradeDialog(true)}
+            className="w-full py-3 bg-tertiary-container text-on-tertiary-container rounded-full font-black text-sm hover:bg-tertiary transition-colors flex items-center justify-center gap-2"
+          >
+            <Star className="w-4 h-4" /> UPGRADE
           </button>
         )}
       </div>
+      
+      {/* Rarity Upgrade Dialog */}
+      {onUpgrade && egg.food_count >= 10 && !egg.is_hatched && (
+        <RarityUpgradeDialog
+          egg={egg}
+          open={showUpgradeDialog}
+          onOpenChange={setShowUpgradeDialog}
+          onSuccess={() => {
+            setShowUpgradeDialog(false)
+            onUpgrade(egg)
+          }}
+        />
+      )}
     </div>
   )
 }

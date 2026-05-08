@@ -246,11 +246,11 @@ function CallbackContent() {
             {status === 'loading' && (
               <>
                 <div className="animate-pulse">
-                  <CardTitle className="font-[var(--font-pixel)] text-lg text-primary">
+                  <CardTitle className="font-body text-lg text-primary">
                     PROCESSING...
                   </CardTitle>
                 </div>
-                <CardDescription className="font-[var(--font-pixel)] text-xs">
+                <CardDescription className="font-body text-xs">
                   COMPLETING LOGIN
                 </CardDescription>
               </>
@@ -258,10 +258,10 @@ function CallbackContent() {
 
             {status === 'success' && (
               <>
-                <CardTitle className="font-[var(--font-pixel)] text-lg text-primary">
+                <CardTitle className="font-body text-lg text-primary">
                   SUCCESS!
                 </CardTitle>
-                <CardDescription className="font-[var(--font-pixel)] text-xs">
+                <CardDescription className="font-body text-xs">
                   REDIRECTING...
                 </CardDescription>
               </>
@@ -269,17 +269,17 @@ function CallbackContent() {
 
             {status === 'error' && (
               <>
-                <CardTitle className="font-[var(--font-pixel)] text-lg text-accent">
+                <CardTitle className="font-body text-lg text-accent">
                   ERROR
                 </CardTitle>
-                <CardDescription className="font-[var(--font-pixel)] text-xs">
+                <CardDescription className="font-body text-xs">
                   {error}
                 </CardDescription>
                 <a
                   href="/auth/login"
                   className={cn(
                     'inline-block mt-4',
-                    'font-[var(--font-pixel)] text-xs',
+                    'font-body text-xs',
                     'rounded-clay shadow-clay-md px-6 py-3',
                     'bg-primary hover:bg-primary/90 text-primary-foreground',
                     'transition-all'
@@ -300,7 +300,7 @@ export default function CallbackPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
+        <p className="font-body text-foreground">LOADING...</p>
       </div>
     }>
       <CallbackContent />

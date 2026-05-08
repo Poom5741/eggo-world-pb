@@ -184,10 +184,29 @@ export function BuyFlow({
         })
       })
       
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
+      
       const data = await response.json()
       
-      if (!response.ok || !data.success) {
-        throw new Error(data.error?.message || 'Purchase failed')
+      if (!data.success) {
+        let errorMessage = 'Purchase failed'
+        if (data.error) {
+          if (typeof data.error === 'string') {
+            errorMessage = data.error
+          } else if (typeof data.error === 'object' && data.error !== null) {
+            if (typeof data.error.message === 'string') {
+              errorMessage = data.error.message
+            } else if (data.error.message && typeof data.error.message === 'object') {
+              errorMessage = JSON.stringify(data.error.message)
+            } else {
+              errorMessage = JSON.stringify(data.error)
+            }
+          }
+        }
+        throw new Error(errorMessage)
       }
       
       // Purchase successful
@@ -200,8 +219,8 @@ export function BuyFlow({
       setIsDialogOpen(false)
       setIsPurchasing(false)
       
-      // Redirect ไป inventory
-      router.push('/inventory')
+      // Redirect ไป inventory (eggs page) - use window.location for static export compatibility
+      window.location.href = '/eggs/'
     } catch (err: unknown) {
       console.error('Purchase error:', err)
       setIsPurchasing(false)

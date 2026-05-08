@@ -228,6 +228,7 @@
   --font-sans: var(--font-geist), 'Geist', 'Geist Fallback';
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --font-pixel: var(--font-pixel), 'Press Start 2P', monospace;
+  --font-headline: var(--font-pixel), 'Press Start 2P', monospace;
   
   /* ============================================
      JULES DESIGN SYSTEM - COMPLETE COLOR TOKENS
@@ -366,6 +367,24 @@
   --color-clay-card-shadow: var(--card-shadow);
   --color-clay-accent-highlight: var(--accent-highlight);
   --color-clay-accent-shadow: var(--accent-shadow);
+
+  /* ============================================
+     LINE BRAND COLOR (for LINE OAuth buttons)
+     ============================================ */
+  --color-line: #00c300;
+
+  /* ============================================
+     TIER COLORS (for tier badges and progress bars)
+     ============================================ */
+  --color-tier-1: #10b981; /* Emerald 500 - Seedling tier */
+  --color-tier-2: #f59e0b; /* Amber 500 - Grower tier */
+  --color-tier-3: #8b5cf6; /* Violet 500 - Farmer tier */
+  --color-tier-4: #ec4899; /* Pink 500 - Master tier */
+
+  /* Semantic warning colors (for status indicators) */
+  --color-warning: #f59e0b;
+  --color-warning-container: #fef3c7;
+  --color-on-warning-container: #92400e;
 }
 
 @layer base {
@@ -599,20 +618,20 @@
 
 /* Buttons */
 .btn-primary {
-  @apply bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground font-[var(--font-pixel)] text-xs px-6 py-3 border-4 border-primary transition-all;
+  @apply bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground font-[var(--font-pixel)] text-xs px-6 py-4 min-h-[44px] border-4 border-primary transition-all;
 }
 
 .btn-secondary {
-  @apply bg-secondary hover:bg-secondary/80 disabled:bg-secondary/50 text-secondary-foreground font-[var(--font-pixel)] text-xs px-6 py-3 border-4 border-secondary transition-all;
+  @apply bg-secondary hover:bg-secondary/80 disabled:bg-secondary/50 text-secondary-foreground font-[var(--font-pixel)] text-xs px-6 py-4 min-h-[44px] border-4 border-secondary transition-all;
 }
 
 .btn-ghost {
-  @apply text-foreground hover:text-primary font-[var(--font-pixel)] text-xs px-4 py-2 border-2 border-primary/30 hover:border-primary transition-all;
+  @apply text-foreground hover:text-primary font-[var(--font-pixel)] text-xs px-4 py-3 min-h-[44px] border-2 border-primary/30 hover:border-primary transition-all;
 }
 
 /* Inputs */
 .input-field {
-  @apply w-full bg-background border-2 border-primary/30 px-3 py-3 font-[var(--font-pixel)] text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none;
+  @apply w-full bg-background border-2 border-primary/30 px-3 py-3 font-[var(--font-pixel)] text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none;
 }
 
 /* Cards & Containers */
@@ -723,6 +742,23 @@
 .gap-clay-xl { gap: 32px; }
 
 /* ============================================
+   WCAG 2.2 TOUCH TARGET UTILITIES
+   Minimum 44×44px for all interactive elements
+   ============================================ */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.touch-target-sm {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
    CLAYMORPHISM PERFORMANCE OPTIMIZATIONS
    ============================================ */
 
@@ -781,9 +817,155 @@
   transform: translateZ(0);
 }
 
-/* iOS input zoom prevention */
-@media screen and (max-width: 768px) {
-  input, textarea, select {
+
+/* iOS zoom prevention — 16px minimum font-size on all inputs */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  .input-field {
     font-size: 16px !important;
+  }
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINT ENFORCEMENT
+   5 breakpoints: 320px, 375px, 768px, 1024px, 1440px
+   No horizontal scroll at any breakpoint
+   ============================================ */
+
+/* Prevent horizontal scroll globally */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Ensure images scale correctly at all breakpoints */
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Interaction polish utilities — cursor-pointer + transitions */
+@layer utilities {
+  .interactive-pointer {
+    @apply cursor-pointer transition-all duration-200;
+  }
+
+  .interactive-hover {
+    @apply hover:opacity-90 transition-opacity duration-200;
+  }
+
+  .interactive-scale {
+    @apply hover:scale-105 transition-transform duration-200;
+  }
+
+  .interactive-color {
+    @apply hover:bg-primary/10 transition-colors duration-200;
+  }
+}
+
+/* Typography utilities — unified font system */
+@layer utilities {
+  /* Font family utilities */
+  .font-headline {
+    font-family: var(--font-headline);
+  }
+
+  .font-heading {
+    font-family: var(--font-headline);
+  }
+
+  .font-body {
+    font-family: var(--font-sans);
+  }
+
+  .font-pixel {
+    @apply font-[var(--font-pixel)];
+  }
+
+  /* Responsive text sizes — headings */
+  .text-heading-xl {
+    @apply text-2xl md:text-3xl lg:text-4xl font-black;
+  }
+
+  .text-heading-lg {
+    @apply text-xl md:text-2xl lg:text-3xl font-black;
+  }
+
+  .text-heading-md {
+    @apply text-lg md:text-xl lg:text-2xl font-bold;
+  }
+
+  /* Section headers */
+  .text-section {
+    @apply text-xl md:text-2xl lg:text-3xl;
+  }
+
+  .text-subsection {
+    @apply text-lg md:text-xl lg:text-2xl;
+  }
+}
+
+/* Container width constraints */
+.container-responsive {
+  width: 100%;
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Breakpoint-specific adjustments */
+@media (max-width: 320px) {
+  /* Smallest mobile (iPhone SE) */
+  body {
+    font-size: 14px;
+  }
+  .container-responsive {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+@media (max-width: 375px) {
+  /* Standard mobile (iPhone Mini/Pro) */
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Tablet (iPad portrait) */
+  /* Mobile shadow reduction already implemented lines 743-753 */
+}
+
+@media (min-width: 1024px) {
+  /* Desktop boundary — SideNav visible, BottomNavMobile hidden */
+  /* SideNav uses lg:flex (line 23), BottomNavMobile uses lg:hidden (line 10) */
+}
+
+@media (min-width: 1440px) {
+  /* Large desktop */
+  .container-responsive {
+    max-width: 1440px;
+  }
+}
+
+/* Mobile-specific bottom padding for BottomNavMobile */
+@media (max-width: 1023px) {
+  main {
+    padding-bottom: 6rem; /* 96px BottomNavMobile + 1rem spacing */
+  }
+}
+
+@media (min-width: 1024px) {
+  main {
+    padding-bottom: 0;
   }
 }

@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient, getUser, isAuthenticated } from '@/lib/pocketbase/client'
+import { AuthGuard } from '@/components/auth/AuthGuard'
+import { createClient } from '@/lib/pocketbase/client'
 import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,14 +10,18 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
-import { Coins, TrendingUp, Wallet, Loader2, CheckCircle2, DollarSign, RefreshCw } from 'lucide-react'
+import { Coins, TrendingUp, Wallet, Loader2, CheckCircle2, DollarSign } from 'lucide-react'
 import LayoutWithoutNav from '@/components/LayoutWithoutNav'
-import { CommissionBreakdown } from '@/components/referrals/CommissionBreakdown'
 
 export default function CommissionsDashboard() {
-  const router = useRouter()
-  const [isHydrated, setIsHydrated] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  return (
+    <AuthGuard redirectTo="/auth/login">
+      {(user) => <CommissionsContent user={user} />}
+    </AuthGuard>
+  )
+}
+
+function CommissionsContent({ user }: { user: any }) {
   const [profile, setProfile] = useState<any>(null)
   const [commissions, setCommissions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,31 +48,6 @@ export default function CommissionsDashboard() {
 
     return () => clearInterval(pollInterval)
   }, [user])
-
-  useEffect(() => {
-    setIsHydrated(true)
-    
-    const pb = createClient()
-    
-    if (isAuthenticated()) {
-      const currentUser = getUser()
-      if (currentUser) {
-        setUser(currentUser)
-        fetchData(currentUser.id)
-      }
-    } else {
-      router.push('/auth/login')
-    }
-
-    pb.authStore.onChange(() => {
-      if (isAuthenticated()) {
-        setUser(getUser())
-      } else {
-        setUser(null)
-        router.push('/auth/login')
-      }
-    })
-  }, [router])
 
   const fetchData = async (userId: string) => {
     const pb = createClient()
@@ -153,10 +132,29 @@ export default function CommissionsDashboard() {
         }
       })
 
+      if (!response.ok) {
+        const text = await response.text()
+        throw new Error(text || `HTTP ${response.status}`)
+      }
+
       const result = await response.json()
 
-      if (!response.ok) {
-        throw new Error(result.error?.message || 'Claim failed')
+      if (!result.success) {
+        let errorMessage = 'Claim failed'
+        if (result.error) {
+          if (typeof result.error === 'string') {
+            errorMessage = result.error
+          } else if (typeof result.error === 'object' && result.error !== null) {
+            if (typeof result.error.message === 'string') {
+              errorMessage = result.error.message
+            } else if (result.error.message && typeof result.error.message === 'object') {
+              errorMessage = JSON.stringify(result.error.message)
+            } else {
+              errorMessage = JSON.stringify(result.error)
+            }
+          }
+        }
+        throw new Error(errorMessage)
       }
 
       setClaimSuccess(result.data)
@@ -172,24 +170,12 @@ export default function CommissionsDashboard() {
     }
   }
 
-  const handleRefresh = async () => {
+  const _handleRefresh = async () => {
     if (user) {
       setUpdating(true)
       await fetchData(user.id)
       setUpdating(false)
     }
-  }
-
-  if (!isHydrated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-[var(--font-pixel)] text-foreground">LOADING...</p>
-      </div>
-    )
-  }
-
-  if (!user) {
-    return null
   }
 
   const usdtTotalEarned = parseFloat(profile?.usdt_total_earned || '0')
@@ -214,23 +200,8 @@ export default function CommissionsDashboard() {
                 Updating...
               </Badge>
             )}
-            <Button
-              onClick={handleRefresh}
-              disabled={updating}
-              variant="outline"
-              size="sm"
-              className="font-[var(--font-pixel)] text-xs"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${updating ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
           </div>
         </div>
-
-        {/* Commission Breakdown Buddy Chain Cards */}
-        {user && <CommissionBreakdown userId={user.id} className="mb-4" />}
-
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="border-2 border-primary/30 bg-card">
             <CardHeader className="pb-3">

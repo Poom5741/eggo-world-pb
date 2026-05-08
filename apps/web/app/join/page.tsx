@@ -1,17 +1,11 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
 import { initiateLineLogin } from '@/lib/auth/line-oauth'
+import { Button } from '@/components/ui/button'
 
 export default function Join() {
-  const [referralCode, setReferralCode] = useState('')
-
   const handleLINELogin = () => {
-    if (referralCode.trim()) {
-      sessionStorage.setItem('pending_referral_code', referralCode.trim().toUpperCase())
-      console.log('Saved referral code:', referralCode.trim().toUpperCase())
-    }
     const redirectTo = '/dashboard'
     sessionStorage.setItem('redirectTo', redirectTo)
     initiateLineLogin({ redirectTo })
@@ -68,60 +62,21 @@ export default function Join() {
             {/* Form Controls */}
             <div className="space-y-6">
               <div className="flex justify-center">
-                <button 
-                  className="bg-[#00C300] hover:bg-[#00b000] px-10 py-5 rounded-[2rem] font-headline font-black text-xl text-white flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-xl"
+                <Button 
+                  variant="line"
+                  size="clay-lg"
+                  className="font-headline font-black text-xl flex items-center justify-center gap-3 hover:scale-105 active:scale-95 transition-all shadow-xl"
                   onClick={handleLINELogin}
                 >
                   <svg className="w-8 h-8 fill-white" viewBox="0 0 24 24">
                     <path d="M24 10.304c0-5.369-5.383-9.738-12-9.738s-12 4.369-12 9.738c0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.121.303.079.778.039 1.085l-.171 1.027c-.052.311-.252 1.215 1.086.663 1.338-.553 7.214-4.248 9.843-7.271 1.83-2.023 2.11-3.704 2.11-5.704z"></path>
                   </svg>
                   Login with LINE
-                </button>
+                </Button>
               </div>
 
-              <div className="flex items-center gap-4 py-2">
-                <div className="h-px flex-1 bg-outline-variant opacity-30"></div>
-                <span className="text-on-surface-variant text-sm font-bold uppercase tracking-widest">or Join</span>
-                <div className="h-px flex-1 bg-outline-variant opacity-30"></div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-on-surface ml-2">Username</label>
-                  <div className="relative group">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" aria-hidden="true">person</span>
-                    <input 
-                      className="w-full h-14 pl-12 bg-surface-container-highest rounded-full border-none focus:ring-4 focus:ring-primary-container transition-all clay-input placeholder:text-on-surface-variant/40 font-medium" 
-                      placeholder="Your display name" 
-                      type="text"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-sm font-bold text-on-surface ml-2">Referral Code (Optional)</label>
-                  <div className="relative group">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant" aria-hidden="true">confirmation_number</span>
-                    <input 
-                      className="w-full h-14 pl-12 bg-surface-container-highest rounded-full border-none focus:ring-4 focus:ring-primary-container transition-all clay-input placeholder:text-on-surface-variant/40 font-medium uppercase" 
-                      placeholder="Enter code to get bonus eggs" 
-                      type="text"
-                      value={referralCode}
-                      onChange={(e) => setReferralCode(e.target.value)}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Link 
-                href="/dashboard" 
-                className="flex items-center justify-center w-full bg-gradient-to-br from-[#ffd709] to-[#efc900] text-white rounded-[2rem] px-10 py-5 font-headline font-black text-xl hover:scale-105 active:scale-95 transition-all shadow-xl relative overflow-hidden group"
-              >
-                <span className="relative z-10">Start Hatching</span>
-                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </Link>
-
-              <p className="text-center text-on-surface-variant text-sm font-medium">
-                By joining, you agree to the <Link href="#" className="text-secondary font-bold hover:underline">Hatchery Pact</Link>.
+              <p className="text-center text-on-surface-variant text-sm font-medium pt-6">
+                By joining, you agree to the <Link href="/coming-soon" aria-disabled="true" className="text-secondary font-bold hover:underline">Hatchery Pact</Link>.
               </p>
             </div>
 
@@ -152,7 +107,7 @@ export default function Join() {
 
       {/* Floating Badge for Help */}
       <button 
-        className="fixed bottom-8 right-8 w-16 h-16 bg-[#f3eb91] rounded-full flex items-center justify-center text-primary hover:scale-110 active:scale-95 transition-all shadow-xl z-50"
+        className="fixed bottom-8 right-8 w-16 h-16 bg-[var(--color-surface-container-highest)] rounded-full flex items-center justify-center text-primary hover:scale-110 active:scale-95 transition-all shadow-xl z-50"
         aria-label="Help"
       >
         <span className="material-symbols-outlined text-3xl" aria-hidden="true">help_outline</span>

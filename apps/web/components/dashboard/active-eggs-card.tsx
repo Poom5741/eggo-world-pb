@@ -68,10 +68,10 @@ export function ActiveEggsCard({ count, eggs }: ActiveEggsCardProps) {
     <Card variant="clay" className="shadow-clay-lg border-t-8 border-primary-container">
       <CardHeader className="pb-3">
         <div className="space-y-2">
-          <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground uppercase tracking-widest">
+          <CardDescription className="font-body text-xs text-muted-foreground uppercase tracking-widest">
             Active Eggs
           </CardDescription>
-          <CardTitle className="font-[var(--font-pixel)] text-4xl text-primary">
+          <CardTitle className="font-body text-4xl text-primary">
             {count}
           </CardTitle>
         </div>

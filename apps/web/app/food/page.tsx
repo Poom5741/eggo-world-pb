@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 import LayoutWithoutNav from '@/components/LayoutWithoutNav';
-import { useIsHydrated } from '@/hooks/use-is-hydrated';
 import { useFoodNft } from '@/hooks/use-food-nft';
-import { createClient } from '@/lib/pocketbase/client';
 import { FoodCard, FoodType } from '@/components/food-nft/FoodCard';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Flame, Tag } from 'lucide-react';
+import { FoodIcon } from '@/components/icons/species-icons';
 import { cn } from '@/lib/utils';
 import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog';
 
@@ -24,9 +24,15 @@ import { CreateListingDialog } from '@/components/marketplace/CreateListingDialo
  * - Auth guard (redirects to login if not authenticated)
  */
 export default function FoodInventoryPage() {
+  return (
+    <AuthGuard redirectTo="/auth/login">
+      {(user) => <FoodInventoryContent user={user} />}
+    </AuthGuard>
+  );
+}
+
+function FoodInventoryContent({ user }: { user: any }) {
   const router = useRouter();
-  const isHydrated = useIsHydrated();
-  const pb = createClient();
   const { getUserFoodNfts } = useFoodNft();
   
   // State สำหรับ Food NFT
@@ -37,22 +43,12 @@ export default function FoodInventoryPage() {
   const [sellDialogOpen, setSellDialogOpen] = useState(false);
   const [selectedFood, setSelectedFood] = useState<any>(null);
   
-  // Get authenticated user (หลัง hydration)
-  const user = isHydrated ? pb.authStore.record : null;
-  
-  // Auth guard - redirect ไป login ถ้าไม่ได้ login
-  useEffect(() => {
-    if (isHydrated && !user) {
-      router.push('/auth/login');
-    }
-  }, [isHydrated, user, router]);
-  
   // Fetch food NFTs when user is available
   useEffect(() => {
-    if (isHydrated && user?.id) {
+    if (user?.id) {
       fetchFoods();
     }
-  }, [isHydrated, user?.id]);
+  }, [user?.id]);
   
   const fetchFoods = async () => {
     if (!user?.id) return;
@@ -75,7 +71,7 @@ export default function FoodInventoryPage() {
   };
   
   // Loading state - แสดงสถานะกำลังโหลด
-  if (!isHydrated || loading) {
+  if (loading) {
     return (
       <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
@@ -99,11 +95,6 @@ export default function FoodInventoryPage() {
         </div>
       </LayoutWithoutNav>
     );
-  }
-  
-  // Not authenticated - จะถูก redirect ไป login
-  if (!user) {
-    return null;
   }
   
   // Empty state - กรณีไม่มี Food NFT
@@ -180,17 +171,17 @@ export default function FoodInventoryPage() {
         
         {/* Food Type Breakdown - แสดงประเภทอาหาร */}
         <div className="flex flex-wrap gap-2 mb-8">
-          <Badge variant="clay" className="bg-yellow-500 shadow-clay-sm font-[var(--font-pixel)] text-sm">
-            🌾 Grain: {foodByType['grain'] || 0}
+            <Badge variant="clay" className="shadow-clay-sm font-body text-sm">
+            <FoodIcon food="Wheat" className="w-4 h-4 inline mr-1" />Grain: {foodByType['grain'] || 0}
           </Badge>
-          <Badge variant="clay" className="bg-blue-500 shadow-clay-sm font-[var(--font-pixel)] text-sm">
-            🐟 Fish: {foodByType['fish'] || 0}
+          <Badge variant="clay" className="shadow-clay-sm font-body text-sm">
+            <FoodIcon food="Fish" className="w-4 h-4 inline mr-1" />Fish: {foodByType['fish'] || 0}
           </Badge>
-          <Badge variant="clay" className="bg-green-500 shadow-clay-sm font-[var(--font-pixel)] text-sm">
-            🦗 Insects: {foodByType['insects'] || 0}
+          <Badge variant="clay" className="shadow-clay-sm font-body text-sm">
+            <FoodIcon food="Bug" className="w-4 h-4 inline mr-1" />Insects: {foodByType['insects'] || 0}
           </Badge>
-          <Badge variant="clay" className="bg-purple-500 shadow-clay-sm font-[var(--font-pixel)] text-sm">
-            🌿 Herbs: {foodByType['herb'] || 0}
+          <Badge variant="clay" className="shadow-clay-sm font-body text-sm">
+            <FoodIcon food="Leaf" className="w-4 h-4 inline mr-1" />Herbs: {foodByType['herb'] || 0}
           </Badge>
         </div>
         
@@ -215,7 +206,7 @@ export default function FoodInventoryPage() {
                   size="clay-md"
                   onClick={() => handleSellClick(food)}
                   className={cn(
-                    'w-full mt-3 font-[var(--font-pixel)] text-sm',
+                    'w-full mt-3 font-body text-sm',
                     'flex items-center justify-center gap-2'
                   )}
                 >

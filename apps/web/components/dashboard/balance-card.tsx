@@ -59,7 +59,7 @@ export function BalanceCard({ balance, loading, error, refresh }: BalanceCardPro
             {/* Material Symbols icon - payments */}
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary">payments</span>
-              <CardDescription className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+              <CardDescription className="font-body text-xs text-muted-foreground">
                 USDT BALANCE
               </CardDescription>
             </div>
@@ -74,7 +74,7 @@ export function BalanceCard({ balance, loading, error, refresh }: BalanceCardPro
         </div>
         
         {/* Balance display - 2 decimal places */}
-        <CardTitle className="font-[var(--font-pixel)] text-4xl text-primary">
+        <CardTitle className="font-body text-4xl text-primary">
           {usdtBalance.toFixed(2)} USDT
         </CardTitle>
       </CardHeader>
@@ -83,14 +83,14 @@ export function BalanceCard({ balance, loading, error, refresh }: BalanceCardPro
         {/* Error state - show message and retry button */}
         {error ? (
           <div className="space-y-2">
-            <p className="text-sm text-destructive font-[var(--font-pixel)]">
+            <p className="text-sm text-destructive font-body">
               {error}
             </p>
             <Button
               variant="outline"
               size="sm"
               onClick={refresh}
-              className="font-[var(--font-pixel)] text-xs"
+              className="font-body text-xs"
             >
               Retry
             </Button>

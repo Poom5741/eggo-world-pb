@@ -1,34 +1,35 @@
-import { describe, it, expect, mock } from 'bun:test'
+import { describe, it, expect, vi, beforeEach } from 'bun:test'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { BuyFlow, type BuyFlowProps } from './BuyFlow'
 
-mock.module('next/navigation', () => ({
+const mockPush = vi.fn()
+const mockToast = vi.fn()
+
+vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: mock(() => {}),
+    push: mockPush,
   }),
 }))
 
-mock.module('@/hooks/use-toast', () => ({
+vi.mock('@/hooks/use-toast', () => ({
   useToast: () => ({
-    toast: mock(() => {}),
+    toast: mockToast,
   }),
 }))
 
-mock.module('@/lib/contracts/eggNft', () => ({
-  getSigner: mock(async () => ({
-    getAddress: mock(async () => '0x1234567890123456789012345678901234567890'),
+vi.mock('@/hooks/use-is-hydrated', () => ({
+  useIsHydrated: vi.fn(() => true),
+}))
+
+vi.mock('@/lib/pocketbase/client', () => ({
+  createClient: vi.fn(() => ({
+    authStore: { token: 'mock-token', record: { id: 'user123' } },
   })),
-}))
-
-mock.module('@/lib/contracts/usdt', () => ({
-  checkAllowance: mock(async () => 0n),
-  approveUSDT: mock(async () => true),
-}))
-
-mock.module('@/lib/contracts/marketplace', () => ({
-  buyNFT: mock(async () => true),
-  MARKETPLACE_ADDRESS: '0xMARKETPLACE',
+  getUser: vi.fn(() => ({
+    id: 'user123',
+    wallet: '0x1234567890123456789012345678901234567890',
+  })),
 }))
 
 describe('BuyFlow Component', () => {
@@ -37,64 +38,95 @@ describe('BuyFlow Component', () => {
     price: 100,
     priceWei: BigInt('100000000000000000000'),
     nftName: 'Golden Chicken #42',
+    nftType: 'egg',
     _nftImage: '/images/nft.png',
   }
 
+  beforeEach(() => {
+    vi.clearAllMocks()
+    global.fetch = vi.fn()
+  })
+
   it('renders buy button with correct price', () => {
     render(<BuyFlow {...defaultProps} />)
-    
+
     const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
     expect(buyButton).toBeInTheDocument()
   })
 
   it('shows shopping cart icon on buy button', () => {
     render(<BuyFlow {...defaultProps} />)
-    
+
     const icon = screen.getByText('shopping_cart')
     expect(icon).toBeInTheDocument()
   })
 
-  it('opens approval dialog when buy button is clicked', async () => {
+  it('opens purchase dialog when buy button is clicked', async () => {
     render(<BuyFlow {...defaultProps} />)
-    
+
+    // Wait for hydration to complete
+    await waitFor(() => {
+      const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
+      expect(buyButton).not.toBeDisabled()
+    })
+
     const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
     fireEvent.click(buyButton)
-    
+
     await waitFor(() => {
-      expect(screen.getByText('Approve USDT')).toBeInTheDocument()
+      expect(screen.getAllByText('Confirm Purchase').length).toBeGreaterThanOrEqual(1)
     })
   })
 
-  it('shows approval required message in dialog', async () => {
+  it('shows item details in confirmation dialog', async () => {
     render(<BuyFlow {...defaultProps} />)
-    
-    const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
-    fireEvent.click(buyButton)
-    
+
     await waitFor(() => {
-      expect(screen.getByText(/อนุญาตให้ marketplace ใช้ USDT ของคุณ/i)).toBeInTheDocument()
+      const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
+      fireEvent.click(buyButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Golden Chicken #42')).toBeInTheDocument()
     })
   })
 
-  it('displays step indicators in approval process', async () => {
+  it('shows price in confirmation dialog', async () => {
     render(<BuyFlow {...defaultProps} />)
-    
-    const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
-    fireEvent.click(buyButton)
-    
+
     await waitFor(() => {
-      expect(screen.getByText(/Step 1\/2: Approving USDT/i)).toBeInTheDocument()
+      const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
+      fireEvent.click(buyButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('100.00 USDT')).toBeInTheDocument()
     })
   })
 
-  it('shows MetaMask instruction text', async () => {
+  it('shows platform fee info in dialog', async () => {
     render(<BuyFlow {...defaultProps} />)
-    
-    const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
-    fireEvent.click(buyButton)
-    
+
     await waitFor(() => {
-      expect(screen.getByText(/กรุณายืนยันธุรกรรมใน MetaMask/i)).toBeInTheDocument()
+      const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
+      fireEvent.click(buyButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText(/Platform Fee \(4%\)/i)).toBeInTheDocument()
+    })
+  })
+
+  it('shows purchase confirmation button', async () => {
+    render(<BuyFlow {...defaultProps} />)
+
+    await waitFor(() => {
+      const buyButton = screen.getByRole('button', { name: /Buy for 100\.00 USDT/i })
+      fireEvent.click(buyButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Confirm Purchase').length).toBeGreaterThanOrEqual(1)
     })
   })
 })

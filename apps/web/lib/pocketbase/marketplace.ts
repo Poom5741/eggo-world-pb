@@ -112,7 +112,6 @@ export async function getMarketplaceListings(
       {
         filter: filterString,
         sort,
-        expand: 'seller', // Expand seller relation if available
       }
     )
 
@@ -144,7 +143,7 @@ export async function getListingById(
     const listing = await pb.collection('marketplace_listings').getOne<MarketplaceListing>(
       id,
       {
-        expand: 'seller',
+        fields: 'id, name, nft_id, nft_type, price, rarity, status, image_url, seller, seller_name, created, updated',
       }
     )
 
@@ -190,7 +189,6 @@ export async function getListingsBySeller(
       {
         filter: `seller = "${sellerAddress}" && ${statusFilter}`,
         sort: '-created',
-        expand: 'seller',
       }
     )
 

@@ -1,23 +1,14 @@
-/**
- * Tests for CommissionBreakdown component
- * 
- * @tests
- * - Renders 4 commission level cards (G1-G4)
- * - Shows correct percentages (20%, 10%, 10%, 10%)
- * - Displays empty state when no referrals
- * - Shows loading skeleton during fetch
- */
-
 import { describe, it, expect, vi, beforeEach } from 'bun:test'
 import { render, screen, waitFor } from '@testing-library/react'
 import { CommissionBreakdown } from './CommissionBreakdown'
-import { createClient } from '@/lib/pocketbase/client'
 
-// Mock PocketBase client
+// Shared mock for getList across all createClient() calls
+const mockGetList = vi.fn()
+
 vi.mock('@/lib/pocketbase/client', () => ({
   createClient: vi.fn(() => ({
     collection: vi.fn((_name: string) => ({
-      getList: vi.fn(),
+      getList: mockGetList,
     })),
   })),
 }))
@@ -29,23 +20,20 @@ describe('CommissionBreakdown', () => {
     vi.clearAllMocks()
   })
 
-  it('แสดง loading skeleton ระหว่างดึงข้อมูล (shows loading skeleton during fetch)', () => {
-    const mockGetList = vi.fn(
-      () => new Promise(() => {}) // Never resolves for loading test
+  it('shows loading skeleton during fetch', () => {
+    mockGetList.mockImplementation(
+      () => new Promise(() => {})
     )
-    vi.mocked(createClient().collection('').getList).mockImplementation(mockGetList)
 
     render(<CommissionBreakdown userId={mockUserId} />)
 
-    // ตรวจสอบว่ามี loading state - class animate-pulse อยู่ใน document
     const loadingElements = screen.getAllByRole('generic')
       .filter(el => el.className?.includes('animate-pulse'))
     expect(loadingElements.length).toBeGreaterThan(0)
   })
 
-  it('แสดง empty state เมื่อไม่มี referral (shows empty state when no referrals)', async () => {
-    const mockGetList = vi.fn().mockResolvedValue({ items: [] })
-    vi.mocked(createClient().collection('').getList).mockImplementation(mockGetList)
+  it('shows empty state when no referrals', async () => {
+    mockGetList.mockResolvedValue({ items: [] })
 
     render(<CommissionBreakdown userId={mockUserId} />)
 
@@ -55,7 +43,7 @@ describe('CommissionBreakdown', () => {
     })
   })
 
-  it('แสดง 4 การ์ดพร้อม commission percentages ที่ถูกต้อง (renders 4 cards with correct percentages)', async () => {
+  it('renders 4 cards with correct percentages', async () => {
     const mockCommissions = {
       items: [
         { level: 1, amount: '20', source_user: 'user1' },
@@ -66,25 +54,22 @@ describe('CommissionBreakdown', () => {
       ],
     }
 
-    const mockGetList = vi.fn().mockResolvedValue(mockCommissions)
-    vi.mocked(createClient().collection('').getList).mockImplementation(mockGetList)
+    mockGetList.mockResolvedValue(mockCommissions)
 
     render(<CommissionBreakdown userId={mockUserId} />)
 
     await waitFor(() => {
-      // ตรวจสอบ level labels
-      expect(screen.getByText(/G1/i)).toBeInTheDocument()
-      expect(screen.getByText(/G2/i)).toBeInTheDocument()
-      expect(screen.getByText(/G3/i)).toBeInTheDocument()
-      expect(screen.getByText(/G4/i)).toBeInTheDocument()
+      expect(screen.getAllByText(/G1/i).length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText(/G2/i).length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText(/G3/i).length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText(/G4/i).length).toBeGreaterThanOrEqual(1)
 
-      // ตรวจสอบ percentages
-      expect(screen.getByText(/20%/i)).toBeInTheDocument()
+      expect(screen.getAllByText(/20%/i).length).toBeGreaterThanOrEqual(1)
       expect(screen.getAllByText(/10%/i).length).toBeGreaterThanOrEqual(3)
     })
   })
 
-  it('แสดงจำนวน buddies และยอด earned ที่ถูกต้อง (displays correct buddy count and earned amount)', async () => {
+  it('displays correct buddy count and earned amount', async () => {
     const mockCommissions = {
       items: [
         { level: 1, amount: '20.50', source_user: 'user1' },
@@ -93,15 +78,12 @@ describe('CommissionBreakdown', () => {
       ],
     }
 
-    const mockGetList = vi.fn().mockResolvedValue(mockCommissions)
-    vi.mocked(createClient().collection('').getList).mockImplementation(mockGetList)
+    mockGetList.mockResolvedValue(mockCommissions)
 
     render(<CommissionBreakdown userId={mockUserId} />)
 
     await waitFor(() => {
-      // G1应该有2个buddies (user1, user2) - G1ควรมี 2 buddies
       expect(screen.getByText(/2 Buddies/i)).toBeInTheDocument()
-      // G1 earned = 20.50 + 30.75 = 51.25
       expect(screen.getByText('51.25 USDT')).toBeInTheDocument()
     })
   })

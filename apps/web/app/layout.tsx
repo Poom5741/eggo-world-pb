@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Press_Start_2P, Geist } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import PlatformStatusBanner from '@/components/PlatformStatusBanner'
 import './globals.css'
 
 const pressStart = Press_Start_2P({ 
@@ -37,6 +38,14 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  interactiveWidget: 'resizes-visual',
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -51,6 +60,14 @@ export default function RootLayout({
         />
       </head>
       <body className={`${pressStart.variable} ${geist.variable} font-sans antialiased`} suppressHydrationWarning>
+        <PlatformStatusBanner />
+        {/* Skip Navigation Link — WCAG 2.2 AA compliance */}
+        <a 
+          href="#main-content" 
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded-lg"
+        >
+          Skip to main content
+        </a>
         {children}
         <Analytics />
       </body>

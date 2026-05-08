@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/pocketbase/client'
+import { createClient, restoreAuth } from '@/lib/pocketbase/client'
 
 /**
  * Animal NFT data structure
@@ -21,6 +21,7 @@ export interface AnimalData {
   parent_egg_id?: number
   parent1_animal_id?: number
   parent2_animal_id?: number
+  last_bred_at?: string | null
 }
 
 /**
@@ -61,8 +62,13 @@ export function useAnimalPoll(
       return
     }
 
+    setLoading(true)
+
     try {
       const pb = createClient()
+      
+      // Ensure auth is restored before making API call
+      await restoreAuth(pb)
       
       // Fetch animal NFTs owned by user
       const records = await pb.collection('animal_nfts').getList(1, 100, {
@@ -84,6 +90,7 @@ export function useAnimalPoll(
         parent_egg_id: record.parent_egg_id,
         parent1_animal_id: record.parent1_animal_id,
         parent2_animal_id: record.parent2_animal_id,
+        last_bred_at: record.last_bred_at,
       }))
 
       setAnimals(animalData)

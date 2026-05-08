@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, createElement as ReactElement } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,6 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { cancelListing } from '@/lib/pocketbase/marketplace'
 import { useToast } from '@/hooks/use-toast'
+import { Egg as EggIcon, PawPrint, Wheat, AlertTriangle } from 'lucide-react'
 
 interface CancelListingDialogProps {
   open: boolean
@@ -24,11 +25,12 @@ interface CancelListingDialogProps {
   onSuccess: () => void
 }
 
-const nftIcon = {
-  Egg: '🥚',
-  Food: '🍖',
-  Animal: '🐾',
-}
+// NFT Icon mapping (replaces emoji characters)
+const nftIconComponents = {
+  Egg: EggIcon,
+  Food: Wheat,
+  Animal: PawPrint,
+} as const
 
 export function CancelListingDialog({
   open,
@@ -70,6 +72,9 @@ export function CancelListingDialog({
     onOpenChange(false)
   }
 
+  // Get the icon component for this NFT type (replaces emoji)
+  const NftIcon = nftIconComponents[nftType] || EggIcon
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
@@ -82,8 +87,8 @@ export function CancelListingDialog({
 
         <div className="space-y-4 py-4">
           <div className="bg-surface-container p-4 rounded-lg flex items-center gap-4">
-            <div className="w-16 h-16 bg-surface-container-high rounded-lg flex items-center justify-center text-3xl">
-              {nftIcon[nftType]}
+            <div className="w-16 h-16 bg-surface-container-high rounded-lg flex items-center justify-center">
+              {ReactElement(NftIcon, { className: "w-8 h-8" })}
             </div>
             <div>
               <p className="font-bold text-on-surface">{nftName}</p>
@@ -105,11 +110,11 @@ export function CancelListingDialog({
           </div>
 
           <div className="bg-error/10 p-3 rounded-lg border border-error/20">
-            <p className="text-sm text-error font-medium">
-              ⚠️ Warning: Cancelling will remove this listing from the marketplace. You will need to create a new listing if you want to sell again.
+            <p className="flex items-center gap-2 text-sm text-error font-medium">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" /> Warning: Cancelling will remove this listing from the marketplace. You will need to create a new listing if you want to sell again.
             </p>
-            <p className="text-sm text-error font-medium mt-1">
-              ⚠️ คำเตือน: การยกเลิกจะลบ listing นี้จาก marketplace คุณจะต้องสร้าง listing ใหม่หากต้องการขายอีกครั้ง
+            <p className="flex items-center gap-2 text-sm text-error font-medium mt-1">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" /> คำเตือน: การยกเลิกจะลบ listing นี้จาก marketplace คุณจะต้องสร้าง listing ใหม่หากต้องการขายอีกครั้ง
             </p>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { FoodIcon } from '../icons/species-icons';
 
 export type FoodType = 'grain' | 'fish' | 'insects' | 'herb';
 
@@ -21,11 +22,11 @@ interface FoodCardProps {
   disableSelection?: boolean;
 }
 
-const foodTypeConfig: Record<FoodType, { label: string; color: string; icon: string }> = {
-  grain: { label: 'Grain', color: 'bg-yellow-500', icon: '🌾' },
-  fish: { label: 'Fish', color: 'bg-blue-500', icon: '🐟' },
-  insects: { label: 'Insects', color: 'bg-green-500', icon: '🦗' },
-  herb: { label: 'Herb', color: 'bg-purple-500', icon: '🌿' },
+const foodTypeConfig: Record<FoodType, { label: string; color: string; foodIcon: string }> = {
+  grain: { label: 'Grain', color: 'bg-yellow-500', foodIcon: 'Wheat' },
+  fish: { label: 'Fish', color: 'bg-blue-500', foodIcon: 'Fish' },
+  insects: { label: 'Insects', color: 'bg-green-500', foodIcon: 'Bug' },
+  herb: { label: 'Herb', color: 'bg-purple-500', foodIcon: 'Leaf' },
 };
 
 export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCardProps) {
@@ -40,12 +41,24 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
         'transition-all duration-300 hover:shadow-clay-lg', // Hover lift
         'bg-gradient-to-br from-card/80 to-card',
         food.is_consumed && 'opacity-50 grayscale', // Consumed state
-        selected && 'ring-2 ring-primary shadow-clay-lg' // Selected state
+        selected && 'ring-2 ring-primary shadow-clay-lg', // Selected state
+        onSelect && !food.is_consumed && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
       )}
+      onClick={() => onSelect && !food.is_consumed && onSelect(food.food_id)}
+      onKeyDown={(e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && onSelect && !food.is_consumed) {
+          e.preventDefault()
+          onSelect(food.food_id)
+        }
+      }}
+      tabIndex={onSelect && !food.is_consumed ? 0 : -1}
+      role={onSelect && !food.is_consumed ? 'button' : undefined}
+      aria-pressed={selected}
+      aria-label={`Select ${config.label} food #${food.food_id}, ${selected ? 'selected' : 'not selected'}`}
     >
       <CardHeader className="pb-2 relative z-10">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-medium font-[var(--font-pixel)] text-xs text-foreground">
+          <CardTitle className="text-sm font-medium font-body text-xs text-foreground">
             Food #{food.food_id}
           </CardTitle>
           <Badge 
@@ -53,10 +66,10 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
             className={cn(
               config.color,
               'rounded-clay-full shadow-clay-sm',
-              'font-[var(--font-pixel)] text-xs'
+              'font-body text-xs'
             )}
           >
-            <span className="pixelated">{config.icon}</span> {config.label}
+            <FoodIcon food={config.foodIcon as any} /> {config.label}
           </Badge>
         </div>
       </CardHeader>
@@ -71,16 +84,14 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
           )}>
             <div className={cn(
               'w-20 h-20',
-              'flex items-center justify-center',
-              'text-4xl',
-              'pixelated' // CRITICAL: preserves pixel art rendering
+              'flex items-center justify-center'
             )}>
-              {config.icon}
+              <FoodIcon food={config.foodIcon as any} />
             </div>
           </div>
 
           {/* Minted Date */}
-          <div className="font-[var(--font-pixel)] text-xs text-muted-foreground">
+          <div className="font-body text-xs text-muted-foreground">
             Minted: {new Date(food.minted_at).toLocaleDateString()}
           </div>
           
@@ -105,13 +116,16 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
                 id={`food-${food.food_id}`}
                 checked={selected}
                 onCheckedChange={() => onSelect(food.food_id)}
-                clay
+                variant="clay"
+                aria-hidden="true"
+                tabIndex={-1}
               />
               <label
                 htmlFor={`food-${food.food_id}`}
-                className="font-[var(--font-pixel)] text-xs peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="font-body text-xs peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                aria-hidden="true"
               >
-                Select to feed
+                {config.label} #{food.food_id}
               </label>
             </div>
           )}
@@ -121,7 +135,7 @@ export function FoodCard({ food, onSelect, selected, disableSelection }: FoodCar
             <Button
               variant="clay"
               size="clay-sm"
-              className="w-full font-[var(--font-pixel)] text-xs rounded-clay-full"
+              className="w-full font-body text-xs rounded-clay-full"
               onClick={() => onSelect && onSelect(food.food_id)}
             >
               Use
