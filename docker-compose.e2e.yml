@@ -1,0 +1,183 @@
+# E2E Test Environment
+# Phase 41: Framework Setup + Docker Environment
+# Option B: Full Local Environment (local PocketBase + local Anvil + local wallet-api)
+#
+# Standalone isolated test environment (D-05: not extending docker-compose.yml)
+# Usage: docker compose -f docker-compose.e2e.yml up -d
+#
+# Services:
+# - pocketbase: Local PocketBase (host port 8091) wired to local Anvil
+# - wallet-api: Gas sponsorship service
+# - anvil:     Local blockchain (chain id 7117)
+# - frontend:  Static file server for apps/web/out/
+#
+# All services share `e2e-test-network` and the PocketBase hooks are
+# configured to trust PocketBase (MOCK_BLOCKCHAIN=true) so E2E journeys
+# work end-to-end against purely local infrastructure.
+
+version: '3.8'
+
+services:
+  # PocketBase - Local E2E instance  
+  # Uses a dedicated volume (pb_data.e2e) so production data is untouched.
+  pocketbase:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+    container_name: e2e-pocketbase
+    ports:
+      - "8091:8090"   # host 8091 -> container 8090 to avoid clashing with local dev PB
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Allow reaching host network
+    environment:
+      # App / wallet
+      - NODE_ENV=development
+      - APP_NAME=eggo-pb-e2e
+      - APP_URL=http://pocketbase:8090
+      - PB_PUBLIC_URL=http://localhost:8091
+      - ENCRYPTION=${E2E_ENCRYPTION_KEY:-4nWpfKByg2u3tkbbHAZ34div}
+      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-e2e_master_key_change_me_32chars!!}
+      - WALLET_API_URL=http://e2e-wallet-api:3001    # Fixed hostname for docker network
+      - WALLET_SRV_URL=http://e2e-wallet-api:3001    # Fixed hostname for docker network
+
+      # Blockchain - point at local Anvil (matching service name)
+      - BSC_RPC_URL=http://e2e-anvil:8545            # Fixed hostname for docker network
+      - BSC_CHAIN_ID=7117
+      - MOCK_BLOCKCHAIN=true
+
+      # Deployed test contract addresses (DeployEggNFT.s.sol on Anvil chain 7117)
+      - MOCK_USDT_ADDRESS=${MOCK_USDT_ADDRESS:-0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB}
+      - EGG_NFT_ADDRESS=${EGG_NFT_ADDRESS:-0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8}
+      - ANIMAL_NFT_ADDRESS=${ANIMAL_NFT_ADDRESS:-0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9}
+      - FOOD_NFT_ADDRESS=${FOOD_NFT_ADDRESS:-0x851356ae760d987E095750cCeb3bC6014560891C}
+      - COMMISSION_DISTRIBUTION_ADDRESS=${COMMISSION_DISTRIBUTION_ADDRESS:-0x9E545E3C0baAB3E08CdfD552C960A1050f373042}
+      - MARKETPLACE_CONTRACT_ADDRESS=${MARKETPLACE_CONTRACT_ADDRESS:-0xA4bE291dB0C0E21b6a5CDE2515dA9E2d5Af0337D}
+      - EGG_NFT_CONTRACT_ADDRESS=${EGG_NFT_ADDRESS:-0x84eA74d481Ee0A5332c457a4d796187F6Ba67fEB}
+      - ANIMAL_NFT_CONTRACT_ADDRESS=${ANIMAL_NFT_ADDRESS:-0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9}
+      - FOOD_NFT_CONTRACT_ADDRESS=${FOOD_NFT_ADDRESS:-0x851356ae760d987E095750cCeb3bC6014560891C}
+
+      # LINE OAuth disabled for E2E (kept blank)
+      - LINE_CHANNEL_ID=
+      - LINE_CHANNEL_SECRET=
+      - LINE_CALLBACK_URL=http://localhost:8091/api/oauth2-redirect
+    volumes:
+      - ./apps/backend/pb_data.e2e:/pb_data
+      - ./apps/backend/pb_hooks.e2e:/pb/pb_hooks:ro  # Use e2e hooks for isolated testing
+      - ./apps/backend/pb_public:/pb/pb_public:ro
+      - ./apps/backend/pb_migrations.e2e:/pb/pb_migrations:ro  # Use e2e migrations to prevent schema conflicts
+    command:
+      - serve
+      - --http=0.0.0.0:8090
+      - --dir=/pb_data
+      - --publicDir=/pb/pb_public
+      - --hooksDir=/pb/pb_hooks
+      - --migrationsDir=/pb/pb_migrations
+    networks:
+      - e2e-test-network
+    restart: unless-stopped
+    depends_on:
+      anvil:
+        condition: service_healthy
+      wallet-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  # Wallet API - Gas sponsorship service
+  wallet-api:
+    build:
+      context: ./wallet-api
+      dockerfile: Dockerfile  
+    container_name: e2e-wallet-api
+    ports:
+      - "3001:3001"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"  # Allow reaching host network
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - MIN_PASSWORD_LENGTH=12
+      - MAX_PASSWORD_LENGTH=120
+      - PUBLIC_ENCRYPTION=false
+      - CORS_ORIGIN=*  # Allow all origins for e2e testing to ensure connectivity
+      - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-e2e_master_key_change_me_32chars!!}
+      # DACC mnemonic for gas sponsorship (use test mnemonic for E2E)
+      - DACC_MNEMONIC=${DACC_MNEMONIC:-test test test test test test test test test test test test junk}
+      - PB_ADMIN_EMAIL=${PB_ADMIN_EMAIL:-test@e2e.local}
+      - PB_ADMIN_PASSWORD=${PB_ADMIN_PASSWORD:-test-password}
+      # E2E specific: Anvil RPC endpoint - fixed hostname for docker services  
+      - RPC_URL=http://e2e-anvil:8545
+      - POCKETBASE_URL=http://e2e-pocketbase:8090  # Use correct service name
+      - EGG_NFT_ADDRESS=${EGG_NFT_ADDRESS:-0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512}
+      - MARKETPLACE_CONTRACT_ADDRESS=${MARKETPLACE_CONTRACT_ADDRESS:-0xA4bE291dB0C0E21b6a5CDE2515dA9E2d5Af0337D}
+      - RELAYER_PRIVATE_KEY=${RELAYER_PRIVATE_KEY:-0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80}
+      # E2E specific: NFT contract addresses for marketplace operations
+      - EGG_NFT_CONTRACT_ADDRESS=${EGG_NFT_ADDRESS:-0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512}
+      - ANIMAL_NFT_CONTRACT_ADDRESS=${ANIMAL_NFT_ADDRESS:-0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9}
+      - FOOD_NFT_CONTRACT_ADDRESS=${FOOD_NFT_ADDRESS:-0x851356ae760d987E095750cCeb3bC6014560891C}
+    networks:
+      - e2e-test-network
+    restart: unless-stopped
+    depends_on:
+      anvil:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # Anvil - Local test blockchain (D-09)
+  # Local chain (not forked) - enables contract deployment and minting
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:latest
+    container_name: e2e-anvil
+    ports:
+      - "8545:8545"
+    environment:
+      - ANVIL_IP_ADDR=0.0.0.0
+      - ANVIL_PORT=8545
+    entrypoint: ["anvil"]
+    command: >-
+      --host 0.0.0.0
+      --port 8545
+      --chain-id 7117
+      --block-time 2
+      --gas-limit 10000000000
+    networks:
+      - e2e-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "cast block-number --rpc-url http://localhost:8545 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+
+  # Frontend - Static file server
+  frontend:
+    image: nginx:alpine
+    container_name: e2e-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./apps/web/out:/usr/share/nginx/html:ro
+    networks:
+      - e2e-test-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:80 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+# D-06: Isolated network (not shared with dev compose)
+networks:
+  e2e-test-network:
+    driver: bridge

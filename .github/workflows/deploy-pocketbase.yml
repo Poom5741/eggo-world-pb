@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/pocketbase
+  IMAGE_NAME: ${{ github.repository }}/${{ fromJSON('"pocketbase"') }}
   PRODUCTION_HOST: ${{ secrets.DEPLOY_HOST }}
   DOCKER_COMPOSE_PATH: /opt/eggo-pocketbase
 

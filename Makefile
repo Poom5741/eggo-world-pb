@@ -89,6 +89,28 @@ contracts-deploy-testnet:
 contracts-deploy-mainnet:
 	cd contracts && forge script script/Deploy.sol --rpc-url bsc --broadcast
 
+# E2E - Option B: Full Local Environment
+# One-shot: fresh pb_data.e2e, docker stack up, superuser, seed users,
+# forge-deploy test contracts, mint data, sync to PocketBase.
+.PHONY: e2e-up e2e-down e2e-reset e2e-logs e2e-test
+e2e-up:
+	@./scripts/e2e-bootstrap.sh
+
+e2e-down:
+	docker compose -f docker-compose.e2e.yml down -v
+
+e2e-reset: e2e-down e2e-up ## Tear down and rebuild the full E2E stack
+
+e2e-logs:
+	docker compose -f docker-compose.e2e.yml logs -f --tail=200
+
+e2e-test: ## Run Playwright journey tests against the local stack
+	POCKETBASE_URL=http://localhost:8091 \
+	ANVIL_RPC_URL=http://localhost:8545 \
+	WALLET_API_URL=http://localhost:3001 \
+	E2E_BASE_URL=http://localhost:3000 \
+		bun run test:e2e
+
 # Git Hooks (run without commit/push)
 pre-commit:
 	@echo "Running pre-commit hooks..."
@@ -134,3 +156,10 @@ help:
 	@echo "  make contracts-build-size Show contract sizes"
 	@echo "  make contracts-deploy-testnet Deploy to BSC testnet"
 	@echo "  make contracts-deploy-mainnet Deploy to BSC mainnet"
+	@echo ""
+	@echo "E2E (full local stack):"
+	@echo "  make e2e-up     Bring up full local stack + seed + deploy + mint + sync"
+	@echo "  make e2e-test   Run Playwright journey tests against local stack"
+	@echo "  make e2e-reset  Tear down + rebuild the E2E stack"
+	@echo "  make e2e-logs   Tail E2E container logs"
+	@echo "  make e2e-down   Stop and remove E2E stack"

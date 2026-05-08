@@ -1,0 +1,165 @@
+/**
+ * E2E test fixtures scaffold
+ * Phase 41: Framework Setup + Docker Environment
+ *
+ * Phase 42 will add auth bypass helpers
+ * Phase 43 will add wallet automation helpers
+ */
+
+import type { Page } from '@playwright/test'
+import { expect } from '@playwright/test'
+
+/**
+ * E2E test context interface
+ * Provides URLs for all services in the Docker test environment
+ */
+export interface E2ETestContext {
+  /** PocketBase backend URL */
+  pocketbaseUrl: string
+  /** Wallet API URL for gas sponsorship */
+  walletApiUrl: string
+  /** Anvil RPC URL for blockchain interactions */
+  anvilRpcUrl: string
+}
+
+/**
+ * Get E2E test context from environment variables
+ * Falls back to Docker Compose default ports
+ *
+ * @returns E2ETestContext with service URLs
+ */
+export function getE2EContext(): E2ETestContext {
+  return {
+    pocketbaseUrl: process.env.POCKETBASE_URL || 'http://localhost:8091',
+    walletApiUrl: process.env.WALLET_API_URL || 'http://localhost:3001',
+    anvilRpcUrl: process.env.ANVIL_RPC_URL || 'http://localhost:8545',
+  }
+}
+
+/**
+ * Predefined test users for E2E testing
+ * These users are created in production PocketBase with USDT balance
+ * Per WALLET-02: Wallet addresses mapped to Anvil accounts per D-05
+ */
+export const TEST_USERS = {
+  test_buyer: {
+    role: 'buyer',
+    description: 'Purchases NFTs from marketplace',
+    walletAddress: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', // Anvil Account 0
+  },
+  test_seller: {
+    role: 'seller',
+    description: 'Lists NFTs for sale',
+    walletAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', // Anvil Account 1
+  },
+  test_referrer: {
+    role: 'referrer',
+    description: 'Referral chain testing (G1 position)',
+    walletAddress: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC', // Anvil Account 2
+  },
+  test_admin: {
+    role: 'admin',
+    description: 'Admin operations testing',
+    walletAddress: '0x90F79bf6EB2c4f870365E785982E1f101E93b906', // Anvil Account 3
+  },
+  test_buyer_poor: {
+    role: 'buyer_poor',
+    description: 'Insufficient balance scenario testing (0 USDT)',
+    walletAddress: '0x15d34AAf54267DB7D7c367839Aaf71A00a2C6A65', // Anvil Account 4
+  },
+} as const
+
+export type TestUserName = keyof typeof TEST_USERS
+
+/**
+ * E2E login helper for authenticating test users
+ * Per AUTH-02: Test fixture creates authenticated session without UI flow
+ *
+ * @param page - Playwright page object
+ * @param testUser - The test user to authenticate (test_buyer, test_seller, test_referrer, test_admin)
+ * @param redirectTo - Optional redirect path after login
+ * @throws Error if test user is invalid or authentication fails
+ */
+export async function e2eLogin(
+  page: Page,
+  testUser: TestUserName,
+  redirectTo?: string
+): Promise<void> {
+  // Validate test user name
+  if (!TEST_USERS[testUser]) {
+    throw new Error(`Invalid test user: ${testUser}. Valid: ${Object.keys(TEST_USERS).join(', ')}`)
+  }
+
+  // Navigate to login page with E2E query params (trailing slash required for static export)
+  const loginUrl = redirectTo
+    ? `/auth/login/?e2e=true&e2e_test_user=${testUser}&redirectTo=${redirectTo}`
+    : `/auth/login/?e2e=true&e2e_test_user=${testUser}`
+
+  await page.goto(loginUrl)
+
+  // Wait for E2E button to appear
+  // With e2e_test_user param, the button has data-testid="e2e-login-button"
+  await page.waitForSelector('[data-testid="e2e-login-button"]', { state: 'visible', timeout: 10000 })
+
+  // Click E2E login button
+  await page.click('[data-testid="e2e-login-button"]')
+
+  // Wait for redirect to complete — the redirect goes to /dashboard/ or redirectTo path
+  // BUT the current URL already contains 'redirectTo' in query params, so we wait
+  // for the actual target path (the path changes after window.location.href is called)
+  const targetPath = redirectTo ? `${redirectTo}/` : '/dashboard/'
+  await page.waitForURL(`**${targetPath}`, { timeout: 15000 })
+
+  // Wait for page to load after redirect
+  await page.waitForLoadState('domcontentloaded')
+
+  // Give the page time to populate data (polling hooks, auth restoration)
+  await page.waitForTimeout(2000)
+
+  // Verify authentication by checking for authenticated UI elements
+  const sidebar = page.locator('nav, [data-testid="sidebar"], a[href*="/dashboard"]')
+  await expect(sidebar.first()).toBeVisible({ timeout: 5000 })
+
+  // Auth is verified via UI - localStorage/cookie check is optional
+  // The auth worked since the dashboard rendered with authenticated elements
+}
+
+/**
+ * Placeholder for PocketBase connection helper
+ * Phase 42 will implement auth bypass
+ *
+ * @param url - PocketBase URL
+ * @returns Promise that resolves to connection status
+ */
+export async function connectPocketBase(url: string): Promise<boolean> {
+  // TODO: Phase 42 - Implement auth bypass for test user injection
+  const healthCheck = await fetch(`${url}/api/health`)
+  return healthCheck.ok
+}
+
+/**
+ * Placeholder for Anvil connection helper
+ * Phase 42 will implement blockchain helpers
+ *
+ * @param url - Anvil RPC URL
+ * @returns Promise that resolves to connection status
+ */
+export async function connectAnvil(url: string): Promise<boolean> {
+  // TODO: Phase 42 - Implement blockchain helpers (VRF mock, polling)
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        method: 'eth_blockNumber',
+        params: [],
+        id: 1,
+      }),
+    })
+    const data = await response.json()
+    return data.result !== undefined
+  } catch {
+    return false
+  }
+}
