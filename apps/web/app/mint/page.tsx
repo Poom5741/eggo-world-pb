@@ -37,8 +37,11 @@ function MintedEggModal({
 }) {
   if (!isOpen) return null
 
-  const truncatedTxHash = `${txHash.slice(0, 10)}...${txHash.slice(-8)}`
-  const bscScanUrl = `${BSCSCAN_BASE_URL}/${txHash}`
+  const safeTxHash = String(txHash || '')
+  const safeEggId = String(eggId || '')
+  const safeRaritySeed = String(raritySeed || '')
+  const truncatedTxHash = `${safeTxHash.slice(0, 10)}...${safeTxHash.slice(-8)}`
+  const bscScanUrl = `${BSCSCAN_BASE_URL}/${safeTxHash}`
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -77,7 +80,7 @@ function MintedEggModal({
             {/* Egg ID */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-[var(--on-surface-variant)]">Egg ID</span>
-              <span className="font-mono text-[var(--on-surface)]">{eggId.slice(0, 8)}...</span>
+              <span className="font-mono text-[var(--on-surface)]">{safeEggId.slice(0, 8)}...</span>
             </div>
             
             {/* Token ID */}
@@ -89,7 +92,7 @@ function MintedEggModal({
             {/* Rarity */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-[var(--on-surface-variant)]">Rarity Seed</span>
-              <span className="font-mono text-[var(--on-surface)]">{raritySeed.slice(0, 8)}...</span>
+              <span className="font-mono text-[var(--on-surface)]">{safeRaritySeed.slice(0, 8)}...</span>
             </div>
             
             {/* Food NFT */}
@@ -106,7 +109,7 @@ function MintedEggModal({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-[var(--primary)] hover:underline"
-                title={txHash}
+                title={safeTxHash}
               >
                 {truncatedTxHash}
                 <ExternalLink className="w-3 h-3" />
@@ -128,7 +131,7 @@ function MintedEggModal({
         {/* Actions */}
         <div className="space-y-3">
           <Link
-            href={`/eggs?highlight=${eggId}`}
+            href={`/eggs?highlight=${safeEggId}`}
             className="block w-full py-4 rounded-2xl font-bold text-lg text-center clay-button bg-[var(--primary-container)] text-[var(--on-primary-container)] hover:scale-[1.02] active:scale-95 transition-all shadow-clay-md"
             onClick={onDismiss}
           >
@@ -286,10 +289,10 @@ export default function MintPage() {
       if (confirmed) {
         setConfirmationProgress('confirmed')
         // Extract egg data from response
-        const mintedEggId = result.data?.egg_id || result.data?.eggId || ''
+        const mintedEggId = String(result.data?.egg_id || result.data?.eggId || '')
         const mintedTokenId = result.data?.token_id || result.data?.tokenId || 0
-        const mintedRaritySeed = result.data?.rarity_seed || result.data?.raritySeed || ''
-        const mintedTxHash = hash || ''
+        const mintedRaritySeed = String(result.data?.rarity_seed || result.data?.raritySeed || '')
+        const mintedTxHash = String(hash || '')
         const mintedHasReferral = !!(result.data?.referral_applied || referrerId)
 
         if (mintedEggId) {
@@ -466,7 +469,7 @@ export default function MintPage() {
                   </p>
                   {txHash && (
                     <p className="text-xs text-[var(--on-surface-variant)] opacity-70 mt-1 font-mono">
-                      TX: {txHash.slice(0, 10)}...{txHash.slice(-8)}
+                      TX: {String(txHash).slice(0, 10)}...{String(txHash).slice(-8)}
                     </p>
                   )}
                 </div>
