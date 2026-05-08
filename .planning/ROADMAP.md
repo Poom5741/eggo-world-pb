@@ -89,7 +89,7 @@
 2. ✅ User can select up to 10 food NFTs with counter showing "X/10 food selected"
 3. ✅ Egg card displays progress bar showing food_count / 10 and visual indicator when ready to hatch
 4. ✅ Consumed food NFTs are marked as "used" in database and hidden from future picker
-   **Plans**: 3 plans (3 tasks total) — All ✅
+   **Plans**: 3 plans (5 tasks total) — All ✅
    **UI hint**: yes
 
    Plans:
