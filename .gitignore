@@ -93,3 +93,5 @@ test-results/
 .flux.env.production
 *.png
 *.webp
+# External tools with their own git repos
+hashlips_art_engine/
