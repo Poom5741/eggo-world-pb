@@ -149,7 +149,8 @@
                 
                 // Only create user if they don't exist
                 if (isNewUser) {
-                    console.log("Creating new user...");
+                    console.log("=== CREATING NEW USER ===");
+                    console.log("User data:", { name, email, sub: `line_${sub}` });
                     try {
                         user = await pb.collection('users').create({
                             name: name,
@@ -160,8 +161,11 @@
                             password: password,
                             passwordConfirm: password
                         });
-                        console.log("Created user:", user.id);
+                        console.log("✓ User created successfully:", user.id);
+                        console.log("User wallet field:", user.wallet || "NOT SET");
+                        console.log("User daccPublickey field:", user.daccPublickey || "NOT SET");
                     } catch (createErr) {
+                        console.error("✗ User creation FAILED:", createErr);
                         const errData = createErr.data?.data || {};
                         console.log("Create error details:", JSON.stringify(errData, null, 2));
                         
@@ -193,6 +197,57 @@
                         }
                     }
                 }
+                
+                // Verify wallet was created by hook
+                console.log("=== VERIFY WALLET CREATION ===")
+                console.log("User ID:", user.id)
+                console.log("User wallet:", user.wallet || "MISSING")
+                console.log("User daccPublickey:", user.daccPublickey || "MISSING")
+                
+                // Wallet creation hook might still be running, retry up to 3 times
+                let retries = 0
+                const maxRetries = 3
+                                
+                while ((!user.wallet || !user.daccPublickey) && retries < maxRetries) {
+                    console.log(`⌛ Wallet not ready yet, retrying (${retries + 1}/${maxRetries})...`)
+                    await new Promise(resolve => setTimeout(resolve, 2000)) // Wait 2 seconds
+                                    
+                    // Refresh user data via backend endpoint (doesn't require auth)
+                    const refreshRes = await fetch(window.location.origin + '/api/auth/line-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email })
+                    })
+                                    
+                    if (refreshRes.ok) {
+                        const refreshData = await refreshRes.json()
+                        user = refreshData.user
+                        retries++
+                                        
+                        console.log("Refreshed user - wallet:", user.wallet || "MISSING", "dacc:", user.daccPublickey || "MISSING")
+                    } else {
+                        console.log("Refresh failed, status:", refreshRes.status)
+                        retries++
+                    }
+                }
+                
+                if (!user.wallet) {
+                    console.error("⚠ WALLET NOT CREATED BY HOOK - This should not happen after Phase 18 fix")
+                    console.error("User record:", JSON.stringify(user, null, 2))
+                    
+                    // Show error to user (wallet is required for Buy Now flow)
+                    showError("Wallet creation failed. Please contact support. (Error: WALLET_NOT_CREATED)")
+                    return
+                }
+                
+                if (!user.daccPublickey) {
+                    console.error("⚠ DACC PUBLIC KEY MISSING")
+                    showError("Wallet setup incomplete. Please contact support. (Error: DACC_KEY_MISSING)")
+                    return
+                }
+                
+                console.log("✓ Wallet verified:", user.wallet)
+                console.log("✓ daccPublickey verified:", user.daccPublickey)
                 
                 // After user is created/updated, authenticate with PocketBase to get token
                 // Call /api/auth/line-auth endpoint which internally calls authWithPassword
@@ -233,27 +288,6 @@
                     return;
                 }
                             
-                if (!user.wallet) {
-                    console.log("Creating wallet via API...");
-                    try {
-                        const walletRes = await fetch(window.location.origin + '/api/wallet/create', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ userId: user.id })
-                        });
-                        
-                        if (walletRes.ok) {
-                            const walletData = await walletRes.json();
-                            console.log("Wallet created:", walletData);
-                            user = await pb.collection('users').getOne(user.id);
-                            console.log("Refreshed user with wallet:", user.wallet_address);
-                        } else {
-                            console.log("Wallet API response:", walletRes.status, await walletRes.text());
-                        }
-                    } catch (walletErr) {
-                        console.log("Wallet creation error:", walletErr.message);
-                    }
-                }
 
                 localStorage.setItem('pb_auth', JSON.stringify({ token: pbToken, model: userWithToken }));
                 
@@ -272,6 +306,7 @@
                     <strong>✓ Login Successful!</strong><br><br>
                     <strong>Name:</strong> ${user.name || 'N/A'}<br>
                     <strong>Email:</strong> ${user.email || 'N/A'}<br>
+                    <strong>Wallet:</strong> ${user.wallet ? user.wallet.substring(0, 10) + '...' : 'MISSING'}<br>
                     <br>กรุณากลับไปหน้าแอปพลิเคชันแล้วล็อกอินใหม่
                 `;
                 

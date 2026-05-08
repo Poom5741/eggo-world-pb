@@ -12,6 +12,8 @@ pocketbase.zip
 # PocketBase data (database and files)
 pb_data/
 pb_data/*
+pb_data.e2e/
+pb_data.e2e/*
 
 # Logs
 *.log

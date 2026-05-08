@@ -142,6 +142,18 @@
       },
       {
         "hidden": false,
+        "id": "number_log_index",
+        "max": 999999,
+        "min": 0,
+        "name": "log_index",
+        "onlyInt": false,
+        "presentable": false,
+        "required": true,
+        "system": false,
+        "type": "number"
+      },
+      {
+        "hidden": false,
         "id": "autodate_created",
         "name": "created",
         "onCreate": true,
@@ -166,7 +178,8 @@
       "CREATE INDEX `idx_deposits_user` ON `deposits` (`user`)",
       "CREATE INDEX `idx_deposits_status` ON `deposits` (`status`)",
       "CREATE INDEX `idx_deposits_block_number` ON `deposits` (`block_number`)",
-      "CREATE INDEX `idx_deposits_confirmations` ON `deposits` (`confirmations`)"
+      "CREATE INDEX `idx_deposits_confirmations` ON `deposits` (`confirmations`)",
+      "CREATE UNIQUE INDEX `idx_deposits_tx_hash_log` ON `deposits` (`tx_hash`, `log_index`)"
     ],
     "system": false
   }

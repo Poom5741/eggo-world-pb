@@ -1,0 +1,142 @@
+{
+  "name": "resale_listings",
+  "type": "base",
+  "system": false,
+  "schema": [
+    {
+      "name": "nft_id",
+      "type": "relation",
+      "required": true,
+      "unique": false,
+      "options": {
+        "collectionId": "animal_nfts",
+        "cascadeDelete": true,
+        "minSelect": null,
+        "maxSelect": 1,
+        "displayFields": ["animal_id"]
+      }
+    },
+    {
+      "name": "animal_id",
+      "type": "number",
+      "required": true,
+      "unique": false,
+      "options": {
+        "min": 1,
+        "max": null
+      }
+    },
+    {
+      "name": "seller_id",
+      "type": "relation",
+      "required": true,
+      "unique": false,
+      "options": {
+        "collectionId": "_pb_users_auth_",
+        "cascadeDelete": false,
+        "minSelect": null,
+        "maxSelect": 1,
+        "displayFields": ["username"]
+      }
+    },
+    {
+      "name": "buyer_id",
+      "type": "relation",
+      "required": false,
+      "unique": false,
+      "options": {
+        "collectionId": "_pb_users_auth_",
+        "cascadeDelete": false,
+        "minSelect": null,
+        "maxSelect": 1,
+        "displayFields": ["username"]
+      }
+    },
+    {
+      "name": "price",
+      "type": "number",
+      "required": true,
+      "unique": false,
+      "options": {
+        "min": 0.01,
+        "max": null
+      }
+    },
+    {
+      "name": "rarity",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": ["Common", "Rare", "Epic", "Legendary"]
+      }
+    },
+    {
+      "name": "species",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": ["Chicken", "Duck", "Pig", "Cow", "Sheep", "Dog", "Cat", "Rabbit"]
+      }
+    },
+    {
+      "name": "generation",
+      "type": "number",
+      "required": true,
+      "unique": false,
+      "options": {
+        "min": 0,
+        "max": null
+      }
+    },
+    {
+      "name": "royalty_recipients",
+      "type": "json",
+      "required": false,
+      "unique": false,
+      "options": {}
+    },
+    {
+      "name": "status",
+      "type": "select",
+      "required": true,
+      "unique": false,
+      "options": {
+        "maxSelect": 1,
+        "values": ["active", "sold", "cancelled"],
+        "default": "active"
+      }
+    },
+    {
+      "name": "listed_at",
+      "type": "date",
+      "required": true,
+      "unique": false,
+      "options": {}
+    },
+    {
+      "name": "sold_at",
+      "type": "date",
+      "required": false,
+      "unique": false,
+      "options": {}
+    }
+  ],
+  "indexes": [
+    "CREATE INDEX `idx_resale_listings_seller` ON `resale_listings` (`seller_id`)",
+    "CREATE INDEX `idx_resale_listings_status` ON `resale_listings` (`status`)",
+    "CREATE INDEX `idx_resale_listings_animal_id` ON `resale_listings` (`animal_id`)",
+    "CREATE INDEX `idx_resale_listings_rarity` ON `resale_listings` (`rarity`)",
+    "CREATE INDEX `idx_resale_listings_species` ON `resale_listings` (`species`)",
+    "CREATE INDEX `idx_resale_listings_price` ON `resale_listings` (`price`)"
+  ],
+  "listRule": "@request.auth.id != ''",
+  "viewRule": "@request.auth.id != ''",
+  "createRule": "@request.auth.id != '' && seller_id = @request.auth.id",
+  "updateRule": "@request.auth.id != '' && seller_id = @request.auth.id",
+  "deleteRule": "@request.auth.id != '' && seller_id = @request.auth.id && status = 'active'",
+  "options": {}
+}

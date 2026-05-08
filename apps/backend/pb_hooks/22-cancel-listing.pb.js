@@ -5,7 +5,11 @@
 
 routerAdd("POST", "/api/v2/cancel-listing", (e) => {
     try {
-        const seller = $apis.requireAuth(e);
+        const requestInfo = e.requestInfo();
+        const sellerId = requestInfo.auth?.id;
+        if (!sellerId) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
+        let seller;
+        try { seller = $app.findRecordById("users", sellerId); } catch (e) { return e.json(401, { success: false, error: { message: "User not found", code: "USER_NOT_FOUND" } }); }
         
         const body = e.parseBody();
         const { listing_id } = body;
@@ -55,9 +59,40 @@ routerAdd("POST", "/api/v2/cancel-listing", (e) => {
         
         listing.set('status', 'cancelled');
         $app.dao().save(listing);
-        
+
         const nftType = listing.getString('nft_type');
         const nftId = listing.getString('nft_id');
+
+        // Call on-chain Marketplace contract via wallet-api to cancel escrow
+        var mockBlockchain = ($os.getenv("MOCK_BLOCKCHAIN") || "").toLowerCase() === "true";
+        if (!mockBlockchain) {
+            try {
+                var walletApiUrl = $os.getenv("WALLET_API_URL") || "http://localhost:3001";
+                var marketplaceContractAddress = $os.getenv("MARKETPLACE_CONTRACT_ADDRESS");
+                var nftContractAddress = listing.getString("nft_contract_address");
+
+                if (marketplaceContractAddress && nftContractAddress) {
+                    var tokenId = listing.get("token_id") || nftId;
+                    var walletApiResponse = $http.send({
+                        url: walletApiUrl + "/api/v1/marketplace/cancel",
+                        method: "POST",
+                        body: JSON.stringify({
+                            userId: seller.id,
+                            nftContract: nftContractAddress,
+                            tokenId: parseInt(tokenId),
+                            marketplaceAddress: marketplaceContractAddress
+                        }),
+                        headers: { "Content-Type": "application/json" },
+                        timeout: 120
+                    });
+                    if (walletApiResponse.statusCode === 200) {
+                        console.log("On-chain cancel confirmed for listing: " + listing_id);
+                    }
+                }
+            } catch (chainError) {
+                console.error("On-chain cancel error (non-fatal): " + String(chainError));
+            }
+        }
         
         if (nftId) {
             const collectionName = nftType === 'Egg' ? 'egg_nfts' : nftType === 'Food' ? 'food_nfts' : 'animal_nfts';

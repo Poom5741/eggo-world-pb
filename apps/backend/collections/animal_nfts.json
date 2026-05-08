@@ -43,16 +43,7 @@
       "unique": false,
       "options": {
         "maxSelect": 1,
-        "values": [
-          "Chicken",
-          "Duck",
-          "Pig",
-          "Cow",
-          "Sheep",
-          "Dog",
-          "Cat",
-          "Rabbit"
-        ]
+        "values": ["Chicken", "Duck", "Pig", "Cow", "Sheep", "Dog", "Cat", "Rabbit"]
       }
     },
     {
@@ -62,12 +53,7 @@
       "unique": false,
       "options": {
         "maxSelect": 1,
-        "values": [
-          "Common",
-          "Rare",
-          "Epic",
-          "Legendary"
-        ]
+        "values": ["Common", "Rare", "Epic", "Legendary"]
       }
     },
     {
@@ -126,6 +112,22 @@
         "min": 0,
         "max": 10
       }
+    },
+    {
+      "name": "is_burned",
+      "type": "bool",
+      "required": false,
+      "unique": false,
+      "options": {
+        "default": false
+      }
+    },
+    {
+      "name": "burned_at",
+      "type": "date",
+      "required": false,
+      "unique": false,
+      "options": {}
     },
     {
       "name": "contract_address",
