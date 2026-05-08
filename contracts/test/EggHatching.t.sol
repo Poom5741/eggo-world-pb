@@ -7,6 +7,7 @@ import {EggNFT, FoodType} from "../src/EggNFT.sol";
 import {FoodNFT} from "../src/FoodNFT.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract EggHatchingTest is Test {
     AnimalNFT public animalNFT;
@@ -14,6 +15,7 @@ contract EggHatchingTest is Test {
     FoodNFT public foodNFT;
     CommissionDistribution public commissionDistribution;
     MockUSDT public usdtToken;
+    VRFCoordinatorV2_5Mock public vrfCoordinatorMock;
     
     address public owner = address(1);
     address public coinStorReserve = address(2);
@@ -21,9 +23,11 @@ contract EggHatchingTest is Test {
     address public user2 = address(4);
     address public referrer = address(5);
     
-    uint256 constant MINT_PRICE = 25 * 10^18;
+    uint256 constant MINT_PRICE = 25 * 10**18;
     uint256 constant MAX_FOOD_COUNT = 10;
     uint256 constant INITIAL_FOOD_COUNT = 2;
+    uint256 public vrfSubscriptionId;
+    bytes32 public vrfKeyHash = bytes32(uint256(0x8596b430971ac45bdf6088665b9ad8e8630c9d5049ab54b14dff711bee7c0e26));
     
     event EggHatched(
         uint256 indexed egg_id,
@@ -36,16 +40,26 @@ contract EggHatchingTest is Test {
         vm.startPrank(owner);
         
         usdtToken = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve, address(usdtToken));
-        eggNFT = new EggNFT(address(commissionDistribution), address(usdtToken));
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(usdtToken), address(0x5));
+        
+        // Deploy mock VRF coordinator
+        vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
+        
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(usdtToken), address(vrfCoordinatorMock));
         animalNFT = new AnimalNFT();
-        foodNFT = new FoodNFT(address(commissionDistribution), address(usdtToken), address(eggNFT));
+        foodNFT = new FoodNFT(payable(address(commissionDistribution)), address(usdtToken), address(eggNFT));
         
         commissionDistribution.setEggNFTContract(address(eggNFT));
         commissionDistribution.setFoodNFTContract(address(foodNFT));
         eggNFT.setFoodNFTContract(address(foodNFT));
         eggNFT.setAnimalNFTContract(address(animalNFT));
         animalNFT.setEggNFTContract(address(eggNFT));
+        
+        // Setup VRF subscription
+        vrfSubscriptionId = vrfCoordinatorMock.createSubscription();
+        vrfCoordinatorMock.addConsumer(vrfSubscriptionId, address(eggNFT));
+        vrfCoordinatorMock.fundSubscription(vrfSubscriptionId, 100 ether);
+        eggNFT.setVRFConfig(vrfSubscriptionId, vrfKeyHash);
         
         vm.deal(user1, 100 ether);
         vm.deal(user2, 100 ether);
@@ -70,18 +84,18 @@ contract EggHatchingTest is Test {
     
     function _feedEgg(uint256 eggTokenId, uint256 quantity) internal {
         vm.startPrank(user1);
-        uint256 foodCost = quantity * 50 * 10^16;
+        uint256 foodCost = quantity * 50 * 10**16;
         usdtToken.mint(user1, foodCost);
         usdtToken.approve(address(foodNFT), foodCost);
-        uint256[] memory foodIds = foodNFT.mintFood(user1, quantity, referrer);
+        uint256[] memory foodIds = foodNFT.mintFood(quantity, referrer);
         foodNFT.feedEgg(eggTokenId, foodIds, address(eggNFT));
         vm.stopPrank();
     }
     
-    // ==================== BASIC HATCHING TESTS ====================
+    // ==================== BASIC HATCHING TESTS (VRF TWO-PHASE) ====================
     
-    function test_HatchEgg_Success_AfterFeeding10Times() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+    function test_HatchEgg_VRFRequest_ReturnsRequestId() public {
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -90,23 +104,53 @@ contract EggHatchingTest is Test {
         assertFalse(isHatched);
         
         vm.startPrank(user1);
-        
-        uint256 animalTokenId = eggNFT.hatchEgg(eggTokenId);
+        uint256 requestId = eggNFT.hatchEgg(eggTokenId);
         vm.stopPrank();
         
-        assertEq(animalTokenId, 1);
-        assertEq(animalNFT.ownerOf(animalTokenId), user1);
-        assertEq(eggNFT.getAnimalId(eggTokenId), animalTokenId);
+        assertGt(requestId, 0, "Should return valid request ID");
+        
+        // Verify egg is NOT yet hatched
+        (,,,isHatched,,,,,,,,) = eggNFT.getEggProperties(eggTokenId);
+        assertFalse(isHatched, "Egg should not be hatched until claimHatch");
     }
     
-    function test_HatchEgg_AnimalNFTHasCorrectProperties() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+    function test_ClaimHatch_Success_AfterVRFFulfillment() public {
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
         
         vm.startPrank(user1);
-        uint256 animalTokenId = eggNFT.hatchEgg(eggTokenId);
+        uint256 requestId = eggNFT.hatchEgg(eggTokenId);
+        vm.stopPrank();
+        
+        // Simulate VRF fulfillment
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        
+        // Now claim the hatch
+        vm.startPrank(user1);
+        uint256 animalTokenId = eggNFT.claimHatch(eggTokenId);
+        vm.stopPrank();
+        
+        assertGt(animalTokenId, 0, "Should return valid animal token ID");
+        assertEq(animalNFT.ownerOf(animalTokenId), user1);
+        assertEq(eggNFT.getAnimalId(eggTokenId), animalTokenId);
+    }
+    
+    function test_HatchEgg_AnimalNFTHasCorrectProperties() public {
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
+        
+        uint256 eggTokenId = _mintEgg(user1, referrer);
+        _feedEgg(eggTokenId, 8);
+        
+        vm.startPrank(user1);
+        uint256 requestId = eggNFT.hatchEgg(eggTokenId);
+        vm.stopPrank();
+        
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        
+        vm.startPrank(user1);
+        uint256 animalTokenId = eggNFT.claimHatch(eggTokenId);
         vm.stopPrank();
         
         (
@@ -131,13 +175,19 @@ contract EggHatchingTest is Test {
     }
     
     function test_HatchEgg_EggMarkedAsHatched() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
         
         vm.startPrank(user1);
-        eggNFT.hatchEgg(eggTokenId);
+        uint256 requestId = eggNFT.hatchEgg(eggTokenId);
+        vm.stopPrank();
+        
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        
+        vm.startPrank(user1);
+        eggNFT.claimHatch(eggTokenId);
         vm.stopPrank();
         
         (,,,bool isHatched,,,,,,,,) = eggNFT.getEggProperties(eggTokenId);
@@ -146,22 +196,10 @@ contract EggHatchingTest is Test {
         assertTrue(eggNFT.isEggHatched(eggTokenId));
     }
     
-    function test_HatchEgg_EventEmitted() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
-        
-        uint256 eggTokenId = _mintEgg(user1, referrer);
-        _feedEgg(eggTokenId, 8);
-        
-        vm.startPrank(user1);
-        
-        eggNFT.hatchEgg(eggTokenId);
-        vm.stopPrank();
-    }
-    
     // ==================== VERIFICATION TESTS ====================
     
     function test_HatchEgg_RevertWhen_InsufficientFood() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (5 * 0.50 * 10^18));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (5 * 0.50 * 10**18));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 5);
@@ -175,8 +213,8 @@ contract EggHatchingTest is Test {
         vm.stopPrank();
     }
     
-    function test_HatchEgg_RevertWhen_AlreadyHatched() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+    function test_ClaimHatch_RevertWhen_VRFNotFulfilled() public {
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -184,13 +222,30 @@ contract EggHatchingTest is Test {
         vm.startPrank(user1);
         eggNFT.hatchEgg(eggTokenId);
         
+        // Try to claim before VRF fulfillment
+        vm.expectRevert("VRF randomness not yet fulfilled");
+        eggNFT.claimHatch(eggTokenId);
+        vm.stopPrank();
+    }
+    
+    function test_ClaimHatch_RevertWhen_AlreadyHatched() public {
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
+        
+        uint256 eggTokenId = _mintEgg(user1, referrer);
+        _feedEgg(eggTokenId, 8);
+        
+        vm.startPrank(user1);
+        uint256 requestId = eggNFT.hatchEgg(eggTokenId);
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        eggNFT.claimHatch(eggTokenId);
+        
         vm.expectRevert("Egg already hatched");
-        eggNFT.hatchEgg(eggTokenId);
+        eggNFT.claimHatch(eggTokenId);
         vm.stopPrank();
     }
     
     function test_HatchEgg_RevertWhen_NotOwner() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -204,7 +259,7 @@ contract EggHatchingTest is Test {
     // ==================== FOOD TYPE INFLUENCE TESTS ====================
     
     function test_HatchEgg_SpeciesVariesWithFoodTypes() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (16 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (16 * 50 * 10**16));
         
         uint256 eggTokenId1 = _mintEgg(user1, referrer);
         uint256 eggTokenId2 = _mintEgg(user1, referrer);
@@ -213,8 +268,12 @@ contract EggHatchingTest is Test {
         _feedEgg(eggTokenId2, 8);
         
         vm.startPrank(user1);
-        uint256 animalTokenId1 = eggNFT.hatchEgg(eggTokenId1);
-        uint256 animalTokenId2 = eggNFT.hatchEgg(eggTokenId2);
+        uint256 requestId1 = eggNFT.hatchEgg(eggTokenId1);
+        uint256 requestId2 = eggNFT.hatchEgg(eggTokenId2);
+        vrfCoordinatorMock.fulfillRandomWords(requestId1, address(eggNFT));
+        vrfCoordinatorMock.fulfillRandomWords(requestId2, address(eggNFT));
+        uint256 animalTokenId1 = eggNFT.claimHatch(eggTokenId1);
+        uint256 animalTokenId2 = eggNFT.claimHatch(eggTokenId2);
         vm.stopPrank();
         
         Species species1 = animalNFT.getSpecies(animalTokenId1);
@@ -227,7 +286,7 @@ contract EggHatchingTest is Test {
     // ==================== EDGE CASES ====================
     
     function test_HatchEgg_Exactly10FoodItems() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
@@ -236,14 +295,16 @@ contract EggHatchingTest is Test {
         assertEq(foodCount, MAX_FOOD_COUNT);
         
         vm.startPrank(user1);
-        uint256 animalTokenId = eggNFT.hatchEgg(eggTokenId);
+        uint256 requestId = eggNFT.hatchEgg(eggTokenId);
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        uint256 animalTokenId = eggNFT.claimHatch(eggTokenId);
         vm.stopPrank();
         
         assertGt(animalTokenId, 0);
     }
     
     function test_HatchEgg_MoreThan10FoodItems() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (12 * 0.50 * 10^18));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (12 * 0.50 * 10**18));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 12);
@@ -252,24 +313,29 @@ contract EggHatchingTest is Test {
         assertEq(foodCount, 14);
         
         vm.startPrank(user1);
-        uint256 animalTokenId = eggNFT.hatchEgg(eggTokenId);
+        uint256 requestId = eggNFT.hatchEgg(eggTokenId);
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        uint256 animalTokenId = eggNFT.claimHatch(eggTokenId);
         vm.stopPrank();
         
         assertGt(animalTokenId, 0);
     }
     
     function test_HatchEgg_OwnershipTransferBeforeHatching() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         _feedEgg(eggTokenId, 8);
         
         vm.startPrank(user1);
+        uint256 requestId = eggNFT.hatchEgg(eggTokenId);
         eggNFT.safeTransferFrom(user1, user2, eggTokenId);
         vm.stopPrank();
         
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        
         vm.startPrank(user2);
-        uint256 animalTokenId = eggNFT.hatchEgg(eggTokenId);
+        uint256 animalTokenId = eggNFT.claimHatch(eggTokenId);
         vm.stopPrank();
         
         assertEq(animalNFT.ownerOf(animalTokenId), user2);
@@ -278,7 +344,7 @@ contract EggHatchingTest is Test {
     // ==================== INTEGRATION TESTS ====================
     
     function test_HatchEgg_FullFlow_MintFeedHatch() public {
-        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10^16));
+        _mintAndApproveUSDT(user1, MINT_PRICE + (8 * 50 * 10**16));
         
         uint256 eggTokenId = _mintEgg(user1, referrer);
         
@@ -291,7 +357,9 @@ contract EggHatchingTest is Test {
         assertEq(finalFoodCount, MAX_FOOD_COUNT);
         
         vm.startPrank(user1);
-        uint256 animalTokenId = eggNFT.hatchEgg(eggTokenId);
+        uint256 requestId = eggNFT.hatchEgg(eggTokenId);
+        vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+        uint256 animalTokenId = eggNFT.claimHatch(eggTokenId);
         vm.stopPrank();
         
         assertEq(animalNFT.ownerOf(animalTokenId), user1);
@@ -310,7 +378,7 @@ contract EggHatchingTest is Test {
         uint256 legendaryCount = 0;
         
         uint256 numEggs = 100;
-        uint256 totalCost = MINT_PRICE * numEggs + (8 * 50 * 10^16) * numEggs;
+        uint256 totalCost = MINT_PRICE * numEggs + (8 * 50 * 10**16) * numEggs;
         _mintAndApproveUSDT(user1, totalCost);
         
         uint256[] memory eggTokenIds = new uint256[](numEggs);
@@ -322,7 +390,9 @@ contract EggHatchingTest is Test {
         
         vm.startPrank(user1);
         for (uint256 i = 0; i < numEggs; i++) {
-            uint256 animalTokenId = eggNFT.hatchEgg(eggTokenIds[i]);
+            uint256 requestId = eggNFT.hatchEgg(eggTokenIds[i]);
+            vrfCoordinatorMock.fulfillRandomWords(requestId, address(eggNFT));
+            uint256 animalTokenId = eggNFT.claimHatch(eggTokenIds[i]);
             Rarity rarity = animalNFT.getRarity(animalTokenId);
             
             if (rarity == Rarity.Common) commonCount++;

@@ -10,32 +10,52 @@ contract CommissionDistribution {
     address public immutable owner;
     address public immutable coinStorReserve;
     IERC20 public immutable usdtToken;
+    address public immutable treasury;  // Treasury address for 46% allocation
     address public eggNFTContract;
     address public foodNFTContract;
+    address public marketplaceContract;
     
+    // Primary sale percentages (egg mint, food mint)
     uint256 public constant G1_PERCENT = 20;
     uint256 public constant G2_PERCENT = 10;
     uint256 public constant G3_PERCENT = 10;
     uint256 public constant G4_PERCENT = 10;
     uint256 public constant COINSTOR_PERCENT = 4;
     uint256 public constant TREASURY_PERCENT = 46;
+    
+    // Resale percentages (marketplace secondary sales, per spec §6.3)
+    uint256 public constant G1_RESALE_PERCENT = 2;   // 2% of total sale → G1
+    uint256 public constant G2_RESALE_PERCENT = 1;   // 1% of total sale → G2
+    uint256 public constant G3_RESALE_PERCENT = 1;   // 1% of total sale → G3
+    uint256 public constant G4_RESALE_PERCENT = 1;   // 1% of total sale → G4
+    uint256 public constant SELLER_RESALE_PERCENT = 85; // 85% of total sale → Seller
+    // CoinStor still 4%, Treasury gets remainder (6%)
     uint256 public constant TOTAL_PERCENT = 100;
     
     mapping(address => uint256) public commissionBalances;
     
     event CommissionDistributed(address indexed buyer, address[4] referralChain, uint256 totalAmount);
-    event CommissionClaimed(address indexed referrer, uint256 amount);
     event CommissionClaimedUSDT(address indexed referrer, uint256 amount);
     event CoinStorDeposit(address indexed buyer, uint256 amount);
+    event TreasuryWithdrawn(address indexed caller, address indexed treasury, uint256 amount);
     event EggNFTContractSet(address indexed eggNFT);
     event FoodNFTContractSet(address indexed foodNFT);
+    event MarketplaceContractSet(address indexed marketplace);
+    event ResaleCommissionDistributed(
+        address indexed buyer,
+        address indexed seller,
+        address[4] referralChain,
+        uint256 totalAmount
+    );
     
-    constructor(address _coinStorReserve, address _usdtToken) {
+    constructor(address _coinStorReserve, address _usdtToken, address _treasury) {
         require(_coinStorReserve != address(0), "CoinStor address cannot be zero");
         require(_usdtToken != address(0), "USDT address cannot be zero");
+        require(_treasury != address(0), "Treasury address cannot be zero");
         owner = msg.sender;
         coinStorReserve = _coinStorReserve;
         usdtToken = IERC20(_usdtToken);
+        treasury = _treasury;
     }
     
     function setEggNFTContract(address _eggNFT) external {
@@ -52,8 +72,15 @@ contract CommissionDistribution {
         emit FoodNFTContractSet(_foodNFT);
     }
     
+    function setMarketplaceContract(address _marketplace) external {
+        require(msg.sender == owner, "Only owner can set");
+        require(_marketplace != address(0), "Marketplace address cannot be zero");
+        marketplaceContract = _marketplace;
+        emit MarketplaceContractSet(_marketplace);
+    }
+    
     function distributeCommission(address[4] calldata referralChain, uint256 amount) external {
-        require(msg.sender == owner || msg.sender == eggNFTContract || msg.sender == foodNFTContract, "Not authorized");
+        require(msg.sender == eggNFTContract || msg.sender == foodNFTContract, "Not authorized");
         require(amount > 0, "Amount must be greater than 0");
         
         uint256 totalDistributed = 0;
@@ -78,20 +105,69 @@ contract CommissionDistribution {
         uint256 coinStorAmount = (amount * COINSTOR_PERCENT) / TOTAL_PERCENT;
         commissionBalances[coinStorReserve] += coinStorAmount;
         
+        // Treasury allocation (46%)
+        uint256 treasuryAmount = (amount * TREASURY_PERCENT) / TOTAL_PERCENT;
+        commissionBalances[treasury] += treasuryAmount;
+        
         emit CommissionDistributed(msg.sender, referralChain, amount);
         emit CoinStorDeposit(msg.sender, coinStorAmount);
     }
     
-    function claimCommission() external {
-        uint256 balance = commissionBalances[msg.sender];
-        require(balance > 0, "No commission to claim");
+    /**
+     * @notice Distribute commissions for secondary marketplace sales (per spec §6.3)
+     * @dev Different split from primary sales: Seller gets 85%, referrals get 5% total, CoinStor 4%, Treasury 6%
+     *      Only callable by the Marketplace contract.
+     * @param referralChain The original 4-level referral chain from the egg that was hatched
+     * @param seller The seller who listed the NFT for resale
+     * @param amount Total sale amount in USDT (18 decimals)
+     */
+    function distributeResaleCommission(
+        address[4] calldata referralChain,
+        address seller,
+        uint256 amount
+    ) external {
+        require(msg.sender == marketplaceContract, "Only marketplace");
+        require(amount > 0, "Amount must be greater than 0");
         
-        commissionBalances[msg.sender] = 0;
+        uint256 totalDistributed = 0;
         
-        (bool success, ) = payable(msg.sender).call{value: balance}("");
-        require(success, "Claim failed");
+        // Distribute to referral chain (G1=2%, G2=1%, G3=1%, G4=1% of total sale)
+        uint256[4] memory resaleLevels = [
+            G1_RESALE_PERCENT,
+            G2_RESALE_PERCENT,
+            G3_RESALE_PERCENT,
+            G4_RESALE_PERCENT
+        ];
         
-        emit CommissionClaimed(msg.sender, balance);
+        for (uint256 i = 0; i < 4; i++) {
+            address referrer = referralChain[i];
+            if (referrer != address(0)) {
+                uint256 commission = (amount * resaleLevels[i]) / TOTAL_PERCENT;
+                if (commission > 0) {
+                    commissionBalances[referrer] += commission;
+                    totalDistributed += commission;
+                }
+            }
+        }
+        
+        // CoinStor 4%
+        uint256 coinStorAmount = (amount * COINSTOR_PERCENT) / TOTAL_PERCENT;
+        commissionBalances[coinStorReserve] += coinStorAmount;
+        totalDistributed += coinStorAmount;
+        
+        // Seller 85%
+        uint256 sellerAmount = (amount * SELLER_RESALE_PERCENT) / TOTAL_PERCENT;
+        commissionBalances[seller] += sellerAmount;
+        totalDistributed += sellerAmount;
+        
+        // Treasury receives the remainder (6%)
+        uint256 treasuryAmount = amount - totalDistributed;
+        if (treasuryAmount > 0) {
+            commissionBalances[treasury] += treasuryAmount;
+        }
+        
+        emit ResaleCommissionDistributed(msg.sender, seller, referralChain, amount);
+        emit CoinStorDeposit(msg.sender, coinStorAmount);
     }
     
     function claimCommissionUSDT() external {
@@ -109,14 +185,18 @@ contract CommissionDistribution {
         return commissionBalances[referrer];
     }
     
-    function withdrawCoinStor() external {
-        require(msg.sender == coinStorReserve, "Only CoinStor can withdraw");
-        uint256 balance = commissionBalances[coinStorReserve];
-        require(balance > 0, "No balance to withdraw");
+    function withdrawTreasury(uint256 amount) external {
+        require(msg.sender == owner, "Owner only");
+        require(amount > 0, "Amount must be > 0");
+        require(commissionBalances[treasury] >= amount, "Insufficient treasury balance");
         
-        commissionBalances[coinStorReserve] = 0;
+        commissionBalances[treasury] -= amount;
+        usdtToken.safeTransfer(treasury, amount);
         
-        (bool success, ) = payable(coinStorReserve).call{value: balance}("");
-        require(success, "Withdraw failed");
+        emit TreasuryWithdrawn(msg.sender, treasury, amount);
+    }
+    
+    receive() external payable {
+        revert("Contract does not accept ETH");
     }
 }

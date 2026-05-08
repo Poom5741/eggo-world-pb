@@ -5,6 +5,7 @@ import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {CommissionDistribution} from "./CommissionDistribution.sol";
 import {EggNFT} from "./EggNFT.sol";
@@ -16,20 +17,19 @@ enum FoodType {
     Herb
 }
 
-contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
+contract FoodNFT is ERC1155, ReentrancyGuard, Ownable, Pausable {
     using SafeERC20 for IERC20;
     
-    address public immutable commissionDistribution;
+    address payable public immutable commissionDistribution;
     address public immutable eggNFTContract;
     IERC20 public immutable usdtToken;
     
-    uint256 public constant MINT_PRICE = 0.50 * 10^18;
+    uint256 public constant MINT_PRICE = 5 * 10**17;         // Fixed: was 0.50 * 10^18 (XOR), now 5 * 10**17 (0.5e18)
     
     uint256 private _nextFoodId;
     
     struct FoodProperties {
         uint256 food_id;
-        address owner;
         FoodType food_type;
         bool is_consumed;
         uint256 consumed_by_egg_id;
@@ -39,11 +39,12 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
     mapping(address => bool) public authorizedContracts;
     
     event FoodMinted(uint256[] food_ids, address indexed buyer, uint256 quantity);
+    event FreeFoodMinted(uint256[] food_ids, address indexed recipient, uint256 quantity);
     event EggFed(uint256 indexed egg_id, uint256[] food_ids, address indexed feeder);
     event FoodTypeAssigned(uint256 food_id, FoodType food_type);
     
     constructor(
-        address _commissionDistribution,
+        address payable _commissionDistribution,
         address _usdtToken,
         address _eggNFTContract
     ) ERC1155("https://eggoworld.io/api/food/{id}.json") Ownable(msg.sender) {
@@ -59,15 +60,17 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         _nextFoodId = 1;
     }
     
-    function mintFood(address buyer, uint256 quantity, address referrer) 
+    function mintFood(uint256 quantity, address referrer) 
         external 
         nonReentrant
+        whenNotPaused
         returns (uint256[] memory food_ids)
     {
         require(quantity > 0, "Quantity must be greater than 0");
+        require(referrer != msg.sender, "Self-referral");
         
         uint256 totalCost = MINT_PRICE * quantity;
-        usdtToken.safeTransferFrom(buyer, commissionDistribution, totalCost);
+        usdtToken.safeTransferFrom(msg.sender, commissionDistribution, totalCost);  // FIXED: was buyer
         
         address[4] memory referralChain;
         referralChain[0] = referrer;
@@ -84,20 +87,62 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
             
             _foodProperties[foodId] = FoodProperties({
                 food_id: foodId,
-                owner: buyer,
                 food_type: foodType,
                 is_consumed: false,
                 consumed_by_egg_id: 0
             });
             
-            _mint(buyer, foodId, 1, "");
+            _mint(msg.sender, foodId, 1, "");   // FIXED: was buyer
             
             emit FoodTypeAssigned(foodId, foodType);
             
             food_ids[i] = foodId;
         }
         
-        emit FoodMinted(food_ids, buyer, quantity);
+        emit FoodMinted(food_ids, msg.sender, quantity);  // FIXED: was buyer
+        
+        return food_ids;
+    }
+    
+    /**
+     * @notice Mint free bonus Food NFTs (no USDT charged) — only callable by authorized contracts (EggNFT)
+     * @dev Used when EggNFT auto-mints 2 free Food NFTs with each egg purchase (per spec §2.1)
+     * @param recipient Address receiving the food tokens
+     * @param quantity Number of food tokens to mint
+     * @return food_ids Array of minted food token IDs
+     */
+    function mintFreeFood(address recipient, uint256 quantity)
+        external
+        nonReentrant
+        whenNotPaused
+        returns (uint256[] memory food_ids)
+    {
+        require(authorizedContracts[msg.sender], "Not authorized");
+        require(quantity > 0, "Quantity must be greater than 0");
+        
+        food_ids = new uint256[](quantity);
+        
+        for (uint256 i = 0; i < quantity; i++) {
+            _nextFoodId++;
+            uint256 foodId = _nextFoodId - 1;
+            
+            FoodType foodType = _assignRandomFoodType(foodId);
+            
+            _foodProperties[foodId] = FoodProperties({
+                food_id: foodId,
+                food_type: foodType,
+                is_consumed: false,
+                consumed_by_egg_id: 0
+            });
+            
+            _mint(recipient, foodId, 1, "");
+            
+            emit FoodTypeAssigned(foodId, foodType);
+            
+            food_ids[i] = foodId;
+        }
+        
+        emit FreeFoodMinted(food_ids, recipient, quantity);
         
         return food_ids;
     }
@@ -106,7 +151,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         uint256 egg_token_id,
         uint256[] calldata food_ids,
         address eggNftContract
-    ) external nonReentrant {
+    ) external nonReentrant whenNotPaused {
         require(food_ids.length > 0, "No food items provided");
         
         EggNFT eggNFT = EggNFT(eggNftContract);
@@ -143,7 +188,6 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         view 
         returns (
             uint256,
-            address,
             FoodType,
             bool,
             uint256
@@ -152,7 +196,6 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         FoodProperties memory props = _foodProperties[foodId];
         return (
             props.food_id,
-            props.owner,
             props.food_type,
             props.is_consumed,
             props.consumed_by_egg_id
@@ -189,7 +232,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         else return FoodType.Herb;
     }
     
-    function burnFood(uint256 food_id) external {
+    function burnFood(uint256 food_id) external whenNotPaused {
         require(balanceOf(msg.sender, food_id) > 0, "Not food owner");
         FoodProperties storage props = _foodProperties[food_id];
         require(!props.is_consumed, "Food already consumed");
@@ -198,7 +241,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         _burn(msg.sender, food_id, 1);
     }
     
-    function burnFoodFor(address owner, uint256 food_id) external {
+    function burnFoodFor(address owner, uint256 food_id) external whenNotPaused {
         require(authorizedContracts[msg.sender], "Not authorized");
         require(balanceOf(owner, food_id) > 0, "Not food owner");
         FoodProperties storage props = _foodProperties[food_id];
@@ -208,8 +251,16 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable {
         _burn(owner, food_id, 1);
     }
     
-    function setEggNFTContract(address _eggNFT) external onlyOwner {
+    function setEggNFTContract(address _eggNFT) external onlyOwner whenNotPaused {
         require(_eggNFT != address(0), "EggNFT address cannot be zero");
         authorizedContracts[_eggNFT] = true;
+    }
+    
+    function pause() external onlyOwner {
+        _pause();
+    }
+    
+    function unpause() external onlyOwner {
+        _unpause();
     }
 }
