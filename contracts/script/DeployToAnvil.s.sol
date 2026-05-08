@@ -19,8 +19,9 @@ contract DeployToAnvil is Script {
         console.log("MockUSDT deployed at:", usdtAddress);
         
         // Deploy CommissionDistribution with USDT support
-        CommissionDistribution commissionDist = new CommissionDistribution(coinStorReserve, usdtAddress);
-        console.log("CommissionDistribution deployed at:", address(commissionDist));
+        address treasuryAddress = address(0x999); // Test treasury address
+        CommissionDistribution commissionDist = new CommissionDistribution(coinStorReserve, usdtAddress, treasuryAddress);
+        console.log("CommissionDistribution deployed at:", payable(address(commissionDist)));
         
         // Fund deployment account with MockUSDT for testing
         address deployer = vm.addr(deployerPrivateKey);
@@ -36,10 +37,10 @@ contract DeployToAnvil is Script {
         console.log("");
         console.log("Contract Addresses:");
         console.log("  USDT:", usdtAddress);
-        console.log("  CommissionDistribution:", address(commissionDist));
+        console.log("  CommissionDistribution:", payable(address(commissionDist)));
         console.log("");
         console.log("Test Commands:");
-        console.log("  cast call", address(commissionDist), "getCompressionBalance(address)(uint256)", deployerPrivateKey);
-        console.log("  cast send", address(commissionDist), "distributeCommission(address[4],uint256)");
+        console.log("  cast call", payable(address(commissionDist)), "getCompressionBalance(address)(uint256)", deployerPrivateKey);
+        console.log("  cast send", payable(address(commissionDist)), "distributeCommission(address[4],uint256)");
     }
 }

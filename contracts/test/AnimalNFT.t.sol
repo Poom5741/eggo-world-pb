@@ -6,6 +6,7 @@ import {AnimalNFT, Rarity, Species} from "../src/AnimalNFT.sol";
 import {EggNFT} from "../src/EggNFT.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract AnimalNFTTest is Test {
     AnimalNFT public animalNFT;
@@ -31,8 +32,10 @@ contract AnimalNFTTest is Test {
         vm.startPrank(owner);
         
         usdtToken = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve, address(usdtToken));
-        eggNFT = new EggNFT(address(commissionDistribution), address(usdtToken));
+        address treasury = address(0x6);
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(usdtToken), treasury);
+        VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(usdtToken), address(vrfMock));
         animalNFT = new AnimalNFT();
         
         vm.stopPrank();

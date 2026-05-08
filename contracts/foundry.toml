@@ -6,6 +6,16 @@ solc = "0.8.24"
 optimizer = true
 optimizer_runs = 200
 via_ir = true
+test = "test"
+script = "script"
+allow_paths = ["lib/chainlink-contracts/src/v0.8"]
+ignored_warnings_from = [
+  "lib/chainlink-contracts/src/v0.8/vrf/test",
+  "lib/chainlink-contracts/src/v0.8/vrf/testhelpers",
+  "lib/chainlink-contracts/src/v0.8/shared/test",
+  "lib/chainlink-contracts/src/v0.8/llo-feeds",
+  "lib/chainlink-contracts/src/v0.8/workflow"
+]
 
 [rpc_endpoints]
 bsc_testnet = "https://data-seed-prebsc-1-s1.binance.org:8545"
@@ -21,3 +31,9 @@ chain0xl3 = { key = "${BLOCKSCOUT_API_KEY}", url = "https://exp.0xl3.com/api" }
 runs = 256
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+
+
+
+[fs_permissions]
+access = "read-write"
+path = "./contract-addresses.json"

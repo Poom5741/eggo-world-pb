@@ -16,7 +16,8 @@ contract TestIntegration is Script {
         
         // Deploy contracts
         MockUSDT usdt = new MockUSDT();
-        CommissionDistribution dist = new CommissionDistribution(coinStor, address(usdt));
+        address treasuryAddress = address(0x888); // Test treasury address
+        CommissionDistribution dist = new CommissionDistribution(coinStor, address(usdt), treasuryAddress);
         
         vm.stopBroadcast();
         

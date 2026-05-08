@@ -7,6 +7,7 @@ import {EggNFT} from "../src/EggNFT.sol";
 import {AnimalNFT} from "../src/AnimalNFT.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract EggFeedingAnvilIntegrationTest is Test {
     FoodNFT public foodNFT;
@@ -21,9 +22,9 @@ contract EggFeedingAnvilIntegrationTest is Test {
     address public referrerG1;
     address public coinStorReserve;
     
-    uint256 public constant FOOD_MINT_PRICE = 0.50 * 10^18;
-    uint256 public constant EGG_MINT_PRICE = 25 * 10^18;
-    uint256 public constant INITIAL_BALANCE = 10000 * 10^18;
+    uint256 public constant FOOD_MINT_PRICE = 5 * 10**17;
+    uint256 public constant EGG_MINT_PRICE = 25 * 10**18;
+    uint256 public constant INITIAL_BALANCE = 10000 * 10**18;
     
     event EggFed(uint256 indexed egg_id, uint256[] food_ids, address indexed feeder);
     
@@ -35,11 +36,13 @@ contract EggFeedingAnvilIntegrationTest is Test {
         coinStorReserve = address(0x04);
         
         mockUSDT = new MockUSDT();
-        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT));
-        eggNFT = new EggNFT(address(commissionDistribution), address(mockUSDT));
+        address treasury = address(0x05);
+        commissionDistribution = new CommissionDistribution(coinStorReserve, address(mockUSDT), treasury);
+        VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
+        eggNFT = new EggNFT(payable(address(commissionDistribution)), address(mockUSDT), address(vrfMock));
         animalNFT = new AnimalNFT();
         foodNFT = new FoodNFT(
-            address(commissionDistribution),
+            payable(address(commissionDistribution)),
             address(mockUSDT),
             address(eggNFT)
         );
@@ -73,12 +76,12 @@ contract EggFeedingAnvilIntegrationTest is Test {
         
         console.log("FoodNFT Address:", address(foodNFT));
         console.log("EggNFT Address:", address(eggNFT));
-        console.log("CommissionDistribution Address:", address(commissionDistribution));
+        console.log("CommissionDistribution Address:", payable(address(commissionDistribution)));
         console.log("MockUSDT Address:", address(mockUSDT));
         
         assertEq(address(foodNFT.usdtToken()), address(mockUSDT));
         assertEq(foodNFT.MINT_PRICE(), FOOD_MINT_PRICE);
-        assertEq(eggNFT.MINT_PRICE(), EGG_MINT_PRICE);
+        assertEq(eggNFT.mintPrice(), EGG_MINT_PRICE);
         
         console.log("[OK] All contracts deployed successfully");
     }
@@ -98,7 +101,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[2] Bob mints a Food NFT...");
         vm.startPrank(bob);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-        uint256[] memory food_ids = foodNFT.mintFood(bob, 1, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
         vm.stopPrank();
         console.log("    Food NFT ID:", food_ids[0]);
         
@@ -124,7 +127,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[2] Alice mints a Food NFT...");
         vm.startPrank(alice);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE);
-        uint256[] memory food_ids = foodNFT.mintFood(alice, 1, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(1, referrerG1);
         vm.stopPrank();
         
         console.log("\n[3] Alice transfers Food NFT to Bob...");
@@ -154,7 +157,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[2] Alice mints 10 Food NFTs...");
         vm.startPrank(alice);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(alice, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         vm.stopPrank();
         
         console.log("\n[3] Alice feeds the egg...");
@@ -172,7 +175,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[5] Alice mints 5 more Food NFTs...");
         vm.startPrank(alice);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 5);
-        uint256[] memory more_food = foodNFT.mintFood(alice, 5, referrerG1);
+        uint256[] memory more_food = foodNFT.mintFood(5, referrerG1);
         vm.stopPrank();
         
         console.log("\n[6] Alice tries to feed hatched egg (should fail)...");
@@ -197,7 +200,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[2] Alice mints 3 Food NFTs (Batch 1)...");
         vm.startPrank(alice);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 3);
-        uint256[] memory batch1 = foodNFT.mintFood(alice, 3, referrerG1);
+        uint256[] memory batch1 = foodNFT.mintFood(3, referrerG1);
         vm.stopPrank();
         
         console.log("\n[3] Alice feeds batch 1...");
@@ -209,7 +212,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[4] Alice mints 3 Food NFTs (Batch 2)...");
         vm.startPrank(alice);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 3);
-        uint256[] memory batch2 = foodNFT.mintFood(alice, 3, referrerG1);
+        uint256[] memory batch2 = foodNFT.mintFood(3, referrerG1);
         vm.stopPrank();
         
         console.log("\n[5] Alice feeds batch 2...");
@@ -221,7 +224,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[6] Alice mints 4 Food NFTs (Batch 3)...");
         vm.startPrank(alice);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 4);
-        uint256[] memory batch3 = foodNFT.mintFood(alice, 4, referrerG1);
+        uint256[] memory batch3 = foodNFT.mintFood(4, referrerG1);
         vm.stopPrank();
         
         console.log("\n[7] Alice feeds batch 3...");
@@ -256,7 +259,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[2] Alice mints 8 Food NFTs...");
         vm.startPrank(alice);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 8);
-        uint256[] memory food_ids = foodNFT.mintFood(alice, 8, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(8, referrerG1);
         vm.stopPrank();
         
         console.log("\n[3] Alice feeds the egg...");
@@ -302,7 +305,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("\n[2] Alice mints 5 Food NFTs...");
         vm.startPrank(alice);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 5);
-        uint256[] memory food_ids = foodNFT.mintFood(alice, 5, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(5, referrerG1);
         vm.stopPrank();
         
         console.log("\n[3] Alice feeds the egg (checking event)...");
@@ -324,7 +327,7 @@ contract EggFeedingAnvilIntegrationTest is Test {
         uint256 egg_token_id = eggNFT.mintEgg(referrerG1);
         
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 10);
-        uint256[] memory food_ids = foodNFT.mintFood(alice, 10, referrerG1);
+        uint256[] memory food_ids = foodNFT.mintFood(10, referrerG1);
         vm.stopPrank();
         
         uint256 gasBefore = gasleft();
@@ -357,15 +360,15 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("=======================================================");
         vm.startPrank(alice);
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 3);
-        uint256[] memory batch1 = foodNFT.mintFood(alice, 3, referrerG1);
+        uint256[] memory batch1 = foodNFT.mintFood(3, referrerG1);
         console.log("[OK] Batch 1: 3 Food NFTs minted");
         
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 3);
-        uint256[] memory batch2 = foodNFT.mintFood(alice, 3, referrerG1);
+        uint256[] memory batch2 = foodNFT.mintFood(3, referrerG1);
         console.log("[OK] Batch 2: 3 Food NFTs minted");
         
         mockUSDT.approve(address(foodNFT), FOOD_MINT_PRICE * 4);
-        uint256[] memory batch3 = foodNFT.mintFood(alice, 4, referrerG1);
+        uint256[] memory batch3 = foodNFT.mintFood(4, referrerG1);
         console.log("[OK] Batch 3: 4 Food NFTs minted");
         vm.stopPrank();
         
@@ -410,15 +413,15 @@ contract EggFeedingAnvilIntegrationTest is Test {
         console.log("=======================================================");
         uint256 totalFood = batch1.length + batch2.length + batch3.length;
         for (uint256 i = 0; i < batch1.length; i++) {
-            (,,,bool consumed,) = foodNFT.getFoodProperties(batch1[i]);
+            (,,bool consumed,) = foodNFT.getFoodProperties(batch1[i]);
             require(consumed, "Food should be consumed");
         }
         for (uint256 i = 0; i < batch2.length; i++) {
-            (,,,bool consumed,) = foodNFT.getFoodProperties(batch2[i]);
+            (,,bool consumed,) = foodNFT.getFoodProperties(batch2[i]);
             require(consumed, "Food should be consumed");
         }
         for (uint256 i = 0; i < batch3.length; i++) {
-            (,,,bool consumed,) = foodNFT.getFoodProperties(batch3[i]);
+            (,,bool consumed,) = foodNFT.getFoodProperties(batch3[i]);
             require(consumed, "Food should be consumed");
         }
         console.log("Total food items burned: %s", totalFood);

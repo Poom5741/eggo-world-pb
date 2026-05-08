@@ -5,6 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {CommissionDistribution} from "../src/CommissionDistribution.sol";
 import {MockUSDT} from "./MockUSDT.sol";
 import {EggNFT} from "../src/EggNFT.sol";
+import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract CommissionDistributionIntegrationTest is Test {
     CommissionDistribution public commissionDist;
@@ -19,8 +20,8 @@ contract CommissionDistributionIntegrationTest is Test {
     address public referrerG4; // Level 4: 10%
     address public coinStor;   // 4%
     
-    uint256 public constant MINT_PRICE = 25 * 10^18;
-    uint256 public constant INITIAL_BALANCE = 10000 * 10^18;
+    uint256 public constant MINT_PRICE = 25 * 10**18;
+    uint256 public constant INITIAL_BALANCE = 10000 * 10**18;
     
     event CommissionDistributed(
         uint256 indexed egg_id,
@@ -39,8 +40,9 @@ contract CommissionDistributionIntegrationTest is Test {
         coinStor = address(0x6);
         
         mockUSDT = new MockUSDT();
-        commissionDist = new CommissionDistribution(coinStor, address(mockUSDT));
-        eggNFT = new EggNFT(address(commissionDist), address(mockUSDT));
+        commissionDist = new CommissionDistribution(coinStor, address(mockUSDT), address(0x9));
+        VRFCoordinatorV2_5Mock vrfMock = new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18);
+        eggNFT = new EggNFT(payable(address(commissionDist)), address(mockUSDT), address(vrfMock));
         
         commissionDist.setEggNFTContract(address(eggNFT));
         
@@ -48,7 +50,7 @@ contract CommissionDistributionIntegrationTest is Test {
         mockUSDT.mint(buyer, INITIAL_BALANCE);
         
         // Fund contract with BNB for commission payouts
-        deal(address(commissionDist), INITIAL_BALANCE);
+        deal(payable(address(commissionDist)), INITIAL_BALANCE);
     }
     
     function test_CommissionDistributionMath() public {
