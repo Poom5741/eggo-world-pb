@@ -1,187 +1,167 @@
-# Roadmap — v0.0.7 Security & Quality
+# Roadmap — v0.5.0 Security Hardening & Production Readiness
 
-**Milestone:** Security & Quality  
-**Created:** 2026-04-18  
-**Status:** In progress (4/5 phases complete)  
-**Phases:** 5 (12-16)  
-**Granularity:** Standard (from config: 2-week timeline, solo developer)  
-**Coverage:** 16/16 requirements mapped ✓
+**Milestone:** Security Hardening & Production Readiness  
+**Created:** 2026-04-29  
+**Status:** In progress (3/5 phases complete, 1 partial, 1 outstanding)  
+**Phases:** 5 (49-53)  
+**Coverage:** 29 requirements mapped
 
 ---
 
 ## Phases
 
-- [x] **Phase 12: Wallet-API Contract Integration** — Replace 4 mock blockchain endpoints with real ethers.js contract calls
-- [x] **Phase 13: USDT Deposit Tracking** — Implement event polling service with 12-block confirmation wait
-- [x] **Phase 14: Mobile Responsive Polish** — Bottom tab bar, touch targets, responsive breakpoints (320px-1440px)
-- [x] **Phase 15: Feed Feature** — Wire Feed button, food picker UI, progress tracking, hatch animation
-- [ ] **Phase 16: Play Feature + Test Infrastructure** — Daily check-in reward system, fix vi.mock failures, increase test coverage
+- [x] **Phase 49: Critical Security Fixes** — Fix 6 critical vulnerabilities (XOR operator, TierBadge token IDs, currency mismatch, treasury lock, burnNFT, approval theft)
+- [~] **Phase 50: High-Severity Security Fixes** — 6/7 plans complete; 1 deferred (50-02 VRF Randomness for Breeding & Food)
+- [ ] **Phase 51: Medium-Severity Security Fixes** — ✅ 7/7 medium issues resolved (SEC-14 through SEC-21)
+- [ ] **Phase 52: E2E Test Fixes** — Fix failing journey tests (E2E-01 to E2E-04)
+- [ ] **Phase 53: Production Readiness** — Blockchain sync, retry utilities, >95% test pass rate
 
 ---
 
 ## Phase Details
 
-### Phase 12: Wallet-API Contract Integration
+### Phase 49: Critical Security Fixes ✅
 
-**Goal:** Users can execute real blockchain transactions for minting and claiming (no mock data)  
-**Depends on:** Nothing (foundation phase)  
-**Requirements:** SEC-01, SEC-02, SEC-03, SEC-04  
-**Success Criteria** (what must be TRUE):
+**Goal:** Eliminate 6 critical vulnerabilities found in security audit  
+**Status:** ✅ Complete — 6 plans executed, all verified  
+**Requirements:** SEC-01 through SEC-06  
+**Success Criteria:**
 
-1. User can mint Egg NFT and receive real transaction hash with 12+ block confirmations
-2. User can claim referral commission and see real blockchain transaction in wallet
-3. User can mint Food NFT with real USDT deduction from wallet
-4. User can feed Egg NFT with real blockchain transaction updating food_count
-   **Plans**: 3 plans (8 tasks total)
-   **UI hint**: no
-
-   Plans:
-   - [ ] 12-01-PLAN.md — Deploy contracts to 0xl3 testnet, create address registry
-   - [ ] 12-02-PLAN.md — Replace mint-egg and mint-food mocks with real contract calls
-   - [ ] 12-03-PLAN.md — Replace claim-commission and feed-egg mocks, add gas sponsorship
+1. ✅ Replace `^` with `**` in MINT_PRICE and BREEDING_FEE constants
+2. ✅ Implement monotonically increasing token IDs for TierBadge
+3. ✅ Change ETH payouts to USDT payouts for commission claims
+4. ✅ Add treasury address and route 46% of mint proceeds
+5. ✅ Remove owner burnNFT function
+6. ✅ Remove buyer parameter from mintFood, use msg.sender
+   **Plans**: 4 plans (49-01 through 49-04)
 
 ---
 
-### Phase 13: USDT Deposit Tracking
+### Phase 50: High-Severity Security Fixes ⚠️
 
-**Goal:** Users see USDT deposits automatically tracked and confirmed after 12 blocks  
-**Depends on:** Phase 12 (contract infrastructure)  
-**Requirements:** SEC-05, SEC-06, SEC-07, SEC-08  
-**Success Criteria** (what must be TRUE):
+**Goal:** Address 7 high-severity security issues  
+**Status:** 6/7 plans complete — 1 deferred (50-02 VRF Randomness)  
+**Requirements:** SEC-07 through SEC-13  
+**Success Criteria:**
 
-1. ✅ System polls USDT Transfer events every 30 seconds and detects deposits within 60 seconds
-2. ✅ Deposit shows "pending" state until 12 block confirmations, then transitions to "confirmed"
-3. ✅ Duplicate deposit attempts (same tx_hash) are rejected with existing record returned
-4. ✅ User receives in-app notification when deposit is confirmed with updated balance
-   **Plans**: 3 plans (6 tasks total)
-
-   Plans:
-   - [x] 13-01-PLAN.md — Config & Schema Update (contract addresses + deposits collection)
-   - [x] 13-02-PLAN.md — Hook Rewrite (background polling, confirmation tracking, reorg detection)
-   - [x] 13-03-PLAN.md — Test Suite Update (44 tests, 8 suites, bun:test)
-
----
-
-### Phase 14: Mobile Responsive Polish
-
-**Goal:** Users on mobile devices (< 640px) have optimized navigation and touch interactions  
-**Depends on:** Nothing (can run parallel)  
-**Requirements:** QUAL-03, QUAL-04, QUAL-05, QUAL-06  
-**Success Criteria** (what must be TRUE):
-
-1. Mobile users see bottom tab bar with 4-5 navigation items (replaces hamburger menu)
-2. All buttons, links, and inputs meet 44×44px minimum touch target (WCAG 2.2 compliant)
-3. Layout renders correctly at all 5 breakpoints (320px, 375px, 768px, 1024px, 1440px) without horizontal scroll
-4. iOS devices don't zoom when focusing input fields (16px minimum font-size)
-   **Plans**: 3 plans (PLAN-NAV, PLAN-CSS, PLAN-MIGRATE)
-   **UI hint**: yes
+1. ✅ Self-referral guards added to mintEgg, mintEggWithChain, breedAnimals, mintFood
+2. ⏸️ VRF randomness for breeding and food types (deferred — complex refactor)
+3. ✅ setMintPrice made mutable with bounds (1-1000 USDT)
+4. ✅ Food count check before hatching breeding eggs
+5. ✅ Duplicate VRF request prevention
+6. ✅ NFT transfer restricted during VRF pending
+7. ✅ Remove owner from distributeCommission auth
+   **Plans**: 7 plans (50-01 through 50-07)
+   **Deferred**: 50-02 (VRF) — pseudorandom keccak256 is weak but not exploitable for immediate fund loss
 
 ---
 
-### Phase 15: Feed Feature ✅
+### Phase 51: Medium-Severity Security Fixes ✅
 
-**Goal:** Users can feed Eggs with Food NFTs and watch progress toward hatching  
-**Depends on:** Phase 12 (wallet-api contract calls)  
-**Requirements:** FEAT-01, FEAT-02, FEAT-03, FEAT-04  
-**Success Criteria** (what must be TRUE):
+**Goal:** Resolve 8 medium-severity issues from security audit  
+**Status:** ✅ Complete — 7/7 fixes applied (M-02 pre-fixed in Phase 50)  
+**Requirements:** SEC-14 through SEC-21  
+**Success Criteria:**
 
-1. ✅ User can tap Feed button on eggs page and see food NFT picker modal open
-2. ✅ User can select up to 10 food NFTs with counter showing "X/10 food selected"
-3. ✅ Egg card displays progress bar showing food_count / 10 and visual indicator when ready to hatch
-4. ✅ Consumed food NFTs are marked as "used" in database and hidden from future picker
-   **Plans**: 3 plans (5 tasks total) — All ✅
-   **UI hint**: yes
-
-   Plans:
-   - [x] 15-01-PLAN.md — Manual food selection grid + progress bar + ready-to-hatch indicator
-   - [x] 15-02-PLAN.md — Consumed food filtering (is_consumed=false) + X/10 counter + empty state (verified)
-   - [x] 15-03-PLAN.md — Featured egg hero FEED ME button wired to FeedDialog (verified)
+1. ✅ Replace ownerOf with \_ownerOf for existence checks
+2. ✅ Reset referral chain on transfer (already done in Phase 50)
+3. ✅ Add food cap check in recordFoodConsumption
+4. ✅ Add whenNotPaused to state-mutating functions
+5. ✅ Use SafeERC20.safeTransferFrom in TierBadge
+6. ✅ Replace buggy Base64 with OpenZeppelin Base64
+7. ✅ Drop pseudorandom rarity_seed from VRF hatch
+8. ✅ Remove stale owner field from FoodProperties
+   **Plans**: 1 plan (51-01) covering all 8 fixes
 
 ---
 
-### Phase 16: Play Feature + Test Infrastructure
+### Phase 52: E2E Test Fixes
 
-**Goal:** Users can claim daily check-in rewards and test suite has no setup failures with 80%+ coverage  
-**Depends on:** Phase 12 (contract infrastructure for test coverage)  
-**Requirements:** QUAL-01, QUAL-02, FEAT-05, FEAT-06, FEAT-07, FEAT-08, FEAT-09  
-**Success Criteria** (what must be TRUE):
+**Goal:** Fix failing E2E journey tests and create production test users  
+**Status:** WIP — partial completion  
+**Requirements:** E2E-01 through E2E-04  
+**Success Criteria:**
 
-1. Test suite runs without vi.mock setup errors (all 9 failures fixed)
-2. Test coverage increases from 70% to 80%+ with tests for new features
-3. User can tap Play button and see daily check-in interface with countdown timer
-4. User can claim daily reward (1 Food NFT) and see streak counter increment
-5. USDT balance auto-refreshes every 30 seconds with exponential backoff
-6. User can tap balance to see detailed breakdown with transaction history
-   **Plans**: 3 plans (PLAN-NAV, PLAN-CSS, PLAN-MIGRATE)
-   **UI hint**: yes
+1. ✅ E2E-01: Purchase flow timeout increased (30s → 60s)
+2. ⚡ E2E-02: Blockchain-to-PocketBase data sync (WIP — new hooks, improved script)
+3. ⚡ E2E-03: PocketBase endpoint accessibility (docker-compose.e2e.yml fixed)
+4. ❌ E2E-04: Production test users (not started)
+   **Plans**: 2 plans (52-01, 52-02)
+
+---
+
+### Phase 53: Production Readiness
+
+**Goal:** Implement reliable blockchain sync and achieve >95% test pass rate  
+**Status:** ❌ Blocked — test pass rate 93% (below 95% threshold)  
+**Requirements:** PROD-01 through PROD-04  
+**Success Criteria:**
+
+1. ✅ PROD-01: Blockchain event listeners implemented (22-listen-nft-events.pb.js)
+2. ✅ PROD-02: Real-time state updates with retry utility and circuit breaker
+3. ✅ PROD-03: Error recovery (fetch-retry.ts, exponential backoff)
+4. ❌ PROD-04: >95% test pass rate — currently 93% (21 failures, 1 hanging test)
+   **Plans**: 2 plans (53-01, 53-02)
+   **Blockers:**
+   - 12 PocketBase AUTH_REQUIRED failures (mock gap)
+   - use-marketplace-sync.test.ts hangs (async loop)
+   - 9 UI test text matching failures (React text splitting)
 
 ---
 
 ## Progress Table
 
-| Phase                                  | Plans Complete | Status      | Completed  |
-| -------------------------------------- | -------------- | ----------- | ---------- |
-| 12. Wallet-API Contract Integration    | 3/3            | ✅ Complete | 2026-04-18 |
-| 13. USDT Deposit Tracking              | 3/3            | ✅ Complete | 2026-05-06 |
-| 14. Mobile Responsive Polish           | 4/4            | ✅ Complete | 2026-05-07 |
-| 15. Feed Feature                       | 0/4            | Not started | -          |
-| 16. Play Feature + Test Infrastructure | 0/7            | Not started | -          |
+| Phase                              | Plans Complete | Status                  | Completed  |
+| ---------------------------------- | -------------- | ----------------------- | ---------- |
+| 49. Critical Security Fixes        | 4/4            | ✅ Complete             | 2026-04-30 |
+| 50. High-Severity Security Fixes   | 6/7            | ⚠️ Partial (1 deferred) | 2026-04-30 |
+| 51. Medium-Severity Security Fixes | 1/1            | ✅ Complete             | 2026-05-08 |
+| 52. E2E Test Fixes                 | 0/2            | ⚡ In Progress          | -          |
+| 53. Production Readiness           | 0/2            | ❌ Blocked              | -          |
 
 ---
 
-## Requirement Coverage
+## Requirement Coverage (v0.5.0)
 
-**Total:** 16/16 v1 requirements mapped ✓
+**Total:** 29 requirements mapped
 
-| Phase | Requirements                                                  | Count |
-| ----- | ------------------------------------------------------------- | ----- |
-| 12    | SEC-01, SEC-02, SEC-03, SEC-04                                | 4     |
-| 13    | SEC-05, SEC-06, SEC-07, SEC-08                                | 4     |
-| 14    | QUAL-03, QUAL-04, QUAL-05, QUAL-06                            | 4     |
-| 15    | FEAT-01, FEAT-02, FEAT-03, FEAT-04                            | 4     |
-| 16    | QUAL-01, QUAL-02, FEAT-05, FEAT-06, FEAT-07, FEAT-08, FEAT-09 | 7     |
-
-**Verification:**
-
-- No orphaned requirements ✓
-- No duplicate mappings ✓
-- All P0 (SEC) requirements in Phases 12-13 ✓
-- All P1 (QUAL, FEAT) requirements in Phases 14-16 ✓
+| Phase | Requirements                                                   | Count |
+| ----- | -------------------------------------------------------------- | ----- |
+| 49    | SEC-01, SEC-02, SEC-03, SEC-04, SEC-05, SEC-06                 | 6     |
+| 50    | SEC-07, SEC-08, SEC-09, SEC-10, SEC-11, SEC-12, SEC-13         | 7     |
+| 51    | SEC-14, SEC-15, SEC-16, SEC-17, SEC-18, SEC-19, SEC-20, SEC-21 | 8     |
+| 52    | E2E-01, E2E-02, E2E-03, E2E-04                                 | 4     |
+| 53    | PROD-01, PROD-02, PROD-03, PROD-04                             | 4     |
 
 ---
 
 ## Dependencies
 
 ```
-Phase 12 (Wallet-API Contract) → Foundation for Phases 15, 16
+Phase 49 (Critical Security) → Foundation for Phase 50
        ↓
-Phase 13 (USDT Deposit) → Standalone, parallel with 14
+Phase 50 (High-Severity) → Foundation for Phase 51
        ↓
-Phase 15 (Feed Feature) → Depends on Phase 12
+Phase 51 (Medium-Severity) → Independent of 52
        ↓
-Phase 16 (Play + Tests) → Depends on Phase 12
-
-Phase 14 (Mobile Polish) → Independent, can run parallel
+Phase 52 (E2E Test Fixes) → Independent, can run parallel
+       ↓
+Phase 53 (Production Readiness) → Depends on Phases 49-52
 ```
 
 ---
 
 ## Notes
 
-**Phase numbering:** Continuing from v0.0.6 (ended at Phase 11)
+**Phase numbering:** Continuing from v0.4.0 (ended at Phase 48)
 
-**UI Phases detected:** 14, 15, 16 (will suggest `/gsd-ui-phase` during planning)
+**Deferred items from v0.5.0:**
 
-**Research flags:**
+- VRF Randomness for breeding & food (50-02) — complex refactor needing FoodNFT constructor signature change
+- Remaining v0.0.7 gaps (FEAT-01 FeaturedEggHero FEED ME button, SEC-06 12-block confirmation) — carried from earlier milestones
 
-- Phase 12: ❌ No research needed (standard ethers.js patterns)
-- Phase 13: ❌ No research needed (standard deposit tracking patterns, reorg detection implemented)
-- Phase 14: ❌ No research needed (standard responsive patterns)
-- Phase 15: ❌ No research needed (standard database ACID)
-- Phase 16: ❌ No research needed (existing test infrastructure)
-
-**Critical path:** Phase 12 → Phase 15 → Phase 16
+**Solo developer, urgent timeline constraints still apply.**
 
 ---
 
-_Last updated: 2026-05-07 — Roadmap updated by gsd-manager_
+_Last updated: 2026-05-08 — Updated by gsd-execute-phase_

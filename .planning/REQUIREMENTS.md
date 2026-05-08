@@ -1,264 +1,221 @@
-# v0.0.7 Requirements
+---
+milestone: v0.5.0
+milestone_name: Security Hardening & Production Readiness
+created: 2026-04-29
+status: active
+total_requirements: 29
+---
 
-**Milestone:** Security & Quality  
-**Created:** 2026-04-18  
-**Status:** In Progress
+# Milestone v0.5.0 Requirements
+
+Based on security audit (2026-04-29) and E2E testing results. Focus on critical vulnerabilities and production readiness.
 
 ---
 
-## Milestone v0.0.7 Requirements
+## Critical Security Fixes (SEC)
 
-### Security (P0 — Blocks Launch)
+- [ ] **SEC-01**: Fix XOR operator misuse in mint prices (C-01)
+  - Phase: 49
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Replace `^` with `**` in MINT_PRICE and BREEDING_FEE constants
 
-#### Wallet-API Contract Integration
+- [ ] **SEC-02**: Fix TierBadge token ID reuse (C-02)
+  - Phase: 49
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Implement monotonically increasing token IDs instead of reusing 1,2,3
 
-- [ ] **SEC-01**: User can mint Egg NFT with real blockchain transaction (replaces mock endpoint)
-  - Backend calls `EggNFT.mintEgg(egg_id)` with user's decrypted private key
-  - Gas estimation with 20% buffer before sending transaction
-  - Returns real transaction hash, not mock data
-  - Wait for 12+ block confirmations before marking as "confirmed"
+- [ ] **SEC-03**: Fix currency mismatch in CommissionDistribution (C-03)
+  - Phase: 49
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Change ETH payouts to USDT payouts for commission claims
 
-- [ ] **SEC-02**: User can claim referral commission with real blockchain transaction
-  - Backend calls `CommissionDistribution.claimCommission(user_address)`
-  - Validates user has unclaimed commission balance
-  - Returns real transaction hash and claimed amount
-  - Handles "no commission to claim" gracefully
+- [ ] **SEC-04**: Fix treasury lock and add withdrawal path (C-04)
+  - Phase: 49
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Add treasury address and route 46% of mint proceeds properly
 
-- [ ] **SEC-03**: User can mint Food NFT with real blockchain transaction
-  - Backend calls `FoodNFT.mint(user_address, food_type, quantity)`
-  - Validates USDT balance before minting
-  - Returns real transaction hash and minted token IDs
-  - Handles insufficient balance with clear error message
+- [ ] **SEC-05**: Remove or restrict owner burnNFT function (C-05)
+  - Phase: 49
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Prevent owner from burning arbitrary user NFTs
 
-- [ ] **SEC-04**: User can feed Egg NFT with real blockchain transaction
-  - Backend calls `EggNFT.feedEgg(egg_token_id, food_token_ids[])`
-  - Validates user owns egg NFT and all food NFTs
-  - Validates egg hasn't hatched yet (food_count < 10)
-  - Returns real transaction hash and new food_count
+- [ ] **SEC-06**: Fix mintFood approval theft vulnerability (C-06)
+  - Phase: 49
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Remove buyer parameter, use msg.sender instead
 
-#### USDT Deposit Tracking
+## High-Severity Security Fixes (SEC)
 
-- [ ] **SEC-05**: System automatically tracks USDT deposits via event polling
-  - Poll USDT `Transfer` events every 30 seconds via `eth_getLogs`
-  - Filter events where `to` address equals user's wallet address
-  - Track `last_polled_block` to prevent re-polling same events
-  - Store processed transaction hashes to prevent duplicates
+- [ ] **SEC-07**: Add self-referral guards (H-01)
+  - Phase: 50
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Prevent users from referring themselves
 
-- [ ] **SEC-06**: Deposit requires 12 block confirmations before crediting
-  - Wait 12 blocks after transaction included before marking "confirmed"
-  - Display "pending" state for deposits with < 12 confirmations
-  - Store `block_hash` for each tracked deposit
-  - Verify parent hash continuity to detect chain reorgs
+- [ ] **SEC-08**: Improve randomness with VRF (H-02)
+  - Phase: 50
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Extend VRF pattern to breeding and food type assignment
 
-- [ ] **SEC-07**: Duplicate deposit attempts are rejected
-  - Database unique constraint on `tx_hash` field
-  - Idempotency check before creating deposit record
-  - Return existing deposit record if reprocessing same tx_hash
-  - Log duplicate attempts (potential attack detection)
+- [ ] **SEC-09**: Fix setMintPrice no-op function (H-03)
+  - Phase: 50
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Make mint price mutable or remove setter
 
-- [ ] **SEC-08**: User is notified when deposit is confirmed
-  - Frontend polling shows pending → confirmed state transition
-  - Push notification or in-app alert on confirmation
-  - Updated USDT balance displayed immediately
-  - Transaction hash links to BSCScan explorer
+- [ ] **SEC-10**: Add food count check for breeding eggs (H-04)
+  - Phase: 50
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Require proper food consumption before hatching breeding eggs
 
-### Quality (P1 — Technical Debt)
+- [ ] **SEC-11**: Prevent duplicate VRF requests (H-05)
+  - Phase: 50
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Guard against calling hatchEgg twice for same token
 
-#### Test Infrastructure
+- [ ] **SEC-12**: Handle NFT transfer during VRF pending (H-06)
+  - Phase: 50
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Prevent second owner from claiming hatched animal
 
-- [ ] **QUAL-01**: Fix 9 vi.mock setup failures in test suite
-  - Update mock imports to match Vitest syntax
-  - Ensure mock factories return correct types
-  - Verify all mocks are properly scoped to test files
-  - Test suite runs without setup errors
+- [ ] **SEC-13**: Restrict distributeCommission to owner (H-07)
+  - Phase: 50
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Remove owner from authorized callers
 
-- [ ] **QUAL-02**: Test coverage increases from 70% to 80%+
-  - Add unit tests for new wallet-api contract endpoints
-  - Add integration tests for track-deposit polling
-  - Add component tests for mobile responsive layouts
-  - Document uncovered critical paths
+## Medium-Severity Security Fixes (SEC)
 
-#### Mobile Responsive Polish
+- [x] **SEC-14**: Fix ownerOf checks for OZ v5 (M-01)
+  - Phase: 51
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Use \_ownerOf instead of ownerOf for existence checks
 
-- [ ] **QUAL-03**: Bottom tab bar replaces hamburger menu on mobile (< 640px)
-  - 4-5 primary navigation items visible at all times
-  - Active tab highlighted with icon + color change
-  - Safe area inset for iPhone notch (`env(safe-area-inset-bottom)`)
-  - Smooth fade-in animation on mobile breakpoint
+- [x] **SEC-15**: Reset referral chain on transfer (M-02)
+  - Phase: 51
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Clear referral chain when egg is transferred
 
-- [ ] **QUAL-04**: All touch targets meet 44×44px minimum (WCAG 2.2)
-  - Buttons, links, inputs have minimum 44px height/width
-  - Icon-only buttons have invisible padding to reach 44px
-  - Test with accessibility audit tool
-  - Document exceptions (if any) with rationale
+- [x] **SEC-16**: Add food cap check (M-03)
+  - Phase: 51
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Enforce maximum food consumption limit
 
-- [ ] **QUAL-05**: Layout tested at 5 breakpoints: 320px, 375px, 768px, 1024px, 1440px
-  - Visual regression tests capture each breakpoint
-  - No horizontal scroll at any breakpoint
-  - Text remains readable (minimum 16px on inputs)
-  - Images scale correctly with `max-width: 100%`
+- [x] **SEC-17**: Add whenNotPaused to functions (M-04)
+  - Phase: 51
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Add pausable modifier to state-mutating functions
 
-- [ ] **QUAL-06**: Inputs prevent iOS zoom on focus
-  - All input fields have `font-size: 16px` minimum
-  - Use `transform: scale()` if visually smaller size needed
-  - Tested on actual iOS device (not just emulation)
-  - Document any legacy browser workarounds
+- [x] **SEC-18**: Fix TierBadge transferFrom (M-05)
+  - Phase: 51
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Use SafeERC20.safeTransferFrom
 
-### Features (P1/P2)
+- [x] **SEC-19**: Fix Base64 encoder (M-06)
+  - Phase: 51
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Use OpenZeppelin Base64 encoder
 
-#### Feed Feature
+- [x] **SEC-20**: Remove pseudorandom seed (M-07)
+  - Phase: 51
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Let VRF alone determine hatching entropy
 
-- [ ] **FEAT-01**: User can tap Feed button on eggs page
-  - Button visible only when user owns unbhatched egg with `food_count < 10`
-  - Tap opens food NFT picker modal
-  - Shows available food NFTs (owned, not consumed)
-  - Cancel button closes modal with no action
+- [x] **SEC-21**: Fix FoodNFT owner stale (M-08)
+  - Phase: 51
+  - Spec: SMART_CONTRACT_AUDIT_2026-04-29.md
+  - Details: Remove redundant owner field or sync with \_update
 
-- [ ] **FEAT-02**: User can select up to 10 food NFTs to feed at once
-  - Checkbox selection for multiple food NFTs
-  - Counter shows "X/10 food selected"
-  - Submit button disabled if 0 food selected
-  - Loading state during blockchain transaction
+## E2E Test Fixes (E2E)
 
-- [ ] **FEAT-03**: User sees feeding progress (X/10 food consumed)
-  - Progress bar on egg card shows `food_count / 10`
-  - Visual indicator when egg is ready to hatch (10/10)
-  - Egg card displays number of food NFTs needed to hatch
-  - Hatching animation triggers when `food_count` reaches 10
+- [ ] **E2E-01**: Fix purchase flow timeout issues
+  - Phase: 52
+  - Spec: E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md
+  - Details: Resolve 30-second timeout in buy journey test
 
-- [ ] **FEAT-04**: System marks consumed food NFTs as "used" in database
-  - `food_nfts.consumed = true` after successful transaction
-  - Consumed food NFTs hidden from food picker
-  - Database transaction ensures atomic update (egg + food)
-  - Rollback on blockchain transaction failure
+- [ ] **E2E-02**: Fix data synchronization problems
+  - Phase: 52
+  - Spec: E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md
+  - Details: Fix blockchain-to-PocketBase sync issues
 
-#### Play Feature
+- [ ] **E2E-03**: Fix network connectivity issues
+  - Phase: 52
+  - Spec: E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md
+  - Details: Resolve PocketBase endpoint accessibility
 
-- [ ] **FEAT-05**: User can tap Play button on eggs page
-  - Button visible for all egg NFTs (hatched or not)
-  - Different action based on egg state:
-    - Unhatched egg: "Play" shows egg care tips
-    - Hatched animal: "Play" triggers daily check-in
+- [ ] **E2E-04**: Create production test users
+  - Phase: 52
+  - Spec: E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md
+  - Details: Add test users to production PocketBase
 
-- [ ] **FEAT-06**: User can claim daily check-in reward (1 Food NFT)
-  - Off-chain database call (no blockchain transaction)
-  - Cooldown: 24 hours between claims
-  - Reward credited directly to user's wallet (database only)
-  - Shows "Next check-in in: HH:MM:SS" countdown timer
+## Production Readiness (PROD)
 
-- [ ] **FEAT-07**: System tracks daily check-in streak
-  - `user_stats.check_in_streak` field in database
-  - Bonus rewards at 7-day, 30-day milestones
-  - Streak resets if user misses a day
-  - Display current streak on profile/dashboard
+- [ ] **PROD-01**: Implement blockchain event listeners
+  - Phase: 53
+  - Spec: E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md
+  - Details: Add automatic PocketBase record creation
 
-#### Wallet Balance Display
+- [ ] **PROD-02**: Add real-time state updates
+  - Phase: 53
+  - Spec: E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md
+  - Details: Implement WebSocket or polling for sync
 
-- [ ] **FEAT-08**: USDT balance refreshes every 30 seconds (exponential backoff)
-  - Initial poll at 30s interval
-  - If unchanged, double interval (60s, 120s, 300s max)
-  - Reset to 30s on any balance change
-  - Manual refresh button triggers immediate poll
+- [ ] **PROD-03**: Improve error recovery mechanisms
+  - Phase: 53
+  - Spec: E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md
+  - Details: Add retry logic and fallback mechanisms
 
-- [ ] **FEAT-09**: User can tap balance to see detailed breakdown
-  - Shows: USDT balance, pending deposits, locked in NFTs
-  - Clickable transaction history (last 10 transactions)
-  - Each transaction shows: type, amount, status, timestamp
-  - Link to BSCScan for full history
-
----
-
-## Deferred to Future Milestone
-
-### Out of Scope for v0.0.7
-
-- ❌ **PLAY-01**: Complex play mini-game mechanics — Deferred to v0.0.8 (needs game design spec)
-  - _Rationale: Scope unclear, would delay v0.0.7 launch_
-
-- ❌ **MOBILE-01**: Tablet-optimized landscape layout — Deferred to v0.0.8
-  - _Rationale: Low priority, most users on mobile or desktop_
-
-- ❌ **GESTURE-01**: Swipe-to-refresh on egg list — Deferred to v0.0.8
-  - _Rationale: Existing 30s polling already refreshes data_
-
-- ❌ **BATCH-01**: Batch feed multiple eggs at once — Deferred to v0.0.8
-  - _Rationale: Complexity not justified for v0.0.7 MVP_
-
-- ❌ **DARK-01**: Dark mode toggle — Deferred to v0.0.8
-  - _Rationale: Single theme sufficient for security-focused milestone_
+- [ ] **PROD-04**: Achieve >95% test pass rate
+  - Phase: 53
+  - Spec: E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md
+  - Details: Fix all failing tests and improve coverage
 
 ---
 
 ## Traceability
 
-### Phase Mapping
-
-| Phase | Requirements                                                  | Status      |
-| ----- | ------------------------------------------------------------- | ----------- |
-| 12    | SEC-01, SEC-02, SEC-03, SEC-04                                | Not started |
-| 13    | SEC-05, SEC-06, SEC-07, SEC-08                                | Not started |
-| 14    | QUAL-03, QUAL-04, QUAL-05, QUAL-06                            | Not started |
-| 15    | FEAT-01, FEAT-02, FEAT-03, FEAT-04                            | Not started |
-| 16    | QUAL-01, QUAL-02, FEAT-05, FEAT-06, FEAT-07, FEAT-08, FEAT-09 | Not started |
-
-**Coverage:** 16/16 requirements mapped ✓
-
-### Requirement Detail
-
-| Req ID  | Phase | Category | Priority | Status      |
-| ------- | ----- | -------- | -------- | ----------- |
-| SEC-01  | 12    | Security | P0       | Not started |
-| SEC-02  | 12    | Security | P0       | Not started |
-| SEC-03  | 12    | Security | P0       | Not started |
-| SEC-04  | 12    | Security | P0       | Not started |
-| SEC-05  | 13    | Security | P0       | Not started |
-| SEC-06  | 13    | Security | P0       | Not started |
-| SEC-07  | 13    | Security | P0       | Not started |
-| SEC-08  | 13    | Security | P0       | Not started |
-| QUAL-01 | 16    | Quality  | P1       | Not started |
-| QUAL-02 | 16    | Quality  | P1       | Not started |
-| QUAL-03 | 14    | Quality  | P1       | Not started |
-| QUAL-04 | 14    | Quality  | P1       | Not started |
-| QUAL-05 | 14    | Quality  | P1       | Not started |
-| QUAL-06 | 14    | Quality  | P1       | Not started |
-| FEAT-01 | 15    | Features | P1       | Not started |
-| FEAT-02 | 15    | Features | P1       | Not started |
-| FEAT-03 | 15    | Features | P1       | Not started |
-| FEAT-04 | 15    | Features | P1       | Not started |
-| FEAT-05 | 16    | Features | P2       | Not started |
-| FEAT-06 | 16    | Features | P2       | Not started |
-| FEAT-07 | 16    | Features | P2       | Not started |
-| FEAT-08 | 16    | Features | P2       | Not started |
-| FEAT-09 | 16    | Features | P2       | Not started |
-
-**To MILESTONES.md:** _Populated by gsd-complete-milestone_
+| REQ-ID  | Phase | Spec                                            | Status    |
+| ------- | ----- | ----------------------------------------------- | --------- |
+| SEC-01  | 49    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-02  | 49    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-03  | 49    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-04  | 49    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-05  | 49    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-06  | 49    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-07  | 50    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-08  | 50    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-09  | 50    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-10  | 50    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-11  | 50    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-12  | 50    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-13  | 50    | SMART_CONTRACT_AUDIT_2026-04-29.md              | planned   |
+| SEC-14  | 51    | SMART_CONTRACT_AUDIT_2026-04-29.md              | completed |
+| SEC-15  | 51    | SMART_CONTRACT_AUDIT_2026-04-29.md              | completed |
+| SEC-16  | 51    | SMART_CONTRACT_AUDIT_2026-04-29.md              | completed |
+| SEC-17  | 51    | SMART_CONTRACT_AUDIT_2026-04-29.md              | completed |
+| SEC-18  | 51    | SMART_CONTRACT_AUDIT_2026-04-29.md              | completed |
+| SEC-19  | 51    | SMART_CONTRACT_AUDIT_2026-04-29.md              | completed |
+| SEC-20  | 51    | SMART_CONTRACT_AUDIT_2026-04-29.md              | completed |
+| SEC-21  | 51    | SMART_CONTRACT_AUDIT_2026-04-29.md              | completed |
+| E2E-01  | 52    | E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md | planned   |
+| E2E-02  | 52    | E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md | planned   |
+| E2E-03  | 52    | E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md | planned   |
+| E2E-04  | 52    | E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md | planned   |
+| PROD-01 | 53    | E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md | planned   |
+| PROD-02 | 53    | E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md | planned   |
+| PROD-03 | 53    | E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md | planned   |
+| PROD-04 | 53    | E2E-TESTING-RESULTS-AND-PRODUCTION-READINESS.md | planned   |
 
 ---
 
-## Notes
+## Summary
 
-### REQ-ID Format
-
-`[CATEGORY]-[NUMBER]` where:
-
-- **SEC** = Security (P0, blocks launch)
-- **QUAL** = Quality (P1, technical debt)
-- **FEAT** = Features (P1/P2, user-facing)
-
-### Priority Legend
-
-- **P0**: Blocks launch — must be implemented and tested
-- **P1**: High priority — should be in milestone, defer only if blocked
-- **P2**: Nice to have — defer if time constrained
-
-### Research References
-
-- `.planning/research/STACK.md` — Library recommendations, versions
-- `.planning/research/FEATURES.md` — Industry patterns, table stakes
-- `.planning/research/ARCHITECTURE.md` — Integration points, build order
-- `.planning/research/PITFALLS.md` — Common mistakes, prevention strategies
-- `.planning/research/SUMMARY.md` — Synthesized findings, phase recommendations
+| Category                 | Count  | Priority |
+| ------------------------ | ------ | -------- |
+| Critical Security        | 6      | P0       |
+| High-Severity Security   | 7      | P1       |
+| Medium-Severity Security | 8      | P2       |
+| E2E Test Fixes           | 4      | P0       |
+| Production Readiness     | 4      | P1       |
+| **Total**                | **29** | —        |
 
 ---
 
-_Last updated: 2026-04-18 — Initial requirements draft_
+_Last updated: 2026-04-29 — v0.5.0 roadmap created_
