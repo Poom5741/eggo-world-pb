@@ -43,6 +43,7 @@ Thumbs.db
 !**/.env.example
 !**/.env.production.example
 !**/.env.sample
+!**/.env.e2e.example
 
 # Temporary files
 **/*.tmp
@@ -55,6 +56,7 @@ ssl/
 
 # PocketBase data
 **/pb_data/
+**/pb_data.e2e/
 
 # Foundry
 contracts/cache/
@@ -76,6 +78,18 @@ contracts/lib/
 # Prettier
 .prettier-cache
 
+# Playwright test results
+playwright-report/
+test-results/
+
+# OpenNext build output
+**/.open-next/
+
+# Wrangler build output
+**/.wrangler/
+
 .qoder.flux/
 .qoder
 .flux.env.production
+*.png
+*.webp
