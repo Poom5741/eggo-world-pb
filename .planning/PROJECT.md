@@ -11,12 +11,12 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Current Milestone: v0.6.0 Quick Production Release
+## Current Milestone: v0.7.0 (Planned)
 
-**Status:** Active — Requirements definition started
-**Goal:** Ship a production-ready release focusing on core money flows — egg minting and referral commission distribution
+**Status:** Not started — run `/gsd-new-milestone` to begin
+**Goal:** TBD
 
-**Previous Milestone:** v0.5.0 Security Hardening & Production Readiness
+**Previous Milestone:** v0.6.0 Quick Production Release (shipped 2026-05-08)
 
 ### Target Features
 
@@ -146,7 +146,19 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 ## Requirements
 
-### Validated (v0.0.6 — ARCHIVED)
+### Validated (v0.6.0 — ARCHIVED)
+
+- ✓ MINT-01 (Phase 54) — Production egg mint flow with error handling
+- ✓ COMM-01 (Phase 55) — 4-level MLM commission distribution (25/15/10/5)
+- ✓ FE-01 (Phase 56) — Mint page with payment flow and confirmation modal
+
+**v0.6.0 Final Score:** 3/3 scoped requirements (100%)
+
+### Active (v0.7.0 — TBD)
+
+Run `/gsd-new-milestone` to define next milestone requirements.
+
+### Previous Milestones (v0.0.6 — ARCHIVED)
 
 - ✓ FOUND-01 → FOUND-06 (Phase 8) — Claymorphism UI, LINE OAuth, navigation
 - ✓ FOUND-07 (Phase 9) — Wallet auto-polling
@@ -154,25 +166,7 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 - ✓ EGG-01 → EGG-07 (Phase 10) — Egg management
 - ✓ MKT-02 → MKT-04 (Phase 11) — Marketplace buy/sell flows
 
-**v0.0.6 Final Score:** 19/19 scoped requirements (100%)  
-**Deferred to v0.0.7:** MKT-01/05/06, MOB-01/02/03/04/05
-
-### Active (v0.0.7 — In Progress)
-
-**Security (P0):**
-
-- ✅ SEC-01 → SEC-04 (Phase 12) — Real blockchain contract calls
-- ⏸️ SEC-05 → SEC-08 (Phase 13) — USDT deposit tracking (pending)
-
-**Quality (P1):**
-
-- ✅ QUAL-03 → QUAL-06 (Phase 14) — Mobile responsive polish, WCAG 2.2 AA
-- ✅ FEAT-01 → FEAT-04 (Phase 15) — Feed feature with manual selection
-- ⏸️ QUAL-01 → QUAL-02 (Phase 16) — Test infrastructure, coverage 80%+ (pending)
-
-**Features (P2):**
-
-- ⏸️ FEAT-05 → FEAT-09 (Phase 16) — Play feature, daily check-in (pending)
+**v0.0.6 Final Score:** 19/19 scoped requirements (100%)
 
 ### Out of Scope
 
@@ -230,54 +224,22 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 ---
 
-## Current State (v0.0.7 Shipped)
+## Current State (v0.6.0 Shipped)
 
-**Shipped:** 2026-04-22  
-**Duration:** 5 days (2026-04-18 → 2026-04-22)  
-**Commits:** 119
+**Shipped:** 2026-05-08
+**Duration:** 1 day
+**Phases:** 54-56 (all complete)
 
 ### What Shipped
 
-- ✅ Real smart contract integration (4 endpoints, 0xl3 testnet deployment)
-- ✅ Complete NFT mint flow (contract → PocketBase → marketplace → Buy Now)
-- ✅ LINE OAuth wallet auto-creation fix
-- ✅ 80%+ test coverage (49 new tests)
-- ✅ Feed & play features with daily check-in
-- ✅ Gas sponsorship system with relayer wallet
-- ✅ Mobile responsive + WCAG 2.2 AA compliance
+- ✅ Production-ready mint-egg endpoint with robust error handling
+- ✅ 4-level MLM commission distribution (G1=25%, G2=15%, G3=10%, G4=5%)
+- ✅ MintedEggModal component with egg details on success
+- ✅ Double-credit bug fixed in commission distribution
 
-### Known Gaps (Phase 20) → NOW v0.0.8
+### Active Milestone: v0.7.0 (TBD)
 
-- Feed-egg foodCount validation
-- 10 UAT scenarios (manual testing required)
-- Gas sponsorship documentation
-- Empty state UI for /eggs page
-
-### Active Milestone: v0.0.8 NFT Ecosystem Complete
-
-**Phases:** 20-24 (5 phases planned)
-
-1. **Phase 20: Gap Closure & UAT** — Complete deferred validation, documentation, UAT execution
-2. **Phase 21: Breeding System** — Animal breeding mechanics, cooldowns, fees
-3. **Phase 22: Tier Rewards** — Seedling/Grower/Farmer badges with USDT rewards
-4. **Phase 23: Secondary Market** — Animal NFT resale with royalties
-5. **Phase 24: Polish & Launch Prep** — Production hardening, monitoring, onboarding
-
-<details>
-<summary>Previous State (v0.0.6 Archived)</summary>
-
-## Previous State
-
-**v0.0.6 Frontend Migration & Integration** (Shipped: 2026-04-18)
-
-- Claymorphism UI migration with Material Symbols icons
-- Real-time wallet with exponential backoff polling
-- Buddy Chain referral visualization
-- Egg management with feed/hatch flows
-- NFT marketplace with complete buy/sell flows
-- Mobile responsive polish with WCAG 2.2 AA compliance
-
-</details>
+Run `/gsd-new-milestone` to start planning next milestone.
 
 ---
 
@@ -302,4 +264,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-08 — v0.6.0 Quick Production Release milestone started_
+_Last updated: 2026-05-08 — v0.6.0 shipped, v0.7.0 planning pending_
