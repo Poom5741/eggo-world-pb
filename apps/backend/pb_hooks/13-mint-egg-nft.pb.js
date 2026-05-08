@@ -234,7 +234,18 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
         // Build referral chain from users.referral_chain field
         if (referrerId) {
             let referrer;
-            try { referrer = $app.findRecordById('users', referrerId); } catch (e) { return e.json(400, { success: false, error: { message: 'Referrer not found', code: 'REFERRER_NOT_FOUND' } }); }
+            try {
+                referrer = $app.findRecordById('users', referrerId);
+            } catch (e) {
+                try {
+                    referrer = $app.findFirstRecordByData('users', 'name', referrerId);
+                } catch (e2) {
+                    referrer = null;
+                }
+            }
+            if (!referrer) {
+                return e.json(400, { success: false, error: { message: 'Referrer not found', code: 'REFERRER_NOT_FOUND' } });
+            }
 
             referralChain[0] = referrer.get('wallet');
             

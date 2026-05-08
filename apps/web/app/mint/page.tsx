@@ -227,9 +227,9 @@ export default function MintPage() {
     setConfirmationProgress('preparing')
 
     try {
-      // Validate referrer ID format if provided (PocketBase user ID pattern)
-      if (referrerId && !referrerId.match(/^[a-z0-9]+$/)) {
-        throw new Error('Invalid referrer ID format')
+      // Validate referrer format if provided (allow display names: unicode, spaces, hyphens, underscores)
+      if (referrerId && !referrerId.match(/^.{1,50}$/)) {
+        throw new Error('Referrer name is too long (max 50 characters)')
       }
 
       // Call PocketBase mint-egg hook (PB internally calls wallet-api)
@@ -329,7 +329,7 @@ export default function MintPage() {
 
   // Poll PocketBase tx-status for confirmation
   const pollForConfirmation = async (hash: string): Promise<boolean> => {
-    const maxAttempts = 24 // 24 * 5s = 2 minutes
+    const maxAttempts = 60 // 60 * 5s = 5 minutes
     let attempts = 0
     const pb = createClient()
 
@@ -429,18 +429,18 @@ export default function MintPage() {
           <div className="clay-card bg-[var(--surface-container)] rounded-[2rem] p-6 space-y-4 shadow-clay-md">
             <div className="space-y-2">
               <Label htmlFor="referrer" className="text-[var(--on-surface-variant)] font-bold">
-                Referrer ID (Optional)
+                Referrer (Optional)
               </Label>
               <Input
                 id="referrer"
-                placeholder="Enter referrer user ID"
+                placeholder="Enter referrer name"
                 value={referrerId}
                 onChange={(e) => setReferrerId(e.target.value)}
                 className="clay-input rounded-2xl border-[var(--outline-variant)] bg-[var(--surface-bright)] text-[var(--on-surface)] placeholder:text-[var(--on-surface-variant)]/50"
                 disabled={loading}
               />
               <p className="text-xs text-[var(--on-surface-variant)] opacity-70">
-                Enter the ID of the user who referred you (optional)
+                Enter the name of the user who referred you (optional)
               </p>
             </div>
           </div>
