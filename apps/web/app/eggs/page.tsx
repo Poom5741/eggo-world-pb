@@ -7,12 +7,38 @@ import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import { useEggPoll, EggData } from '@/hooks/use-egg-poll'
 import { FeaturedEggHero } from '@/components/eggs/featured-egg-hero'
 import { EggCard } from '@/components/eggs/egg-card'
-import { HatchRevealModal } from '@/components/eggs/hatch-reveal-modal'
-import { FeedDialog } from '@/components/eggs/feed-dialog'
-import { MintEggModal } from '@/components/mint/MintEggModal'
-import { CreateListingDialog } from '@/components/marketplace/CreateListingDialog'
-import { createClient } from '@/lib/pocketbase/client'
+import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
 import { Egg } from 'lucide-react'
+import dynamic from 'next/dynamic'
+
+// Dynamically import heavy modal components to reduce initial bundle size
+const HatchRevealModal = dynamic(
+  () => import('@/components/eggs/hatch-reveal-modal').then((mod) => mod.HatchRevealModal),
+  {
+    loading: () => null,
+  }
+)
+
+const FeedDialog = dynamic(
+  () => import('@/components/eggs/feed-dialog').then((mod) => mod.FeedDialog),
+  {
+    loading: () => null,
+  }
+)
+
+const MintEggModal = dynamic(
+  () => import('@/components/mint/MintEggModal').then((mod) => mod.MintEggModal),
+  {
+    loading: () => null,
+  }
+)
+
+const CreateListingDialog = dynamic(
+  () => import('@/components/marketplace/CreateListingDialog').then((mod) => mod.CreateListingDialog),
+  {
+    loading: () => null,
+  }
+)
 
 /**
  * My Eggs page - displays user's Egg NFT inventory
@@ -44,17 +70,33 @@ export default function Eggs() {
   // State for mint modal - สถานะสำหรับ mint modal
   const [isMintModalOpen, setIsMintModalOpen] = useState(false)
   
-  // Get authenticated user (after hydration)
-  const user = isHydrated ? pb.authStore.record : null
+  // State for user feedback messages - ข้อความแจ้งเตือนชั่วคราว
+  const [message, setMessage] = useState<{ type: string; text: string } | null>(null)
+  
+  // Get authenticated user (after hydration) using getUser() for v0.25.2 compat
+  const [user, setUser] = useState<any>(null)
+  const [authReady, setAuthReady] = useState(false)
+  
+  useEffect(() => {
+    if (isHydrated) {
+      // Try to restore auth from token if model is missing
+      restoreAuth(pb).then((restored) => {
+        const u = getUser()
+        setUser(u)
+        setAuthReady(true)
+        if (restored) {
+          console.log('[Eggs] Auth restored, user:', u?.id)
+        }
+      })
+    }
+  }, [isHydrated])
   
   // Fetch user profile to get wallet if not in auth record
   const [_userWallet, _setUserWallet] = useState<string | undefined>(undefined)
   
   useEffect(() => {
-    if (isHydrated && user?.id) {
-      // Fetch full user record to get wallet field
+    if (authReady && user?.id) {
       pb.collection('users').getOne(user.id).then((userData: any) => {
-        // Ensure wallet is a valid string, not null/undefined/"null"
         const wallet = userData.wallet
         if (wallet && typeof wallet === 'string' && wallet !== 'null') {
           _setUserWallet(wallet)
@@ -63,17 +105,37 @@ export default function Eggs() {
         }
       }).catch(console.error)
     }
-  }, [isHydrated, user?.id])
+  }, [authReady, user?.id])
   
   // Fetch eggs with auto-polling (uses user ID since owner is relation to users)
   const { eggs, loading, refresh, polling } = useEggPoll(user?.id, 30000)
   
-  // Auth guard - redirect to login if not authenticated
+  // Force refresh eggs when auth becomes ready
   useEffect(() => {
-    if (isHydrated && !user) {
+    if (authReady && user?.id) {
+      refresh()
+    }
+  }, [authReady, user?.id])
+  
+  // Auth guard - redirect to login if not authenticated (wait for authReady)
+  useEffect(() => {
+    if (authReady && !user) {
       router.push('/auth/login')
     }
-  }, [isHydrated, user, router])
+  }, [authReady, user, router])
+  
+  // Refresh eggs when page gains focus (e.g., after breeding success navigation)
+  // รีเฟรชไข่เมื่อหน้ากลับมาโฟกัส (เช่น หลังจากนำทางจาก breeding success)
+  useEffect(() => {
+    const handleFocus = () => {
+      if (user?.id) {
+        refresh()
+      }
+    }
+    
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [refresh, user?.id])
   
   // Handle manage egg action - เปิด FeedDialog เมื่อคลิก "Manage Egg"
   const handleManageEgg = (eggId: number) => {
@@ -84,16 +146,23 @@ export default function Eggs() {
     }
   }
   
-  // Handle feed action
+  // Handle feed action from featured egg hero
   const handleFeedEgg = (eggId: number) => {
-    // TODO: Implement feed flow
-    console.log('Feed egg:', eggId)
+    const egg = eggs.find(e => e.egg_id === eggId)
+    if (egg) {
+      setFeedingEgg(egg)
+      setFeedDialogOpen(true)
+    }
   }
   
-  // Handle play action
+  // Handle play action - interaction with the egg (cosmetic/animation only)
+  // Note: Full play mechanic is P2 and awaiting game design spec
   const handlePlayEgg = (eggId: number) => {
-    // TODO: Implement play interaction
-    console.log('Play with egg:', eggId)
+    const egg = eggs.find(e => e.egg_id === eggId)
+    if (egg) {
+      setMessage({ type: 'info', text: `🎮 Egg #${egg.egg_id} is happy! Play feature coming soon — stay tuned!` })
+      setTimeout(() => setMessage(null), 4000)
+    }
   }
   
   // Handle hatch button click - จัดการการคลิกปุ่มฟักไข่
@@ -108,14 +177,20 @@ export default function Eggs() {
     setSellDialogOpen(true)
   }
   
+  // Handle upgrade button click - จัดการการคลิกปุ่มอัปเกรดความหายาก
+  const handleUpgradeEgg = (_egg: EggData) => {
+    // Refresh egg list to show updated food_count after upgrade
+    refresh()
+  }
+  
   // Handle hatch success - จัดการฟักไข่สำเร็จ
   const handleHatchSuccess = () => {
     // Refresh egg list to show updated status
     refresh()
   }
   
-  // Loading state - แสดงสถานะกำลังโหลด
-  if (!isHydrated || loading) {
+  // Loading state - แสดงสถานะกำลังโหลด (wait for authReady + egg poll)
+  if (!authReady || loading) {
     return (
       <LayoutWithoutNav>
         <div className="max-w-6xl mx-auto">
@@ -151,7 +226,7 @@ export default function Eggs() {
   }
   
   // Not authenticated - จะถูก redirect ไป login
-  if (!user) {
+  if (authReady && !user) {
     return null
   }
   
@@ -177,7 +252,7 @@ export default function Eggs() {
             </p>
             <div className="flex gap-4 justify-center">
               <button
-                onClick={() => router.push('/eggs')}
+                onClick={() => router.push('/marketplace')}
                 className="clay-button bg-primary text-on-primary py-4 px-8 rounded-xl font-black text-lg"
               >
                 Get Your First Egg
@@ -229,6 +304,15 @@ export default function Eggs() {
           </div>
         </div>
         
+        {/* User feedback message - ข้อความแจ้งเตือน */}
+        {message && (
+          <div className="mb-6 p-4 rounded-xl clay-card bg-primary-container text-on-primary-container flex items-center gap-3 animate-in slide-in-from-top-2 fade-in duration-300">
+            <span className="material-symbols-outlined">{message.type === 'info' ? 'info' : 'warning'}</span>
+            <span className="font-medium">{message.text}</span>
+            <button onClick={() => setMessage(null)} className="ml-auto material-symbols-outlined hover:opacity-70">close</button>
+          </div>
+        )}
+        
         {/* Featured Egg Hero - ไข่ที่ใกล้จะฟักที่สุด */}
         {eggs.length > 0 && (
           <FeaturedEggHero
@@ -236,6 +320,7 @@ export default function Eggs() {
             onFeed={handleFeedEgg}
             onPlay={handlePlayEgg}
             onHatch={handleHatchEgg}
+            onUpgrade={handleUpgradeEgg}
             polling={polling}
           />
         )}
@@ -249,6 +334,7 @@ export default function Eggs() {
               onManage={handleManageEgg}
               onHatch={handleHatchEgg}
               onSell={handleSellEgg}
+              onUpgrade={handleUpgradeEgg}
               polling={polling}
             />
           ))}

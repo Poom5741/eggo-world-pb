@@ -14,102 +14,81 @@ import { useEggFeed } from '@/hooks/use-egg-feed'
 import { EggData } from '@/hooks/use-egg-poll'
 import { createClient } from '@/lib/pocketbase/client'
 
-/**
- * Props สำหรับ FeedDialog component
- */
 interface FeedDialogProps {
-  /** ข้อมูลไข่ที่ต้องการให้อาหาร */
   egg: EggData
-  /** สถานะเปิด/ปิดของ dialog */
   open: boolean
-  /** Callback เมื่อสถานะ open เปลี่ยนแปลง */
   onOpenChange: (open: boolean) => void
-  /** Callback เมื่อให้อาหารสำเร็จ */
   onSuccess: () => void
 }
 
-/**
- * FeedDialog component - Dialog สำหรับให้อาหารไข่ NFT
- * 
- * Quick-fill auto-select: คลิก "FEED ME" → auto-select 10 food items → confirm → submit
- * ตาม D-07, D-08, D-09, D-10
- */
 export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogProps) {
-  const { feedEgg, loading } = useEggFeed()
+  const { feedEgg, loading } = useEggFeed(true)
   const [confirmed, setConfirmed] = useState(false)
   const [selectedFoodIds, setSelectedFoodIds] = useState<number[]>([])
   const [fetchingFood, setFetchingFood] = useState(false)
+  const [noFoodAvailable, setNoFoodAvailable] = useState(false)
+  const [availableFoodCount, setAvailableFoodCount] = useState(0)
 
-  /**
-   * Quick-fill: Auto-select 10 food items จาก inventory ของผู้ใช้
-   * ตาม D-08: ไม่แสดง manual selection UI, ระบบเลือกให้อัตโนมัติ
-   */
   const handleQuickFill = async () => {
     setFetchingFood(true)
+    setNoFoodAvailable(false)
     try {
       const pb = createClient()
       const token = pb.authStore.token
-      
-      // ดึง food NFTs ของผู้ใช้จาก PocketBase
+
       const records = await pb.collection('food_nfts').getList(1, 10, {
-        filter: `owner = "${pb.authStore.record?.id}"`,
+        filter: `owner = "${pb.authStore.record?.id}" && is_consumed = false`,
         sort: '+created',
         headers: {
-          'Authorization': token
-        }
+          'Authorization': token,
+        },
       })
-      
-      if (records.items.length < 10) {
-        throw new Error(`ไม่พออาหาร: มี ${records.items.length}/10 ชิ้น`)
+
+      const count = records.items.length
+
+      if (count < 10) {
+        setAvailableFoodCount(count)
+        setNoFoodAvailable(true)
+        return
       }
-      
-      // เลือก 10 ชิ้นแรก (auto-select ตาม D-08)
+
       const foodIds = records.items.slice(0, 10).map((item: any) => item.id)
       setSelectedFoodIds(foodIds)
-      setConfirmed(true) // แสดง confirmation dialog
+      setConfirmed(true)
     } catch (err: any) {
       console.error('Failed to fetch food items:', err)
-      // ไม่ต้องแสดง error toast ที่นี่ ให้แสดงตอน submit แทน
     } finally {
       setFetchingFood(false)
     }
   }
 
-  /**
-   * Submit feed transaction
-   * เรียก useEggFeed.feedEgg() และรอ confirmation
-   */
   const handleSubmit = async () => {
     if (selectedFoodIds.length !== 10) {
       console.error('Invalid food count:', selectedFoodIds.length)
       return
     }
-    
+
     const success = await feedEgg(egg.egg_id, selectedFoodIds)
-    
+
     if (success) {
-      // สำเร็จ: เรียก onSuccess และปิด dialog
       onSuccess()
       onOpenChange(false)
       setConfirmed(false)
       setSelectedFoodIds([])
     }
-    // ถ้าล้มเหลว useEggFeed จะแสดง error toast แล้ว
   }
 
-  /**
-   * ยกเลิกการยืนยัน กลับไปสู่หน้าแรก
-   */
   const handleCancel = () => {
     setConfirmed(false)
     setSelectedFoodIds([])
+    setNoFoodAvailable(false)
   }
 
-  // Reset state เมื่อ dialog ปิด
   useEffect(() => {
     if (!open) {
       setConfirmed(false)
       setSelectedFoodIds([])
+      setNoFoodAvailable(false)
     }
   }, [open])
 
@@ -125,8 +104,28 @@ export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogPro
           </DialogDescription>
         </DialogHeader>
 
-        {!confirmed ? (
-          // ขั้นตอนที่ 1: Quick-fill selection
+        {noFoodAvailable ? (
+          <div className="py-6 space-y-4">
+            <div className="text-center space-y-2">
+              <p className="text-lg font-bold text-destructive">Not Enough Food</p>
+              <p className="text-foreground/80">
+                You need at least 10 unconsumed food NFTs to feed{' '}
+                <strong className="text-primary">Egg #{egg.egg_id}</strong>.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                You currently have <strong className="text-secondary">{availableFoodCount}</strong>/10 food items available.
+              </p>
+            </div>
+            <Button
+              onClick={() => setNoFoodAvailable(false)}
+              variant="clay-outline"
+              className="w-full"
+              size="clay-md"
+            >
+              Cancel
+            </Button>
+          </div>
+        ) : !confirmed ? (
           <div className="py-6 space-y-4">
             <div className="text-center space-y-2">
               <p className="text-foreground/80">
@@ -136,7 +135,13 @@ export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogPro
                 ระบบจะเลือกอาหาร 10 ชิ้นแรกอัตโนมัติ
               </p>
             </div>
-            
+
+            {fetchingFood && (
+              <p className="text-sm text-center text-muted-foreground">
+                Checking food inventory...
+              </p>
+            )}
+
             <Button
               onClick={handleQuickFill}
               disabled={fetchingFood || loading}
@@ -154,7 +159,6 @@ export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogPro
             </Button>
           </div>
         ) : (
-          // ขั้นตอนที่ 2: Confirmation
           <div className="py-6 space-y-4">
             <div className="text-center space-y-2">
               <p className="text-lg font-bold text-primary">
@@ -168,7 +172,7 @@ export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogPro
                 ธุรกรรมจะถูกส่งไปยัง blockchain
               </p>
             </div>
-            
+
             <div className="flex gap-3">
               <Button
                 onClick={handleCancel}
@@ -200,7 +204,6 @@ export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogPro
         )}
 
         <DialogFooter variant="clay">
-          {/* Footer ว่างสำหรับ spacing */}
         </DialogFooter>
       </DialogContent>
     </Dialog>
