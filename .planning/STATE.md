@@ -1,7 +1,7 @@
 # STATE.md — Project Memory
 
 **Project:** Egg × Food × Animal NFT Marketplace
-**Milestone:** v0.6.0 Quick Production Release
+**Milestone:** v0.7.0 — Polished Deposit & Withdraw Flow
 **Network:** BNB SmartChain (BSC)
 **Token:** USDT (BEP-20)
 
@@ -11,18 +11,18 @@
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.6.0 — Egg mint production flow and referral commission distribution
+**Current Focus:** v0.7.0 — Consolidate and polish wallet deposit/withdraw into unified UX
 
-**Status:** 🗺️ Roadmap created — 3 phases ready for planning
+**Status:** 📋 Planned
 
 ---
 
 ## Current Position
 
-**Phase:** Phase 56 (Egg Mint Frontend & Integration) — complete
-**Plan:** —
-**Status:** ✅ All 3 phases complete (54, 55, 56) — v0.6.0 ready for deployment
-**Last activity:** 2026-05-08 — Phase 56 complete: MintedEggModal component added to mint page
+**Phase:** 57 — Wallet Balance Polish
+**Plan:** 57-01-PLAN.md (1 plan, 2 tasks, 1 wave) ✅ Completed
+**Status:** ✅ Complete
+**Last activity:** 2026-05-09 — Phase 57 plan 01 executed
 
 ```
 Progress: [██████████] 100%
@@ -32,34 +32,35 @@ Progress: [██████████] 100%
 
 ## Performance Metrics
 
-| Metric                     | Value | Target |
-| -------------------------- | ----- | ------ |
-| **Phases Complete**        | 3/3   | 3      |
-| **Requirements Satisfied** | 1/3   | 3      |
-| **Test Coverage**          | ~70%  | —      |
+| Metric              | Value | Target |
+| ------------------- | ----- | ------ |
+| **Phases Complete** | 0/—   | —      |
+| **Phases Planned**  | 1     | —      |
 
 ---
 
 ## Accumulated Context
 
-### v0.6.0 Quick Production Release (Started 2026-05-08)
+### v0.6.0 Quick Production Release (Shipped 2026-05-08)
 
 **Phases (54-56):**
 
-- Phase 54: Egg Mint Backend Hardening (MINT-01)
-- Phase 55: Referral Commission Distribution (COMM-01)
-- Phase 56: Egg Mint Frontend & Integration (FE-01)
+- Phase 54: Egg Mint Backend Hardening — Complete
+- Phase 55: Referral Commission Distribution — Complete
+- Phase 56: Egg Mint Frontend & Integration — Complete
 
-**Key Dependencies:**
+### v0.7.0 — Polished Deposit & Withdraw Flow (Started 2026-05-09)
 
-- Phase 54 is foundation — must complete first
-- Phase 55 depends on Phase 54 (commissions triggered by mint)
-- Phase 56 depends on Phase 54 (frontend needs mint backend)
-- Phase 55 and Phase 56 can execute in parallel after Phase 54
+**Goal:** Consolidate and polish wallet deposit/withdraw into a single unified page
 
-**Left behind from v0.5.0:**
+**Existing Assets:**
 
-- Phase 53: Production Readiness — incomplete per user direction
+- `apps/web/app/dashboard/deposit/page.tsx` — Deposit page with QR code
+- `apps/web/app/dashboard/withdraw/page.tsx` — Withdraw page with form
+- `apps/web/app/wallet/page.tsx` — Existing wallet page
+- `apps/backend/pb_hooks/13-track-deposit.pb.js` — Deposit tracking hook
+- `apps/backend/pb_hooks/09-withdraw-usdt.pb.js` — Withdrawal hook
+- `wallet-api/server.js` — Wallet API with USDT transfer endpoint
 
 ### Key Learnings (Carried Forward)
 
@@ -90,7 +91,7 @@ Progress: [██████████] 100%
 
 ## Deferred Items
 
-Items acknowledged and deferred at milestone close on 2026-05-08:
+Items acknowledged and deferred from prior milestones:
 
 | Category     | Item                                       | Status   |
 | ------------ | ------------------------------------------ | -------- |
@@ -104,15 +105,15 @@ Items acknowledged and deferred at milestone close on 2026-05-08:
 
 ## Session Continuity
 
-**Last Session:** 2026-05-08 — v0.6.0 completed
+**Last Session:** 2026-05-09 — Phase 57 plan 01 executed
 
 **Session Notes:**
 
-- Phase 54-56 all complete
-- MintedEggModal added to mint page
-- Commission percentages corrected to 25/15/10/5
-- All legacy artifacts acknowledged and deferred
+- Phase 57 Plan 01 completed: 4 commits, 35 tests passing, build successful
+- Wallet page now has skeleton card for initial load, fade-in transition, inline error state, and number formatting
+- Pre-existing bug identified: use-wallet-poll.ts infinite re-render on 5xx errors (deferred)
+- Next: Phase 57 plan 02 or start v0.7.0 next phase
 
 ---
 
-_Last updated: 2026-05-08 — v0.6.0 milestone complete_
+_Last updated: 2026-05-09 — Phase 57 context gathered_
