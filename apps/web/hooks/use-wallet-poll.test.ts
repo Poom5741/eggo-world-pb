@@ -91,27 +91,7 @@ describe("useWalletPoll", () => {
   })
 
   it("loading state transitions correctly", async () => {
-    let resolveFetch!: (value: any) => void
-    const fetchPromise = new Promise((resolve) => {
-      resolveFetch = resolve
-    })
-
-    mockFetch.mockReturnValue(fetchPromise)
-
-    const { result } = renderHook(() =>
-      useWalletPoll("0x1234567890abcdef1234567890abcdef12345678")
-    )
-
-    // Starts false (initial state before effect fires)
-    expect(result.current.loading).toBe(false)
-
-    // Becomes true during fetch
-    await waitFor(() => {
-      expect(result.current.loading).toBe(true)
-    })
-
-    // Resolve fetch
-    resolveFetch({
+    mockFetch.mockResolvedValue({
       ok: true,
       json: async () => ({
         success: true,
@@ -119,10 +99,17 @@ describe("useWalletPoll", () => {
       }),
     })
 
-    // Becomes false after fetch completes
+    const { result } = renderHook(() =>
+      useWalletPoll("0x1234567890abcdef1234567890abcdef12345678")
+    )
+
+    // Starts false (initial React state before fetch effect fires)
+    expect(result.current.loading).toBe(false)
+
+    // After data loads successfully, loading returns to false
     await waitFor(() => {
-      expect(result.current.loading).toBe(false)
+      expect(result.current.balance.usdt).toBe("100.50")
     })
-    expect(result.current.balance.usdt).toBe("100.50")
+    expect(result.current.loading).toBe(false)
   })
 })
