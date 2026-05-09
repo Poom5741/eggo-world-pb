@@ -1,5 +1,21 @@
 # Milestones
 
+## v0.7.0 Polished Deposit & Withdraw Flow
+
+- **Status:** ✅ SHIPPED
+- **Date:** 2026-05-10
+- **Phases:** 57
+- **Plans:** 1
+- \*\*Accomplishments:
+  - Wallet balance page polished with skeleton card (5 pulsing placeholder blocks) for initial loading state
+  - Smooth 500ms fade-in animation with `requestAnimationFrame` trigger prevents flicker
+  - Inline error state with destructive Alert, correct copy, and Retry button inside balance card
+  - Number formatting unified to `toLocaleString` with 2 decimal places (commas for values >= 1000)
+  - "Updating..." badge refined to only show during background polls (not initial load)
+  - 35 tests added (53 expect calls) for wallet page and useWalletPoll hook
+- **Known deferred items at close:** 19 (see STATE.md Deferred Items)
+- **Key metrics:** 1/1 plans complete, 1/1 requirements satisfied, 35/35 tests passing
+
 ## v0.5.0 Security Hardening & Production Readiness
 
 - **Status:** ✅ SHIPPED

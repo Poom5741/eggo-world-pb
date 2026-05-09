@@ -11,21 +11,21 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Current Milestone: v0.7.0 (Planned)
+## Current Milestone: v0.7.0 — Polished Deposit & Withdraw Flow ✅ SHIPPED 2026-05-10
 
-**Status:** Not started — run `/gsd-new-milestone` to begin
-**Goal:** TBD
+**Status:** ✅ Archived — Phase 57 completed, WALLET-01 validated
+**Goal:** Polish wallet balance display with improved UX states
 
-**Previous Milestone:** v0.6.0 Quick Production Release (shipped 2026-05-08)
+**Next:** Planning next milestone — legacy requirements (WALLET-02/03/04) or new feature set TBD.
 
 ### Target Features
 
-| Feature                     | Priority | Description                                                                    |
-| --------------------------- | -------- | ------------------------------------------------------------------------------ |
-| Egg Mint Production Flow    | P0       | Ensure end-to-end egg mint flow is production-ready with proper error handling |
-| Referral Commission Payouts | P0       | Ensure referral commissions distribute correctly and users can claim payouts   |
-| Frontend for Money Flows    | P0       | UI pages and components for egg mint and commission claiming flows             |
-| Production Hardening        | P1       | Monitoring, error recovery, final verification for money-related operations    |
+| Feature                     | Priority | Description                                                             |
+| --------------------------- | -------- | ----------------------------------------------------------------------- |
+| Unified Wallet Page         | P0       | Single wallet page with balance, deposit QR, withdraw form, and history |
+| Polished Deposit Flow       | P0       | QR display, real-time polling, confirmation tracking, polished states   |
+| Polished Withdraw Flow      | P0       | Fee preview, blockchain withdrawal, status tracking, improved UX        |
+| Unified Transaction History | P1       | Combined deposit and withdrawal history with status indicators          |
 
 ---
 
@@ -146,17 +146,20 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 ## Requirements
 
-### Validated (v0.6.0 — ARCHIVED)
+### Validated (v0.7.0 — SHIPPED 2026-05-10)
 
+- ✓ WALLET-01 (Phase 57) — Wallet balance polish with skeleton, fade-in, inline error, number formatting
 - ✓ MINT-01 (Phase 54) — Production egg mint flow with error handling
 - ✓ COMM-01 (Phase 55) — 4-level MLM commission distribution (25/15/10/5)
 - ✓ FE-01 (Phase 56) — Mint page with payment flow and confirmation modal
 
-**v0.6.0 Final Score:** 3/3 scoped requirements (100%)
+**v0.7.0 Final Score:** 1/1 scoped requirements (100%)
 
-### Active (v0.7.0 — TBD)
+### Active (Next Milestone — TBD)
 
-Run `/gsd-new-milestone` to define next milestone requirements.
+- [ ] **WALLET-02**: User can deposit USDT via displayed QR code / wallet address
+- [ ] **WALLET-03**: User can withdraw USDT with fee preview and blockchain execution
+- [ ] **WALLET-04**: User can view unified transaction history (deposits + withdrawals)
 
 ### Previous Milestones (v0.0.6 — ARCHIVED)
 
@@ -179,14 +182,14 @@ Run `/gsd-new-milestone` to define next milestone requirements.
 
 ## Key Decisions
 
-| Decision                        | Phase | Rationale                                    | Outcome                        |
-| ------------------------------- | ----- | -------------------------------------------- | ------------------------------ |
-| Material Symbols via Google CDN | 8     | 40KB, edge-cached, simpler than self-hosting | ✅ Good                        |
-| TDD workflow for all frontend   | 8     | Enforce test coverage, clean commits         | ✅ 268 tests passing           |
-| Exponential backoff polling     | 9     | Balance freshness vs API load                | ✅ 30s→5min pattern reused     |
-| Claymorphism design system      | 7     | Jules design requirement                     | ✅ Distinctive visual identity |
-| Auto-wallet creation on signup  | 4     | Remove blockchain complexity                 | ✅ Seamless UX                 |
-| Hydration-safe auth checks      | 8     | Prevent SSR mismatches                       | ✅ `useIsHydrated()` pattern   |
+| Decision                        | Phase | Rationale                                                                   | Outcome                        |
+| ------------------------------- | ----- | --------------------------------------------------------------------------- | ------------------------------ |
+| Material Symbols via Google CDN | 8     | 40KB, edge-cached, simpler than self-hosting                                | ✅ Good                        |
+| TDD workflow for all frontend   | 8     | Enforce test coverage, clean commits                                        | ✅ 268 tests passing           |
+| Exponential backoff polling     | 9     | Balance freshness vs API load                                               | ✅ 30s→5min pattern reused     |
+| Claymorphism design system      | 7     | Jules design requirement                                                    | ✅ Distinctive visual identity |
+| initialLoadComplete pattern     | 57    | Distinguish initial fetch from background polling (prevents skeleton flash) | ✅ Good                        |
+| Hydration-safe auth checks      | 8     | Prevent SSR mismatches                                                      | ✅ `useIsHydrated()` pattern   |
 
 ---
 
@@ -224,22 +227,14 @@ Run `/gsd-new-milestone` to define next milestone requirements.
 
 ---
 
-## Current State (v0.6.0 Shipped)
+## Current State (v0.7.0 — SHIPPED)
 
-**Shipped:** 2026-05-08
-**Duration:** 1 day
-**Phases:** 54-56 (all complete)
+**Started:** 2026-05-09
+**Shipped:** 2026-05-10
+**Phase:** 57 — Wallet Balance Polish (WALLET-01)
+**Status:** ✅ Milestone archived
 
-### What Shipped
-
-- ✅ Production-ready mint-egg endpoint with robust error handling
-- ✅ 4-level MLM commission distribution (G1=25%, G2=15%, G3=10%, G4=5%)
-- ✅ MintedEggModal component with egg details on success
-- ✅ Double-credit bug fixed in commission distribution
-
-### Active Milestone: v0.7.0 (TBD)
-
-Run `/gsd-new-milestone` to start planning next milestone.
+WALLET-01 delivered: skeleton card for initial loading, smooth fade-in animation, inline error state with retry, number formatting with toLocaleString. Remaining requirements (WALLET-02/03/04) deferred to next milestone.
 
 ---
 
@@ -264,4 +259,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 
-_Last updated: 2026-05-08 — v0.6.0 shipped, v0.7.0 planning pending_
+_Last updated: 2026-05-10 — v0.7.0 milestone shipped_
