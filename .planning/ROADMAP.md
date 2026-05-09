@@ -8,7 +8,7 @@
 ## Milestones
 
 - ✅ **v0.6.0 Quick Production Release** — Phases 54-56 (shipped 2026-05-08)
-- 📋 **v0.7.0** — Next milestone (TBD)
+- 📋 **v0.7.0 Polished Deposit & Withdraw Flow** — Phases 57 (active)
 
 ---
 
@@ -29,9 +29,21 @@
 
 </details>
 
-### 📋 v0.7.0 (Planned)
+### 📋 v0.7.0 Polished Deposit & Withdraw Flow (Phases 57)
 
-Next milestone to be defined. Run `/gsd-new-milestone` to start planning.
+**Goal:** Polish wallet balance display with improved UX states
+
+- [ ] Phase 57: Wallet Balance Polish (WALLET-01) — 1 plan
+
+**Key Deliverables:**
+
+- Polished wallet balance display with loading skeleton, error recovery, empty state
+- Consistent claymorphism design
+- Maintained auto-polling with exponential backoff
+
+**Plans:**
+
+- [ ] 57-01-PLAN.md — Add skeleton card, smooth fade-in, refined error state, number formatting, and test coverage
 
 ---
 
@@ -42,7 +54,8 @@ Next milestone to be defined. Run `/gsd-new-milestone` to start planning.
 | 54    | v0.6.0    | 1/1            | Complete | 2026-05-08 |
 | 55    | v0.6.0    | 1/1            | Complete | 2026-05-08 |
 | 56    | v0.6.0    | 1/1            | Complete | 2026-05-08 |
+| 57    | v0.7.0    | 1/1            | Pending  | —          |
 
 ---
 
-_Last updated: 2026-05-08 — v0.6.0 shipped_
+_Last updated: 2026-05-09 — Phase 57 plan created (1 plan)_
