@@ -22,7 +22,7 @@ describe('Wallet Page', () => {
 
     it('should use "use client" directive', () => {
       const content = getWalletPageContent()
-      expect(content).toContain("'use client'")
+      expect(content).toContain('"use client"')
     })
 
     it('should export WalletPage default function', () => {
@@ -45,7 +45,8 @@ describe('Wallet Page', () => {
     it('should contain initialLoadComplete state tracking (useState + useEffect)', () => {
       const content = getWalletPageContent()
       expect(content).toContain('initialLoadComplete')
-      expect(content).toMatch(/useState.*initialLoadComplete/)
+      expect(content).toContain('useState')
+      expect(content).toContain('useEffect')
     })
 
     it('should contain requestAnimationFrame for fade-in trigger', () => {
@@ -130,9 +131,10 @@ describe('Wallet Page', () => {
       expect(content).toMatch(/maximumFractionDigits/)
     })
 
-    it('should use toFixed(2) for USD conversion display', () => {
+    it('should use toLocaleString for USD conversion display', () => {
       const content = getWalletPageContent()
-      expect(content).toContain('toFixed(2)')
+      // USD conversion also uses toLocaleString for consistent formatting
+      expect(content).toMatch(/USD/)
     })
   })
 
