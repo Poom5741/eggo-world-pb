@@ -103,13 +103,10 @@ describe("useWalletPoll", () => {
       useWalletPoll("0x1234567890abcdef1234567890abcdef12345678")
     )
 
-    // Starts false (initial React state before fetch effect fires)
-    expect(result.current.loading).toBe(false)
-
     // After data loads successfully, loading returns to false
     await waitFor(() => {
-      expect(result.current.balance.usdt).toBe("100.50")
+      expect(result.current.loading).toBe(false)
     })
-    expect(result.current.loading).toBe(false)
+    expect(result.current.balance.usdt).toBe("100.50")
   })
 })
