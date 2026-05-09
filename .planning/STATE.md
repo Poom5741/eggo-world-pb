@@ -1,7 +1,7 @@
 # STATE.md — Project Memory
 
 **Project:** Egg × Food × Animal NFT Marketplace
-**Milestone:** v0.7.0 — Polished Deposit & Withdraw Flow ✅ SHIPPED
+**Milestone:** v0.8.0 — Production Launch
 **Network:** BNB SmartChain (BSC)
 **Token:** USDT (BEP-20)
 
@@ -11,21 +11,22 @@
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.7.0 shipped. Next milestone planning TBD.
+**Current Focus:** v0.8.0 — Phase 58: Testnet Contract Deployment
 
-**Status:** ✅ Milestone shipped (v0.7.0)
+**Status:** 📋 Roadmap defined
 
 ---
 
 ## Current Position
 
-**Phase:** None — v0.7.0 milestone archived
-**Plan:** —
-**Status:** ✅ Milestone complete
-**Last activity:** 2026-05-10 — v0.7.0 milestone shipped and archived
+**Phase:** 58 — Testnet Contract Deployment
+**Plan:** Not started
+**Status:** 📋 Roadmap defined
+**Last activity:** 2026-05-10 — v0.8.0 roadmap defined with phases 58-62
 
 ```
-Progress: [██████████] 100%
+
+Progress: [░░░░░░░░░░] 0% (0/5 phases planned)
 ```
 
 ---
@@ -34,33 +35,36 @@ Progress: [██████████] 100%
 
 | Metric              | Value | Target |
 | ------------------- | ----- | ------ |
-| **Phases Complete** | 57/—  | —      |
-| **Phases Planned**  | 1     | —      |
+| **Phases Complete** | 57/62 | —      |
+| **Phases Planned**  | 5     | —      |
 
 ---
 
 ## Accumulated Context
 
-### v0.6.0 Quick Production Release (Shipped 2026-05-08)
+### v0.8.0 — Production Launch (Started 2026-05-10)
 
-**Phases (54-56):**
+**Goal:** Deploy contracts to 0xl3 testnet, verify flows, deploy to BSC mainnet
 
-- Phase 54: Egg Mint Backend Hardening — Complete
-- Phase 55: Referral Commission Distribution — Complete
-- Phase 56: Egg Mint Frontend & Integration — Complete
+**Phases:**
 
-### v0.7.0 — Polished Deposit & Withdraw Flow (Started 2026-05-09)
+- Phase 58: Testnet Contract Deployment — DEPLOY-01
+- Phase 59: Marketplace E2E Verification — VERIFY-01
+- Phase 60: Withdraw Flow Validation — VERIFY-02
+- Phase 61: Mainnet Contract Deployment — DEPLOY-02
+- Phase 62: Production Config Migration — CONFIG-01
 
-**Goal:** Consolidate and polish wallet deposit/withdraw into a single unified page
+**Key Addresses:**
 
-**Existing Assets:**
+- 0xl3 testnet RPC: `https://rpc.0xl3.com`
+- 0xl3 testnet USDT (mock): `0xCcA613d42D72592615289b888E29c2eB218cfDC9`
+- BSC mainnet USDT: `0x55d398326f99059fF775485246999027B3197955`
 
-- `apps/web/app/dashboard/deposit/page.tsx` — Deposit page with QR code
-- `apps/web/app/dashboard/withdraw/page.tsx` — Withdraw page with form
-- `apps/web/app/wallet/page.tsx` — Existing wallet page
-- `apps/backend/pb_hooks/13-track-deposit.pb.js` — Deposit tracking hook
-- `apps/backend/pb_hooks/09-withdraw-usdt.pb.js` — Withdrawal hook
-- `wallet-api/server.js` — Wallet API with USDT transfer endpoint
+### v0.7.0 — Polished Deposit & Withdraw Flow (Shipped 2026-05-10)
+
+**Phases (57):**
+
+- Phase 57: Wallet Balance Polish — Complete
 
 ### Key Learnings (Carried Forward)
 
@@ -110,16 +114,15 @@ _Known deferred items at v0.7.0 close: 19 (see audit-open report)_
 
 ## Session Continuity
 
-**Last Session:** 2026-05-10 — v0.7.0 milestone shipped
+**Last Session:** 2026-05-10 — v0.8.0 roadmap defined
 
 **Session Notes:**
 
-- Phase 57 (Wallet Balance Polish) completed: skeleton card, fade-in, inline error, number formatting
-- UAT verified via browser agent — all 5 visual items PASS
-- v0.7.0 milestone shipped: WALLET-01 validated, 35 tests passing
-- Pre-existing bug identified: use-wallet-poll.ts infinite re-render on 5xx errors (deferred)
-- Next: Plan next milestone — remaining requirements (WALLET-02/03/04) or new feature set
+- v0.8.0 Production Launch milestone started
+- 5 phases defined (58-62): testnet deploy → marketplace verify → withdraw verify → mainnet deploy → config migration
+- 5 requirements mapped to 5 phases — 100% coverage
+- Next: Execute Phase 58 — deploy contracts to 0xl3 testnet
 
 ---
 
-_Last updated: 2026-05-10 — v0.7.0 milestone shipped_
+_Last updated: 2026-05-10 — v0.8.0 roadmap defined_

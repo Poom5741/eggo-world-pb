@@ -11,21 +11,21 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Current Milestone: v0.7.0 — Polished Deposit & Withdraw Flow ✅ SHIPPED 2026-05-10
+## Current Milestone: v0.8.0 — Production Launch
 
-**Status:** ✅ Archived — Phase 57 completed, WALLET-01 validated
-**Goal:** Polish wallet balance display with improved UX states
+**Goal:** Deploy smart contracts to 0xl3 testnet, verify end-to-end flows (marketplace buy/sell, deposit/withdraw), then deploy to BSC mainnet with all production configs updated.
 
-**Next:** Planning next milestone — legacy requirements (WALLET-02/03/04) or new feature set TBD.
+**Target Features:**
 
-### Target Features
+| Feature                      | Priority | Description                                                           |
+| ---------------------------- | -------- | --------------------------------------------------------------------- |
+| Testnet Contract Deployment  | P0       | Fresh deploy all contracts to 0xl3 testnet, verify on BscScan         |
+| Marketplace E2E Verification | P0       | Full buy/sell flow on testnet: mint → list → buy → ownership transfer |
+| Withdraw Flow Validation     | P0       | Real USDT withdrawal on testnet with fee preview, tx tracking         |
+| Mainnet Contract Deployment  | P0       | Deploy all contracts to BSC mainnet, verify on BscScan                |
+| Production Config Update     | P1       | Update RPC URLs, contract addresses, env files for mainnet            |
 
-| Feature                     | Priority | Description                                                             |
-| --------------------------- | -------- | ----------------------------------------------------------------------- |
-| Unified Wallet Page         | P0       | Single wallet page with balance, deposit QR, withdraw form, and history |
-| Polished Deposit Flow       | P0       | QR display, real-time polling, confirmation tracking, polished states   |
-| Polished Withdraw Flow      | P0       | Fee preview, blockchain withdrawal, status tracking, improved UX        |
-| Unified Transaction History | P1       | Combined deposit and withdrawal history with status indicators          |
+**Previous Milestone:** v0.7.0 Polished Deposit & Withdraw Flow (shipped 2026-05-10)
 
 ---
 
