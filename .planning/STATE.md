@@ -1,7 +1,7 @@
 # STATE.md — Project Memory
 
 **Project:** Egg × Food × Animal NFT Marketplace
-**Milestone:** v0.7.0 — Polished Deposit & Withdraw Flow
+**Milestone:** v0.7.0 — Polished Deposit & Withdraw Flow ✅ SHIPPED
 **Network:** BNB SmartChain (BSC)
 **Token:** USDT (BEP-20)
 
@@ -11,18 +11,18 @@
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.7.0 — Consolidate and polish wallet deposit/withdraw into unified UX
+**Current Focus:** v0.7.0 shipped. Next milestone planning TBD.
 
-**Status:** 📋 Planned
+**Status:** ✅ Milestone shipped (v0.7.0)
 
 ---
 
 ## Current Position
 
-**Phase:** 57 — Wallet Balance Polish
-**Plan:** 57-01-PLAN.md (1 plan, 2 tasks, 1 wave) ✅ Completed
-**Status:** ✅ Complete
-**Last activity:** 2026-05-09 — Phase 57 plan 01 executed
+**Phase:** None — v0.7.0 milestone archived
+**Plan:** —
+**Status:** ✅ Milestone complete
+**Last activity:** 2026-05-10 — v0.7.0 milestone shipped and archived
 
 ```
 Progress: [██████████] 100%
@@ -34,7 +34,7 @@ Progress: [██████████] 100%
 
 | Metric              | Value | Target |
 | ------------------- | ----- | ------ |
-| **Phases Complete** | 0/—   | —      |
+| **Phases Complete** | 57/—  | —      |
 | **Phases Planned**  | 1     | —      |
 
 ---
@@ -91,29 +91,35 @@ Progress: [██████████] 100%
 
 ## Deferred Items
 
-Items acknowledged and deferred from prior milestones:
+Items acknowledged and deferred from prior milestones (confirmed at v0.7.0 close):
 
 | Category     | Item                                       | Status   |
 | ------------ | ------------------------------------------ | -------- |
 | uat          | Phase 10 UAT gaps (10 scenarios)           | Legacy   |
 | uat          | Phase 15 UAT gaps (8 scenarios)            | Legacy   |
+| uat          | Legacy phases 17,22,23,26,27,28,29,30 UAT  | Legacy   |
+| uat          | Phase 56 UAT gaps                          | Legacy   |
+| uat          | Phase 57 UAT gaps (all resolved)           | Legacy   |
 | verification | Phase 03, 12, 19, 20, 49 verification gaps | Legacy   |
 | quick_task   | 260430-fix-e2e-journey-tests               | Missing  |
 | context      | Phase 08 open questions (3 resolved)       | Complete |
+
+_Known deferred items at v0.7.0 close: 19 (see audit-open report)_
 
 ---
 
 ## Session Continuity
 
-**Last Session:** 2026-05-09 — Phase 57 plan 01 executed
+**Last Session:** 2026-05-10 — v0.7.0 milestone shipped
 
 **Session Notes:**
 
-- Phase 57 Plan 01 completed: 4 commits, 35 tests passing, build successful
-- Wallet page now has skeleton card for initial load, fade-in transition, inline error state, and number formatting
+- Phase 57 (Wallet Balance Polish) completed: skeleton card, fade-in, inline error, number formatting
+- UAT verified via browser agent — all 5 visual items PASS
+- v0.7.0 milestone shipped: WALLET-01 validated, 35 tests passing
 - Pre-existing bug identified: use-wallet-poll.ts infinite re-render on 5xx errors (deferred)
-- Next: Phase 57 plan 02 or start v0.7.0 next phase
+- Next: Plan next milestone — remaining requirements (WALLET-02/03/04) or new feature set
 
 ---
 
-_Last updated: 2026-05-09 — Phase 57 context gathered_
+_Last updated: 2026-05-10 — v0.7.0 milestone shipped_
