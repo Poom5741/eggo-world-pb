@@ -9,14 +9,25 @@ export interface LineLoginOptions {
   redirectTo?: string
 }
 
-export async function initiateLineLogin(options: LineLoginOptions = {}): Promise<void> {
-  // console.error('=== INITIATING LINE LOGIN (PocketBase SDK) ===')
-  // console.error('Options:', options)
-  
-  const { referrer, redirectTo } = options
+// Prevent concurrent OAuth requests
+let isAuthenticating = false
 
+export async function initiateLineLogin(options: LineLoginOptions = {}): Promise<void> {
+  // Prevent double-clicks
+  if (isAuthenticating) {
+    console.warn('LINE OAuth already in progress, ignoring duplicate click')
+    return
+  }
+  
+  isAuthenticating = true
+  
   try {
+    const { referrer, redirectTo } = options
+
     const pb = createClient()
+    
+    // Clear any stale auth data to prevent conflicts
+    pb.authStore.clear()
     
     // Store redirect target for after successful auth
     if (redirectTo) {
@@ -25,8 +36,6 @@ export async function initiateLineLogin(options: LineLoginOptions = {}): Promise
     if (referrer) {
       sessionStorage.setItem('referrer', referrer)
     }
-
-    // console.error('Calling pb.collection("users").authWithOAuth2...')
 
     // PocketBase SDK handles the entire OAuth2 flow:
     // 1. Opens popup with LINE auth page
@@ -98,5 +107,8 @@ export async function initiateLineLogin(options: LineLoginOptions = {}): Promise
     
     // Show error to user
     throw error
+  } finally {
+    // Reset auth guard
+    isAuthenticating = false
   }
 }

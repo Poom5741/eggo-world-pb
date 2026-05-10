@@ -84,18 +84,27 @@ onRecordCreate((e) => {
 
     } catch (error) {
         console.error("Failed to create wallet:", error);
-        throw new Error("Wallet creation failed, aborting user creation: " + error.message);
+        // NON-BLOCKING: Continue user creation even if wallet fails
+        // Wallet can be created later via manual process
+        console.log("Continuing user creation without wallet - will need manual wallet creation");
     }
 
     e.next();
 
     // Create user_wallets record AFTER user is committed (needs user ID)
     try {
+        // Only create user_wallets if wallet was successfully created
+        var wallet = e.record.get("wallet");
+        if (!wallet) {
+            console.log("Skipping user_wallets creation - no wallet for user:", e.record.id);
+            return;
+        }
+        
         var userWalletsCollection = $app.findCollectionByNameOrId("user_wallets");
         var userWalletRecord = new Record(userWalletsCollection);
         
         userWalletRecord.set("user_id", e.record.id);
-        userWalletRecord.set("wallet_address", e.record.get("wallet") || "");
+        userWalletRecord.set("wallet_address", wallet);
         userWalletRecord.set("usdt_balance", 0);
         userWalletRecord.set("total_earned", 0);
         userWalletRecord.set("total_spent", 0);

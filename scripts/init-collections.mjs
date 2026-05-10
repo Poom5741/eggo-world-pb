@@ -14,26 +14,37 @@ const __dirname = path.dirname(__filename);
 
 // Load environment variables from wallet-api/.env
 const envPath = path.join(__dirname, "../wallet-api/.env");
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, "utf8");
-  envContent.split("\n").forEach((line) => {
-    line = line.trim();
-    if (line && !line.startsWith("#")) {
-      const idx = line.indexOf("=");
-      if (idx > 0) {
-        const key = line.substring(0, idx).trim();
-        const value = line.substring(idx + 1).trim();
-        if (key && value && !process.env[key]) {
-          process.env[key] = value;
+const backendEnvPath = path.join(__dirname, "../apps/backend/.env");
+
+function loadEnvFile(filePath) {
+  if (fs.existsSync(filePath)) {
+    const envContent = fs.readFileSync(filePath, "utf8");
+    envContent.split("\n").forEach((line) => {
+      line = line.trim();
+      if (line && !line.startsWith("#")) {
+        const idx = line.indexOf("=");
+        if (idx > 0) {
+          const key = line.substring(0, idx).trim();
+          const value = line.substring(idx + 1).trim();
+          if (key && value && !process.env[key]) {
+            process.env[key] = value;
+          }
         }
       }
-    }
-  });
+    });
+  }
 }
+
+loadEnvFile(envPath);
+loadEnvFile(backendEnvPath);
 
 const PB_URL = process.env.POCKETBASE_URL || "https://pb.eggoworld.io";
 const ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD;
+
+// LINE OAuth2 credentials (for production provider config)
+const LINE_CHANNEL_ID = process.env.LINE_CHANNEL_ID || "";
+const LINE_CHANNEL_SECRET = process.env.LINE_CHANNEL_SECRET || "";
 
 if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
   console.error("❌ Missing POCKETBASE_ADMIN_EMAIL or POCKETBASE_ADMIN_PASSWORD in wallet-api/.env");
@@ -77,9 +88,9 @@ async function upsertCollection(name, schema) {
     // Check if exists and get existing fields
     const existing = await pb.collections.getOne(name);
     
-    // Build merged schema preserving system fields and existing field IDs
+    // Build merged schema preserving system fields, autodate fields, and existing field IDs
     const existingFields = existing.fields || [];
-    const systemFields = existingFields.filter(f => f.system);
+    const systemFields = existingFields.filter(f => f.system || f.type === 'autodate');
     const customFields = schema.fields || [];
     
     // For each custom field, check if it already exists (preserve ID)
@@ -197,10 +208,13 @@ async function main() {
       { name: "admin", type: "bool", required: false },
       { name: "claimed_recruitment_tier", type: "number", required: false, min: 0, max: 10, onlyInt: true },
       { name: "kyc_required_globally", type: "bool", required: false },
+      // Autodate fields (explicitly added back since they were accidentally removed)
+      { name: "created", type: "autodate", onCreate: true, onUpdate: false, presentable: false, system: false },
+      { name: "updated", type: "autodate", onCreate: true, onUpdate: true, presentable: false, system: false },
     ];
 
     const existingFields = existing.fields || [];
-    const systemFields = existingFields.filter(f => f.system);
+    const systemFields = existingFields.filter(f => f.system || f.type === 'autodate');
     
     // Merge custom fields with existing IDs
     const mergedFields = customFields.map(newField => {
@@ -211,7 +225,15 @@ async function main() {
       return newField;
     });
     
-    // Add system fields first, then custom fields
+    // Ensure autodate fields exist
+    const autodateFields = existingFields.filter(f => f.type === 'autodate');
+    for (const autoField of autodateFields) {
+      if (!mergedFields.find(f => f.name === autoField.name)) {
+        mergedFields.push(autoField);
+      }
+    }
+    
+    // Add system fields first, then custom fields (including preserved autodates)
     const finalFields = [...systemFields];
     for (const field of mergedFields) {
       if (!finalFields.find(f => f.name === field.name)) {
@@ -237,6 +259,20 @@ async function main() {
       authRule: "",
       manageRule: null,
       oauth2: {
+        providers: [
+          {
+            name: "oidc",
+            displayName: "Line",
+            clientId: LINE_CHANNEL_ID || "2009441873",
+            clientSecret: LINE_CHANNEL_SECRET || "",
+            authURL: "https://access.line.me/oauth2/v2.1/authorize",
+            tokenURL: "https://api.line.me/oauth2/v2.1/token",
+            userInfoURL: "https://api.line.me/oauth2/v2.1/userinfo",
+            scopes: ["openid", "profile"],
+            pkce: true,
+            extra: {}
+          }
+        ],
         mappedFields: {
           id: "externalId",
           name: "name",
@@ -246,7 +282,7 @@ async function main() {
         enabled: true
       },
       passwordAuth: {
-        enabled: true,
+        enabled: false,
         identityFields: ["email"]
       },
       mfa: { enabled: false, duration: 1800, rule: "" },
