@@ -11,22 +11,22 @@
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.8.0 — Phase 58: Testnet Contract Deployment
+**Current Focus:** v0.8.0 — Phase 58 complete, ready for Phase 59
 
-**Status:** 📋 Roadmap defined
+**Status:** ✅ Phase 58 executed
 
 ---
 
 ## Current Position
 
-**Phase:** 58 — Testnet Contract Deployment
-**Plan:** 58-01-PLAN.md (8 tasks)
-**Status:** 📋 Plan ready
-**Last activity:** 2026-05-10 — Phase 58 plan created
+**Phase:** 58 — Testnet Contract Deployment ✅
+**Plan:** 58-01-PLAN.md (8/8 tasks complete)
+**Status:** ✅ Complete
+**Last activity:** 2026-05-10 — Phase 58 executed (all contracts deployed to 0xl3 testnet)
 
 ```
 
-Progress: [░░░░░░░░░░] 0% (0/5 phases planned)
+Progress: [██░░░░░░░░] 20% (1/5 phases complete)
 ```
 
 ---
@@ -35,7 +35,7 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases planned)
 
 | Metric              | Value | Target |
 | ------------------- | ----- | ------ |
-| **Phases Complete** | 57/62 | —      |
+| **Phases Complete** | 58/62 | —      |
 | **Phases Planned**  | 5     | —      |
 
 ---
@@ -48,7 +48,7 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases planned)
 
 **Phases:**
 
-- Phase 58: Testnet Contract Deployment — DEPLOY-01
+- Phase 58: Testnet Contract Deployment — DEPLOY-01 ✅
 - Phase 59: Marketplace E2E Verification — VERIFY-01
 - Phase 60: Withdraw Flow Validation — VERIFY-02
 - Phase 61: Mainnet Contract Deployment — DEPLOY-02
@@ -57,7 +57,7 @@ Progress: [░░░░░░░░░░] 0% (0/5 phases planned)
 **Key Addresses:**
 
 - 0xl3 testnet RPC: `https://rpc.0xl3.com`
-- 0xl3 testnet USDT (mock): `0xCcA613d42D72592615289b888E29c2eB218cfDC9`
+- 0xl3 testnet USDT (mock, fresh): `0x6Ce3cCcBC5146ED8b88F1FbC12D4682Be3E4Cf8e`
 - BSC mainnet USDT: `0x55d398326f99059fF775485246999027B3197955`
 
 ### v0.7.0 — Polished Deposit & Withdraw Flow (Shipped 2026-05-10)
@@ -114,14 +114,16 @@ _Known deferred items at v0.7.0 close: 19 (see audit-open report)_
 
 ## Session Continuity
 
-**Last Session:** 2026-05-10 — v0.8.0 roadmap defined
+**Last Session:** 2026-05-10 — Phase 58 executed
 
 **Session Notes:**
 
 - v0.8.0 Production Launch milestone started
 - 5 phases defined (58-62): testnet deploy → marketplace verify → withdraw verify → mainnet deploy → config migration
 - 5 requirements mapped to 5 phases — 100% coverage
-- Next: Execute Phase 58 — deploy contracts to 0xl3 testnet
+- Phase 58 executed: All 6 contracts deployed to 0xl3 testnet, cross-linked, sanity-checked
+- Note: 0xl3 explorer (exp.0xl3.com) temporarily down — manual verification pending
+- Next: Phase 59 — Marketplace E2E Verification
 
 ---
 

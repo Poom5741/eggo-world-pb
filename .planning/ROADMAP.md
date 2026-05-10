@@ -35,7 +35,7 @@
 
 **Milestone Goal:** Deploy smart contracts to 0xl3 testnet, verify end-to-end flows (marketplace buy/sell, deposit/withdraw), then deploy to BSC mainnet with all production configs updated.
 
-- [ ] **Phase 58: Testnet Contract Deployment** - Deploy and verify all 6 contracts on 0xl3 testnet
+- [x] **Phase 58: Testnet Contract Deployment** - Deploy and verify all 6 contracts on 0xl3 testnet ✅ 2026-05-10
 - [ ] **Phase 59: Marketplace E2E Verification** - Full mint→list→buy cycle verified on testnet with correct commissions
 - [ ] **Phase 60: Withdraw Flow Validation** - USDT withdrawal with fee preview and on-chain confirmation on testnet
 - [ ] **Phase 61: Mainnet Contract Deployment** - Deploy and verify all 6 contracts on BSC mainnet
@@ -57,7 +57,11 @@
 3. Deployment addresses for all 6 contracts recorded in `deployment-addresses.json`
 4. MockUSDT contract is deployed and `DEPLOY_MOCK_USDT=true` takes effect
 5. CommissionDistribution is initialized with correct G1/G2-G4/CoinStor fee splits
-   **Plans**: TBD
+   **Plans**: 1 plan
+
+Plans:
+
+- [x] 58-01-PLAN.md — Deploy all 6 contracts to 0xl3 testnet, update registries, verify, sanity-check ✅
 
 ### Phase 59: Marketplace E2E Verification
 
@@ -127,7 +131,7 @@
 | 55    | v0.6.0    | 1/1            | Complete       | 2026-05-08 |
 | 56    | v0.6.0    | 1/1            | Complete       | 2026-05-08 |
 | 57    | v0.7.0    | 1/1            | ✅ Complete    | 2026-05-09 |
-| 58    | v0.8.0    | 0/—            | ⏳ Not started | -          |
+| 58    | v0.8.0    | 1/1            | ✅ Complete    | 2026-05-10 |
 | 59    | v0.8.0    | 0/—            | ⏳ Not started | -          |
 | 60    | v0.8.0    | 0/—            | ⏳ Not started | -          |
 | 61    | v0.8.0    | 0/—            | ⏳ Not started | -          |
@@ -135,4 +139,4 @@
 
 ---
 
-_Last updated: 2026-05-10 — v0.8.0 roadmap defined_
+_Last updated: 2026-05-10 — Phase 58: 1 plan created_
