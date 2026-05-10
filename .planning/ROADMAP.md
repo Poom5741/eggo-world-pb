@@ -75,8 +75,12 @@ Plans:
 3. A different user can purchase the listed egg — ownership transfers on-chain
 4. Seller receives USDT payout with correct commissions deducted (G1 20%, G2-G4 10%, CoinStor 4%)
 5. UI reflects all state changes: listing appears, then disappears after purchase, ownership shown correctly
-   **Plans**: TBD
+   **Plans**: 1 plan
    **UI hint**: yes
+
+Plans:
+
+- [ ] 59-01-PLAN.md -- E2E verification: mint, list, buy, commission distribution via full-stack UI + on-chain cast checks
 
 ### Phase 60: Withdraw Flow Validation
 
@@ -90,7 +94,7 @@ Plans:
 3. Real blockchain transaction is executed and confirmed on 0xl3 testnet
 4. Transaction hash (`tx_hash`) is stored in PocketBase withdrawal record
 5. User's USDT balance updates correctly in both wallet and UI after withdrawal
-   **Plans**: TBD
+   **Plans**: 1 plan
    **UI hint**: yes
 
 ### Phase 61: Mainnet Contract Deployment
@@ -105,7 +109,7 @@ Plans:
 3. `DEPLOY_MOCK_USDT=false` (or equivalent mainnet config) — real USDT address used
 4. Deployment addresses for all 6 contracts recorded in `deployment-addresses.json`
 5. Deployer wallet funded with sufficient BNB (~5+ BNB) for gas, deployment succeeds without running out of gas
-   **Plans**: TBD
+   **Plans**: 1 plan
 
 ### Phase 62: Production Config Migration
 
@@ -119,7 +123,7 @@ Plans:
 3. PocketBase hook configs reference mainnet contracts and USDT address
 4. Frontend environment variables (`NEXT_PUBLIC_*`) point to mainnet network and contracts
 5. Nginx CORS and rate-limiting rules verified and correctly configured for production traffic
-   **Plans**: TBD
+   **Plans**: 1 plan
 
 ---
 
