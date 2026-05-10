@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { ethers } = require('ethers');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 
 // AES-256-GCM encryption constants
 const ALGORITHM = 'aes-256-gcm';
@@ -105,6 +106,7 @@ const EGG_NFT_ABI = [
   "function hatchEgg(uint256 tokenId) external returns (uint256)",
   "function requestBreed(uint256 parent1TokenId, uint256 parent2TokenId, address referrer) external returns (uint256)",
   "function claimBreed(uint256 requestId) external returns (uint256)",
+  "function adminMint(address to) external returns (uint256)",
   "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)"
 ];
 
@@ -160,6 +162,24 @@ const TIER_BADGE_ABI = [
 
 app.use(cors());
 app.use(express.json());
+
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  skip: (req) => req.path === '/health' || req.path === '/api/v1/admin/status',
+  message: { success: false, error: { message: 'Too many requests', code: 'RATE_LIMITED' } },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(generalLimiter);
+
+const actionLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, error: { message: 'Too many requests', code: 'RATE_LIMITED' } },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // PocketBase Admin Authentication Helper
 let pbAdminToken = null;
@@ -330,17 +350,7 @@ app.post('/api/wallet/create', async (req, res) => {
     try {
         const { userId } = req.body;
         
-        if (!userId) {
-            return res.status(400).json({ 
-                success: false, 
-                error: {
-                    message: 'User ID is required',
-                    code: 'MISSING_USER_ID'
-                }
-            });
-        }
-        
-        console.log(`Creating wallet for user: ${userId}`);
+        console.log(`Creating wallet for user: ${userId || 'unknown'}`);
         
         // Generate a new random wallet
         const wallet = ethers.Wallet.createRandom();
@@ -352,7 +362,7 @@ app.post('/api/wallet/create', async (req, res) => {
         // Format daccPublickey with prefix to match PocketBase validation pattern ^daccPublickey_
         const daccPublickey = `daccPublickey_${address}`;
         
-        const encryptionKey = MASTER_KEY + userId;
+        const encryptionKey = MASTER_KEY + (userId || 'default');
         const encryptedPrivateKey = await encryptPrivateKey(privateKey, encryptionKey);
         
         const result = {
@@ -552,7 +562,7 @@ async function encryptPrivateKey(privateKey, masterKey) {
     };
 }
 
-app.post('/api/v1/wallet/transfer', async (req, res) => {
+app.post('/api/v1/wallet/transfer', actionLimiter, async (req, res) => {
     try {
         const { from_address, to_address, amount, fee, user_id } = req.body;
         
@@ -691,7 +701,7 @@ app.post('/api/v1/wallet/balance', async (req, res) => {
 });
 
 // Mint Egg NFT
-app.post('/api/wallet/mint-egg', async (req, res) => {
+app.post('/api/wallet/mint-egg', actionLimiter, async (req, res) => {
     try {
         const { userId, wallet: walletAddress, eggId, eggNftAddress, referrerAddress } = req.body;
         
@@ -949,7 +959,7 @@ app.post('/api/wallet/claim-commission', async (req, res) => {
 });
 
 // Mint Food NFT
-app.post('/api/wallet/mint-food', async (req, res) => {
+app.post('/api/wallet/mint-food', actionLimiter, async (req, res) => {
     try {
         const { userId, wallet: walletAddress, quantity, foodType, foodNftAddress } = req.body;
         
@@ -2246,13 +2256,13 @@ function getEggNFTContract() {
         throw new Error('EggNFT contract address not configured');
     }
     
-    // Minimal ABI for pause/unpause operations
-    const abi = [
+    // ABI including adminMint (added for free mint operations)
+    const abi = EGG_NFT_ABI.concat([
         'function pause() external',
         'function unpause() external',
         'function paused() external view returns (bool)',
         'event PauseStateChanged(bool paused)'
-    ];
+    ]);
     
     return new ethers.Contract(contractAddress, abi, wallet);
 }
@@ -2314,6 +2324,78 @@ app.post('/api/v1/admin/control', async (req, res) => {
                 message: error.message || 'Internal server error',
                 code: 'INTERNAL_ERROR'
             }
+        });
+    }
+});
+
+// ========== ADMIN FREE MINT ==========
+// POST /api/v1/wallet/admin/mint-egg-free
+// Owner-only: mints an egg for `walletAddress` without charging USDT
+app.post('/api/v1/wallet/admin/mint-egg-free', async (req, res) => {
+    try {
+        const { walletAddress } = req.body;
+
+        if (!walletAddress) {
+            return res.status(400).json({
+                success: false,
+                error: { message: 'walletAddress is required', code: 'MISSING_PARAMETERS' }
+            });
+        }
+
+        if (!ADMIN_PRIVATE_KEY) {
+            return res.status(500).json({
+                success: false,
+                error: { message: 'Admin wallet not configured', code: 'ADMIN_NOT_CONFIGURED' }
+            });
+        }
+
+        const contract = getEggNFTContract();
+        console.log(`[Admin Mint] Free minting egg to: ${walletAddress}`);
+
+        const gasEstimate = await contract.adminMint.estimateGas(walletAddress);
+        const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
+
+        const tx = await contract.adminMint(walletAddress, { gasLimit });
+        console.log(`[Admin Mint] Transaction sent: ${tx.hash}`);
+
+        const receipt = await tx.wait(CONFIRMATIONS);
+
+        if (receipt.status !== 1) {
+            throw new Error('Transaction reverted');
+        }
+
+        // Extract tokenId from EggMinted event
+        let tokenId = null;
+        if (receipt.logs) {
+            for (const log of receipt.logs) {
+                try {
+                    if (log.fragment?.name === 'EggMinted') {
+                        tokenId = log.args.tokenId?.toString();
+                        break;
+                    }
+                } catch { /* skip */ }
+            }
+        }
+
+        console.log(`[Admin Mint] Confirmed - Token ID: ${tokenId}, TX: ${tx.hash}`);
+
+        res.json({
+            success: true,
+            data: {
+                tx_hash: tx.hash,
+                token_id: tokenId,
+                block_number: receipt.blockNumber
+            }
+        });
+
+    } catch (error) {
+        console.error('[Admin Mint] Error:', error.code || error.message);
+        const errorMessage = error.message.includes('private') || error.message.includes('key')
+            ? 'Admin operation failed'
+            : error.message;
+        res.status(500).json({
+            success: false,
+            error: { message: errorMessage, code: error.code || 'ADMIN_MINT_FAILED' }
         });
     }
 });
