@@ -13,7 +13,7 @@ import { Egg, Loader2, CheckCircle2, AlertCircle, ExternalLink, X, Sparkles } fr
 import Link from 'next/link'
 
 const MINT_PRICE = 25
-const BSCSCAN_BASE_URL = 'https://rpc.0xl3.com/tx'
+const BSCSCAN_BASE_URL = 'https://bscscan.com/tx'
 
 // MintedEggModal Component
 function MintedEggModal({

@@ -347,7 +347,7 @@ export default function DepositPage() {
                         </td>
                         <td className="py-3 text-sm font-mono text-gray-700">
                           <a 
-                            href={`https://0xl3.testnet.eggoworld.io/tx/${deposit.tx_hash}`}
+                            href={`https://bscscan.com/tx/${deposit.tx_hash}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:underline"
