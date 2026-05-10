@@ -1,17 +1,19 @@
 {
   "chainId": 7117,
   "network": "0XL3 Testnet",
-  "deployedAt": "2026-04-03T10:30:00Z",
+  "deployedAt": "2026-05-10T00:00:00Z",
   "explorer": "https://exp.0xl3.com",
   "contracts": {
-    "MockUSDT": "0xc015ebb27696b73E72Bef099b72791D7e666E2d0",
-    "CommissionDistribution": "0x3c48926556e766E4564af0E264A9980e7C3a1787",
-    "AnimalNFT": "0x973F2cA33E96FCC1fdbc48a7880b238b4C6be464",
-    "EggNFT": "0xd7135090d78854820722CbCe0B29481Dd5D4808c",
-    "FoodNFT": "0xbb0E0FcB40E209f7751A784F6b8d63E9C127D8fC"
+    "MockUSDT": "0x6Ce3cCcBC5146ED8b88F1FbC12D4682Be3E4Cf8e",
+    "CommissionDistribution": "0xF01e1A6BAB405f31B43851B198f5Ce51B98aBE44",
+    "AnimalNFT": "0x83F793Aa350c28E35D9d354c5E82B9480F83F5Fc",
+    "EggNFT": "0xd8292C1cB10802a61F91e04ed5Ea0865499Bf6FE",
+    "FoodNFT": "0x445e463A249CeF93B74cbA1085275Daf0Bcc71a3",
+    "Marketplace": "0x238eB80DDa39A6C211fBC45852ec7a3569e3E4a9"
   },
   "config": {
-    "coinStorReserve": "0x17A670280817999B4073eB6CE2D7B4Eb542d372b",
+    "coinStorReserve": "0x77DD22ebE2986e8C0d1cDb4c853D43d9576F2bB5",
+    "treasury": "0x77DD22ebE2986e8C0d1cDb4c853D43d9576F2bB5",
     "eggMintPrice": "25 USDT",
     "foodMintPrice": "0.50 USDT"
   }
