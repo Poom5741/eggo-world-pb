@@ -26,8 +26,9 @@ RUN ARCH=$(uname -m) && \
 # Set working directory
 WORKDIR /pb
 
-# Copy hooks
-COPY pb_hooks/ /pb/pb_hooks/
+# Copy hooks (exclude test files and problematic files with merge conflicts)
+COPY pb_hooks/*.pb.js /pb/pb_hooks/
+RUN rm -f /pb/pb_hooks/13-track-deposit.pb.js || true
 COPY pb_public/ /pb/pb_public/
 COPY pb_migrations/ /pb/pb_migrations/
 
