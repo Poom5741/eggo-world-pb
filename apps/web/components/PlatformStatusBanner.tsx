@@ -18,7 +18,9 @@ export default function PlatformStatusBanner() {
     const checkStatus = async () => {
       try {
         const pb = createClient()
-        const response = await fetch(`${pb.baseURL}/api/v2/platform/status`, {
+        // Remove trailing slash from baseURL if present
+        const baseUrl = pb.baseURL.endsWith('/') ? pb.baseURL.slice(0, -1) : pb.baseURL
+        const response = await fetch(`${baseUrl}/api/v2/platform/status`, {
           headers: { Authorization: `Bearer ${pb.authStore.token}` }
         })
         

@@ -16,204 +16,109 @@ function CallbackContent() {
   useEffect(() => {
     const handleCallback = async () => {
       const code = searchParams.get('code')
-      const email = searchParams.get('email')
-      const password = searchParams.get('password')
-      const userParam = searchParams.get('user')
-      const token = searchParams.get('token')
       const stateParam = searchParams.get('state')
       const errorParam = searchParams.get('error')
+      const provider = searchParams.get('provider')
 
+      // Handle OAuth error
       if (errorParam) {
         setStatus('error')
         setError(searchParams.get('error_description') || errorParam)
         return
       }
 
-      // NEW FLOW: Accept token directly from line-callback.html (after auth)
-      if (token && userParam) {
-        console.log('Using new token-based auth flow')
+      // PocketBase OAuth2 callback - receives code and state
+      if (code) {
+        // console.error('=== PocketBase OAuth2 Callback ===')
+        // console.error('Provider:', provider)
+        // console.error('Code present:', !!code)
+        
         try {
           const pb = createClient()
-          
-          // Parse user data
-          const userData = JSON.parse(decodeURIComponent(userParam))
-          console.log('User data from redirect:', userData)
-          
-          // Construct proper PocketBase auth record with required fields
-          const authRecord = {
-            id: userData.id,
-            collectionId: '_pb_users_auth_',
-            collectionName: 'users',
-            email: userData.email,
-            name: userData.name,
-            ...(userData.wallet && { wallet: userData.wallet }),
-            // Include all fields from the user data
-            ...userData
-          }
-          console.log('Auth record:', authRecord)
-          
-          // Save auth token directly (already authenticated by line-callback.html)
-          pb.authStore.save(token, authRecord)
-          
-          // Force sync to localStorage
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('pocketbase_auth', JSON.stringify({ 
-              token, 
-              model: authRecord 
-            }))
-            document.cookie = `pb_auth=${token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
-          }
-          
-          // Handle state (referrer, redirectTo)
+          const redirectUrl = `${window.location.origin}/auth/callback`
+
+          // Call PocketBase's native OAuth2 authentication endpoint
+          const authData = await pb.collection('users').authWithOAuth2({
+            provider: provider || 'oidc',
+            code: code,
+            redirectURL: redirectUrl,
+            createData: {
+              emailVisibility: false
+            }
+          })
+
+          // console.error('✓ OAuth2 authentication successful')
+          // console.error('User ID:', authData.record?.id)
+          // console.error('Is new user:', authData.meta?.isNewUser)
+
+          // Parse state to get referral and redirect info
           if (stateParam) {
             try {
               const state = JSON.parse(atob(decodeURIComponent(stateParam)))
+              
+              // Handle referral for new users
+              const isNewUser = authData.meta?.isNewUser
+              const referrer = state.referrer || sessionStorage.getItem('referrer')
+              
+              if (isNewUser && referrer && authData.record?.id) {
+                // console.error('New user with referrer, applying referral...')
+                const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://localhost:8090'
+                const referralResponse = await fetch(`${pbUrl}/api/referrals/apply`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': authData.token
+                  },
+                  body: JSON.stringify({
+                    referral_code: referrer,
+                    user_id: authData.record.id
+                  })
+                })
+                
+                const referralResult = await referralResponse.json()
+                if (referralResult.success) {
+                  // console.error('✓ Referral applied:', referralResult.data?.referrer_name)
+                } else {
+                  console.warn('Referral application failed:', referralResult.error?.message)
+                }
+              }
+
+              // Store redirect target
               if (state.redirectTo) {
                 sessionStorage.setItem('redirectTo', state.redirectTo)
-              }
-              if (state.referrer) {
-                sessionStorage.setItem('referrer', state.referrer)
               }
             } catch (e) {
               console.warn('Failed to parse state:', e)
             }
           }
-          
-          console.log('✓ Auth saved successfully, redirecting to dashboard')
+
+          // Clean up session storage
+          sessionStorage.removeItem('referrer')
+          sessionStorage.removeItem('oauth_state')
+
           setStatus('success')
+          // console.error('✓ Auth complete, redirecting...')
           
-          // Wait briefly to ensure localStorage/cookie are written, then force reload
+          // Wait briefly then redirect
           setTimeout(() => {
-            window.location.href = '/'
+            const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
+            sessionStorage.removeItem('redirectTo')
+            window.location.href = redirectTo
           }, 100)
           return
-        } catch (error) {
-          console.error('Token auth failed:', error)
+        } catch (err) {
+          console.error('OAuth2 authentication failed:', err)
           setStatus('error')
-          setError('Authentication failed: ' + (error as Error).message)
+          setError('Authentication failed: ' + (err as Error).message)
           return
         }
       }
 
-      // FALLBACK: Old email+password flow (legacy production)
-      if (email && password) {
-        console.log('Using legacy email+password auth flow')
-        try {
-          const pb = createClient()
-          const authData = await pb.collection('users').authWithPassword(email, password)
-          
-          pb.authStore.save(authData.token, authData.record)
-          document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
-          
-          if (userParam) {
-            try {
-              const userData = JSON.parse(decodeURIComponent(userParam))
-              console.log('User data from redirect:', userData)
-            } catch (e) {
-              console.warn('Failed to parse user param:', e)
-            }
-          }
-          
-          setStatus('success')
-          router.push('/')
-          return
-        } catch (error) {
-          console.error('Legacy auth failed:', error)
-          setStatus('error')
-          setError('Authentication failed: ' + (error as Error).message)
-          return
-        }
-      }
-
-      // LAST RESORT: OAuth2 code flow (not used currently - PKCE not configured)
-      if (code) {
+      // No code or error received
+      if (!code) {
         setStatus('error')
-        setError('OAuth2 code flow not configured. Please use token-based auth.')
+        setError('No authorization code received')
         return
-      }
-
-      if (!code && !token && !email) {
-        setStatus('error')
-        setError('No authorization credentials received')
-        return
-      }
-
-      const redirectUrl = `${window.location.origin}/auth/callback`
-
-      try {
-        const pb = createClient()
-        const response = await fetch(`${pb.baseUrl}/api/collections/users/auth-with-oauth2`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            provider: 'oidc',
-            code: code,
-            codeVerifier: '',
-            redirectURL: redirectUrl,
-            createData: {
-              emailVisibility: false
-              // externalId and username are set automatically by PocketBase
-              // OAuth2 field mapping (id -> externalId) from the OIDC provider's sub claim
-            }
-          })
-        })
-
-        const authData = await response.json()
-        console.warn('Auth response:', authData)
-
-        if (!response.ok) {
-          throw new Error(authData.message || 'Authentication failed')
-        }
-
-        // Save auth to PocketBase client
-        // authStore.onChange จะ sync cookie pb_auth ให้อัตโนมัติ
-        pb.authStore.save(authData.token, authData.record)
-
-        // ตั้งค่า cookie ซ้ำเพื่อให้แน่ใจว่า middleware อ่านได้ก่อน redirect
-        document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
-
-        // Check if this is a new user and we have a referrer
-        const isFreshSignUp = authData.record?.created === authData.record?.updated
-        const referrer = sessionStorage.getItem('referrer')
-        
-        if (isFreshSignUp && referrer) {
-          console.warn('New user with referrer, registering...')
-          
-          // Call registration endpoint to set up referral chain
-          const registrationResponse = await fetch(`${pb.baseUrl}/api/users/register`, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${authData.token}`
-            },
-            body: JSON.stringify({
-              user_address: authData.record.wallet_address,
-              referrer_address: referrer,
-              email: authData.record.email,
-              name: authData.record.name
-            })
-          })
-          
-          const registrationResult = await registrationResponse.json()
-          console.warn('Registration result:', registrationResult)
-          
-          if (!registrationResult.success) {
-            console.warn('Registration failed:', registrationResult.error)
-            // Continue anyway - referral chain might already exist
-          }
-        }
-
-        // Clear referrer from sessionStorage
-        sessionStorage.removeItem('referrer')
-
-        setStatus('success')
-        const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
-        sessionStorage.removeItem('redirectTo')
-        window.location.href = redirectTo
-      } catch (err) {
-        setStatus('error')
-        setError(err instanceof Error ? err.message : 'Authentication failed')
-        console.warn('Auth error:', err)
       }
     }
 

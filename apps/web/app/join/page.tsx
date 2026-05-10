@@ -5,10 +5,14 @@ import { initiateLineLogin } from '@/lib/auth/line-oauth'
 import { Button } from '@/components/ui/button'
 
 export default function Join() {
-  const handleLINELogin = () => {
+  const handleLINELogin = async () => {
     const redirectTo = '/dashboard'
-    sessionStorage.setItem('redirectTo', redirectTo)
-    initiateLineLogin({ redirectTo })
+    
+    try {
+      await initiateLineLogin({ redirectTo })
+    } catch (error) {
+      console.error('LINE login failed:', error)
+    }
   }
 
   return (

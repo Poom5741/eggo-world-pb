@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useIsHydrated } from '@/hooks/use-is-hydrated'
 
 function LoginContent() {
   const router = useRouter()
@@ -16,10 +17,11 @@ function LoginContent() {
   const redirectTo = searchParams.get('redirectTo')
   const [e2eLoading, setE2eLoading] = useState(false)
   const [e2eError, setE2eError] = useState<string | null>(null)
+  const isHydrated = useIsHydrated()
 
-  // Check E2E environment and test user
-  const showE2EButton = isE2EEnvironment()
-  const testUserFromParams = getE2ETestUserFromParams()
+  // Check E2E environment and test user (only after hydration)
+  const showE2EButton = isHydrated && isE2EEnvironment()
+  const testUserFromParams = isHydrated ? getE2ETestUserFromParams() : null
 
   useEffect(() => {
     if (isAuthenticated()) {
@@ -27,12 +29,18 @@ function LoginContent() {
     }
   }, [router, redirectTo])
 
-  const handleLineLogin = () => {
-    console.log('=== LOGIN BUTTON CLICKED ===')
-    console.log('redirectTo:', redirectTo)
+  const handleLineLogin = async () => {
+    // console.error('=== LOGIN BUTTON CLICKED ===')
+    // console.error('redirectTo:', redirectTo)
     const targetPath = redirectTo || '/dashboard'
-    sessionStorage.setItem('redirectTo', targetPath)
-    initiateLineLogin({ redirectTo: targetPath })
+    
+    try {
+      await initiateLineLogin({ redirectTo: targetPath })
+    } catch (error) {
+      console.error('LINE login failed:', error)
+      // Error is already logged in initiateLineLogin
+      // Could show a toast notification here if needed
+    }
   }
 
   const handleE2ELoginClick = async (testUser: E2ETestUser) => {

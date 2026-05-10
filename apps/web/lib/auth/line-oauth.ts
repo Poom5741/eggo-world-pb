@@ -1,85 +1,102 @@
 // lib/auth/line-oauth.ts
-// Helper สำหรับเริ่มต้น LINE OAuth flow — แยกออกมาจาก /auth/line/page.tsx
-// เพื่อให้ login และ sign-up page เรียกใช้ได้โดยตรง (ไม่ต้อง navigate ไป /auth/line ก่อน)
+// Handles LINE OAuth login using PocketBase SDK's authWithOAuth2 method
+// This uses the SDK's popup-based flow which handles everything automatically
 
-// URL ของ PocketBase production สำหรับ line-callback.html
-const PRODUCTION_PB_URL = 'https://pb.eggoworld.io'
-// LINE OAuth Client ID
-const LINE_CLIENT_ID = '2009441873'
-
-// สร้าง random string สำหรับ state parameter (ใช้ crypto.getRandomValues เพื่อความปลอดภัย)
-function generateRandomString(length: number): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~'
-  let result = ''
-  
-  // Try crypto.getRandomValues first (requires HTTPS or localhost)
-  try {
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      const randomValues = new Uint8Array(length)
-      crypto.getRandomValues(randomValues)
-      for (let i = 0; i < length; i++) {
-        result += chars[randomValues[i] % chars.length]
-      }
-      console.log('Generated random string using crypto.getRandomValues')
-      return result
-    }
-  } catch (err) {
-    console.warn('crypto.getRandomValues failed, falling back to Math.random:', err)
-  }
-  
-  // Fallback to Math.random for non-secure contexts
-  console.log('Using Math.random fallback (not secure for production)')
-  for (let i = 0; i < length; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)]
-  }
-  return result
-}
+import { createClient } from '@/lib/pocketbase/client'
 
 export interface LineLoginOptions {
   referrer?: string
   redirectTo?: string
 }
 
-export function initiateLineLogin(options: LineLoginOptions = {}): void {
-  console.log('=== INITIATING LINE LOGIN ===')
-  console.log('Options:', options)
+export async function initiateLineLogin(options: LineLoginOptions = {}): Promise<void> {
+  // console.error('=== INITIATING LINE LOGIN (PocketBase SDK) ===')
+  // console.error('Options:', options)
   
   const { referrer, redirectTo } = options
 
-  // returnUrl ต้องเป็น /auth/callback — ใช้ PocketBase native auth-with-oauth2
-  // แก้ไขจาก /auth/line (เก่า - ใช้ custom endpoint ที่ทำให้ token ไม่ valid)
-  const returnUrl = `${window.location.origin}/auth/callback`
-  console.log('Return URL:', returnUrl)
+  try {
+    const pb = createClient()
+    
+    // Store redirect target for after successful auth
+    if (redirectTo) {
+      sessionStorage.setItem('redirectTo', redirectTo)
+    }
+    if (referrer) {
+      sessionStorage.setItem('referrer', referrer)
+    }
 
-  const stateData = {
-    random: generateRandomString(16),
-    returnUrl,                       // consumed by line-callback.html
-    referrer: referrer ?? '',
-    redirectTo: redirectTo ?? '',    // ค่านี้ line-callback.html ไม่ได้ใช้ เก็บไว้ใน state
+    // console.error('Calling pb.collection("users").authWithOAuth2...')
+
+    // PocketBase SDK handles the entire OAuth2 flow:
+    // 1. Opens popup with LINE auth page
+    // 2. User authenticates with LINE
+    // 3. LINE redirects to PocketBase's /api/oauth2-redirect
+    // 4. PocketBase exchanges code for tokens
+    // 5. PocketBase creates/updates user
+    // 6. SDK receives auth data and closes popup
+    // 7. Returns authData with token and user record
+    const authData = await pb.collection('users').authWithOAuth2({
+      provider: 'oidc',
+    })
+
+    // console.error('✓ LINE OAuth successful!')
+    // console.error('User ID:', authData.record?.id)
+    // console.error('Is new user:', authData.meta?.isNewUser)
+    // console.error('Username:', authData.meta?.username)
+
+    // Handle referral for new users
+    const isNewUser = authData.meta?.isNewUser
+    const storedReferrer = referrer || sessionStorage.getItem('referrer')
+    
+    if (isNewUser && storedReferrer && authData.record?.id) {
+      // console.error('New user with referrer, applying referral...')
+      const pbUrl = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://localhost:8090'
+      
+      try {
+        const referralResponse = await fetch(`${pbUrl}/api/referrals/apply`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authData.token
+          },
+          body: JSON.stringify({
+            referral_code: storedReferrer,
+            user_id: authData.record.id
+          })
+        })
+        
+        const referralResult = await referralResponse.json()
+        if (referralResult.success) {
+          // console.error('✓ Referral applied:', referralResult.data?.referrer_name)
+        } else {
+          console.warn('Referral application failed:', referralResult.error?.message)
+        }
+      } catch (referralErr) {
+        console.warn('Referral application error:', referralErr)
+      }
+    }
+
+    // Clean up session storage
+    sessionStorage.removeItem('referrer')
+    
+    // Redirect to dashboard or specified path
+    const targetPath = redirectTo || sessionStorage.getItem('redirectTo') || '/dashboard'
+    sessionStorage.removeItem('redirectTo')
+    
+    // console.error('Redirecting to:', targetPath)
+    window.location.href = targetPath
+    
+  } catch (error) {
+    console.error('LINE OAuth failed:', error)
+    
+    // Check if user closed the popup (not a real error)
+    if (error instanceof Error && error.message.includes('popup')) {
+      // console.error('User closed the popup window')
+      return
+    }
+    
+    // Show error to user
+    throw error
   }
-  const state = btoa(JSON.stringify(stateData))
-  console.log('State data:', stateData)
-  console.log('State (base64):', state)
-
-  // บันทึกใน sessionStorage ก่อนออกจาก app (window.location.href จะ unload page)
-  sessionStorage.setItem('oauth_state', state)
-  if (redirectTo) sessionStorage.setItem('redirectTo', redirectTo)
-  if (referrer) sessionStorage.setItem('referrer', referrer)
-  console.log('SessionStorage set complete')
-
-  // สร้าง LINE OAuth URL — redirect ไปที่ PocketBase line-callback.html
-  const redirectUri = `${PRODUCTION_PB_URL}/line-callback.html`
-  const authUrl =
-    'https://access.line.me/oauth2/v2.1/authorize' +
-    '?response_type=code' +
-    `&client_id=${LINE_CLIENT_ID}` +
-    `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-    '&scope=openid%20profile%20email' +
-    `&state=${encodeURIComponent(state)}`
-
-  console.log('Redirecting to LINE OAuth URL:')
-  console.log(authUrl)
-  console.log('=== REDIRECT NOW ===')
-
-  window.location.href = authUrl
 }

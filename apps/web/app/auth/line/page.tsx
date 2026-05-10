@@ -18,41 +18,41 @@ function LineLoginContent() {
     // 2. token + user params (production format - may have fake token)
     const email = params.get('email')
     const password = params.get('password')
-    const token = params.get('token')
+    const _token = params.get('token')
     const userParam = params.get('user')
 
-    console.log('=== /auth/line page loaded ===')
-    console.log('URL:', window.location.href)
-    console.log('Email param present:', !!email)
-    console.log('Password param present:', !!password)
-    console.log('Token param present:', !!token)
-    console.log('User param present:', !!userParam)
+    // Debug: Log auth parameters (remove in production)
+    // console.error('=== /auth/line page loaded ===')
+    // console.error('URL:', window.location.href)
+    // console.error('Email param present:', !!email)
+    // console.error('Password param present:', !!password)
+    // console.error('Token param present:', !!token)
+    // console.error('User param present:', !!userParam)
 
     // Handle authentication
     const authenticate = async () => {
       // LINE callback sends email + password + user (from line-callback.html)
       // Uses /api/auth/line-auth endpoint since users collection is OAuth2-only
       if (!email || !password || !userParam) {
-        console.log('Missing required auth params, redirecting to /auth/login')
-        console.log('Full URL params:', window.location.search)
+        console.error('Missing required auth params, redirecting to /auth/login')
         router.replace('/auth/login')
         return
       }
 
       setStatus('loading')
-      console.log('Processing LINE OAuth callback...')
+      console.error('Processing LINE OAuth callback...')
 
       try {
         const userData = JSON.parse(decodeURIComponent(userParam))
-        console.log('Got user data:', userData)
+        console.error('Got user data:', userData)
 
         const pb = createClient()
         const authData = await pb.collection('users').authWithPassword(email, password)
         
-        console.log('PocketBase authWithPassword SUCCESS, user:', authData.record?.id)
+        console.error('PocketBase authWithPassword SUCCESS, user:', authData.record?.id)
         
         document.cookie = `pb_auth=${authData.token}; path=/; max-age=${7 * 86400}; SameSite=Lax`
-        console.log('Cookie set explicitly')
+        // console.error('Cookie set explicitly')
 
         const backendUser = authData.record
         
@@ -72,25 +72,26 @@ function LineLoginContent() {
           })
           
           const referralResult = await referralResponse.json()
-          console.log('Referral result:', referralResult)
+          console.error('Referral result:', referralResult)
           
           if (referralResult.success) {
-            console.log('Referral applied successfully:', referralResult.data?.referrer_name)
+            console.error('Referral applied successfully:', referralResult.data?.referrer_name)
           } else {
-            console.log('Referral failed:', referralResult.error?.message)
+            console.error('Referral failed:', referralResult.error?.message)
           }
           sessionStorage.removeItem('pending_referral_code')
         }
         
         const redirectTo = sessionStorage.getItem('redirectTo') || '/dashboard'
-        console.log('Redirecting to:', redirectTo)
+        // console.error('Redirecting to:', redirectTo)
         sessionStorage.removeItem('redirectTo')
         
         window.location.href = redirectTo
       } catch (err) {
         console.error('LINE OAuth authentication failed:', err)
-        console.error('Error details:', err.message)
-        setError(`Authentication failed: ${err.message || 'Unknown error'}. Please try again.`)
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+        console.error('Error details:', errorMessage)
+        setError(`Authentication failed: ${errorMessage}. Please try again.`)
         setStatus('error')
       }
     }

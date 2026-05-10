@@ -29,16 +29,18 @@ function SignUpContent() {
     }
   }, [router, searchParams])
 
-  const handleSignUp = () => {
-    console.log('=== SIGN UP BUTTON CLICKED ===')
-    console.log('referrer:', referrer)
-    console.log('redirectTo:', redirectTo)
-    // ตั้งค่า default redirect ไป /dashboard สำหรับ sign-up flow
-    if (!redirectTo) {
-      sessionStorage.setItem('redirectTo', '/dashboard')
+  const handleSignUp = async () => {
+    // console.error('=== SIGN UP BUTTON CLICKED ===')
+    // console.error('referrer:', referrer)
+    // console.error('redirectTo:', redirectTo)
+    
+    try {
+      // เรียก LINE OAuth โดยตรง — ไม่ต้อง navigate ไป /auth/line ก่อน (per D-01)
+      await initiateLineLogin({ referrer: referrer || undefined, redirectTo: redirectTo || '/dashboard' })
+    } catch (error) {
+      console.error('LINE sign-up failed:', error)
+      // Error is already logged in initiateLineLogin
     }
-    // เรียก LINE OAuth โดยตรง — ไม่ต้อง navigate ไป /auth/line ก่อน (per D-01)
-    initiateLineLogin({ referrer: referrer || undefined, redirectTo: redirectTo || '/dashboard' })
   }
 
   return (

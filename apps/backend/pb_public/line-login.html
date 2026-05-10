@@ -79,42 +79,10 @@
         import PocketBase from "https://cdn.jsdelivr.net/gh/pocketbase/js-sdk@master/dist/pocketbase.es.mjs"
 
         const pb = new PocketBase(window.location.origin);
-        const redirectURL = window.location.origin + "/line-callback.html";
-        const LINE_CLIENT_ID = "2009441873";
-
-        function generateRandomString(length) {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-            let result = '';
-            const randomValues = new Uint8Array(length);
-            crypto.getRandomValues(randomValues);
-            for (let i = 0; i < length; i++) {
-                result += chars[randomValues[i] % chars.length];
-            }
-            return result;
-        }
-
-        async function generateCodeChallenge(codeVerifier) {
-            const encoder = new TextEncoder();
-            const data = encoder.encode(codeVerifier);
-            const digest = await crypto.subtle.digest('SHA-256', data);
-            return btoa(String.fromCharCode(...new Uint8Array(digest)))
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
-                .replace(/=+$/, '');
-        }
 
         async function checkAuth() {
-            const stored = localStorage.getItem('pb_auth');
-            if (stored) {
-                try {
-                    const { token, user } = JSON.parse(stored);
-                    if (token && user) {
-                        pb.authStore.save(token, user);
-                        showUserInfo(user);
-                    }
-                } catch (e) {
-                    localStorage.removeItem('pb_auth');
-                }
+            if (pb.authStore.isValid) {
+                showUserInfo(pb.authStore.record);
             }
         }
 
@@ -124,40 +92,44 @@
             
             btn.disabled = true;
             status.className = 'status';
-            status.textContent = 'Connecting to LINE...';
+            status.textContent = 'Opening LINE login...';
             
             try {
-                // Check if there's a returnUrl in the URL (from local dev)
-                const urlParams = new URLSearchParams(window.location.search);
-                const returnUrl = urlParams.get('returnUrl');
+                console.log('=== LINE Login via PocketBase SDK ===');
                 
-                // Build state - either just random string or include returnUrl
-                let state;
-                if (returnUrl) {
-                    const stateData = {
-                        random: generateRandomString(16),
-                        returnUrl: returnUrl
-                    };
-                    state = btoa(JSON.stringify(stateData));
-                    console.log('Including returnUrl in state:', returnUrl);
-                } else {
-                    state = generateRandomString(32);
-                }
+                // PocketBase SDK handles the entire OAuth2 flow:
+                // 1. Opens popup with LINE auth page
+                // 2. User authenticates with LINE
+                // 3. LINE redirects to PocketBase's /api/oauth2-redirect
+                // 4. PocketBase exchanges code for tokens
+                // 5. PocketBase creates/updates user
+                // 6. SDK receives auth data and closes popup
+                // 7. Returns authData with token and user record
+                const authData = await pb.collection('users').authWithOAuth2({
+                    provider: 'oidc',
+                });
+
+                console.log('✓ LINE OAuth successful!');
+                console.log('User ID:', authData.record?.id);
+                console.log('Is new user:', authData.meta?.isNewUser);
+
+                // Show user info
+                showUserInfo(authData.record);
                 
-                sessionStorage.setItem('oauth_state', state);
-                
-                const authURL = 'https://access.line.me/oauth2/v2.1/authorize' +
-                    '?response_type=code' +
-                    '&client_id=' + LINE_CLIENT_ID +
-                    '&redirect_uri=' + encodeURIComponent(redirectURL) +
-                    '&scope=openid%20profile%20email' +
-                    '&state=' + encodeURIComponent(state);
-                
-                console.log('Redirecting to LINE...');
-                window.location.href = authURL;
+                status.className = 'status success';
+                status.textContent = 'Login successful!';
                 
             } catch (error) {
                 btn.disabled = false;
+                
+                // Check if user closed the popup (not a real error)
+                if (error.message && error.message.includes('popup')) {
+                    console.log('User closed the popup window');
+                    status.className = 'status';
+                    status.textContent = '';
+                    return;
+                }
+                
                 status.className = 'status error';
                 status.textContent = 'Error: ' + error.message;
                 console.error('Login error:', error);
@@ -172,17 +144,17 @@
             
             document.getElementById('userName').textContent = user.name || 'N/A';
             document.getElementById('userEmail').textContent = user.email || 'N/A';
-            document.getElementById('walletAddress').textContent = user.wallet_address || 'Not created';
+            document.getElementById('walletAddress').textContent = user.wallet || 'Not created yet';
         }
 
         function logout() {
-            localStorage.removeItem('pb_auth');
-            localStorage.removeItem('pb_token');
             pb.authStore.clear();
             
             document.getElementById('loginBtn').style.display = 'inline-flex';
             document.getElementById('userInfo').classList.remove('show');
             document.getElementById('logoutBtn').classList.remove('show');
+            document.getElementById('status').className = 'status';
+            document.getElementById('status').textContent = '';
         }
 
         window.loginWithLine = loginWithLine;
