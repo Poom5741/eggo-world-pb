@@ -1,7 +1,7 @@
 routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
     const requestInfo = e.requestInfo();
     if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
-    const body = e.parseBody();
+    const body = requestInfo.body || {};
     const { user_address, amount, external_wallet_address } = body;
     
     if (!user_address || !amount || amount <= 0) {
@@ -53,13 +53,13 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
         try {
             const configRecord = $app.findFirstRecordByData("wallet_configs", "key", "WITHDRAWAL_FEE");
             if (configRecord) {
-                withdrawalFeeRate = configRecord.getNumber("value") || 0.05;
+                withdrawalFeeRate = configRecord.get("value") || 0.05;
             }
         } catch (configErr) {
             console.log("Using default withdrawal fee:", withdrawalFeeRate);
         }
         
-        const balance = walletRecord.getNumber("usdt_balance") || 0;
+        const balance = walletRecord.get("usdt_balance") || 0;
         const fee = amount * withdrawalFeeRate;
         const totalRequired = amount + fee;
         
@@ -70,6 +70,14 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             });
         }
         
+const withdrawalRecord = $app.newRecord($app.findCollectionByNameOrId("withdrawals"));
+        withdrawalRecord.set("user_id", userRecord.id);
+        withdrawalRecord.set("amount", amount);
+        withdrawalRecord.set("fee", fee);
+        withdrawalRecord.set("external_wallet_address", external_wallet_address);
+        withdrawalRecord.set("status", "pending");
+        $app.save(withdrawalRecord);
+
         // Attempt real blockchain transaction via wallet-api
         const walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001";
         const walletApiResponse = $http.send({
@@ -84,7 +92,7 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
                 user_id: userRecord.id
             })
         });
-        
+
         let txResponse;
         if (walletApiResponse.json && typeof walletApiResponse.json === "object") {
             txResponse = walletApiResponse.json;
@@ -99,47 +107,47 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             }
             txResponse = JSON.parse(responseBody);
         }
-        
+
         if (walletApiResponse.statusCode < 200 || walletApiResponse.statusCode >= 300) {
-            return e.json(400, { 
-                success: false, 
-                error: { 
-                    message: txResponse.error || "Blockchain transfer failed", 
-                    code: txResponse.error?.code || "TRANSFER_FAILED" 
-                } 
+            withdrawalRecord.set("status", "failed");
+            withdrawalRecord.set("tx_hash", null);
+            $app.save(withdrawalRecord);
+            return e.json(400, {
+                success: false,
+                error: {
+                    message: txResponse.error || "Blockchain transfer failed",
+                    code: txResponse.error?.code || "TRANSFER_FAILED"
+                }
             });
         }
-        
+
         if (!txResponse.success) {
-            return e.json(400, { 
-                success: false, 
-                error: { 
-                    message: txResponse.error?.message || "Blockchain transfer failed", 
-                    code: txResponse.error?.code || "TRANSFER_FAILED" 
-                } 
+            withdrawalRecord.set("status", "failed");
+            withdrawalRecord.set("tx_hash", null);
+            $app.save(withdrawalRecord);
+            return e.json(400, {
+                success: false,
+                error: {
+                    message: txResponse.error?.message || "Blockchain transfer failed",
+                    code: txResponse.error?.code || "TRANSFER_FAILED"
+                }
             });
         }
-        
-        // If we get here, blockchain transaction succeeded. Update balances.
-        const newBalance = balance - totalRequired;
-        walletRecord.set("usdt_balance", newBalance);
-        walletRecord.set("total_withdrawn", (walletRecord.getNumber("total_withdrawn") || 0) + amount);
-        walletRecord.set("last_transaction_at", new Date().toISOString());
-        $app.save(walletRecord);
-        
-        userRecord.set("usdt_balance", newBalance);
-        $app.save(userRecord);
-        
-        // Create withdrawal record for audit trail
-        const withdrawalRecord = $app.newRecord($app.findCollectionByNameOrId("withdrawals"));
-        withdrawalRecord.set("user_id", userRecord.id);
-        withdrawalRecord.set("amount", amount);
-        withdrawalRecord.set("fee", fee);
-        withdrawalRecord.set("external_wallet_address", external_wallet_address);
+
+        // Blockchain transaction succeeded. Update withdrawal to completed and deduct balances.
         withdrawalRecord.set("status", "completed");
         withdrawalRecord.set("tx_hash", txResponse.data?.txHash || null);
         $app.save(withdrawalRecord);
-        
+
+        const newBalance = balance - totalRequired;
+        walletRecord.set("usdt_balance", newBalance);
+        walletRecord.set("total_withdrawn", (walletRecord.get("total_withdrawn") || 0) + amount);
+        walletRecord.set("last_transaction_at", new Date().toISOString());
+        $app.save(walletRecord);
+
+        userRecord.set("usdt_balance", newBalance);
+        $app.save(userRecord);
+
         // Log withdrawal for monitoring
         console.log("Successful withdrawal:", user_address, "amount:", amount, "fee:", fee, "to:", external_wallet_address, "tx:", txResponse.data?.txHash);
         
@@ -150,7 +158,7 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
                 fee: fee,
                 net_amount: amount,
                 new_balance: newBalance,
-                total_withdrawn: walletRecord.getNumber("total_withdrawn"),
+                total_withdrawn: walletRecord.get("total_withdrawn"),
                 external_wallet_address: external_wallet_address,
                 tx_hash: txResponse.data?.txHash
             }
