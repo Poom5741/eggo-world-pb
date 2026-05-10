@@ -1,9 +1,10 @@
 // ===== CREATE WALLET HOOK =====
-// Creates EVM wallet BEFORE committing user record to DB.
-// This ensures wallet is always set on the user at creation time.
+// Creates EVM wallet AFTER user record is committed.
+// Wallet creation is async to avoid blocking OAuth2 callback.
 
 console.log("Setting up create wallet hook...");
 
+// Fast hook: Set default fields only (runs before commit)
 onRecordCreate((e) => {
     console.log("Create wallet hook triggered for user:", e.record.id);
 
@@ -15,7 +16,13 @@ onRecordCreate((e) => {
     e.record.set("highest_tier_reached", "bronze");
 
     console.log("Default game fields initialized");
+    e.next();
+}, "users");
 
+// Async hook: Create wallet AFTER commit (non-blocking)
+onRecordAfterCreateSuccess("users", (e) => {
+    console.log("Async wallet creation for user:", e.record.id);
+    
     try {
         var walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001";
         var apiUrl = walletApiUrl + "/api/wallet/create";
@@ -23,14 +30,12 @@ onRecordCreate((e) => {
         // Generate random password for wallet encryption
         var randomPassword = Math.random().toString(36).slice(-10) + Date.now().toString(36) + Math.random().toString(36).slice(-10);
         
-        // Send password to wallet API (Zod validation requires passwordSecretkey with 8-128 chars)
         var requestBody = {
             passwordSecretkey: randomPassword,
             publicEncryption: false
         };
 
         console.log("Calling wallet-api to create wallet for user:", e.record.id);
-        console.log("Request URL:", apiUrl);
 
         var response = $http.send({
             url: apiUrl,
@@ -38,8 +43,6 @@ onRecordCreate((e) => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody)
         });
-
-        console.log("Wallet-api response status:", response.statusCode);
 
         if (response.statusCode < 200 || response.statusCode >= 300) {
             throw new Error("Wallet-api returned status " + response.statusCode);
@@ -75,49 +78,35 @@ onRecordCreate((e) => {
 
         console.log("Wallet created successfully:", address);
 
-        // Set wallet fields on record BEFORE e.next() so they are committed with the record
+        // Update user record with wallet
         e.record.set("wallet", address);
         e.record.set("daccPublickey", daccPublickey);
         e.record.set("pin", randomPassword);
+        $app.save(e.record);
+        console.log("Wallet fields saved to user:", e.record.id);
 
-        console.log("Wallet fields set on record");
+        // Create user_wallets record
+        try {
+            var userWalletsCollection = $app.findCollectionByNameOrId("user_wallets");
+            var userWalletRecord = new Record(userWalletsCollection);
+            
+            userWalletRecord.set("user_id", e.record.id);
+            userWalletRecord.set("wallet_address", address);
+            userWalletRecord.set("usdt_balance", 0);
+            userWalletRecord.set("total_earned", 0);
+            userWalletRecord.set("total_spent", 0);
+            userWalletRecord.set("total_withdrawn", 0);
+            
+            $app.save(userWalletRecord);
+            console.log("user_wallets record created for user:", e.record.id);
+        } catch (walletError) {
+            console.error("Failed to create user_wallets record:", walletError);
+        }
 
     } catch (error) {
-        console.error("Failed to create wallet:", error);
-        // NON-BLOCKING: Continue user creation even if wallet fails
-        // Wallet can be created later via manual process
-        console.log("Continuing user creation without wallet - will need manual wallet creation");
+        console.error("Async wallet creation failed:", error);
+        console.log("User created without wallet - can be created later");
     }
-
-    e.next();
-
-    // Create user_wallets record AFTER user is committed (needs user ID)
-    try {
-        // Only create user_wallets if wallet was successfully created
-        var wallet = e.record.get("wallet");
-        if (!wallet) {
-            console.log("Skipping user_wallets creation - no wallet for user:", e.record.id);
-            return;
-        }
-        
-        var userWalletsCollection = $app.findCollectionByNameOrId("user_wallets");
-        var userWalletRecord = new Record(userWalletsCollection);
-        
-        userWalletRecord.set("user_id", e.record.id);
-        userWalletRecord.set("wallet_address", wallet);
-        userWalletRecord.set("usdt_balance", 0);
-        userWalletRecord.set("total_earned", 0);
-        userWalletRecord.set("total_spent", 0);
-        userWalletRecord.set("total_withdrawn", 0);
-        
-        $app.save(userWalletRecord);
-        
-        console.log("user_wallets record created for user:", e.record.id);
-    } catch (walletError) {
-        console.error("Failed to create user_wallets record:", walletError);
-        // Non-fatal: user exists with wallet, just missing wallet record
-        // Can be backfilled manually if needed
-    }
-}, "users");
+});
 
 console.log("Create wallet hook registered");
