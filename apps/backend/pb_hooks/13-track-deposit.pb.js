@@ -1,85 +1,3 @@
-<<<<<<< Updated upstream
-// ===== DEPOSIT TRACKING HOOK =====
-// Background polling + manual trigger for MockUSDT Transfer events
-// USDT Contract: 0x93886105218Ca14b370ACA538b13895295916028 (Phase 12 deployment)
-
-const CONFIG = globalThis.EGGO_CONFIG
-const USDT_DECIMALS = 6
-const REQUIRED_CONFIRMATIONS = 12
-const TRANSFER_SIGNATURE = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-
-// === Helpers ===
-
-function getLastScannedBlock() {
-  try {
-    const record = $app.findFirstRecordByData("sync_state", "id", "deposit_poller")
-    return record ? Math.floor(record.getNumber("lastProcessedBlock") || 0) : 0
-  } catch (e) {
-    return 0
-  }
-}
-
-function saveLastScannedBlock(blockNumber) {
-  try {
-    let record
-    try {
-      record = $app.findFirstRecordByData("sync_state", "id", "deposit_poller")
-    } catch (e) {
-      record = null
-    }
-    if (!record) {
-      const collection = $app.findCollectionByNameOrId("sync_state")
-      record = new Record(collection)
-      record.set("id", "deposit_poller")
-    }
-    record.set("lastProcessedBlock", blockNumber)
-    record.set("lastSyncTimestamp", new Date().toISOString())
-    record.set("status", "syncing")
-    $app.save(record)
-  } catch (e) {
-    console.error("Failed to save sync state:", e)
-  }
-}
-
-async function rpcCall(method, params) {
-  const response = await fetch(CONFIG.blockchain.rpcUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ jsonrpc: "2.0", method, params, id: 1 }),
-  })
-  const data = await response.json()
-  if (data.error) throw new Error("RPC error: " + data.error.message)
-  return data.result
-}
-
-async function rpcCallWithRetry(method, params, retries = 3) {
-  for (let i = 0; i < retries; i++) {
-    try {
-      return await rpcCall(method, params)
-    } catch (error) {
-      if (i === retries - 1) throw error
-      await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)))
-    }
-  }
-}
-
-function extractAddress(topic) {
-  return "0x" + topic.slice(26)
-}
-
-function parseAmount(hexData) {
-  const raw = parseInt(hexData, 16)
-  return raw / Math.pow(10, USDT_DECIMALS)
-}
-
-function findUserByWallet(walletAddress) {
-  try {
-    return $app.findFirstRecordByData("users", "wallet", walletAddress)
-  } catch (e) {
-    return null
-  }
-}
-
 async function checkReorg(depositRecord) {
   const blockNumber = Math.floor(depositRecord.getNumber("block_number"))
   try {
@@ -326,23 +244,6 @@ function startBackgroundPoller() {
 startBackgroundPoller()
 
 // === Manual trigger endpoint ===
-=======
-/**
- * 13-track-deposit.pb.js - Deposit Tracking Hook
- * 
- * Polls CommissionDistribution contract for Transfer events
- * and tracks USDT deposits to user wallets.
- * 
- * Endpoints:
- * - POST /api/v2/deposit/poll
- * - POST /api/v2/deposit/check-confirmations
- * 
- * Auth: Required (user must be authenticated)
- * 
- * Request (poll): { user_address: "0x..." }
- * Response (poll): { success: true, data: { deposits: [...], new_balance: number, pending_count: number, confirmed_count: number, newly_confirmed: [...] } }
- */
->>>>>>> Stashed changes
 
 /**
  * Check pending deposit confirmations and transition status.
@@ -403,64 +304,6 @@ async function checkPendingConfirmations(userId) {
 }
 
 routerAdd("POST", "/api/v2/deposit/poll", async (e) => {
-<<<<<<< Updated upstream
-  e.requireAuth()
-  const body = e.parseBody()
-  const { user_address } = body
-
-  if (!user_address || !user_address.match(/^0x[a-fA-F0-9]{40}$/)) {
-    return e.json(400, {
-      success: false,
-      error: { message: "Valid user_address required", code: "VALIDATION_ERROR" }
-    })
-  }
-
-  try {
-    await pollDeposits()
-
-    const userRecord = $app.findFirstRecordByData("users", "wallet", user_address)
-    if (!userRecord) {
-      return e.json(404, {
-        success: false,
-        error: { message: "User not found", code: "USER_NOT_FOUND" }
-      })
-    }
-
-    const walletRecord = $app.findFirstRecordByData("user_wallets", "user_id", userRecord.id)
-
-    let deposits = []
-    try {
-      deposits = $app.findRecordsByFilter("deposits", "user = '" + userRecord.id + "'", "-created", 50)
-    } catch (e) {
-      // No deposits
-    }
-
-    e.json(200, {
-      success: true,
-      data: {
-        deposits: deposits.map(d => ({
-          id: d.id,
-          amount: d.getNumber("amount"),
-          tx_hash: d.getString("tx_hash"),
-          from_address: d.getString("from_address"),
-          status: d.getString("status"),
-          confirmations: d.getNumber("confirmations"),
-          created: d.getString("created")
-        })),
-        new_balance: walletRecord ? walletRecord.getNumber("usdt_balance") : 0
-      }
-    })
-  } catch (error) {
-    console.error("Deposit poll error:", error)
-    e.json(500, {
-      success: false,
-      error: { message: error.message, code: "DEPOSIT_POLL_FAILED" }
-    })
-  }
-})
-
-console.log("Deposit tracking hook registered: background poller (" + POLLING_INTERVAL + "ms) + POST /api/v2/deposit/poll")
-=======
     const requestInfo = e.requestInfo();
     if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
     const body = e.parseBody();
@@ -494,13 +337,10 @@ console.log("Deposit tracking hook registered: background poller (" + POLLING_IN
             });
         }
         
-        // Check pending deposit confirmations before polling
         const newlyConfirmed = await checkPendingConfirmations(userRecord.id);
         
-        // Block tracking (SEC-05): Read last_polled_block from wallet
         const lastPolledBlock = walletRecord.getNumber("last_polled_block") || 0;
         
-        // Fetch current block number via RPC
         const blockResponse = await fetch(CONFIG.blockchain.rpcUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -660,4 +500,3 @@ routerAdd("POST", "/api/v2/deposit/check-confirmations", async (e) => {
 });
 
 console.log("Deposit tracking endpoints registered: POST /api/v2/deposit/poll, POST /api/v2/deposit/check-confirmations");
->>>>>>> Stashed changes
