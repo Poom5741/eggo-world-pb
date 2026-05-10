@@ -31,12 +31,12 @@ jobs:
       - name: Install dependencies
         run: |
           cd apps/web
-          bun install --no-frozen-lockfile
+          bun install --frozen-lockfile
 
       - name: Build and deploy to Cloudflare Pages
         run: |
           cd apps/web
-          bun run deploy
+          bunx opennextjs-cloudflare build && bunx opennextjs-cloudflare deploy
         env:
           NEXT_PUBLIC_POCKETBASE_URL: ${{ vars.NEXT_PUBLIC_POCKETBASE_URL || 'https://pb.eggoworld.io' }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
