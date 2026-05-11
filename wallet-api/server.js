@@ -26,6 +26,7 @@ const RPC_URL = process.env.RPC_URL || 'https://rpc.0xl3.com';
 const CHAIN_ID = parseInt(process.env.CHAIN_ID || '7117');
 const CONFIRMATIONS = 12; // Wait for 12 confirmations
 const GAS_BUFFER_PERCENT = 20; // 20% gas buffer
+const TRANSFER_TIMEOUT_MS = 60000; // 60s timeout for transfer confirmation
 
 // PocketBase admin credentials for fetching user wallet data
 const PB_URL = process.env.POCKETBASE_URL || 'https://pb.eggoworld.io';
@@ -610,7 +611,14 @@ app.post('/api/v1/wallet/transfer', actionLimiter, async (req, res) => {
         
         console.log(`USDT transfer transaction sent: ${tx.hash}`);
         
-        const receipt = await tx.wait(CONFIRMATIONS);
+        const receipt = await Promise.race([
+            tx.wait(CONFIRMATIONS),
+            new Promise((_, reject) => { 
+                const timeoutErr = new Error('TRANSFER_TIMEOUT');
+                timeoutErr.txHash = tx.hash;
+                setTimeout(() => reject(timeoutErr), TRANSFER_TIMEOUT_MS);
+            })
+        ]);
         
         if (receipt.status !== 1) {
             throw new Error('USDT transfer transaction reverted');
@@ -635,6 +643,17 @@ app.post('/api/v1/wallet/transfer', actionLimiter, async (req, res) => {
             : error.message;
         
         console.error('[USDT Transfer] Error:', error);
+        
+        if (error.message === 'TRANSFER_TIMEOUT') {
+            return res.status(504).json({ 
+                success: false, 
+                error: { 
+                    message: 'Transfer transaction not confirmed within timeout. The transaction may still complete on-chain. Check txHash for status.',
+                    code: 'TRANSFER_TIMEOUT',
+                    txHash: error.txHash || null
+                } 
+            });
+        }
         
         res.status(500).json({ 
             success: false, 
