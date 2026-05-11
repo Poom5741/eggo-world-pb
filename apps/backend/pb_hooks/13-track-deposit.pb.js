@@ -59,11 +59,11 @@ async function pollDeposits() {
     return
   }
 
-  // 3. Fetch Transfer events from MockUSDT
+  // 3. Fetch Transfer events from USDT contract
   let logs
   try {
     logs = await rpcCallWithRetry("eth_getLogs", [{
-      address: CONFIG.blockchain.contracts.MockUSDT,
+      address: CONFIG.blockchain.contracts.USDT,
       fromBlock: "0x" + fromBlock.toString(16),
       toBlock: "0x" + toBlock.toString(16),
       topics: [TRANSFER_SIGNATURE],

@@ -54,21 +54,21 @@ const CONFIG = {
     // RPC Configuration
     rpcUrl: process.env.BSC_RPC_URL || "https://bsc-dataseed.binance.org",
     rpcWssUrl: process.env.BSC_RPC_WSS_URL || "",
-    chainId: parseInt(process.env.BSC_CHAIN_ID || "7117"),
+    chainId: parseInt(process.env.BSC_CHAIN_ID || "56"),
     
     // Platform settings
     platformAddress: process.env.PLATFORM_ADDRESS || "0x0000000000000000000000000000000000000000", // Platform fee recipient
     platformFeePercent: 4, // 4% CoinStor fee
     
-// Deployed contract addresses (v0.6.0 deployment - chain 7117)
-    // Can be overridden per-environment via env vars (E2E uses local Anvil addresses)
+// Deployed contract addresses (BSC mainnet — set via env vars before deployment)
+    // Override per-environment via env vars (E2E uses local Anvil addresses)
     contracts: {
-      MockUSDT: process.env.MOCK_USDT_ADDRESS || "0xCcA613d42D72592615289b888E29c2eB218cfDC9",
-      CommissionDistribution: process.env.COMMISSION_DISTRIBUTION_ADDRESS || "0x9A1411db0344Bb1fDC6f3B6f04419B05C48dD7EF",
-      AnimalNFT: process.env.ANIMAL_NFT_ADDRESS || "0xfd8FaEe6aaB9A2e84F5AaDBf4917fF69CC4411a3",
-      EggNFT: process.env.EGG_NFT_ADDRESS || "0xaEF5bd8f90edB4532E39017746Fe6904d96A90E3",
-      FoodNFT: process.env.FOOD_NFT_ADDRESS || "0xACb93BD52b9520A58bCD24AB0CAd8149Da7C91dB",
-      Marketplace: process.env.MARKETPLACE_ADDRESS || "0x35B1B840b8907c2b87cBf87753524b7ef07A1935"
+      USDT: process.env.USDT_ADDRESS || "0x55d398326f99059fF775485246999027B3197955",
+      CommissionDistribution: process.env.COMMISSION_DISTRIBUTION_ADDRESS || "TBD_DEPLOY_COMMISSION_DISTRIBUTION",
+      AnimalNFT: process.env.ANIMAL_NFT_ADDRESS || "TBD_DEPLOY_ANIMAL_NFT",
+      EggNFT: process.env.EGG_NFT_ADDRESS || "TBD_DEPLOY_EGG_NFT",
+      FoodNFT: process.env.FOOD_NFT_ADDRESS || "TBD_DEPLOY_FOOD_NFT",
+      Marketplace: process.env.MARKETPLACE_ADDRESS || "TBD_DEPLOY_MARKETPLACE"
     },
 
     // E2E / local testing mode – when true, hooks skip on-chain verification

@@ -6,7 +6,8 @@
  * 1. Authenticate user
  * 2. Validate USDT balance (25 USDT required)
  * 3. Build referral chain (G1-G4) from referral_chain field
- * 4. Call EggNFT contract mintEgg(referrerChain)
+ * 4. Call wallet-api → USDT approve + EggNFT.mintEggWithChain(referralChain)
+ *    (USDT is transferred via safeTransferFrom in the contract)
  * 5. On success:
  *    - Create egg_nfts record
  *    - Deduct 25 USDT from buyer

@@ -1,6 +1,6 @@
 {
   "chainId": 7117,
-  "network": "0XL3 Testnet",
+  "network": "0XL3 Testnet (development)",
   "deployedAt": "2026-05-10T00:00:00Z",
   "explorer": "https://exp.0xl3.com",
   "contracts": {
@@ -16,5 +16,12 @@
     "treasury": "0x77DD22ebE2986e8C0d1cDb4c853D43d9576F2bB5",
     "eggMintPrice": "25 USDT",
     "foodMintPrice": "0.50 USDT"
+  },
+  "productionTarget": {
+    "chainId": 56,
+    "network": "BSC Mainnet",
+    "usdt": "0x55d398326f99059fF775485246999027B3197955",
+    "deployCommand": "forge script script/Deploy.s.sol --rpc-url bsc --private-key $DEPLOYER_PRIVATE_KEY --broadcast -vv",
+    "envVars": "DEPLOY_MOCK_USDT=false USDT_ADDRESS=0x55d398326f99059fF775485246999027B3197955 COINSTOR_RESERVE_ADDRESS=<YOUR_RESERVE> TREASURY_ADDRESS=<YOUR_TREASURY>"
   }
 }

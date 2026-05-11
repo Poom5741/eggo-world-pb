@@ -703,16 +703,23 @@ app.post('/api/v1/wallet/balance', async (req, res) => {
 // Mint Egg NFT
 app.post('/api/wallet/mint-egg', actionLimiter, async (req, res) => {
     try {
-        const { userId, wallet: walletAddress, eggId, eggNftAddress, referrerAddress } = req.body;
+        const { userId, wallet: walletAddress, eggId, eggNftAddress, referralChain } = req.body;
         
-        if (!userId || !walletAddress || !eggId || !eggNftAddress) {
+        if (!userId || !walletAddress || !eggNftAddress) {
             return res.status(400).json({ 
                 success: false, 
-                error: { message: 'Missing required parameters: userId, wallet, eggId, eggNftAddress' } 
+                error: { message: 'Missing required parameters: userId, wallet, eggNftAddress' } 
             });
         }
         
-        console.log(`[Mint Egg] User: ${userId}, Wallet: ${walletAddress}, Egg ID: ${eggId}`);
+        // Normalize referral chain: contract expects address[4], null values → zero address
+        const chain = (referralChain && Array.isArray(referralChain) && referralChain.length > 0)
+            ? referralChain.map(addr => addr && addr !== ethers.ZeroAddress ? addr : ethers.ZeroAddress)
+            : [ethers.ZeroAddress, ethers.ZeroAddress, ethers.ZeroAddress, ethers.ZeroAddress];
+        // Ensure exactly 4 elements
+        while (chain.length < 4) chain.push(ethers.ZeroAddress);
+        
+        console.log(`[Mint Egg] User: ${userId}, Wallet: ${walletAddress}, Egg ID: ${eggId}, Referral chain:`, chain);
         
         // Get user's encrypted private key
         const { encryptedPrivateKey } = await getUserPrivateKey(userId);
@@ -724,17 +731,45 @@ app.post('/api/wallet/mint-egg', actionLimiter, async (req, res) => {
         const provider = new ethers.JsonRpcProvider(RPC_URL);
         const signer = new ethers.Wallet(privateKey, provider);
         
-        // Connect to contract
+        // Connect to contracts
         const eggContract = new ethers.Contract(eggNftAddress, EGG_NFT_ABI, signer);
         
-        // Get mint price
-        const mintPrice = await eggContract.mintPrice();
-        console.log(`[Mint Egg] Mint price: ${ethers.formatEther(mintPrice)} ETH`);
+        // Get USDT contract address for this chain
+        const usdtAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.usdt;
+        if (!usdtAddress) {
+            throw new Error('USDT contract not configured for this chain');
+        }
         
-        // Estimate gas with buffer
+        // Get mint price from contract
+        const mintPrice = await eggContract.mintPrice();
+        console.log(`[Mint Egg] Mint price: ${ethers.formatEther(mintPrice)} USDT`);
+        
+        // Step 1: Approve USDT spending for EggNFT contract
+        // The contract uses safeTransferFrom(buyer, commissionDistribution, mintPrice)
+        // so the user must approve USDT allowance before minting
+        console.log(`[Mint Egg] Checking USDT allowance for ${eggNftAddress}...`);
+        const USDT_ABI = [
+            "function approve(address spender, uint256 amount) external returns (bool)",
+            "function allowance(address owner, address spender) external view returns (uint256)",
+            "function decimals() external view returns (uint8)"
+        ];
+        const usdtContract = new ethers.Contract(usdtAddress, USDT_ABI, signer);
+        
+        const currentAllowance = await usdtContract.allowance(walletAddress, eggNftAddress);
+        if (currentAllowance < mintPrice) {
+            console.log(`[Mint Egg] Approving USDT: ${ethers.formatEther(mintPrice)} USDT`);
+            const approveTx = await usdtContract.approve(eggNftAddress, mintPrice);
+            console.log(`[Mint Egg] USDT approval tx: ${approveTx.hash}`);
+            await approveTx.wait(1);
+            console.log(`[Mint Egg] USDT approval confirmed`);
+        } else {
+            console.log(`[Mint Egg] Sufficient USDT allowance already exists`);
+        }
+        
+        // Step 2: Estimate gas for mintEggWithChain
         let gasLimit;
         try {
-            const gasEstimate = await eggContract.mintEgg.estimateGas(eggId, { value: mintPrice });
+            const gasEstimate = await eggContract.mintEggWithChain.estimateGas(chain);
             gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
             console.log(`[Mint Egg] Gas estimate: ${gasEstimate}, Gas limit: ${gasLimit}`);
         } catch (gasError) {
@@ -763,10 +798,9 @@ app.post('/api/wallet/mint-egg', actionLimiter, async (req, res) => {
             });
         }
         
-        // Execute transaction with retry
+        // Execute mintEggWithChain (USDT is transferred via safeTransferFrom in the contract)
         const tx = await withRetry(async () => {
-            return await eggContract.mintEgg(eggId, {
-                value: mintPrice,
+            return await eggContract.mintEggWithChain(chain, {
                 gasLimit: gasLimit
             });
         }, 3, 1000);
