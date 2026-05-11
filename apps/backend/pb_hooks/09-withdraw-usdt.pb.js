@@ -109,6 +109,22 @@ const withdrawalRecord = $app.newRecord($app.findCollectionByNameOrId("withdrawa
         }
 
         if (walletApiResponse.statusCode < 200 || walletApiResponse.statusCode >= 300) {
+            // Timeout or server error: tx status unknown (may complete on-chain)
+            if (walletApiResponse.statusCode >= 500 || walletApiResponse.statusCode === 0) {
+                const pendingTxHash = txResponse?.txHash || txResponse?.data?.txHash || txResponse?.error?.txHash || null;
+                withdrawalRecord.set("status", "pending_chain");
+                withdrawalRecord.set("tx_hash", pendingTxHash);
+                $app.save(withdrawalRecord);
+                return e.json(502, {
+                    success: false,
+                    error: {
+                        message: "Transaction submitted but confirmation pending. Check status later.",
+                        code: "TRANSFER_PENDING_CONFIRMATION",
+                        tx_hash: pendingTxHash
+                    }
+                });
+            }
+            // Client error or clear failure
             withdrawalRecord.set("status", "failed");
             withdrawalRecord.set("tx_hash", null);
             $app.save(withdrawalRecord);
