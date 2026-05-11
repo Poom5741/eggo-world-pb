@@ -105,6 +105,18 @@ async function upsertCollection(name, schema) {
     
     // Add system fields if not already present
     const finalFields = [...systemFields];
+
+    // Ensure autodate fields exist for all collections (defense against SDK/server version mismatches)
+    const autodateFields = [
+      { name: 'created', type: 'autodate', onCreate: true, onUpdate: false, presentable: false, system: false },
+      { name: 'updated', type: 'autodate', onCreate: true, onUpdate: true, presentable: false, system: false }
+    ];
+    for (const adField of autodateFields) {
+      if (!finalFields.find(f => f.name === adField.name)) {
+        finalFields.push(adField);
+      }
+    }
+
     for (const field of mergedFields) {
       if (!finalFields.find(f => f.name === field.name)) {
         finalFields.push(field);
@@ -137,16 +149,29 @@ async function upsertCollection(name, schema) {
     }
   } catch (e) {
     if (e.status === 404) {
-      // Create new
+      // Create new - ensure autodate fields are included
+      const createFields = schema.fields || [];
+      const autodateFields = [
+        { name: 'created', type: 'autodate', onCreate: true, onUpdate: false, presentable: false, system: false },
+        { name: 'updated', type: 'autodate', onCreate: true, onUpdate: true, presentable: false, system: false }
+      ];
+      const finalCreateFields = [...createFields];
+      for (const adField of autodateFields) {
+        if (!finalCreateFields.find(f => f.name === adField.name)) {
+          finalCreateFields.push(adField);
+        }
+      }
+      const createSchema = { ...schema, fields: finalCreateFields };
+
       try {
-        await pb.collections.create({ ...schema, name });
+        await pb.collections.create({ ...createSchema, name });
         console.log(`✅ Created: ${name}`);
       } catch (createError) {
         console.error(`❌ Create error for ${name}:`, createError.message);
         if (createError.data) console.error("   Data:", JSON.stringify(createError.data, null, 2));
         if (schema.indexes) {
           console.log(`⚠️  Retrying ${name} creation without indexes...`);
-          const { indexes, ...rest } = schema;
+          const { indexes, ...rest } = createSchema;
           try {
             await pb.collections.create({ ...rest, name });
             console.log(`⚠️  Created (indexes skipped): ${name}`);

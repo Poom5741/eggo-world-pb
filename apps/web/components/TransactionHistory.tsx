@@ -37,14 +37,23 @@ export function TransactionHistory({ userId }: TransactionHistoryProps) {
           filter: `user.id = "${userId}"`,
           sort: '-created'
         })
-        setTransactions(result.items as Transaction[])
+        const mapped = result.items.map((item: any) => ({
+          id: item.id,
+          type: item.type,
+          amount_usdt: item.amount_usdt,
+          status: item.status,
+          created: item.created,
+          tx_hash: item.tx_hash
+        }))
+        setTransactions(mapped)
       } catch (error: any) {
         // Suppress auto-cancel errors
         if (isAutoCancelError(error)) {
           return
         }
-        // Handle 404 errors gracefully
-        if (isNotFound(error)) {
+        // Handle 400/404 errors gracefully
+        if (error?.status === 400 || isNotFound(error)) {
+          console.warn(`Transaction collection access issue (${error?.status}):`, error?.message, '- treating as empty list')
           setTransactions([])
           return
         }

@@ -27,6 +27,9 @@ export default function PlatformStatusBanner() {
         if (response.ok) {
           const data = await response.json()
           setIsPaused(data.data?.paused || false)
+        } else if (response.status === 403) {
+          // Non-admin users get 403 — this is expected, banner only shows for admins
+          console.warn('Platform status: admin access required (403)')
         }
       } catch (err) {
         console.error('Failed to check platform status:', err)

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
+import { isNotFound } from '@/lib/pocketbase/error-handling'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -207,7 +208,11 @@ export default function MintPage() {
         const wallet = await pb.collection('user_wallets').getFirstListItem<UserWallet>(`user_id="${user.id}"`)
         setBalance(wallet.usdt_balance || 0)
       } catch (err) {
-        console.error('[Mint] Failed to fetch balance:', err)
+        if (isNotFound(err)) {
+          console.warn('[Mint] No wallet record found for user, balance defaults to 0')
+        } else {
+          console.error('[Mint] Failed to fetch balance:', err)
+        }
         // Balance defaults to 0, which will disable mint button
       }
     }
