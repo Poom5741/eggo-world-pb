@@ -1,8 +1,30 @@
 {
-  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/phase-11-completion.md",
-  "started_at": "2026-04-18T01:52:31.976Z",
-  "session_ids": ["ses_261b5dd8effeiyH6rJuZscB2jh", "ses_261acde43ffeNrWkFKvuCcve6L"],
-  "plan_name": "phase-11-completion",
+  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/bsc-mainnet-hardening.md",
+  "started_at": "2026-05-10T20:41:09.835Z",
+  "session_ids": ["ses_1ec8ed27fffexyZWJUWVZdtTBN"],
+  "plan_name": "bsc-mainnet-hardening",
   "agent": "atlas",
-  "task_sessions": {}
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "**Fix merge conflict in 13-track-deposit.pb.js**",
+      "session_id": "ses_1ec5f1c35ffei5ayVsxpjjyWAf",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-10T20:50:38.261Z"
+    },
+    "todo:3": {
+      "task_key": "todo:3",
+      "task_label": "3",
+      "task_title": "**Add rate limiting middleware to wallet-api**",
+      "session_id": "ses_1ec55e928ffe8lo5kL1WCb5bB2",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-05-10T20:58:50.917Z"
+    }
+  },
+  "session_origins": {
+    "ses_1ec8ed27fffexyZWJUWVZdtTBN": "direct"
+  }
 }

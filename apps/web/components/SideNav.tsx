@@ -16,6 +16,7 @@ export const NAV_ITEMS: NavItem[] = [
   { icon: 'storefront', label: 'Market', href: '/marketplace' },
   { icon: 'account_balance_wallet', label: 'Wallet', href: '/wallet' },
   { icon: 'person', label: 'Profile', href: '/settings' },
+  { icon: 'admin_panel_settings', label: 'Admin Mint', href: '/admin/mint' },
 ]
 
 // SideNav - Desktop side navigation component

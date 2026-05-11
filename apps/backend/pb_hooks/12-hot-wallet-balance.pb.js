@@ -1,7 +1,7 @@
 routerAdd("POST", "/api/v2/hot-wallet/balance", (e) => {
     const requestInfo = e.requestInfo();
     if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
-    const body = e.parseBody();
+    const body = requestInfo.body || {};
     const { user_address } = body;
     
     if (!user_address || !user_address.match(/^0x[a-fA-F0-9]{40}$/)) {
@@ -30,18 +30,29 @@ routerAdd("POST", "/api/v2/hot-wallet/balance", (e) => {
             });
         }
         
-        const withdrawable = walletRecord.getNumber("usdt_balance") || 0;
-        
+        const withdrawable = walletRecord.get("usdt_balance") || 0;
+
+        let withdrawalFeeRate = 0.05;
+        try {
+            const configRecord = $app.findFirstRecordByData("wallet_configs", "key", "WITHDRAWAL_FEE");
+            if (configRecord) {
+                withdrawalFeeRate = configRecord.get("value") || 0.05;
+            }
+        } catch (configErr) {
+            console.log("Using default withdrawal fee:", withdrawalFeeRate);
+        }
+
         e.json(200, {
             success: true,
             data: {
                 withdrawable: withdrawable,
                 usdt_balance: withdrawable,
-                total_earned: walletRecord.getNumber("total_earned") || 0,
-                total_spent: walletRecord.getNumber("total_spent") || 0,
-                total_withdrawn: walletRecord.getNumber("total_withdrawn") || 0,
+                total_earned: walletRecord.get("total_earned") || 0,
+                total_spent: walletRecord.get("total_spent") || 0,
+                total_withdrawn: walletRecord.get("total_withdrawn") || 0,
                 user_id: userRecord.id,
-                wallet: userRecord.getString("wallet")
+                wallet: userRecord.getString("wallet"),
+                withdrawal_fee_rate: withdrawalFeeRate
             }
         });
     } catch (error) {

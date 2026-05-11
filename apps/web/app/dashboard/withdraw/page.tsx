@@ -34,7 +34,8 @@ export default function WithdrawPage() {
   const [balance, setBalance] = useState({
     withdrawable: 0,
     usdt_balance: 0,
-    total_withdrawn: 0
+    total_withdrawn: 0,
+    withdrawal_fee_rate: 0.05
   })
   
   const [formData, setFormData] = useState({
@@ -46,9 +47,8 @@ export default function WithdrawPage() {
   const [historyLoading, setHistoryLoading] = useState(true)
   
   // Calculate fee and net amount for preview
-  const withdrawalFeeRate = 0.05
   const amountValue = formData.amount ? parseFloat(formData.amount) : 0
-  const feeAmount = amountValue * withdrawalFeeRate
+  const feeAmount = amountValue * balance.withdrawal_fee_rate
   const netAmount = amountValue - feeAmount
 
   const router = useRouter()
@@ -95,7 +95,8 @@ export default function WithdrawPage() {
         setBalance({
           withdrawable: data.data.withdrawable,
           usdt_balance: data.data.usdt_balance,
-          total_withdrawn: data.data.total_withdrawn
+          total_withdrawn: data.data.total_withdrawn,
+          withdrawal_fee_rate: data.data.withdrawal_fee_rate ?? 0.05
         })
       }
     } catch (err) {
@@ -288,7 +289,7 @@ export default function WithdrawPage() {
                           <span>{amountValue.toFixed(2)} USDT</span>
                         </p>
                         <p className="flex justify-between">
-                          <span>Fee ({(withdrawalFeeRate * 100).toFixed(0)}%):</span>
+                          <span>Fee ({(balance.withdrawal_fee_rate * 100).toFixed(0)}%):</span>
                           <span>-{feeAmount.toFixed(2)} USDT</span>
                         </p>
                         <p className="flex justify-between font-bold border-t border-gray-200 pt-2">

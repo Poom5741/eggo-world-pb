@@ -133,6 +133,61 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         _nextEggId = 1;
     }
     
+    /// @notice Owner-only: mint an egg for `to` without charging USDT
+    /// @param to The recipient address
+    /// @return tokenId The minted token ID
+    function adminMint(address to) external nonReentrant whenNotPaused onlyOwner returns (uint256) {
+        require(to != address(0), "Invalid recipient");
+        
+        // Empty referral chain — no commission since no fee was paid
+        address[4] memory emptyChain;
+        emptyChain[0] = address(0);
+        emptyChain[1] = address(0);
+        emptyChain[2] = address(0);
+        emptyChain[3] = address(0);
+        
+        _nextTokenId++;
+        _nextEggId++;
+        
+        uint256 tokenId = _nextTokenId - 1;
+        uint256 eggId = _nextEggId - 1;
+        
+        _safeMint(to, tokenId);
+        
+        uint256 raritySeed = uint256(keccak256(abi.encodePacked(
+            block.timestamp,
+            block.prevrandao,
+            to,
+            tokenId
+        )));
+        
+        _eggProperties[tokenId] = EggProperties({
+            egg_id: eggId,
+            owner: to,
+            food_count: INITIAL_FOOD_COUNT,
+            is_hatched: false,
+            rarity_seed: raritySeed,
+            referral_chain: emptyChain,
+            animal_token_id: 0,
+            is_breeding_egg: false,
+            parent1_animal_id: 0,
+            parent2_animal_id: 0,
+            rarity_upgrade_count: 0,
+            generation: 0
+        });
+        
+        _eggIdToTokenId[eggId] = tokenId;
+        
+        // Auto-mint 2 free Food NFTs to buyer
+        if (foodNFTContract != address(0)) {
+            FoodNFT(foodNFTContract).mintFreeFood(to, 2);
+        }
+        
+        emit EggMinted(eggId, to, address(0));
+        
+        return tokenId;
+    }
+
     function mintEgg(address referrer) external nonReentrant whenNotPaused returns (uint256) {
         require(referrer != msg.sender, "Self-referral");
         address[4] memory referralChain;

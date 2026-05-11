@@ -136,11 +136,11 @@ Plans:
 | 56    | v0.6.0    | 1/1            | Complete       | 2026-05-08 |
 | 57    | v0.7.0    | 1/1            | ✅ Complete    | 2026-05-09 |
 | 58    | v0.8.0    | 1/1            | ✅ Complete    | 2026-05-10 |
-| 59    | v0.8.0    | 0/—            | ⏳ Not started | -          |
-| 60    | v0.8.0    | 0/—            | ⏳ Not started | -          |
+| 59    | v0.8.0    | 1/1            | 🗂️ Planned     | -          |
+| 60    | v0.8.0    | 1/1            | 🗂️ Planned     | -          |
 | 61    | v0.8.0    | 0/—            | ⏳ Not started | -          |
 | 62    | v0.8.0    | 0/—            | ⏳ Not started | -          |
 
 ---
 
-_Last updated: 2026-05-10 — Phase 58: 1 plan created_
+_Last updated: 2026-05-11 — Phase 60: 1 plan created_

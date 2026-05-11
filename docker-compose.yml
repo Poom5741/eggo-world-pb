@@ -9,7 +9,7 @@ services:
     ports:
       - 8090:8090
     environment:
-      - WALLET_SRV_URL=http://wallet-api:3001
+      - WALLET_SRV_URL=http://host.docker.internal:3001
       - LINE_CHANNEL_ID=${LINE_CHANNEL_ID:-}
       - LINE_CHANNEL_SECRET=${LINE_CHANNEL_SECRET:-}
       - LINE_CALLBACK_URL=${LINE_CALLBACK_URL:-http://localhost:8090/api/oauth2-redirect}
@@ -17,9 +17,10 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-development-key-change-in-production}
       - PB_PUBLIC_URL=${PB_PUBLIC_URL:-http://localhost:8090}
-      - WALLET_API_URL=${WALLET_API_URL:-http://wallet-api:3001}
+      - WALLET_API_URL=http://host.docker.internal:3001
       - POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL}
       - POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD}
+      - EGG_NFT_CONTRACT_ADDRESS=0xd8292C1cB10802a61F91e04ed5Ea0865499Bf6FE
     volumes:
       - ./apps/backend/pb_data:/pb/pb_data
       - ./apps/backend/pb_hooks:/pb/pb_hooks

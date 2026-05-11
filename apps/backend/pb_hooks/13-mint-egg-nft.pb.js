@@ -39,13 +39,15 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
 
     // Inline helper: call wallet-api to mint on chain
     // Defined here to avoid goja scope issues with top-level function declarations
-    function callMintEggContract(walletAddress, daccPublicKey, pin, referralChain, eggNftAddress) {
+    function callMintEggContract(userId, eggId, walletAddress, daccPublicKey, pin, referralChain, eggNftAddress) {
         var walletSrvUrl = $os.getenv('WALLET_SRV_URL') || 'http://wallet-api:3001';
         var response = $http.send({
             url: walletSrvUrl + '/api/wallet/mint-egg',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                userId: userId,
+                eggId: eggId,
                 wallet: walletAddress,
                 daccPublicKey: daccPublicKey,
                 pin: pin,
@@ -120,7 +122,12 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
         for (var ci = 0; ci < referralChain.length; ci++) {
             if (referralChain[ci] === null) continue;
 
-            var referrerWallet = $app.findFirstRecordByData('user_wallets', 'wallet_address', referralChain[ci]);
+            var referrerWallet = null;
+            try {
+                referrerWallet = $app.findFirstRecordByData('user_wallets', 'wallet_address', referralChain[ci]);
+            } catch (refErr) {
+                console.log('[Mint] findFirstRecordByData referrer error:', String(refErr));
+            }
             if (!referrerWallet) continue;
 
             var commissionAmount = (mintPrice * commissionPercents[ci]) / 100;
@@ -182,10 +189,15 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
             });
         }
         
-        const body = e.requestInfo?.body || {};
+        const body = requestInfo.body || {};
         const referrerId = body.referrer_id || null;
 
-        const wallet = $app.findFirstRecordByData('user_wallets', 'user_id', user.id);
+        let wallet = null;
+        try {
+            wallet = $app.findFirstRecordByData('user_wallets', 'user_id', user.id);
+        } catch (walletErr) {
+            console.log('[Mint] findFirstRecordByData wallet error:', String(walletErr));
+        }
         
         console.log('[Mint] wallet record:', wallet ? wallet.id : 'NULL');
         console.log('[Mint] wallet type:', typeof wallet);
@@ -273,7 +285,10 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
             });
         }
 
+        var eggId = Date.now();
         const txHash = callMintEggContract(
+            user.id,
+            eggId,
             walletAddress,
             daccPublicKey,
             pin,
@@ -286,7 +301,7 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
         
         const raritySeed = Math.floor(Math.random() * 1000000);
         
-        record.set('egg_id', Date.now());
+        record.set('egg_id', eggId);
         record.set('owner', user.id);
         record.set('token_id', parseInt(txHash.slice(-8), 16) % 1000000);
         record.set('contract_address', eggNftAddress.toLowerCase());

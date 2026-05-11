@@ -1,0 +1,116 @@
+{
+  "id": "pbc_212027000",
+  "name": "transaction_logs",
+  "type": "base",
+  "system": false,
+  "schema": [
+    {
+      "system": false,
+      "id": "rel_users_id",
+      "name": "user",
+      "type": "relation",
+      "required": true,
+      "options": {
+        "collectionId": "_pb_users_auth_",
+        "cascadeDelete": false,
+        "minSelect": null,
+        "maxSelect": 1
+      }
+    },
+    {
+      "system": false,
+      "id": "text_tx_hash",
+      "name": "tx_hash",
+      "type": "text",
+      "required": false,
+      "options": {
+        "min": null,
+        "max": 255,
+        "pattern": ""
+      }
+    },
+    {
+      "system": false,
+      "id": "text_tx_type",
+      "name": "tx_type",
+      "type": "text",
+      "required": true,
+      "options": {
+        "min": null,
+        "max": 50,
+        "pattern": "^(mint|buy|feed|hatch|breed)$"
+      }
+    },
+    {
+      "system": false,
+      "id": "text_status",
+      "name": "status",
+      "type": "text",
+      "required": true,
+      "options": {
+        "min": null,
+        "max": 20,
+        "pattern": "^(success|failed|pending)$"
+      }
+    },
+    {
+      "system": false,
+      "id": "text_error_message",
+      "name": "error_message",
+      "type": "text",
+      "required": false,
+      "options": {
+        "min": null,
+        "max": 1000,
+        "pattern": ""
+      }
+    },
+    {
+      "system": false,
+      "id": "number_gas_used",
+      "name": "gas_used",
+      "type": "number",
+      "required": false,
+      "options": {
+        "min": 0,
+        "max": 999999999,
+        "onlyInt": true
+      }
+    },
+    {
+      "system": false,
+      "id": "autodate_created",
+      "name": "created",
+      "type": "autodate",
+      "required": false,
+      "options": {
+        "onCreate": true,
+        "onUpdate": false
+      }
+    },
+    {
+      "system": false,
+      "id": "autodate_updated",
+      "name": "updated",
+      "type": "autodate",
+      "required": false,
+      "options": {
+        "onCreate": true,
+        "onUpdate": true
+      }
+    }
+  ],
+  "indexes": [
+    "CREATE INDEX `idx_user_transaction_logs` ON `transaction_logs` (`user`)",
+    "CREATE INDEX `idx_tx_hash_transaction_logs` ON `transaction_logs` (`tx_hash`) WHERE `tx_hash` IS NOT NULL",
+    "CREATE INDEX `idx_tx_type_transaction_logs` ON `transaction_logs` (`tx_type`)",
+    "CREATE INDEX `idx_status_transaction_logs` ON `transaction_logs` (`status`)",
+    "CREATE INDEX `idx_timestamp_transaction_logs` ON `transaction_logs` (`created`)"
+  ],
+  "listRule": "@request.auth.id != ''",
+  "viewRule": "@request.auth.id != ''",
+  "createRule": "",
+  "updateRule": "",
+  "deleteRule": null,
+  "options": {}
+}
