@@ -276,8 +276,12 @@ export async function updateListingPrice(
   const pb = createClient()
 
   try {
-    await pb.collection('marketplace_listings').update(listingId, {
-      price: newPrice,
+    await pb.send('/api/v2/update-listing-price', {
+      method: 'POST',
+      body: {
+        listing_id: listingId,
+        new_price: newPrice,
+      },
     })
   } catch (error) {
     if (isAutoCancelError(error)) {

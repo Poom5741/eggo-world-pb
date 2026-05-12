@@ -171,7 +171,7 @@ export default function Animals() {
               View and manage your Animal NFTs
             </p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
             <div className="clay-card bg-surface-container-lowest px-6 py-4 rounded-lg flex items-center gap-4">
               <span className="material-symbols-outlined text-primary-fixed-dim" style={{ fontVariationSettings: "'FILL' 1" }}>
                 pets
@@ -181,6 +181,17 @@ export default function Animals() {
                 <div className="text-xl font-black text-primary">{animals.length}</div>
               </div>
             </div>
+            {animals.length >= 2 && (
+              <button
+                onClick={() => router.push('/animals/breed')}
+                className="clay-button bg-primary text-on-primary py-4 px-6 rounded-xl font-black text-lg flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  genetics
+                </span>
+                Breed
+              </button>
+            )}
           </div>
         </div>
 

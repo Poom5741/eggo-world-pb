@@ -1432,6 +1432,75 @@ app.post("/api/v1/marketplace/cancel", async (req, res) => {
 });
 
 /**
+ * Marketplace: Update listing price (on-chain escrow update)
+ * POST /api/v1/marketplace/update-price
+ * 
+ * Calls Marketplace.updateListingPrice() to change the price on-chain.
+ */
+app.post("/api/v1/marketplace/update-price", async (req, res) => {
+  try {
+    const { userId, nftContract, tokenId, newPrice, marketplaceAddress } = req.body
+
+    if (!userId || !nftContract || tokenId === undefined || !newPrice || !marketplaceAddress) {
+      return res.status(400).json({
+        success: false,
+        error: { message: "Missing required parameters: userId, nftContract, tokenId, newPrice, marketplaceAddress" },
+      })
+    }
+
+    console.log(`[Marketplace Update Price] User: ${userId}, Contract: ${nftContract}, Token: ${tokenId}, New Price: ${newPrice}`)
+
+    if (!relayerWallet) {
+      return res.status(500).json({
+        success: false,
+        error: { message: "Relayer wallet not configured", code: "RELAYER_NOT_CONFIGURED" },
+      })
+    }
+
+    const marketplaceContract = new ethers.Contract(
+      marketplaceAddress,
+      MARKETPLACE_ABI,
+      relayerWallet
+    )
+
+    const gasEstimate = await marketplaceContract.updateListingPrice.estimateGas(nftContract, tokenId, BigInt(newPrice))
+    const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100)
+
+    const tx = await withRetry(
+      async () => {
+        return await marketplaceContract.updateListingPrice(nftContract, tokenId, BigInt(newPrice), { gasLimit })
+      },
+      3,
+      1000
+    )
+
+    console.log(`[Marketplace Update Price] Tx sent: ${tx.hash}`)
+    const receipt = await tx.wait(CONFIRMATIONS)
+
+    if (receipt.status !== 1) {
+      throw new Error("Transaction reverted")
+    }
+
+    logGasSponsorship('Marketplace Update Price', userId, receipt)
+
+    res.json({
+      success: true,
+      data: {
+        txHash: tx.hash,
+        blockNumber: receipt.blockNumber,
+        status: "confirmed",
+      },
+    })
+  } catch (error) {
+    console.error("[Marketplace Update Price] Error:", error.message)
+    res.status(500).json({
+      success: false,
+      error: { message: error.message, code: error.code || "UPDATE_PRICE_FAILED" },
+    })
+  }
+});
+
+/**
  * Breed Animals endpoint
  * POST /api/wallet/breed-animals
  * 
