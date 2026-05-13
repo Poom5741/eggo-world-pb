@@ -1,17 +1,9 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
   try {
-    const existing = app.findCollectionByNameOrId("commission_records");
-    if (existing) {
-      console.log("Migration 1778335360: commission_records already exists, skipping");
-      return;
-    }
-  } catch (e) {}
-
-    try {
-    const c = app.findCollectionByNameOrId("commission_records")
-    if (c) return
-  } catch(e) {}
+    const e = app.findCollectionByNameOrId("commission_records");
+    if (e) { console.log("Migration 1778335360: commission_records already exists, skipping"); return; }
+  } catch(_) {}
 
   const collection = new Collection({
     "createRule": null,

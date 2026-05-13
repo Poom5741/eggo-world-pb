@@ -2,9 +2,10 @@
 migrate((app) => {
   const collection = app.findCollectionByNameOrId("pbc_1600475772");
 
-  try { return app.delete(collection); } catch(e) {
-    console.log("Migration 1778335598: cannot delete commission_records (referenced by other collections), skipping");
-  }
+  // This delete has been deactivated — it was deleting the production collection.
+  // The collection is needed by the frontend. Keep it alive.
+  console.log("Migration 1778335598: commission_records delete skipped (collection preserved)");
+  return;
 }, (app) => {
   const collection = new Collection({
     "createRule": null,
