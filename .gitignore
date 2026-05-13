@@ -96,4 +96,3 @@ test-results/
 # External tools with their own git repos
 hashlips_art_engine/
 .gstack/
-apps/web/bun.lock
