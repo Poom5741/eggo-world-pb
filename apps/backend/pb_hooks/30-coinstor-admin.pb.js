@@ -9,7 +9,7 @@
  * Access: Admin users only (superUser field check)
  */
 
-const { $http } = require("pocketbase")
+// $http is a global in PocketBase 0.23.4 JSVM — no require needed
 
 routerAdd("GET", "/api/v2/admin/coinstor/balance", (e) => {
     const requestInfo = e.requestInfo();

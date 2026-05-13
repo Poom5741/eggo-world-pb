@@ -218,30 +218,12 @@ async function checkRecentConfirmedReorgs(currentBlock) {
 
 // === Background poller ===
 
-const POLLING_INTERVAL = (CONFIG && CONFIG.blockchain && CONFIG.blockchain.pollingInterval) || 30000
-let poller = null
-
-function startBackgroundPoller() {
-  if (poller) clearInterval(poller)
-  poller = setInterval(async () => {
-    try {
-      await pollDeposits()
-      // Also check recent confirmed deposits for reorgs
-      let currentBlock
-      try {
-        const blockHex = await rpcCall("eth_blockNumber", [])
-        currentBlock = parseInt(blockHex, 16)
-        await checkRecentConfirmedReorgs(currentBlock)
-      } catch (e) {
-        // Non-critical
-      }
-    } catch (error) {
-      console.error("Deposit poller unhandled error:", error)
-    }
-  }, POLLING_INTERVAL)
-}
-
-startBackgroundPoller()
+// Access EGGO_CONFIG from globalThis (set by 00-config.pb.js)
+const EGGO_CONFIG = globalThis.EGGO_CONFIG || {};
+const POLLING_INTERVAL = (EGGO_CONFIG.blockchain && EGGO_CONFIG.blockchain.pollingInterval) || 30000
+// Background polling disabled — PocketBase 0.23.4 JSVM lacks setInterval/cronAdd.
+// Use the manual endpoint POST /api/v2/deposits/poll to trigger polling.
+// let pollerId = null; function startBackgroundPoller() { ... } startBackgroundPoller();
 
 // === Manual trigger endpoint ===
 

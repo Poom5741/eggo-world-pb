@@ -2,7 +2,9 @@
 migrate((app) => {
   const collection = app.findCollectionByNameOrId("pbc_1600475772");
 
-  return app.delete(collection);
+  try { return app.delete(collection); } catch(e) {
+    console.log("Migration 1778335598: cannot delete commission_records (referenced by other collections), skipping");
+  }
 }, (app) => {
   const collection = new Collection({
     "createRule": null,

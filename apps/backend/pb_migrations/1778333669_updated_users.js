@@ -1,5 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
+  try {
   const collection = app.findCollectionByNameOrId("_pb_users_auth_")
 
   // add field
@@ -155,6 +156,7 @@ migrate((app) => {
   }))
 
   return app.save(collection)
+  } catch(e) { console.log("Migration 1778333669: update skipped - " + e.message); }
 }, (app) => {
   const collection = app.findCollectionByNameOrId("_pb_users_auth_")
 

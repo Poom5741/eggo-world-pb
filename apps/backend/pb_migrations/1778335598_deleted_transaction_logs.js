@@ -2,7 +2,9 @@
 migrate((app) => {
   const collection = app.findCollectionByNameOrId("pbc_212027000");
 
-  return app.delete(collection);
+  try { return app.delete(collection); } catch(e) {
+    console.log("Migration 1778335598: cannot delete transaction_logs (referenced by other collections), skipping");
+  }
 }, (app) => {
   const collection = new Collection({
     "createRule": null,

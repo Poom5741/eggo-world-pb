@@ -2,7 +2,9 @@
 migrate((app) => {
   const collection = app.findCollectionByNameOrId("pbc_1228445674");
 
-  return app.delete(collection);
+  try { return app.delete(collection); } catch(e) {
+    console.log("Migration 1778335495: cannot delete egg_nfts (referenced by other collections), skipping — " + e.message);
+  }
 }, (app) => {
   const collection = new Collection({
     "createRule": null,

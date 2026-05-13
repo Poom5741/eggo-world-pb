@@ -1,5 +1,21 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
+  // Check if collection already exists (prevent crash loop on restart)
+  try {
+    const existing = app.findCollectionByNameOrId("user_wallets");
+    if (existing) {
+      console.log("Migration 1778333408: user_wallets already exists, skipping");
+      return;
+    }
+  } catch (e) {
+    // Not found, proceed with creation
+  }
+
+    try {
+    const c = app.findCollectionByNameOrId("user_wallets")
+    if (c) return
+  } catch(e) {}
+
   const collection = new Collection({
     "createRule": "",
     "deleteRule": "@request.auth.id != \"\" && @request.auth.id = user_id.id",

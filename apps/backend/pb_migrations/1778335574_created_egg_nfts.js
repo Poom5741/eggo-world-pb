@@ -1,5 +1,18 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
+  try {
+    const existing = app.findCollectionByNameOrId("egg_nfts");
+    if (existing) {
+      console.log("Migration 1778335574: egg_nfts already exists, skipping");
+      return;
+    }
+  } catch (e) {}
+
+    try {
+    const c = app.findCollectionByNameOrId("egg_nfts")
+    if (c) return
+  } catch(e) {}
+
   const collection = new Collection({
     "createRule": null,
     "deleteRule": null,
