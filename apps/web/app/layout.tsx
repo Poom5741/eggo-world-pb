@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Press_Start_2P, Geist } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import PlatformStatusBanner from '@/components/PlatformStatusBanner'
 import './globals.css'
 
@@ -69,7 +68,6 @@ export default function RootLayout({
           Skip to main content
         </a>
         {children}
-        <Analytics />
       </body>
     </html>
   )

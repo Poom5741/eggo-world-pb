@@ -17,6 +17,9 @@ const nextConfig = {
   // Supports SSR, API routes, and middleware
   output: 'standalone',
   trailingSlash: true,
+  turbopack: {
+    root: process.cwd(),
+  },
 }
 
 export default withBundleAnalyzer(nextConfig)

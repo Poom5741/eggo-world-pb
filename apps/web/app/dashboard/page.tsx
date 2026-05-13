@@ -23,6 +23,7 @@ const OnboardingTutorial = dynamic(() => import('@/components/tutorial/Onboardin
 
 export default function DashboardPage() {
   const router = useRouter()
+  const pb = createClient()
   const isHydrated = useIsHydrated()
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
@@ -82,8 +83,6 @@ export default function DashboardPage() {
       setLoading(false)
       return
     }
-    
-    const pb = createClient()
     
     // Check if we have valid auth token
     if (!pb.authStore.token || !pb.authStore.isValid) {
@@ -146,9 +145,9 @@ export default function DashboardPage() {
         setReferralLevels([1, 2, 3, 4].map(lvl => ({ level: lvl, count: 0, percentage: 0, commissionRate: lvl === 1 ? 0.20 : 0.10 })))
         return
       }
-      // Handle 403 errors gracefully - collection may not exist in production or has wrong API rules
-      if (err?.status === 403) {
-        console.warn('Dashboard collection access forbidden (collection may be missing fields or API rules in production):', err?.message)
+      // Handle 400/403 errors gracefully - collection may not exist, missing fields, or has wrong API rules in production
+      if (err?.status === 400 || err?.status === 403) {
+        console.warn(`Dashboard collection access issue (${err?.status}):`, err?.message, '- treating as empty state')
         // Set default empty state
         setProfile(null)
         setStats({ totalEggs: 0, totalFood: 0, totalCommissions: 0 })

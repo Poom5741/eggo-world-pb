@@ -151,9 +151,9 @@ export function ActivityFeed({ transactions: propTransactions, loading: propLoad
           setLoading(false)
           return
         }
-        // Handle 403 errors gracefully - collection may not exist in production or has wrong API rules
-        if (err?.status === 403) {
-          console.warn('Transaction collection access forbidden (collection may be missing fields or API rules in production):', err?.message)
+        // Handle 400/403 errors gracefully - collection may not exist, missing fields, or has wrong API rules in production
+        if (err?.status === 400 || err?.status === 403) {
+          console.warn(`Transaction collection access issue (${err?.status}):`, err?.message, '- treating as empty list')
           setTransactions([])
           setError(null)
           setLoading(false)

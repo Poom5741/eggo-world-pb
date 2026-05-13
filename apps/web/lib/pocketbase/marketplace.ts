@@ -116,12 +116,18 @@ export async function getMarketplaceListings(
     )
 
     return result.items
-  } catch (error) {
+  } catch (error: any) {
     // Suppress auto-cancel errors (normal during navigation)
     if (isAutoCancelError(error)) {
       return []
     }
-    
+
+    // Handle 400/403 gracefully - collection may be missing fields or has wrong API rules in production
+    if (error?.status === 400 || error?.status === 403) {
+      console.warn(`Marketplace listings access issue (${error?.status}):`, error?.message, '- treating as empty list')
+      return []
+    }
+
     console.error('Failed to get marketplace listings:', error)
     throw error
   }
@@ -193,11 +199,16 @@ export async function getListingsBySeller(
     )
 
     return result.items
-  } catch (error) {
+  } catch (error: any) {
     if (isAutoCancelError(error)) {
       return []
     }
-    
+
+    if (error?.status === 400 || error?.status === 403) {
+      console.warn(`Seller listings access issue (${error?.status}):`, error?.message, '- treating as empty list')
+      return []
+    }
+
     console.error('Failed to get listings by seller:', error)
     throw error
   }
@@ -226,11 +237,16 @@ export async function getFeaturedListings(
     )
 
     return result.items
-  } catch (error) {
+  } catch (error: any) {
     if (isAutoCancelError(error)) {
       return []
     }
-    
+
+    if (error?.status === 400 || error?.status === 403) {
+      console.warn(`Featured listings access issue (${error?.status}):`, error?.message, '- treating as empty list')
+      return []
+    }
+
     console.error('Failed to get featured listings:', error)
     throw error
   }
