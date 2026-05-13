@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "bun --hot next dev",
     "prebuild": "rm -rf .next",
-    "build": "node node_modules/next/dist/bin/next build",
-    "deploy": "bunx opennextjs-cloudflare build && bunx opennextjs-cloudflare deploy",
+    "build": "next build",
+    "deploy": "rm -rf .next && bunx opennextjs-cloudflare build && bunx opennextjs-cloudflare deploy",
     "start": "next start",
     "lint": "eslint .",
     "test": "bun test",
