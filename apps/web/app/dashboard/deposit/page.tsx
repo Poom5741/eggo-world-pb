@@ -29,6 +29,16 @@ interface Deposit {
   created: string
 }
 
+async function safeParseJSON(response: Response): Promise<any | null> {
+  const text = await response.text()
+  if (!text) return null
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
+
 export default function DepositPage() {
   const isHydrated = useIsHydrated()
   const [user, setUser] = useState<User | null>(null)
@@ -153,8 +163,8 @@ export default function DepositPage() {
           return
         }
 
-        const data = await response.json()
-        if (data.success) {
+        const data = await safeParseJSON(response)
+        if (data?.success) {
           // Refresh deposits from collection to get latest state
           fetchDepositsFromCollection(user.id)
           setBalance(data.data.new_balance || 0)
@@ -207,8 +217,8 @@ export default function DepositPage() {
         return
       }
 
-      const data = await response.json()
-      if (data.success) {
+      const data = await safeParseJSON(response)
+      if (data?.success) {
         setBalance(data.data.new_balance || 0)
         setPollingStatus(data.data.deposits?.length > 0 ? "Deposit detected!" : "Checking for deposits...")
       }

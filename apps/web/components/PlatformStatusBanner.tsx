@@ -18,21 +18,22 @@ export default function PlatformStatusBanner() {
     const checkStatus = async () => {
       try {
         const pb = createClient()
+        const token = pb.authStore.token
+        if (!token) {
+          setLoading(false)
+          return
+        }
         // Remove trailing slash from baseURL if present
         const baseUrl = pb.baseURL.endsWith('/') ? pb.baseURL.slice(0, -1) : pb.baseURL
         const response = await fetch(`${baseUrl}/api/v2/platform/status`, {
-          headers: { Authorization: `Bearer ${pb.authStore.token}` }
+          headers: { Authorization: `Bearer ${token}` }
         })
         
         if (response.ok) {
           const data = await response.json()
           setIsPaused(data.data?.paused || false)
-        } else if (response.status === 403) {
-          // Non-admin users get 403 — this is expected, banner only shows for admins
-          console.warn('Platform status: admin access required (403)')
         }
-      } catch (err) {
-        console.error('Failed to check platform status:', err)
+      } catch {
       } finally {
         setLoading(false)
       }

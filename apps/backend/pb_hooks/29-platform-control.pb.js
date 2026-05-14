@@ -7,12 +7,6 @@ routerAdd("GET", "/api/v2/platform/status", (e) => {
       return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } })
     }
 
-    let user;
-    try { user = $app.findRecordById("users", userId); } catch (e) { return e.json(403, { success: false, error: { message: "Admin access required", code: "ADMIN_REQUIRED" } }); }
-    if (!user || !user.get("admin")) {
-      return e.json(403, { success: false, error: { message: "Admin access required", code: "ADMIN_REQUIRED" } })
-    }
-
     const walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001"
     const response = $http.send({
       url: `${walletApiUrl}/api/v1/admin/status`,
