@@ -79,13 +79,30 @@ export default function DepositPage() {
       if (success) {
         const userRecord = getUser()
         if (userRecord) {
-          const typedUser: User = {
-            id: userRecord.id,
-            wallet: userRecord.wallet
-          }
-          setUser(typedUser)
-          fetchInitialData(typedUser.wallet)
-          fetchDepositsFromCollection(typedUser.id)
+          // Auth cache may be stale — fetch latest record for wallet
+          fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/users/records/${userRecord.id}`, {
+            headers: { Authorization: pb.authStore.token }
+          })
+            .then(r => r.json())
+            .then(fresh => {
+              const wallet = fresh.wallet || userRecord.wallet
+              const typedUser: User = { id: userRecord.id, wallet }
+              setUser(typedUser)
+              if (wallet) {
+                fetchInitialData(wallet)
+              } else {
+                setError("Wallet not created. Please contact support.")
+                setLoading(false)
+              }
+              fetchDepositsFromCollection(typedUser.id)
+            })
+            .catch(() => {
+              // Fallback to cached record
+              const typedUser: User = { id: userRecord.id, wallet: userRecord.wallet }
+              setUser(typedUser)
+              if (userRecord.wallet) fetchInitialData(userRecord.wallet)
+              fetchDepositsFromCollection(typedUser.id)
+            })
           return
         }
       }
