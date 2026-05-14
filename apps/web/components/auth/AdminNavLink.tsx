@@ -10,7 +10,7 @@ export default function AdminNavLink() {
   if (!isHydrated) return null
 
   const user = getUser()
-  if (user?.role !== 'admin') return null
+  if (!user?.admin) return null
 
   return (
     <Link

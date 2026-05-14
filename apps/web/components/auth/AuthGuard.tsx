@@ -93,7 +93,7 @@ export function AuthGuard({
   if (!user) return null
 
   // Admin role check — matches backend: user.get("role") !== "admin"
-  if (requireAdmin && user?.role !== 'admin') {
+  if (requireAdmin && !user?.admin) {
     return unauthorized ?? (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-6">
         <h2 className="text-2xl font-bold text-on-surface">Admin Access Required</h2>
