@@ -79,34 +79,25 @@ export default function DepositPage() {
       if (success) {
         const userRecord = getUser()
         if (userRecord) {
-          // Auth cache may be stale — fetch latest record for wallet
-          Promise.all([
-            fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/users/records/${userRecord.id}`, {
-              headers: { Authorization: pb.authStore.token }
-            }).then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)),
-            fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/user_wallets/records?filter=(user_id="${userRecord.id}")&perPage=1`, {
-              headers: { Authorization: pb.authStore.token }
-            }).then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
-          ])
-            .then(([fresh, walletData]) => {
-              const wallet = fresh.wallet || userRecord.wallet || walletData?.items?.[0]?.wallet_address
-              const typedUser: User = { id: userRecord.id, wallet }
-              setUser(typedUser)
-              if (wallet) {
-                fetchInitialData(wallet)
-              } else {
-                setError("Wallet not created. Please contact support.")
-                setLoading(false)
-              }
-              fetchDepositsFromCollection(typedUser.id)
-            })
-            .catch(() => {
-              // Fallback to cached record
-              const typedUser: User = { id: userRecord.id, wallet: userRecord.wallet }
-              setUser(typedUser)
-              if (userRecord.wallet) fetchInitialData(userRecord.wallet)
-              fetchDepositsFromCollection(typedUser.id)
-            })
+          // Auth cache may be stale — try multiple sources for wallet
+          const fetchUsers = fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/users/records/${userRecord.id}`, {
+            headers: { Authorization: pb.authStore.token }
+          }).then(r => r.ok ? r.json() : null).catch(() => null)
+          
+          const fetchWallets = fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/user_wallets/records?filter=(user_id="${userRecord.id}")&perPage=1`, {
+            headers: { Authorization: pb.authStore.token }
+          }).then(r => r.ok ? r.json() : null).catch(() => null)
+
+          Promise.allSettled([fetchUsers, fetchWallets]).then(([usersResult, walletsResult]) => {
+            const freshUser = usersResult.status === 'fulfilled' ? usersResult.value : null
+            const walletData = walletsResult.status === 'fulfilled' ? walletsResult.value : null
+            const wallet = freshUser?.wallet || walletData?.items?.[0]?.wallet_address || userRecord.wallet
+            const typedUser: User = { id: userRecord.id, wallet }
+            setUser(typedUser)
+            if (wallet) fetchInitialData(wallet)
+            else { setError("Wallet not created. Please contact support."); setLoading(false) }
+            fetchDepositsFromCollection(typedUser.id)
+          })
           return
         }
       }
