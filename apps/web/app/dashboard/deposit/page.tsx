@@ -80,12 +80,16 @@ export default function DepositPage() {
         const userRecord = getUser()
         if (userRecord) {
           // Auth cache may be stale — fetch latest record for wallet
-          fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/users/records/${userRecord.id}`, {
-            headers: { Authorization: pb.authStore.token }
-          })
-            .then(r => r.json())
-            .then(fresh => {
-              const wallet = fresh.wallet || userRecord.wallet
+          Promise.all([
+            fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/users/records/${userRecord.id}`, {
+              headers: { Authorization: pb.authStore.token }
+            }).then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`)),
+            fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/user_wallets/records?filter=(user_id="${userRecord.id}")&perPage=1`, {
+              headers: { Authorization: pb.authStore.token }
+            }).then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
+          ])
+            .then(([fresh, walletData]) => {
+              const wallet = fresh.wallet || userRecord.wallet || walletData?.items?.[0]?.wallet_address
               const typedUser: User = { id: userRecord.id, wallet }
               setUser(typedUser)
               if (wallet) {
