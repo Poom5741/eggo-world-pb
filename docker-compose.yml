@@ -9,7 +9,7 @@ services:
     ports:
       - 8090:8090
     environment:
-      - WALLET_SRV_URL=http://host.docker.internal:3001
+      - WALLET_SRV_URL=http://eggo-wallet-api:3001
       - LINE_CHANNEL_ID=${LINE_CHANNEL_ID:-}
       - LINE_CHANNEL_SECRET=${LINE_CHANNEL_SECRET:-}
       - LINE_CALLBACK_URL=${LINE_CALLBACK_URL:-http://localhost:8090/api/oauth2-redirect}
@@ -21,6 +21,14 @@ services:
       - POCKETBASE_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL}
       - POCKETBASE_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD}
       - EGG_NFT_CONTRACT_ADDRESS=0xd8292C1cB10802a61F91e04ed5Ea0865499Bf6FE
+      - BSC_RPC_URL=${BSC_RPC_URL}
+      - BSC_CHAIN_ID=${BSC_CHAIN_ID}
+      - USDT_ADDRESS=${USDT_ADDRESS}
+      - COMMISSION_DISTRIBUTION_ADDRESS=${COMMISSION_DISTRIBUTION_ADDRESS}
+      - EGG_NFT_ADDRESS=${EGG_NFT_ADDRESS}
+      - FOOD_NFT_ADDRESS=${FOOD_NFT_ADDRESS}
+      - ANIMAL_NFT_ADDRESS=${ANIMAL_NFT_ADDRESS}
+      - MARKETPLACE_ADDRESS=${MARKETPLACE_ADDRESS}
     volumes:
       - ./apps/backend/pb_data:/pb/pb_data
       - ./apps/backend/pb_hooks:/pb/pb_hooks
@@ -67,7 +75,6 @@ services:
       retries: 3
       start_period: 40s
 
-  # Optional: nginx reverse proxy
   nginx:
     image: nginx:alpine
     container_name: eggo-nginx
