@@ -1,0 +1,17 @@
+# Task 1: Decimal Precision Fix - Evidence
+# Date: 2026-05-15
+# File: apps/backend/pb_hooks/13-track-deposit.pb.js
+
+## Fix Applied
+Line 379: Changed Math.pow(10, 6) -> Math.pow(10, 18)
+
+## QA Verification
+$ grep -n 'Math.pow(10, 6)' apps/backend/pb_hooks/13-track-deposit.pb.js
+No matches found
+
+$ grep -n 'Math.pow(10, 18)' apps/backend/pb_hooks/13-track-deposit.pb.js
+379: const amountUSDT = amountRaw / Math.pow(10, 18);
+
+## Result: PASS
+- No Math.pow(10, 6) references remain
+- Line 379 now correctly uses 18 decimals (BSC USDT standard)

@@ -1,0 +1,31 @@
+# Task 3 Blocker: Ledger Not Connected
+
+**Date:** 2026-05-15
+**Status:** BLOCKED — requires user action
+
+## What We Tried
+1. Attempted to send 10 USDT test transfer via Ledger — failed with "Could not connect to Ledger device"
+2. Checked local wallets — addresses unavailable (key decode failed)
+3. Current BSC testnet block: 107,551,862
+4. Previous 1,000 USDT transfer block: 107,544,658 (7,204 blocks ago — outside the 100-block lookback window)
+
+## Why Blocked
+- End-to-end verification requires a fresh on-chain USDT transfer
+- Ledger must be physically connected, unlocked, and free from other wallet apps
+- No alternative funded wallets available for BSC testnet
+
+## What IS Verified (without Ledger)
+- ✅ Code fix: Line 347 uses `CONFIG.blockchain.contracts.USDT`
+- ✅ Code fix: Line 379 uses `Math.pow(10, 18)`
+- ✅ Production deployment: Container healthy, hook loaded
+- ✅ Log verification: "Deposit tracking endpoints registered"
+
+## To Complete Verification
+User needs to:
+1. Connect and unlock Ledger
+2. Send a small test USDT transfer to `0x7924505Ef254fd0DE3B1eA5f5cDDA825F2a5666a` on BSC testnet
+3. Call `POST /api/v2/deposit/poll` with auth token
+4. Verify deposit detected with correct amount (~10 USDT)
+
+## Workaround
+Proceed with Final Wave reviews (F1-F3) which verify code quality and plan compliance without requiring on-chain transactions.

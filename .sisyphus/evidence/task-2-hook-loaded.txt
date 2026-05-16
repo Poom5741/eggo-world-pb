@@ -1,0 +1,18 @@
+# Evidence: Hook Loaded
+
+**Task:** Verify deposit tracking hook loaded
+**Date:** 2026-05-15
+**Production:** root@204.168.144.14
+
+## Log Verification
+```bash
+$ docker compose -f /root/eggo-world-pb/docker-compose.yml logs --tail=30 pocketbase | grep -i 'deposit'
+eggo-pb  | 2026/05/15 10:11:33 Deposit tracking endpoints registered: POST /api/v2/deposit/poll, POST /api/v2/deposit/check-confirmations
+```
+
+## Hook Loaded Successfully
+- ✅ Hook file: `/pb/pb_hooks/13-track-deposit.pb.js`
+- ✅ Endpoints registered: `POST /api/v2/deposit/poll`, `POST /api/v2/deposit/check-confirmations`
+- ✅ Status: Operational
+
+## Status: ✅ HOOK LOADED

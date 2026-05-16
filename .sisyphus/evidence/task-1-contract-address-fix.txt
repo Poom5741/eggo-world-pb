@@ -1,0 +1,19 @@
+# Task 1: Contract Address Fix - Evidence
+# Date: 2026-05-15
+# File: apps/backend/pb_hooks/13-track-deposit.pb.js
+
+## Fix Applied
+Line 347: Changed CONFIG.blockchain.contracts.CommissionDistribution -> CONFIG.blockchain.contracts.USDT
+
+## QA Verification
+$ grep -n 'CommissionDistribution' apps/backend/pb_hooks/13-track-deposit.pb.js
+No matches found
+
+$ grep -n 'CONFIG.blockchain.contracts.USDT' apps/backend/pb_hooks/13-track-deposit.pb.js
+66: address: CONFIG.blockchain.contracts.USDT,  (standalone pollDeposits function - unchanged)
+347: address: CONFIG.blockchain.contracts.USDT,  (fixed endpoint handler)
+
+## Result: PASS
+- No CommissionDistribution references remain
+- Line 347 now correctly references USDT contract
+- Line 66 (standalone function) remains correct

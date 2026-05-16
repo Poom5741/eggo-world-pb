@@ -1,0 +1,19 @@
+# Evidence: File Uploaded to Production
+
+**Task:** Deploy fixed 13-track-deposit.pb.js to production
+**Date:** 2026-05-15
+**Production:** root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/13-track-deposit.pb.js
+
+## Verification
+```bash
+$ grep 'USDT' /root/eggo-world-pb/apps/backend/pb_hooks/13-track-deposit.pb.js | head -5
+      // 3. Fetch Transfer events from USDT contract
+      address: CONFIG.blockchain.contracts.USDT,
+                    address: CONFIG.blockchain.contracts.USDT,
+            const amountUSDT = amountRaw / Math.pow(10, 18);
+            if (amountUSDT <= 0) {
+```
+
+## Fix Verified
+- `CONFIG.blockchain.contracts.USDT` used correctly (lines 66, 347)
+- `Math.pow(10, 18)` for decimal conversion (line 379)

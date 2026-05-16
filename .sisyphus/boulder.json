@@ -1,30 +1,45 @@
 {
-  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/bsc-mainnet-hardening.md",
-  "started_at": "2026-05-10T20:41:09.835Z",
-  "session_ids": ["ses_1ec8ed27fffexyZWJUWVZdtTBN"],
-  "plan_name": "bsc-mainnet-hardening",
+  "active_plan": "/Users/poom-work/tokenine/eggo-pocketbase/.sisyphus/plans/fix-deposit-tracking.md",
+  "started_at": "2026-05-15T10:04:48.560Z",
+  "session_ids": [
+    "ses_1d50262e9ffePfdhv74JBHCTBw",
+    "ses_1d4c8f493ffeQLtcWNJKbtCebr",
+    "ses_1d4c8d8adffegXVRcxZJoTp67a",
+    "ses_1d4c8c1c7ffemtppgYQH5Mtg75"
+  ],
+  "session_origins": {
+    "ses_1d50262e9ffePfdhv74JBHCTBw": "direct",
+    "ses_1d4c8f493ffeQLtcWNJKbtCebr": "appended",
+    "ses_1d4c8d8adffegXVRcxZJoTp67a": "appended",
+    "ses_1d4c8c1c7ffemtppgYQH5Mtg75": "appended"
+  },
+  "plan_name": "fix-deposit-tracking",
   "agent": "atlas",
   "task_sessions": {
     "todo:1": {
       "task_key": "todo:1",
       "task_label": "1",
-      "task_title": "**Fix merge conflict in 13-track-deposit.pb.js**",
-      "session_id": "ses_1ec5f1c35ffei5ayVsxpjjyWAf",
+      "task_title": "Fix contract address and decimal precision in deposit tracker",
+      "session_id": "ses_1d4e3f813ffesuiUUGZUyIyFBU",
       "agent": "Sisyphus-Junior",
       "category": "quick",
-      "updated_at": "2026-05-10T20:50:38.261Z"
+      "updated_at": "2026-05-15T10:09:29.187Z"
+    },
+    "todo:2": {
+      "task_key": "todo:2",
+      "task_label": "2",
+      "task_title": "Deploy fixed hook to production",
+      "session_id": "ses_1d4e21f52ffeF1xU3c9Ty9yaUB",
+      "updated_at": "2026-05-15T10:13:45.853Z"
     },
     "todo:3": {
       "task_key": "todo:3",
       "task_label": "3",
-      "task_title": "**Add rate limiting middleware to wallet-api**",
-      "session_id": "ses_1ec55e928ffe8lo5kL1WCb5bB2",
+      "task_title": "Verify deposit detection end-to-end",
+      "session_id": "ses_1d4c8c1c7ffemtppgYQH5Mtg75",
       "agent": "Sisyphus-Junior",
-      "category": "unspecified-high",
-      "updated_at": "2026-05-10T20:58:50.917Z"
+      "category": "deep",
+      "updated_at": "2026-05-15T10:38:21.356Z"
     }
-  },
-  "session_origins": {
-    "ses_1ec8ed27fffexyZWJUWVZdtTBN": "direct"
   }
 }

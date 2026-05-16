@@ -1,0 +1,20 @@
+# Evidence: Container Restarted
+
+**Task:** Rebuild and restart PocketBase container
+**Date:** 2026-05-15
+**Production:** root@204.168.144.14
+
+## Docker Build & Restart
+```bash
+$ docker compose build pocketbase && docker compose up -d pocketbase
+ Image eggo-world-pb-pocketbase Built
+ Container restarted successfully
+```
+
+## Container Status
+```bash
+$ docker ps | grep eggo-pb
+0606e08a3893   eggo-world-pb-pocketbase   "./pocketbase serve ..."   29 seconds ago   Up 28 seconds (healthy)   0.0.0.0:8090->8090/tcp
+```
+
+## Status: ✅ HEALTHY

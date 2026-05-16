@@ -1,0 +1,13 @@
+{
+  "network": "bsc-testnet",
+  "chainId": 97,
+  "deployer": "0xf6943fB29C3487010a81A1A4dc548071778DA1F5",
+  "contracts": {
+    "mockUSDT": "0x150bf0042F8dEA96B350c30B80ff9D6F76CeC963",
+    "commissionDistribution": "0x6Ebe55c4104CC8acF0DC6acd7C4d42BDcBe23753",
+    "animalNFT": "0x6461267189700f66eBBC158cD4C5A5C8BdE29CEB",
+    "eggNFT": "0x75CC3c5314216F0755Cc5b4b6005A3e265Ff8c8E",
+    "foodNFT": "0x85c9fE4D459e65D2c75aa1D17b7F8a892Fd5b901",
+    "marketplace": "0xF58cfC8302ecD41e551D3a62A20dEDa65bFD404F"
+  }
+}

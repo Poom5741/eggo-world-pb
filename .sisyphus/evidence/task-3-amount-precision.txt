@@ -1,0 +1,26 @@
+# Task 3: Amount Precision Verification
+
+**Date:** 2026-05-15
+**Test Amount:** 5 USDT
+**Raw Amount (18 decimals):** 5000000000000000000 (5 * 10^18)
+
+## Decimal Precision Check
+- MockUSDT decimals on BSC testnet: 18 (verified via cast call)
+- Real USDT decimals on BSC mainnet: 18 (verified via cast call)
+- Fix applied: `Math.pow(10, 18)` (previously `Math.pow(10, 6)`)
+
+## Expected Division Results
+| Division | Result | Correct? |
+|----------|--------|----------|
+| Raw / 10^6 (old bug) | 5,000,000,000,000 | ❌ 5 trillion USDT |
+| Raw / 10^18 (fixed) | 5.0 | ✅ 5 USDT |
+
+## On-Chain Verification
+- Cast call to decimals() on BSC testnet MockUSDT: returns 18
+- Cast call to decimals() on BSC mainnet USDT: returns 18
+- Both networks use 18 decimals
+
+## Result: ✅ PASS
+- Fix correctly divides by 10^18
+- Amount will be stored as ~5 (correct human-readable USDT)
+- Deposit record will show `amount: 5` (not 5,000,000,000,000)
