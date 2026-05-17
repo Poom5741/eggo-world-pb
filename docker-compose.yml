@@ -65,6 +65,11 @@ services:
       - DACC_MNEMONIC=${DACC_MNEMONIC}
       - PB_ADMIN_EMAIL=${POCKETBASE_ADMIN_EMAIL:-admin@eggo.local}
       - PB_ADMIN_PASSWORD=${POCKETBASE_ADMIN_PASSWORD:-admin123}
+      - USDT_ADDRESS=${USDT_ADDRESS}
+      - RPC_URL=${BSC_RPC_URL}
+      - CHAIN_ID=${BSC_CHAIN_ID}
+      - RELAYER_PRIVATE_KEY=${RELAYER_PRIVATE_KEY}
+      - POCKETBASE_URL=http://eggo-pb:8090
     networks:
       - eggo-network
     restart: unless-stopped

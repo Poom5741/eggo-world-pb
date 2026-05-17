@@ -81,7 +81,7 @@ router.post('/migrate-evm', async (req, res) => {
     const authData = await authResponse.json() as { token: string }
     const adminToken = authData.token
 
-    // Step 4: Update user record with encrypted private key
+    // Step 4: Update user record with wallet address AND encrypted private key
     const updateResponse = await fetch(`${pbUrl}/api/collections/users/records/${userId}`, {
       method: 'PATCH',
       headers: {
@@ -89,6 +89,7 @@ router.post('/migrate-evm', async (req, res) => {
         'Authorization': `Bearer ${adminToken}`
       },
       body: JSON.stringify({
+        wallet: address,
         encrypted_private_key: JSON.stringify(encrypted_private_key)
       })
     })

@@ -9,7 +9,9 @@ COPY package.json bun.lock ./
 RUN bun install --production
 
 COPY src/ ./src/
+COPY utils/ ./utils/
 COPY tsconfig.json ./
+COPY package.json ./
 
 EXPOSE 3001
 

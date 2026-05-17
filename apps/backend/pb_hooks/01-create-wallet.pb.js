@@ -1,8 +1,8 @@
-// ===== CREATE WALLET HOOK =====
-// Creates DACC and EVM wallets BEFORE committing user record to DB.
-// This ensures wallets are always set on the user at creation time.
+// ===== CREATE WALLET HOOK (EVM Only) =====
+// Creates EVM wallet BEFORE committing user record to DB.
+// DACC wallet creation removed - only EVM used for deposits/withdraws.
 
-console.log("Setting up create wallet hook...");
+console.log("Setting up create wallet hook (EVM only)...");
 
 onRecordCreate((e) => {
     console.log("Create wallet hook triggered for user:", e.record.id);
@@ -18,64 +18,16 @@ onRecordCreate((e) => {
 
     var walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001";
 
-    // ===== STEP 1: Create DACC wallet =====
-    try {
-        var daccApiUrl = walletApiUrl + "/api/wallet/create";
-        
-        // Generate random password for DACC wallet (20 chars with letters/numbers/special)
-        var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
-        var randomPassword = "";
-        for (var i = 0; i < 20; i++) {
-            randomPassword += charset.charAt(Math.floor(Math.random() * charset.length));
-        }
-        
-        var daccRequestBody = {
-            passwordSecretkey: randomPassword,
-            publicEncryption: false
-        };
-
-        console.log("Calling DACC wallet-api for user:", e.record.id);
-
-        var daccResponse = $http.send({
-            url: daccApiUrl,
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(daccRequestBody)
-        });
-
-        if (daccResponse.statusCode < 200 || daccResponse.statusCode >= 300) {
-            throw new Error("DACC wallet-api returned status " + daccResponse.statusCode);
-        }
-
-        var daccResponseData;
-        if (daccResponse.json && typeof daccResponse.json === "object") {
-            daccResponseData = daccResponse.json;
-        } else if (daccResponse.body) {
-            var daccResponseBodyStr = daccResponse.body;
-            if (Array.isArray(daccResponse.body)) {
-                daccResponseBodyStr = "";
-                for (var j = 0; j < daccResponse.body.length; j++) {
-                    daccResponseBodyStr += String.fromCharCode(daccResponse.body[j]);
-                }
-            }
-            daccResponseData = JSON.parse(daccResponseBodyStr);
-        } else {
-            throw new Error("DACC wallet-api returned empty response");
-        }
-
-        if (!daccResponseData.success) {
-            throw new Error("DACC wallet creation failed: " + (daccResponseData.error && daccResponseData.error.message ? daccResponseData.error.message : "Unknown error"));
-        }
-
-        var daccPublickey = daccResponseData.data.daccPublickey;
-        console.log("DACC wallet created, daccPublickey:", daccPublickey);
-
-    } catch (daccError) {
-        console.error("Failed to create DACC wallet:", daccError);
-        throw new Error("DACC wallet creation failed, aborting user creation: " + daccError.message);
+    // ===== STEP 1: Generate pin for DACC compatibility (random 20-char password) =====
+    var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    var pin = "";
+    for (var i = 0; i < 20; i++) {
+        pin += charset.charAt(Math.floor(Math.random() * charset.length));
     }
+    e.record.set("pin", pin);
+    console.log("Pin generated for DACC compatibility");
 
-    // ===== STEP 2: Create EVM wallet =====
+    // ===== STEP 2: Create EVM wallet only =====
     try {
         var evmApiUrl = walletApiUrl + "/api/wallet/create-evm";
         
@@ -123,15 +75,11 @@ onRecordCreate((e) => {
 
         // Set wallet fields on record BEFORE e.next() so they are committed with the record
         // wallet = EVM address (used for USDT transactions)
-        // daccPublickey = DACC public key
-        // pin = random password (for DACC wallet)
         // encrypted_private_key = EVM encrypted private key (JSON string)
         e.record.set("wallet", evmAddress);
-        e.record.set("daccPublickey", daccPublickey);
-        e.record.set("pin", randomPassword);
         e.record.set("encrypted_private_key", JSON.stringify(encryptedPrivateKey));
 
-        console.log("Wallet fields set on record - wallet:", evmAddress, "daccPublickey:", daccPublickey);
+        console.log("Wallet fields set on record - wallet:", evmAddress);
 
     } catch (evmError) {
         console.error("Failed to create EVM wallet:", evmError);
@@ -218,4 +166,4 @@ function createReferralRecord(referrerId, refereeId, level) {
     } catch (err) {}
 }
 
-console.log("Create wallet hook registered");
+console.log("Create wallet hook registered (EVM only)");
