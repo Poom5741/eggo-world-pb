@@ -2,9 +2,13 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
+import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
 import { createWalletRouter } from './routes/createWallet.js'
+import { createEvmWalletRouter } from './routes/createEvmWallet.js'
+import { migrateWalletRouter } from './routes/migrateWallet.js'
 import { mintEggRouter } from './routes/mintEgg.js'
+import { transferRouter } from './routes/transfer.js'
 import type { Request, Response, NextFunction } from 'express'
 import { env } from './env.js'
 
@@ -13,6 +17,21 @@ dotenv.config()
 
 const app = express()
 const PORT = env.PORT
+
+// Rate limiter - 10 requests per 15 minutes per IP for transfer operations
+const transferRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 requests per windowMs
+  message: { 
+    success: false, 
+    error: { 
+      message: 'Too many requests', 
+      code: 'RATE_LIMITED' 
+    } 
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Middleware - NO compression to fix PocketBase $http.send compatibility
 app.use(helmet())
@@ -35,7 +54,11 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes - keeping backward compatible path /api/wallet/create
 app.use('/api/wallet', createWalletRouter)
+app.use('/api/wallet', createEvmWalletRouter)
+app.use('/api/wallet', migrateWalletRouter)
 app.use('/api/wallet', mintEggRouter)
+// Apply rate limiting to transfer endpoint (v1 API path for PocketBase hook compatibility)
+app.use('/api/v1/wallet', transferRateLimiter, transferRouter)
 
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {

@@ -1,10 +1,9 @@
 // ===== CREATE WALLET HOOK =====
-// Creates EVM wallet AFTER user record is committed.
-// Wallet creation is async to avoid blocking OAuth2 callback.
+// Creates DACC and EVM wallets BEFORE committing user record to DB.
+// This ensures wallets are always set on the user at creation time.
 
 console.log("Setting up create wallet hook...");
 
-// Fast hook: Set default fields only (runs before commit)
 onRecordCreate((e) => {
     console.log("Create wallet hook triggered for user:", e.record.id);
 
@@ -16,97 +15,207 @@ onRecordCreate((e) => {
     e.record.set("highest_tier_reached", "bronze");
 
     console.log("Default game fields initialized");
-    e.next();
-}, "users");
 
-// Async hook: Create wallet AFTER commit (non-blocking)
-onRecordAfterCreateSuccess("users", (e) => {
-    console.log("Async wallet creation for user:", e.record.id);
-    
+    var walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001";
+
+    // ===== STEP 1: Create DACC wallet =====
     try {
-        var walletApiUrl = $os.getenv("WALLET_SRV_URL") || "http://wallet-api:3001";
-        var apiUrl = walletApiUrl + "/api/wallet/create";
+        var daccApiUrl = walletApiUrl + "/api/wallet/create";
         
-        // Generate random password for wallet encryption
-        var randomPassword = Math.random().toString(36).slice(-10) + Date.now().toString(36) + Math.random().toString(36).slice(-10);
+        // Generate random password for DACC wallet (20 chars with letters/numbers/special)
+        var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        var randomPassword = "";
+        for (var i = 0; i < 20; i++) {
+            randomPassword += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
         
-        var requestBody = {
+        var daccRequestBody = {
             passwordSecretkey: randomPassword,
             publicEncryption: false
         };
 
-        console.log("Calling wallet-api to create wallet for user:", e.record.id);
+        console.log("Calling DACC wallet-api for user:", e.record.id);
 
-        var response = $http.send({
-            url: apiUrl,
+        var daccResponse = $http.send({
+            url: daccApiUrl,
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(daccRequestBody)
         });
 
-        if (response.statusCode < 200 || response.statusCode >= 300) {
-            throw new Error("Wallet-api returned status " + response.statusCode);
+        if (daccResponse.statusCode < 200 || daccResponse.statusCode >= 300) {
+            throw new Error("DACC wallet-api returned status " + daccResponse.statusCode);
         }
 
-        // Parse response
-        var responseData;
-        if (response.json && typeof response.json === "object") {
-            responseData = response.json;
-        } else if (response.body) {
-            var responseBody = response.body;
-            if (Array.isArray(response.body)) {
-                responseBody = "";
-                for (var i = 0; i < response.body.length; i++) {
-                    responseBody += String.fromCharCode(response.body[i]);
+        var daccResponseData;
+        if (daccResponse.json && typeof daccResponse.json === "object") {
+            daccResponseData = daccResponse.json;
+        } else if (daccResponse.body) {
+            var daccResponseBodyStr = daccResponse.body;
+            if (Array.isArray(daccResponse.body)) {
+                daccResponseBodyStr = "";
+                for (var j = 0; j < daccResponse.body.length; j++) {
+                    daccResponseBodyStr += String.fromCharCode(daccResponse.body[j]);
                 }
             }
-            try {
-                responseData = JSON.parse(responseBody);
-            } catch (parseError) {
-                throw new Error("Failed to parse wallet-api response: " + responseBody);
-            }
+            daccResponseData = JSON.parse(daccResponseBodyStr);
         } else {
-            throw new Error("Wallet-api returned empty response");
+            throw new Error("DACC wallet-api returned empty response");
         }
 
-        if (!responseData.success) {
-            throw new Error("Wallet creation failed: " + (responseData.error && responseData.error.message ? responseData.error.message : "Unknown error"));
+        if (!daccResponseData.success) {
+            throw new Error("DACC wallet creation failed: " + (daccResponseData.error && daccResponseData.error.message ? daccResponseData.error.message : "Unknown error"));
         }
 
-        var address = responseData.data.address;
-        var daccPublickey = responseData.data.daccPublickey;
+        var daccPublickey = daccResponseData.data.daccPublickey;
+        console.log("DACC wallet created, daccPublickey:", daccPublickey);
 
-        console.log("Wallet created successfully:", address);
+    } catch (daccError) {
+        console.error("Failed to create DACC wallet:", daccError);
+        throw new Error("DACC wallet creation failed, aborting user creation: " + daccError.message);
+    }
 
-        // Update user record with wallet
-        e.record.set("wallet", address);
+    // ===== STEP 2: Create EVM wallet =====
+    try {
+        var evmApiUrl = walletApiUrl + "/api/wallet/create-evm";
+        
+        var evmRequestBody = {
+            userId: e.record.id
+        };
+
+        console.log("Calling EVM wallet-api for user:", e.record.id);
+
+        var evmResponse = $http.send({
+            url: evmApiUrl,
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(evmRequestBody)
+        });
+
+        if (evmResponse.statusCode < 200 || evmResponse.statusCode >= 300) {
+            throw new Error("EVM wallet-api returned status " + evmResponse.statusCode);
+        }
+
+        var evmResponseData;
+        if (evmResponse.json && typeof evmResponse.json === "object") {
+            evmResponseData = evmResponse.json;
+        } else if (evmResponse.body) {
+            var evmResponseBodyStr = evmResponse.body;
+            if (Array.isArray(evmResponse.body)) {
+                evmResponseBodyStr = "";
+                for (var k = 0; k < evmResponse.body.length; k++) {
+                    evmResponseBodyStr += String.fromCharCode(evmResponse.body[k]);
+                }
+            }
+            evmResponseData = JSON.parse(evmResponseBodyStr);
+        } else {
+            throw new Error("EVM wallet-api returned empty response");
+        }
+
+        if (!evmResponseData.success) {
+            throw new Error("EVM wallet creation failed: " + (evmResponseData.error && evmResponseData.error.message ? evmResponseData.error.message : "Unknown error"));
+        }
+
+        var evmAddress = evmResponseData.data.address;
+        var encryptedPrivateKey = evmResponseData.data.encrypted_private_key;
+        
+        console.log("EVM wallet created, address:", evmAddress);
+
+        // Set wallet fields on record BEFORE e.next() so they are committed with the record
+        // wallet = EVM address (used for USDT transactions)
+        // daccPublickey = DACC public key
+        // pin = random password (for DACC wallet)
+        // encrypted_private_key = EVM encrypted private key (JSON string)
+        e.record.set("wallet", evmAddress);
         e.record.set("daccPublickey", daccPublickey);
         e.record.set("pin", randomPassword);
-        $app.save(e.record);
-        console.log("Wallet fields saved to user:", e.record.id);
+        e.record.set("encrypted_private_key", JSON.stringify(encryptedPrivateKey));
 
-        // Create user_wallets record
-        try {
-            var userWalletsCollection = $app.findCollectionByNameOrId("user_wallets");
-            var userWalletRecord = new Record(userWalletsCollection);
-            
-            userWalletRecord.set("user_id", e.record.id);
-            userWalletRecord.set("wallet_address", address);
-            userWalletRecord.set("usdt_balance", 0);
-            userWalletRecord.set("total_earned", 0);
-            userWalletRecord.set("total_spent", 0);
-            userWalletRecord.set("total_withdrawn", 0);
-            
-            $app.save(userWalletRecord);
-            console.log("user_wallets record created for user:", e.record.id);
-        } catch (walletError) {
-            console.error("Failed to create user_wallets record:", walletError);
-        }
+        console.log("Wallet fields set on record - wallet:", evmAddress, "daccPublickey:", daccPublickey);
 
-    } catch (error) {
-        console.error("Async wallet creation failed:", error);
-        console.log("User created without wallet - can be created later");
+    } catch (evmError) {
+        console.error("Failed to create EVM wallet:", evmError);
+        throw new Error("EVM wallet creation failed, aborting user creation: " + evmError.message);
     }
-});
+
+    e.next();
+
+    // Create user_wallets record AFTER user is committed (needs user ID)
+    try {
+        var userWalletsCollection = $app.findCollectionByNameOrId("user_wallets");
+        var userWalletRecord = new Record(userWalletsCollection);
+        
+        userWalletRecord.set("user_id", e.record.id);
+        userWalletRecord.set("wallet_address", e.record.get("wallet") || "");
+        userWalletRecord.set("usdt_balance", 0);
+        userWalletRecord.set("total_earned", 0);
+        userWalletRecord.set("total_spent", 0);
+        userWalletRecord.set("total_withdrawn", 0);
+        
+        $app.save(userWalletRecord);
+        
+        console.log("user_wallets record created for user:", e.record.id);
+    } catch (walletError) {
+        console.error("Failed to create user_wallets record:", walletError);
+        // Non-fatal: user exists with wallet, just missing wallet record
+        // Can be backfilled manually via /api/v2/fix-user-wallet endpoint if needed
+    }
+
+    // Build referral chain after wallet is created
+    try {
+        var PLATFORM_ADDRESS = $os.getenv("PLATFORM_ADDRESS") || "0x0000000000000000000000000000000000000000"
+        var referrerId = e.record.get("referrer_id");
+        if (referrerId && referrerId !== "") {
+            console.log("Building referral chain for:", e.record.id, "referrer:", referrerId);
+            createReferralRecord(referrerId, e.record.id, 1);
+            var chain = buildReferralChain(referrerId);
+            e.record.set("referral_chain", JSON.stringify(chain));
+            $app.save(e.record);
+
+            try {
+                var ref = $app.findRecordById("users", referrerId);
+                var count = parseInt(ref.get("total_direct_recruits") || 0, 10);
+                ref.set("total_direct_recruits", count + 1);
+                $app.save(ref);
+            } catch (e2) {}
+
+            console.log("EVENT:UserRegistered", JSON.stringify({
+                user_address: e.record.get("wallet"),
+                user_id: e.record.id,
+                referral_chain: chain,
+                timestamp: new Date().toISOString()
+            }));
+        }
+    } catch (chainErr) {
+        console.error("Referral chain build failed:", chainErr);
+    }
+}, "users");
+
+function buildReferralChain(startReferrerId) {
+    var chain = [];
+    var current = startReferrerId;
+    var platformAddr = $os.getenv("PLATFORM_ADDRESS") || "0x0000000000000000000000000000000000000000"
+    for (var level = 1; level <= 4; level++) {
+        if (!current) break;
+        chain.push(current);
+        try {
+            var rr = $app.findRecordById("users", current);
+            current = rr.get("referrer_id");
+        } catch (err) { break; }
+    }
+    while (chain.length < 4) { chain.push(platformAddr); }
+    return chain;
+}
+
+function createReferralRecord(referrerId, refereeId, level) {
+    try {
+        var c = $app.findCollectionByNameOrId("referrals");
+        var r = new Record(c);
+        r.set("referrer_id", referrerId);
+        r.set("referee_id", refereeId);
+        r.set("level", level);
+        $app.save(r);
+    } catch (err) {}
+}
 
 console.log("Create wallet hook registered");
