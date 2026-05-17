@@ -1,18 +1,10 @@
 routerAdd("POST", "/api/v2/hot-wallet/balance", (e) => {
     const requestInfo = e.requestInfo();
     if (!requestInfo.auth?.id) { return e.json(401, { success: false, error: { message: "Authentication required", code: "AUTH_REQUIRED" } }); }
-    const body = requestInfo.body || {};
-    const { user_address } = body;
-    
-    if (!user_address || !user_address.match(/^0x[a-fA-F0-9]{40}$/)) {
-        return e.json(400, { 
-            success: false, 
-            error: { message: "Valid wallet address required", code: "VALIDATION_ERROR" } 
-        });
-    }
-    
+    const userId = requestInfo.auth.id;
+
     try {
-        const userRecord = $app.findFirstRecordByData("users", "wallet", user_address);
+        const userRecord = $app.findRecordById("users", userId);
         
         if (!userRecord) {
             return e.json(404, { 
