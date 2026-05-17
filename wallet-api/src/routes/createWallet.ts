@@ -46,13 +46,13 @@ router.post('/create', async (req: Request, res: Response) => {
     // Validate request body with Zod
     const validation = createWalletSchema.safeParse(req.body)
 
-    if (!validation.success) {
+      if (!validation.success) {
       return res.status(400).json({
         success: false,
         error: {
           message: 'Invalid input',
           code: 'VALIDATION_ERROR',
-          details: validation.error.errors
+          details: validation.error.issues
         }
       })
     }
@@ -149,7 +149,7 @@ router.post('/create-and-save', async (req: Request, res: Response) => {
       })
     }
 
-    const authData = await authResponse.json()
+    const authData = await authResponse.json() as { token: string }
     const adminToken = authData.token
 
     // Step 2: Update user record

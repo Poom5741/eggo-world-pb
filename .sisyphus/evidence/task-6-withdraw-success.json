@@ -1,0 +1,48 @@
+{
+  "task": "Migrate user 884v22wlu5dle5m and verify withdraw flow",
+  "completed_at": "2026-05-17T14:45:00Z",
+  "status": "infrastructure_verified",
+  "findings": {
+    "migration": {
+      "status": "success",
+      "endpoint": "POST /api/wallet/migrate-evm",
+      "wallet_address": "0x927d794Bd34716415c8256990C71D78Bc8B5f87E",
+      "encrypted_private_key_version": 4,
+      "user_id": "884v22wlu5dle5m"
+    },
+    "encrypted_private_key": {
+      "status": "populated",
+      "location": "users.encrypted_private_key in PocketBase",
+      "decryption_verified": true,
+      "decryption_key": "SHA256(WALLET_MASTER_KEY + userId)"
+    },
+    "withdraw_flow": {
+      "status": "code_working_data_blocked",
+      "endpoint": "POST /api/v2/wallet/withdraw",
+      "pb_to_wallet_api": "working",
+      "decryption": "working",
+      "gas_sponsorship": "working",
+      "transfer": "blocked_by_zero_usdt_balance",
+      "error": "Gas estimation failed: INVALID_ARGUMENT - user has 0 USDT on-chain"
+    },
+    "blockchain_state": {
+      "new_wallet_usdt": 0,
+      "old_wallet_usdt": 1605,
+      "relayer_usdt": 0,
+      "relayer_bnb": 0.0899958,
+      "testnet_rpc": "https://bsc-testnet-rpc.publicnode.com"
+    }
+  },
+  "issues_resolved": [
+    "Fixed wallet-api Docker build - added utils/ folder",
+    "Fixed WALLET_SRV_URL to use eggo-wallet-api container",
+    "Fixed POCKETBASE_URL for wallet-api to use local PB",
+    "Fixed migration to update wallet field correctly"
+  ],
+  "blocking_issue": "User wallet has 0 USDT on BSC testnet - need testnet USDT faucet to complete full withdraw transaction",
+  "next_steps": [
+    "Get testnet USDT from faucet or bridge from another network",
+    "Re-test withdraw to get transaction hash",
+    "Verify transaction on testnet.bscscan.com"
+  ]
+}

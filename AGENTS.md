@@ -438,9 +438,10 @@ flux task create "<task>" --depends-on <task-id>
 
 **3. Hook Loading Location**
 
-- PocketBase loads `pb_hooks/` from Docker image (baked in during build)
-- Hooks are NOT mounted as volumes - they're copied into the image
-- MUST rebuild Docker image to update hooks
+- PocketBase loads `pb_hooks/` from **bind-mounted volume** in docker-compose.yml
+- ✅ Hooks ARE mounted as volumes — `docker compose restart pocketbase` is sufficient to pick up changes
+- ✅ No Docker image rebuild needed — just upload hook + restart container
+- ❌ OLD MYTH: "Hooks are baked into image, must rebuild" — this was wrong, verify with `docker inspect eggo-pb`
 
 **4. SSH Configuration**
 
@@ -481,11 +482,10 @@ export SSH_HOST="204.168.144.14"
 scp -i ~/.ssh/poom-server -o StrictHostKeyChecking=no apps/backend/pb_hooks/NN-*.pb.js \
   root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/
 
-# 2. Rebuild Docker image (hooks are baked into image)
+# 2. Restart container (hooks are volume-mounted, no rebuild needed)
 ssh -i ~/.ssh/poom-server -o StrictHostKeyChecking=no root@204.168.144.14 "
   cd /root/eggo-world-pb && \
-  docker compose build pocketbase && \
-  docker compose up -d pocketbase
+  docker compose restart pocketbase
 "
 
 # 3. Verify deployment
@@ -494,9 +494,10 @@ ssh -i ~/.ssh/poom-server root@204.168.144.14 "docker compose -f /root/eggo-worl
 
 **IMPORTANT:**
 
-- Hooks are copied into Docker image during build, NOT mounted as volumes
-- Must rebuild image with `docker compose build pocketbase` to update hooks
-- Cannot just restart container - must rebuild
+- Hooks are bind-mounted as volumes in docker-compose.yml
+- `docker compose restart pocketbase` is sufficient to pick up hook changes
+- No Docker image rebuild required for hook-only changes
+- Verify hook loading with `docker compose logs pocketbase | grep 'endpoint registered'`
 
 #### Verify Deployment
 
@@ -547,13 +548,12 @@ scp -i ~/.ssh/poom-server -o StrictHostKeyChecking=no apps/backend/pb_hooks/NN-*
   root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/
 ```
 
-**Deploy Hook (Rebuild & Restart)**
+**Deploy Hook (Upload & Restart)**
 
 ```bash
 ssh -i ~/.ssh/poom-server -o StrictHostKeyChecking=no root@204.168.144.14 "
   cd /root/eggo-world-pb && \
-  docker compose build pocketbase && \
-  docker compose up -d pocketbase
+  docker compose restart pocketbase
 "
 ```
 
@@ -587,8 +587,8 @@ ssh -i ~/.ssh/poom-server root@204.168.144.14 "docker exec eggo-pb <command>"
 **Fix:** `find /root -name 'pb_hooks' -type d` and rebuild image
 
 **Error:** Hooks not loading
-**Cause:** Hooks not baked into Docker image
-**Fix:** Rebuild image with `docker compose build pocketbase`
+**Cause:** Hook file not uploaded to server or container not restarted
+**Fix:** Upload hook file + `docker compose restart pocketbase` (hooks are volume-mounted)
 
 **Error:** 400/401/403 on endpoint
 **Cause:** Missing auth or wrong auth method
@@ -947,7 +947,7 @@ if (!wallet) {
 
 - AGENTS.md had outdated info saying production uses binary process
 - Actually uses Docker Compose with container `eggo-pb`
-- Hooks are baked into Docker image, not mounted as volumes
+- Hooks are bind-mounted as volumes — `docker compose restart pocketbase` picks up changes
 
 **Correct Deployment:**
 
@@ -955,11 +955,10 @@ if (!wallet) {
 # Upload hook
 scp -i ~/.ssh/poom-server apps/backend/pb_hooks/NN-*.pb.js root@204.168.144.14:/root/eggo-world-pb/apps/backend/pb_hooks/
 
-# Rebuild and restart
+# Restart container (hooks are volume-mounted, no rebuild needed)
 ssh -i ~/.ssh/poom-server root@204.168.144.14 "
   cd /root/eggo-world-pb && \
-  docker compose build pocketbase && \
-  docker compose up -d pocketbase
+  docker compose restart pocketbase
 "
 ```
 
@@ -968,6 +967,40 @@ ssh -i ~/.ssh/poom-server root@204.168.144.14 "
 ```bash
 ssh root@host "docker ps | grep pocketbase"
 ```
+
+---
+
+### Deposit Polling Gotcha (May 2026)
+
+**Issue:** USDT deposits not appearing on frontend deposit page.
+
+**Root Cause:**
+
+1. **Wrong contract address**: The deposit polling endpoint (`POST /api/v2/deposit/poll`) was querying `CONFIG.blockchain.contracts.CommissionDistribution` instead of `CONFIG.blockchain.contracts.USDT` in the `eth_getLogs` params. CommissionDistribution emits no ERC-20 Transfer events → zero deposits ever detected.
+
+2. **Wrong decimals**: USDT amount was divided by `Math.pow(10, 6)` — BSC USDT uses 18 decimals. Amounts would be 10¹²× wrong.
+
+3. **Background polling broken**: PocketBase 0.23.4 JSVM lacks `setInterval`/`cronAdd`. The original polling code was dead on arrival.
+
+**Fix:**
+- Change `eth_getLogs` contract address to `CONFIG.blockchain.contracts.USDT`
+- Change decimal divisor to `Math.pow(10, 18)`
+- Remove dead `setInterval`-based polling code (~218 lines)
+- Ensure `docker-compose.yml` passes `USDT_ADDRESS`, `BSC_RPC_URL`, `BSC_CHAIN_ID` env vars to container
+- Restart PocketBase container: `docker compose restart pocketbase`
+
+**Key Learnings:**
+1. **ALWAYS verify `eth_getLogs` is querying the correct contract** — wrong contract = zero events = silent failure
+2. **ALWAYS verify token decimals** for the specific chain (BSC USDT = 18, not 6)
+3. **PocketBase JSVM constraints** — no timers, no cron, no background jobs. Polling must be triggered externally
+4. **Hooks are volume-mounted** — `docker compose restart` is sufficient to pick up changes
+5. **Deposits only detected while user is on `/dashboard/deposit`** page (frontend polls every 30s). No background detection exists.
+
+**Files:**
+- `apps/backend/pb_hooks/13-track-deposit.pb.js` — deposit polling hook
+- `apps/web/app/dashboard/deposit/page.tsx` — frontend deposit page
+- `docker-compose.yml` — blockchain env vars
+- `.env` — production env vars (`USDT_ADDRESS`, `BSC_RPC_URL`, `BSC_CHAIN_ID`)
 
 ---
 
@@ -1141,7 +1174,7 @@ ssh root@pb_host 'curl -s -X POST "http://localhost:8090/api/collections/users/r
 - ❌ Don't try to parse JWT manually with `$security.parseUnverifiedJWT()`
 - ❌ Don't run PocketBase as binary in production - use Docker Compose
 - ❌ Don't assume `user.get('field')` returning truthy means it's not null in DB
-- ❌ Don't mount `pb_hooks/` as Docker volume - they're baked into image
+- ❌ Rebuild Docker image just to update hooks — hooks are volume-mounted, `docker compose restart` is sufficient
 - ❌ Don't use parameterized queries with `{:` syntax in `findFirstRecordByFilter`
 
 **Success Criteria:**

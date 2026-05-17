@@ -14,7 +14,7 @@ export const NAV_ITEMS: NavItem[] = [
   { icon: 'egg', label: 'Eggs', href: '/eggs' },
   { icon: 'add_circle', label: 'Mint', href: '/mint' },
   { icon: 'storefront', label: 'Market', href: '/marketplace' },
-  { icon: 'account_balance_wallet', label: 'Wallet', href: '/wallet' },
+  { icon: 'account_balance_wallet', label: 'Wallet', href: '/dashboard/withdraw' },
   { icon: 'person', label: 'Profile', href: '/settings' },
   { icon: 'admin_panel_settings', label: 'Admin Mint', href: '/admin/mint' },
 ]

@@ -8,11 +8,6 @@ migrate((app) => {
     }
   } catch (e) {}
 
-    try {
-    const c = app.findCollectionByNameOrId("transaction_logs")
-    if (c) return
-  } catch(e) {}
-
   const collection = new Collection({
     "createRule": null,
     "deleteRule": null,

@@ -966,12 +966,12 @@ app.post('/api/wallet/claim-commission', async (req, res) => {
         }
         
         // Estimate gas
-        const gasEstimate = await commissionContract.claimCommission.estimateGas();
+        const gasEstimate = await commissionContract.claimCommissionUSDT.estimateGas();
         const gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
         
         // Execute with retry
         const tx = await withRetry(async () => {
-            return await commissionContract.claimCommission({ gasLimit });
+            return await commissionContract.claimCommissionUSDT({ gasLimit });
         }, 3, 1000);
         
         console.log(`[Claim Commission] Transaction sent: ${tx.hash}`);

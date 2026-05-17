@@ -48,12 +48,19 @@ routerAdd("POST", "/api/v2/fix-user-wallet", (e) => {
         }
 
         // Check if existing user_wallets record is COMPLETE (has all required non-empty fields)
+        // A record is COMPLETE if: wallet_address exists AND usdt_balance exists AND created/updated are truthy non-empty strings
         const existingHasRequiredFields = userWalletsRecord && 
             userWalletsRecord.get("wallet_address") && 
             userWalletsRecord.get("wallet_address") !== "" &&
             userWalletsRecord.get("usdt_balance") !== null
 
-        if (existingHasRequiredFields) {
+        const existingHasTimestamps = userWalletsRecord && 
+            (userWalletsRecord.get("created") && userWalletsRecord.get("created") !== "") ||
+            (userWalletsRecord.get("updated") && userWalletsRecord.get("updated") !== "")
+
+        const hasCompleteWalletRecord = existingHasRequiredFields && existingHasTimestamps
+
+        if (hasCompleteWalletRecord) {
             return e.json(200, {
                 success: true,
                 message: "User already has a complete wallet setup",
@@ -63,7 +70,7 @@ routerAdd("POST", "/api/v2/fix-user-wallet", (e) => {
 
         // Create or UPDATE user_wallets record if missing or incomplete
         const needsCreation = !userWalletsRecord && existingWallet
-        const needsUpdate = userWalletsRecord && !existingHasRequiredFields
+        const needsUpdate = userWalletsRecord && !existingHasTimestamps
 
         if (needsCreation && existingWallet) {
             console.log("Creating user_wallets record for user:", user.id)
@@ -91,7 +98,7 @@ routerAdd("POST", "/api/v2/fix-user-wallet", (e) => {
             console.log("user_wallets record updated:", userWalletsRecord.id)
         }
 
-        if (existingHasRequiredFields) {
+        if (hasCompleteWalletRecord) {
             return e.json(200, {
                 success: true,
                 message: "User already has a complete wallet setup",
@@ -178,7 +185,7 @@ routerAdd("POST", "/api/v2/fix-user-wallet", (e) => {
 
         $app.save(user)
 
-        console.log("User wallet fields updated")
+        console.log("User wallet fields updated fields")
 
         // Create user_wallets record
         try {
@@ -190,8 +197,7 @@ routerAdd("POST", "/api/v2/fix-user-wallet", (e) => {
             userWalletRecord.set("usdt_balance", 0)
             userWalletRecord.set("total_earned", 0)
             userWalletRecord.set("total_spent", 0)
-            userWalletRecord.set("total_withdrawn", 0)
-            userWalletRecord.set("last_deposit_amount", 0)
+            userWalletRecord.set("("last_deposit_amount", 0)
             userWalletRecord.set("last_deposit_tx", "")
             userWalletRecord.set("last_deposit_block", 0)
 

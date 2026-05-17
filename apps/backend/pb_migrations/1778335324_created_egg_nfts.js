@@ -10,11 +10,6 @@ migrate((app) => {
     // Not found, proceed with creation
   }
 
-    try {
-    const c = app.findCollectionByNameOrId("egg_nfts")
-    if (c) return
-  } catch(e) {}
-
   const collection = new Collection({
     "createRule": null,
     "deleteRule": null,

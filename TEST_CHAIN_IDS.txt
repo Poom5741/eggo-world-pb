@@ -1,0 +1,19 @@
+=== UPDATED TEST CHAIN (wallet fields fixed) ===
+
+FIRST login as BUYER, THEN mint.
+
+BUYER:
+  ID:       rhj27yumumxo2l5
+  Email:    tc-buyer-9e30bb7a5e@eggo.test
+  Password: TestPass123!
+
+G1 (referrer_id to use when minting):
+  ID:       v7827hb62el6c42
+
+STATUS: user_wallets records created for both users via /api/v2/fix-user-wallet endpoint
+
+=== MINT ===
+POST /api/v2/mint-egg
+{ "referrer_id": "v7827hb62el6c42" }
+
+Expected commissions: G1=6.25, G2=3.75, G3=2.50, G4=1.25 USDT

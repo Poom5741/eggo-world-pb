@@ -134,7 +134,7 @@ routerAdd("POST", "/api/v2/deposit/poll", async (e) => {
                 jsonrpc: "2.0",
                 method: "eth_getLogs",
                 params: [{
-                    address: CONFIG.blockchain.contracts.CommissionDistribution,
+                    address: CONFIG.blockchain.contracts.USDT,
                     fromBlock: fromBlock.toString(16).replace(/^0x/, ''),
                     toBlock: currentBlock.toString(16).replace(/^0x/, ''),
                     topics: [transferSignature, null, toTopic]

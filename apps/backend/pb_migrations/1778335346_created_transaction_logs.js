@@ -1,9 +1,6 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  try {
-    const e = app.findCollectionByNameOrId("transaction_logs");
-    if (e) { console.log("Migration 1778335346: transaction_logs already exists, skipping"); return; }
-  } catch(_) {}
+  // Creating transaction_logs (skip removed for recreation)
 
   const collection = new Collection({
     "createRule": null,

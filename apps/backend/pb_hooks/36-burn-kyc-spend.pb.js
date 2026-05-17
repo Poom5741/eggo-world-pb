@@ -181,7 +181,7 @@ routerAdd("POST", "/api/v2/spend-usdt", (e) => {
 
     // Log transaction
     const txCollection = $app.getCollection("transaction_logs")
-    const txRecord = $app.newRecord(txCollection)
+    const txRecord = new Record(txCollection)
     txRecord.set("user_id", userId)
     txRecord.set("type", "spend")
     txRecord.set("amount", amount)

@@ -88,7 +88,7 @@ routerAdd("POST", "/api/v2/platform/pause", (e) => {
 
     // Log audit trail
     const auditCollection = $app.findCollectionByNameOrId("admin_audit_logs") || 
-                           $app.newRecord($app.findCollectionByNameOrId("_pb_users_auth_"))
+                           new Record($app.findCollectionByNameOrId("_pb_users_auth_"))
     
     console.log(`[Platform Pause] Transaction: ${responseData.data?.transaction_hash}`)
 

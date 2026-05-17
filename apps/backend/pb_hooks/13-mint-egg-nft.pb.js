@@ -116,7 +116,7 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
 
     // Inline helper: create commission records for referral chain
     function createCommissionRecords(buyerId, referralChain, txHash, eggRecordId) {
-        var commissionPercents = [25, 15, 10, 5];
+        var commissionPercents = [20, 10, 10, 10];
         var mintPrice = 25;
         var commissionCollection = $app.findCollectionByNameOrId('commission_records');
 

@@ -47,7 +47,7 @@ routerAdd("POST", "/api/v2/check-in", async (e) => {
         } catch (err) {
             // Create new user_stats if doesn't exist
             const statsCollection = $app.findCollectionByNameOrId("user_stats");
-            stats = $app.newRecord(statsCollection);
+            stats = new Record(statsCollection);
             stats.set("user", user.id);
             stats.set("check_in_streak", 0);
             stats.set("last_check_in", null);
@@ -123,7 +123,7 @@ routerAdd("POST", "/api/v2/check-in", async (e) => {
                     
                     // Create food_nfts record
                     const foodCollection = $app.findCollectionByNameOrId("food_nfts");
-                    const foodRecord = $app.newRecord(foodCollection);
+                    const foodRecord = new Record(foodCollection);
                     foodRecord.set("owner", user.id);
                     foodRecord.set("token_id", mintData.data?.token_id || 0);
                     foodRecord.set("tx_hash", mintData.data?.tx_hash || "");

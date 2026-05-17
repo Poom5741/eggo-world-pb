@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { cn } from '@/lib/utils'
-import { Coins, TrendingUp, Wallet, Loader2, CheckCircle2, DollarSign } from 'lucide-react'
+import { Coins, TrendingUp, Wallet, Loader2, CheckCircle2, DollarSign, AlertCircle } from 'lucide-react'
 import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 
 export default function CommissionsDashboard() {
@@ -27,6 +27,7 @@ function CommissionsContent({ user }: { user: any }) {
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState(false)
   const [claimSuccess, setClaimSuccess] = useState<any>(null)
+  const [claimError, setClaimError] = useState<string | null>(null)
   const [stats, setStats] = useState({
     totalPending: 0,
     totalClaimed: 0,
@@ -119,6 +120,7 @@ function CommissionsContent({ user }: { user: any }) {
 
     setClaiming(true)
     setClaimSuccess(null)
+    setClaimError(null)
 
     const pb = createClient()
     const token = pb.authStore.token
@@ -165,6 +167,7 @@ function CommissionsContent({ user }: { user: any }) {
       }, 5000)
     } catch (err: any) {
       console.error('Claim failed:', err)
+      setClaimError(err.message || 'Claim failed')
     } finally {
       setClaiming(false)
     }
@@ -308,6 +311,15 @@ function CommissionsContent({ user }: { user: any }) {
                   Successfully claimed {claimSuccess.claimed_amount} USDT!
                   <br />
                   TX: {claimSuccess.tx_hash?.slice(0, 10)}...{claimSuccess.tx_hash?.slice(-8)}
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {claimError && (
+              <Alert className="bg-destructive/20 border-destructive">
+                <AlertCircle className="h-4 w-4 text-destructive" />
+                <AlertDescription className="font-[var(--font-pixel)] text-xs">
+                  {claimError}
                 </AlertDescription>
               </Alert>
             )}

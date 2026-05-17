@@ -131,7 +131,7 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
         $app.save(userRecord);
         
         // Create withdrawal record for audit trail
-        const withdrawalRecord = $app.newRecord($app.findCollectionByNameOrId("withdrawals"));
+        const withdrawalRecord = new Record($app.findCollectionByNameOrId("withdrawals"));
         withdrawalRecord.set("user_id", userRecord.id);
         withdrawalRecord.set("amount", amount);
         withdrawalRecord.set("fee", fee);
