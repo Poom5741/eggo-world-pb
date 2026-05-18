@@ -69,7 +69,8 @@ export function useTierReward(): UseTierRewardReturn {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
-                })
+                }
+            })
 
             if (!response.ok) {
                 const text = await response.text()
