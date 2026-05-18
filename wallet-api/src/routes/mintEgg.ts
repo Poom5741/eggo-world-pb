@@ -14,6 +14,7 @@ const PB_URL = process.env.POCKETBASE_URL || "https://pb.eggoworld.io";
 const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL || "";
 const PB_ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD || "";
 const MOCK_BLOCKCHAIN = process.env.MOCK_BLOCKCHAIN === "true";
+const USDT_ADDRESS = process.env.USDT_ADDRESS || "";
 
 // AES-256-GCM encryption constants
 const ALGORITHM = "aes-256-gcm";
@@ -313,18 +314,71 @@ router.post("/mint-egg", async (req, res) => {
     // 4. Connect to EggNFT contract
     const eggContract = new ethers.Contract(eggNftAddress, EGG_NFT_ABI, signer);
 
-    // 5. Get mint price from contract
-    const mintPrice: bigint = await eggContract.mintPrice();
-    console.log(
-      `[Mint Egg] Mint price: ${ethers.formatEther(mintPrice)} native token`
-    );
+    // 5. Get mint price from contract (with error handling for BAD_DATA/invalid contract)
+    let mintPrice: bigint;
+    try {
+      mintPrice = await eggContract.mintPrice();
+      console.log(
+        `[Mint Egg] Mint price: ${ethers.formatEther(mintPrice)} native token`
+      );
+    } catch (contractError: any) {
+      console.error("[Mint Egg] Failed to read mintPrice from contract:", contractError.code || contractError.message);
+      if (contractError.code === "BAD_DATA" || contractError.message?.includes("could not decode")) {
+        return res.status(500).json({
+          success: false,
+          error: {
+            message: "Mint configuration error: EggNFT contract is not properly deployed. Please contact support.",
+            code: "CONTRACT_CONFIG_ERROR",
+          },
+        });
+      }
+      if (contractError.code === "CALL_EXCEPTION") {
+        return res.status(500).json({
+          success: false,
+          error: {
+            message: "Mint contract call failed. The transaction would revert. Please try again or contact support.",
+            code: "CONTRACT_CALL_FAILED",
+          },
+        });
+      }
+      throw contractError;
+    }
 
     // 6. Determine the referrer address from referral chain
     const referrerAddr = referralChain && referralChain.length > 0 && referralChain[0]
       ? referralChain[0]
       : ethers.ZeroAddress;
 
-    // 6. Estimate gas with buffer
+    // 7. Approve USDT spending (contract uses safeTransferFrom)
+    if (!USDT_ADDRESS) {
+      return res.status(500).json({
+        success: false,
+        error: {
+          message: "Server misconfiguration: USDT_ADDRESS not set",
+          code: "SERVER_ERROR",
+        },
+      });
+    }
+
+    const USDT_ABI = [
+      "function approve(address spender, uint256 amount) external returns (bool)",
+      "function allowance(address owner, address spender) external view returns (uint256)",
+    ];
+    const usdtContract = new ethers.Contract(USDT_ADDRESS, USDT_ABI, signer);
+
+    console.log(`[Mint Egg] Checking USDT allowance for ${eggNftAddress}...`);
+    const currentAllowance = await usdtContract.allowance(walletAddress, eggNftAddress);
+    if (currentAllowance < mintPrice) {
+      console.log(`[Mint Egg] Approving USDT: ${ethers.formatEther(mintPrice)} USDT`);
+      const approveTx = await usdtContract.approve(eggNftAddress, mintPrice);
+      console.log(`[Mint Egg] USDT approval tx: ${approveTx.hash}`);
+      await approveTx.wait(1);
+      console.log(`[Mint Egg] USDT approval confirmed`);
+    } else {
+      console.log(`[Mint Egg] Sufficient USDT allowance already exists`);
+    }
+
+    // 8. Estimate gas with buffer
     let gasLimit: bigint;
     try {
       const gasEstimate: bigint = await eggContract.mintEgg.estimateGas(referrerAddr);
@@ -361,7 +415,7 @@ router.post("/mint-egg", async (req, res) => {
       });
     }
 
-    // 7. Execute transaction with retry (3 attempts, exponential backoff 1s/2s/4s)
+    // 9. Execute transaction with retry (3 attempts, exponential backoff 1s/2s/4s)
     const tx = await withRetry(async () => {
       return await eggContract.mintEgg(referrerAddr, {
         gasLimit: gasLimit,
@@ -370,7 +424,7 @@ router.post("/mint-egg", async (req, res) => {
 
     console.log(`[Mint Egg] Transaction sent: ${tx.hash}`);
 
-    // 8. Wait for confirmations
+    // 10. Wait for confirmations
     const receipt = await tx.wait(CONFIRMATIONS);
 
     if (!receipt || receipt.status !== 1) {
@@ -379,7 +433,7 @@ router.post("/mint-egg", async (req, res) => {
 
     console.log(`[Mint Egg] Confirmed in block ${receipt.blockNumber}`);
 
-    // 9. Create PocketBase egg_nfts record (non-blocking - don't fail mint on PB error)
+    // 11. Create PocketBase egg_nfts record (non-blocking - don't fail mint on PB error)
     try {
       const pbToken = await getPocketBaseAdminToken();
 
@@ -448,13 +502,13 @@ router.post("/mint-egg", async (req, res) => {
       // Continue - don't fail mint if PB record creation fails
     }
 
-    // 10. Log gas cost for monitoring
+    // 12. Log gas cost for monitoring
     const gasCost = receipt.gasUsed * receipt.gasPrice;
     console.log(
       `[Mint Egg] Gas cost: ${ethers.formatEther(gasCost)} native token, User: ${userId}`
     );
 
-    // 11. Return success
+    // 13. Return success
     res.json({
       success: true,
       data: {
