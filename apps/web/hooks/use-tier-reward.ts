@@ -68,21 +68,20 @@ export function useTierReward(): UseTierRewardReturn {
             const response = await fetch(`${pbUrl}/api/v2/check-tier-reward`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': token
-                }
-            })
-            
+                    'Authorization': `Bearer ${token}`
+                })
+
             if (!response.ok) {
                 const text = await response.text()
                 throw new Error(text || `HTTP ${response.status}`)
             }
-            
+
             const result = await response.json()
-            
+
             if (!result.success) {
                 throw new Error(result.error?.message || 'Failed to fetch tier status')
             }
-            
+
             setStatus(result.data)
         } catch (err: any) {
             setError(err.message || 'Failed to fetch tier status')
@@ -91,24 +90,24 @@ export function useTierReward(): UseTierRewardReturn {
             setIsLoading(false)
         }
     }, [pb])
-    
+
     const claim = useCallback(async (tier: string): Promise<ClaimResult> => {
         setIsClaiming(true)
         setError(null)
         setSuccess(false)
-        
+
         try {
             const token = pb.authStore.token
-            
+
             if (!token) {
                 throw new Error("Not authenticated")
             }
-            
+
             const response = await fetch(`${pbUrl}/api/v2/check-tier-reward`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ tier })
             })

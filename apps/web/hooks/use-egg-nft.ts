@@ -44,7 +44,7 @@ export function useEggNft() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           referrer_id: referrerId
@@ -141,7 +141,7 @@ export function useEggNft() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token
+          'Authorization': `Bearer ${token}`
         }
       })
 

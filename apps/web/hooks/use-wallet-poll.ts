@@ -80,7 +80,7 @@ export function useWalletPoll(
       const res = await fetch(`${baseUrl}/api/v2/hot-wallet/balance`, {
         method: 'POST',
         headers: {
-          'Authorization': token,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ user_address: walletAddress }),

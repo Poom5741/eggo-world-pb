@@ -90,7 +90,7 @@ export function useEggPoll(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token || ''
+          'Authorization': `Bearer ${pb.authStore.token}`
         },
       });
 

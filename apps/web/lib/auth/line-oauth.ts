@@ -67,7 +67,7 @@ export async function initiateLineLogin(options: LineLoginOptions = {}): Promise
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': authData.token
+            'Authorization': `Bearer ${authData.token}`
           },
           body: JSON.stringify({
             referral_code: storedReferrer,
