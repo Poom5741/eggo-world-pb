@@ -40,7 +40,7 @@ export function FeedDialog({ egg, open, onOpenChange, onSuccess }: FeedDialogPro
         filter: `owner = "${pb.authStore.record?.id}" && is_consumed = false`,
         sort: '+created',
         headers: {
-          'Authorization': token,
+          'Authorization': `Bearer ${token}`,
         },
       })
 

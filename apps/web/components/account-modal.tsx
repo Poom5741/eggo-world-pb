@@ -50,7 +50,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
           {
             method: 'POST',
             headers: {
-              Authorization: pb.authStore.token,
+              Authorization: `Bearer ${pb.authStore.token}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ user_address: user.wallet }),
@@ -58,7 +58,6 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
         )
         
         if (!response.ok) {
-          console.error('Balance fetch failed:', response.status)
           return
         }
         
@@ -66,8 +65,7 @@ export function AccountModal({ isOpen, onClose }: AccountModalProps) {
         if (data.success && data.data) {
           setBalance(data.data)
         }
-      } catch (error) {
-        console.error('Failed to fetch balance:', error)
+      } catch {
       }
     }
 

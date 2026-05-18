@@ -28,7 +28,7 @@ export function BuyEggFlow({ onSuccess, onError }: BuyEggFlowProps) {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token || ''
+          'Authorization': `Bearer ${pb.authStore.token}`
         },
       })
       
@@ -62,7 +62,7 @@ export function BuyEggFlow({ onSuccess, onError }: BuyEggFlowProps) {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token || ''
+          'Authorization': `Bearer ${pb.authStore.token}`
         },
       })
 

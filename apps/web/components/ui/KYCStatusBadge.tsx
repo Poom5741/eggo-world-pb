@@ -56,7 +56,7 @@ export function KYCStatusBadge({ status, className, hideIcon = false }: KYCStatu
         const response = await fetch(`${pb.baseURL}/api/v2/kyc-status`, {
           method: "GET",
           headers: {
-            Authorization: token,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         })

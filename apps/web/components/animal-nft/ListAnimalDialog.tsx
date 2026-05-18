@@ -74,10 +74,10 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
         const response = await fetch(`${pbUrl}/api/v2/list-animal?animal_id=${animal.animal_id}`, {
           method: 'GET',
           headers: {
-            'Authorization': token
+            'Authorization': `Bearer ${token}`
           }
         })
-        
+
         if (response.ok) {
           const result = await response.json()
           // Check if any active listing exists for this animal
@@ -133,7 +133,7 @@ export function ListAnimalDialog({ animal, open, onOpenChange, onSuccess }: List
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": token
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({
           animal_id: animal.animal_id,

@@ -176,7 +176,7 @@ export function BuyFlow({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token
+          'Authorization': `Bearer ${pb.authStore.token}`
         },
         body: JSON.stringify({
           listing_id: listingId,

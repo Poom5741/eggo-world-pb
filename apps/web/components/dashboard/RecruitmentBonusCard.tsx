@@ -76,7 +76,7 @@ export function RecruitmentBonusCard({ className }: RecruitmentBonusCardProps) {
       const response = await fetch(`${pb.baseURL}/api/v2/recruitment-bonus-status`, {
         method: "GET",
         headers: {
-          Authorization: token,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       })
@@ -111,7 +111,7 @@ export function RecruitmentBonusCard({ className }: RecruitmentBonusCardProps) {
       const response = await fetch(`${pb.baseURL}/api/v2/claim-recruitment-bonus`, {
         method: "POST",
         headers: {
-          Authorization: token,
+          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({}),

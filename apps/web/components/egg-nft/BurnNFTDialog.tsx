@@ -58,7 +58,7 @@ export function BurnNFTDialog({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: pb.authStore.token,
+          Authorization: `Bearer ${pb.authStore.token}`,
         },
         body: JSON.stringify({
           nft_id: nftId.trim(),

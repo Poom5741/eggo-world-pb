@@ -41,7 +41,7 @@ export function MintEggModal({ isOpen, onClose, onSuccess }: MintEggModalProps) 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           referrer_id: referrerId || undefined
