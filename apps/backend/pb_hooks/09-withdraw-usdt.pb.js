@@ -46,12 +46,28 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
             url: walletApiUrl + "/api/v1/wallet/transfer",
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ from_address: user_address, to_address: external_wallet_address, amount: amount, fee: fee, user_id: userRecord.id })
+            body: JSON.stringify({ to_address: external_wallet_address, amount: amount.toString(), user_id: userRecord.id })
         });
         console.log("[withdraw] wallet-api response status:", resp.statusCode);
 
-        if (resp.statusCode >= 200 && resp.statusCode < 300 && resp.json && resp.json.success) {
-            var txHash = (resp.json.data && resp.json.data.txHash) || null;
+        var responseData = null;
+        if (resp.json && typeof resp.json === "object" && !Array.isArray(resp.json)) {
+            responseData = resp.json;
+        } else if (resp.body && Array.isArray(resp.body)) {
+            var respBodyStr = "";
+            for (var i = 0; i < resp.body.length; i++) {
+                respBodyStr += String.fromCharCode(resp.body[i]);
+            }
+            try {
+                responseData = JSON.parse(respBodyStr);
+            } catch (parseErr) {
+                console.error("[withdraw] Failed to parse response body:", respBodyStr);
+            }
+        }
+        console.log("[withdraw] wallet-api response body:", JSON.stringify(responseData));
+
+        if (resp.statusCode >= 200 && resp.statusCode < 300 && responseData && responseData.success) {
+            var txHash = (responseData.data && responseData.data.txHash) || null;
             record.set("status", "completed");
             record.set("tx_hash", txHash);
             $app.save(record);
@@ -69,7 +85,15 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
 
         record.set("status", "failed");
         $app.save(record);
-        return e.json(400, { success: false, error: { message: "Transfer failed", code: "TRANSFER_FAILED" } });
+
+        var errorMsg = "Transfer failed";
+        var errorCode = "TRANSFER_FAILED";
+        if (responseData && responseData.error) {
+            errorMsg = responseData.error.message || errorMsg;
+            errorCode = responseData.error.code || errorCode;
+        }
+        console.error("[withdraw] Transfer failed:", errorMsg, errorCode);
+        return e.json(400, { success: false, error: { message: errorMsg, code: errorCode } });
     } catch (err) {
         console.error("[withdraw] Error:", err.message);
         return e.json(500, { success: false, error: { message: err.message, code: "WITHDRAWAL_FAILED" } });
