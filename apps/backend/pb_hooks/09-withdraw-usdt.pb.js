@@ -4,11 +4,10 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
         return e.json(401, { success: false, error: { message: "Auth required", code: "AUTH_REQUIRED" } });
     }
     const body = requestInfo.body || {};
-    const user_address = body.user_address;
     const amount = body.amount;
     const external_wallet_address = body.external_wallet_address;
 
-    if (!user_address || !amount || amount <= 0) {
+    if (!amount || amount <= 0) {
         return e.json(400, { success: false, error: { message: "Invalid params", code: "VALIDATION_ERROR" } });
     }
     if (!external_wallet_address || !external_wallet_address.match(/^0x[a-fA-F0-9]{40}$/)) {
@@ -16,8 +15,11 @@ routerAdd("POST", "/api/v2/wallet/withdraw", (e) => {
     }
 
     try {
-        var userRecord = $app.findFirstRecordByData("users", "wallet", user_address);
-        if (!userRecord) return e.json(404, { success: false, error: { message: "Not found", code: "WALLET_NOT_FOUND" } });
+        var userRecord = $app.findRecordById("users", requestInfo.auth.id);
+        if (!userRecord) return e.json(404, { success: false, error: { message: "Not found", code: "USER_NOT_FOUND" } });
+
+        var user_address = userRecord.get("wallet") || "";
+        if (!user_address) return e.json(400, { success: false, error: { message: "No wallet", code: "WALLET_NOT_FOUND" } });
 
         var walletRecord = $app.findFirstRecordByData("user_wallets", "user_id", userRecord.id);
         if (!walletRecord) return e.json(404, { success: false, error: { message: "Not found", code: "WALLET_NOT_FOUND" } });
