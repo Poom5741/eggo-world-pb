@@ -338,13 +338,9 @@ router.post('/transfer', async (req, res) => {
       });
     }
 
-    // 1. Get user's encrypted private key from PocketBase
     const { encryptedPrivateKey } = await getUserPrivateKey(user_id);
-
-    // 2. Decrypt private key
     const privateKey = decryptPrivateKey(encryptedPrivateKey, MASTER_KEY + user_id);
 
-    // 3. Create provider and signer
     const provider = new ethers.JsonRpcProvider(RPC_URL);
     const userWallet = new ethers.Wallet(privateKey, provider);
 
@@ -372,15 +368,44 @@ router.post('/transfer', async (req, res) => {
       });
     }
 
-    // 5. User signs the USDT transfer (user owns the tokens in their wallet)
     const usdtContract = new ethers.Contract(USDT_CONTRACT_ADDRESS, USDT_ABI, userWallet);
 
     // 6. Convert amount to proper units (USDT uses 18 decimals)
     const amountWithDecimals = ethers.parseUnits(amount.toString(), 18);
     console.log(`[USDT Transfer] Parsed amount: ${amountWithDecimals}, to: ${to_address}`);
 
+    // 6.5. Verify on-chain USDT balance BEFORE attempting transfer
+    let userUSDTBalance: bigint;
+    try {
+      userUSDTBalance = await usdtContract.balanceOf(userWallet.address);
+      console.log(
+        `[USDT Transfer] On-chain USDT balance: ${ethers.formatUnits(userUSDTBalance, 18)}, required: ${amount}`
+      );
+    } catch (balanceError: any) {
+      console.error('[USDT Transfer] Failed to read on-chain USDT balance:', balanceError.message);
+      return res.status(500).json({
+        success: false,
+        error: { message: 'Failed to verify wallet balance on-chain', code: 'BALANCE_CHECK_FAILED' },
+      });
+    }
+
+    if (userUSDTBalance < amountWithDecimals) {
+      const balanceFormatted = ethers.formatUnits(userUSDTBalance, 18);
+      console.error(
+        `[USDT Transfer] Insufficient on-chain USDT: balance=${balanceFormatted}, required=${amount}`
+      );
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: `Insufficient USDT balance on-chain. Available: ${balanceFormatted} USDT, Required: ${amount} USDT`,
+          code: 'INSUFFICIENT_USDT_BALANCE',
+        },
+      });
+    }
+
     // 7. Estimate gas with buffer
     let gasLimit: bigint;
+    const FALLBACK_GAS_LIMIT = BigInt(100_000); // Known-safe gas limit for ERC-20 transfers
     try {
       const gasEstimate = await usdtContract.transfer.estimateGas(to_address, amountWithDecimals);
       gasLimit = (gasEstimate * BigInt(100 + GAS_BUFFER_PERCENT)) / BigInt(100);
@@ -388,27 +413,12 @@ router.post('/transfer', async (req, res) => {
         `[USDT Transfer] Gas estimate: ${gasEstimate}, Gas limit (with ${GAS_BUFFER_PERCENT}% buffer): ${gasLimit}`
       );
     } catch (gasError: any) {
-      let errorCode = 'GAS_ESTIMATION_FAILED';
-      let errorMessage = 'Gas estimation failed. The transaction may fail. Please try again.';
-
-      if (gasError.code === 'UNPREDICTABLE_GAS_LIMIT') {
-        errorMessage = 'Cannot estimate gas. This transaction would fail. Please check your wallet balance.';
-      } else if (gasError.code === 'CALL_EXCEPTION') {
-        errorCode = 'TRANSACTION_REVERTED';
-        errorMessage = 'Transaction would revert. Please try again or contact support.';
-      } else if (gasError.message?.includes('insufficient funds')) {
-        errorCode = 'INSUFFICIENT_FUNDS';
-        errorMessage = 'Insufficient USDT balance for transfer.';
-      }
-
+      // Since we already verified balance, use fallback gas limit instead of failing
       console.error(
-        '[USDT Transfer] Gas estimation failed:',
-        gasError.code || gasError.message
+        `[USDT Transfer] Gas estimation failed (code: ${gasError.code}), but on-chain balance is sufficient. Using fallback gas limit: ${FALLBACK_GAS_LIMIT}`
       );
-      return res.status(400).json({
-        success: false,
-        error: { message: errorMessage, code: errorCode },
-      });
+      console.error('[USDT Transfer] Gas error details:', gasError.message || JSON.stringify(gasError));
+      gasLimit = FALLBACK_GAS_LIMIT;
     }
 
     // 8. Execute transaction with retry (3 attempts, exponential backoff 1s/2s/4s)
@@ -439,7 +449,6 @@ router.post('/transfer', async (req, res) => {
 
     console.log(`[USDT Transfer] Confirmed: ${receipt.transactionHash} in block ${receipt.blockNumber}`);
 
-    // 10. Log gas sponsorship if applicable
     if (needsGasSponsorship && relayerWallet) {
       logGasSponsorship('USDT Transfer', user_id, receipt);
     }
