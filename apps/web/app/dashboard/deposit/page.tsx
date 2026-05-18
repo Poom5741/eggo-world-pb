@@ -167,7 +167,15 @@ export default function DepositPage() {
         if (data?.success) {
           // Refresh deposits from collection to get latest state
           fetchDepositsFromCollection(user.id)
-          setBalance(data.data.new_balance || 0)
+
+          const balRes = await fetch(
+            `${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/user_wallets/records?filter=(user_id%3D%22${user.id}%22)&perPage=1`,
+            { headers: { "Authorization": pb.authStore.token } }
+          )
+          if (balRes.ok) {
+            const balData = await balRes.json()
+            if (balData.items?.[0]) setBalance(balData.items[0].usdt_balance || 0)
+          }
           
           // Detect newly confirmed deposits for notification
           const prevPending = deposits.filter(d => d.status === 'pending')
@@ -198,6 +206,27 @@ export default function DepositPage() {
     setIsPolling(true)
     try {
       const pb = createClient()
+      if (!pb || !pb.authStore?.token) {
+        window.location.href = "/auth/login"
+        return
+      }
+
+      try {
+        const balanceRes = await fetch(
+          `${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/user_wallets/records?filter=(user_id%3D%22${user?.id}%22)&perPage=1`,
+          { headers: { "Authorization": pb.authStore.token } }
+        )
+        if (balanceRes.ok) {
+          const balanceData = await balanceRes.json()
+          if (balanceData.items?.[0]) {
+            setBalance(balanceData.items[0].usdt_balance || 0)
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to fetch balance from collection:", e)
+      }
+
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/v2/deposit/poll`, {
         method: "POST",
         headers: {
@@ -207,19 +236,20 @@ export default function DepositPage() {
         body: JSON.stringify({ user_address: walletAddress })
       })
 
-      // Handle non-OK responses
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
           window.location.href = "/auth/login"
           return
         }
-        console.error('Initial deposit fetch failed:', response.status)
+        console.warn('Deposit poll unavailable:', response.status, '(background scanner handles deposits)')
+        setPollingStatus("Deposits scanned automatically")
         return
       }
 
       const data = await safeParseJSON(response)
       if (data?.success) {
         setBalance(data.data.new_balance || 0)
+        fetchDepositsFromCollection(user?.id || "")
         setPollingStatus(data.data.deposits?.length > 0 ? "Deposit detected!" : "Checking for deposits...")
       }
     } catch (err: any) {

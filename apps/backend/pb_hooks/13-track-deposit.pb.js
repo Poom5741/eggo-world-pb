@@ -35,21 +35,6 @@ routerAdd("POST", "/api/v2/deposit/poll", (e) => {
             var vb = rpc("eth_getBlockByNumber", ["0x" + blockNumber.toString(16), false]);
             if (vb && vb.hash === rec.getString("block_hash")) {
               rec.set("status", "confirmed"); rec.set("confirmations", confs); rec.set("confirmed_at", new Date().toISOString()); $app.save(rec);
-              var dUid = rec.getString("user"); var amt = rec.get("amount");
-              try {
-                var wr = $app.findFirstRecordByData("user_wallets", "user_id", dUid);
-                if (wr) {
-                  var oldBal = wr.get("usdt_balance"); if (oldBal === null || oldBal === undefined) { oldBal = 0; } else { oldBal = Number(oldBal); }
-                  var oldEarned = wr.get("total_earned"); if (oldEarned === null || oldEarned === undefined) { oldEarned = 0; } else { oldEarned = Number(oldEarned); }
-                  wr.set("usdt_balance", oldBal + amt);
-                  wr.set("total_earned", oldEarned + amt);
-                  wr.set("last_transaction_at", new Date().toISOString());
-                  $app.save(wr);
-                  console.log("[Confirm] Updated wallet balance:", oldBal + amt, "for user:", dUid);
-                  var ur = $app.findRecordById("users", dUid);
-                  if (ur) { ur.set("usdt_balance", wr.get("usdt_balance")); $app.save(ur); }
-                }
-              } catch (bErr) { console.error("[Confirm] Balance update failed:", bErr.message); }
               newlyConfirmed.push(rec);
             } else { rec.set("status", "failed"); $app.save(rec); }
           } catch (vErr) { console.error("[Poll] Block verify failed:", vErr.message); }

@@ -287,28 +287,36 @@ async function updateDepositStatus(
 // ─── Update Wallet Balance ───────────────────────────────────────────────────
 
 async function updateWalletBalance(userId: string, amount: number): Promise<boolean> {
-  try {
-    const token = await getPocketBaseAdminToken()
+  const token = await getPocketBaseAdminToken()
 
-    // Find user_wallets record
-    const walletResponse = await fetch(
-      `${PB_URL}/api/collections/user_wallets/records?filter=(user_id%3D%22${userId}%22)&perPage=1`,
-      { headers: { Authorization: `Bearer ${token}` } },
-    )
+  const walletResponse = await fetch(
+    `${PB_URL}/api/collections/user_wallets/records?filter=(user_id%3D%22${userId}%22)&perPage=1`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  )
 
-    if (!walletResponse.ok) return false
+  if (!walletResponse.ok) {
+    console.error(`[DepositScanner] Failed to fetch user_wallets for ${userId}`)
+    return false
+  }
 
-    const walletData = (await walletResponse.json()) as {
-      items: Array<{ id: string; usdt_balance?: number; total_earned?: number }>
-    }
+  const walletData = (await walletResponse.json()) as {
+    items: Array<{ id: string; usdt_balance?: number; total_earned?: number }>
+  }
 
-    if (walletData.items.length === 0) return false
+  if (walletData.items.length === 0) {
+    console.error(`[DepositScanner] No user_wallets record for ${userId}`)
+    return false
+  }
 
-    const walletRecord = walletData.items[0]
-    const oldBalance = Number(walletRecord.usdt_balance || 0)
-    const oldEarned = Number(walletRecord.total_earned || 0)
+  const walletRecord = walletData.items[0]
+  const oldBalance = Number(walletRecord.usdt_balance || 0)
+  const oldEarned = Number(walletRecord.total_earned || 0)
 
-    // Update user_wallets
+  // Retry up to 3 times to handle concurrent update races
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const newBalance = oldBalance + amount
+    const newEarned = oldEarned + amount
+
     const updateResponse = await fetch(
       `${PB_URL}/api/collections/user_wallets/records/${walletRecord.id}`,
       {
@@ -318,34 +326,51 @@ async function updateWalletBalance(userId: string, amount: number): Promise<bool
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          usdt_balance: (oldBalance + amount).toString(),
-          total_earned: (oldEarned + amount).toString(),
+          usdt_balance: newBalance.toString(),
+          total_earned: newEarned.toString(),
           last_transaction_at: new Date().toISOString(),
         }),
       },
     )
 
-    if (!updateResponse.ok) return false
-
-    const userResponse = await fetch(
-      `${PB_URL}/api/collections/users/records/${userId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+    if (updateResponse.ok) {
+      const userResponse = await fetch(
+        `${PB_URL}/api/collections/users/records/${userId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            usdt_balance: newBalance.toString(),
+          }),
         },
-        body: JSON.stringify({
-          usdt_balance: (oldBalance + amount).toString(),
-        }),
-      },
-    )
+      )
 
-    return userResponse.ok
-  } catch (error: any) {
-    console.error(`[DepositScanner] Error updating wallet balance for ${userId}:`, error.message)
-    return false
+      if (!userResponse.ok) {
+        console.warn(`[DepositScanner] Failed to sync users.usdt_balance for ${userId}`)
+      }
+
+      return true
+    }
+
+    if (attempt < 3) {
+      await new Promise((r) => setTimeout(r, 500))
+      const retry = await fetch(
+        `${PB_URL}/api/collections/user_wallets/records/${walletRecord.id}?fields=usdt_balance,total_earned`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      )
+      if (retry.ok) {
+        const fresh = (await retry.json()) as { usdt_balance?: number; total_earned?: number }
+        console.log(`[DepositScanner] Retry balance update for ${userId}: stale=${oldBalance} fresh=${fresh.usdt_balance}`)
+        continue
+      }
+    }
   }
+
+  console.error(`[DepositScanner] Balance update failed for ${userId} after 3 retries`)
+  return false
 }
 
 // ─── Scan New Deposits ───────────────────────────────────────────────────────
