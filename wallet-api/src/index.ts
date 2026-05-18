@@ -9,6 +9,8 @@ import { createEvmWalletRouter } from './routes/createEvmWallet.js'
 import { migrateWalletRouter } from './routes/migrateWallet.js'
 import { mintEggRouter } from './routes/mintEgg.js'
 import { transferRouter } from './routes/transfer.js'
+import { depositScannerRouter } from './routes/depositScanner.js'
+import { startDepositScanner, stopDepositScanner } from './depositScanner.js'
 import type { Request, Response, NextFunction } from 'express'
 import { env } from './env.js'
 
@@ -60,6 +62,8 @@ app.use('/api/wallet', mintEggRouter)
 // Apply rate limiting to transfer endpoint (v1 API path for PocketBase hook compatibility)
 app.use('/api/v1/wallet', transferRateLimiter, transferRouter)
 
+app.use('/api/v1/deposit-scanner', depositScannerRouter)
+
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('Error:', err)
@@ -84,10 +88,29 @@ app.use('*', (req: Request, res: Response) => {
 })
 
 // Start server
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Wallet API Server running on port ${PORT}`)
   console.log(`📊 Health check: http://localhost:${PORT}/health`)
   console.log(`🔧 Environment: ${env.NODE_ENV}`)
+  startDepositScanner()
 })
+
+gracefulShutdown(server)
+
+function gracefulShutdown(server: ReturnType<typeof app.listen>) {
+  const shutdown = (signal: string) => {
+    console.log(`\n🛑 Received ${signal}. Shutting down gracefully...`)
+    stopDepositScanner()
+    server.close(() => {
+      process.exit(0)
+    })
+    setTimeout(() => {
+      process.exit(1)
+    }, 10_000)
+  }
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'))
+  process.on('SIGINT', () => shutdown('SIGINT'))
+}
 
 export default app

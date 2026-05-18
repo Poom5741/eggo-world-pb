@@ -15,7 +15,7 @@ export const env = {
   CONFIRMATIONS: parseInt(process.env.CONFIRMATIONS || '12', 10),
   GAS_BUFFER_PERCENT: parseInt(process.env.GAS_BUFFER_PERCENT || '20', 10),
   TRANSFER_TIMEOUT_MS: parseInt(process.env.TRANSFER_TIMEOUT_MS || '60000', 10),
-  RELAYER_PRIVATE_KEY: process.env.RELAYER_PRIVATE_KEY || ''
+  RELAYER_PRIVATE_KEY: process.env.RELAYER_PRIVATE_KEY || '',
 }
 
 export type Env = typeof env
