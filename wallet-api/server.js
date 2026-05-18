@@ -759,9 +759,33 @@ app.post('/api/wallet/mint-egg', actionLimiter, async (req, res) => {
             throw new Error('USDT contract not configured for this chain');
         }
         
-        // Get mint price from contract
-        const mintPrice = await eggContract.mintPrice();
-        console.log(`[Mint Egg] Mint price: ${ethers.formatEther(mintPrice)} USDT`);
+        // Get mint price from contract (with error handling for BAD_DATA/invalid contract)
+        let mintPrice;
+        try {
+            mintPrice = await eggContract.mintPrice();
+            console.log(`[Mint Egg] Mint price: ${ethers.formatEther(mintPrice)} USDT`);
+        } catch (contractError) {
+            console.error('[Mint Egg] Failed to read mintPrice from contract:', contractError.code || contractError.message);
+            if (contractError.code === 'BAD_DATA' || contractError.message?.includes('could not decode')) {
+                return res.status(500).json({
+                    success: false,
+                    error: {
+                        message: 'Mint configuration error: EggNFT contract is not properly deployed. Please contact support.',
+                        code: 'CONTRACT_CONFIG_ERROR'
+                    }
+                });
+            }
+            if (contractError.code === 'CALL_EXCEPTION') {
+                return res.status(500).json({
+                    success: false,
+                    error: {
+                        message: 'Mint contract call failed. The transaction would revert. Please try again or contact support.',
+                        code: 'CONTRACT_CALL_FAILED'
+                    }
+                });
+            }
+            throw contractError;
+        }
         
         // Step 1: Approve USDT spending for EggNFT contract
         // The contract uses safeTransferFrom(buyer, commissionDistribution, mintPrice)

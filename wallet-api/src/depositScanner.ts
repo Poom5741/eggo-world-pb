@@ -603,7 +603,8 @@ async function scanAllDeposits(): Promise<void> {
     const contract = await getUsdtContract(provider)
     for (const user of userWallets) {
       try {
-        const chainBal = await contract.balanceOf(user.wallet)
+        const checksumWallet = ethers.getAddress(user.wallet.toLowerCase())
+        const chainBal = await contract.balanceOf(checksumWallet)
         const onChainValue = Number(ethers.formatUnits(chainBal, usdtDecimals))
 
         const token = await getPocketBaseAdminToken()
