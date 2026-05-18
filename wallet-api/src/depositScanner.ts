@@ -373,6 +373,51 @@ async function updateWalletBalance(userId: string, amount: number): Promise<bool
   return false
 }
 
+async function updateWalletBalanceDirectly(userId: string, onChainBalance: number): Promise<boolean> {
+  const token = await getPocketBaseAdminToken()
+  const walletResponse = await fetch(
+    `${PB_URL}/api/collections/user_wallets/records?filter=(user_id%3D%22${userId}%22)&perPage=1`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  )
+  if (!walletResponse.ok) return false
+  const walletData = (await walletResponse.json()) as { items: Array<{ id: string; total_earned?: number }> }
+  if (walletData.items.length === 0) return false
+
+  const currentEarned = Number(walletData.items[0].total_earned || 0)
+  const body: Record<string, string> = {
+    usdt_balance: onChainBalance.toString(),
+    last_transaction_at: new Date().toISOString(),
+  }
+  if (onChainBalance > currentEarned) {
+    body.total_earned = onChainBalance.toString()
+  }
+
+  const updateResponse = await fetch(`${PB_URL}/api/collections/user_wallets/records/${walletData.items[0].id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body),
+  })
+  if (!updateResponse.ok) return false
+
+  await fetch(`${PB_URL}/api/collections/users/records/${userId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ usdt_balance: onChainBalance.toString() }),
+  })
+  return true
+}
+
+const USDT_USDT_ABI = [...USDT_ABI, 'function decimals() external view returns (uint8)']
+let usdtInstance: ethers.Contract | null = null
+let usdtDecimals = 18
+
+async function getUsdtContract(provider: ethers.JsonRpcProvider): Promise<ethers.Contract> {
+  if (usdtInstance) return usdtInstance
+  usdtInstance = new ethers.Contract(USDT_ADDRESS, USDT_USDT_ABI, provider)
+  usdtDecimals = Number(await usdtInstance.decimals())
+  return usdtInstance
+}
+
 // ─── Scan New Deposits ───────────────────────────────────────────────────────
 
 async function scanNewDeposits(userWallets: UserWallet[], provider: ethers.JsonRpcProvider): Promise<number> {
@@ -551,6 +596,32 @@ async function scanAllDeposits(): Promise<void> {
     // Step 3: Confirm pending deposits
     console.log('[DepositScanner] Confirming pending deposits...')
     const depositsConfirmed = await confirmPendingDeposits(provider)
+
+    // Step 4: Reconcile on-chain balances with PocketBase
+    console.log('[DepositScanner] Reconciling on-chain balances...')
+    const contract = await getUsdtContract(provider)
+    for (const user of userWallets) {
+      try {
+        const chainBal = await contract.balanceOf(user.wallet)
+        const onChainValue = Number(ethers.formatUnits(chainBal, usdtDecimals))
+
+        const token = await getPocketBaseAdminToken()
+        const wr = await fetch(`${PB_URL}/api/collections/user_wallets/records?filter=(user_id%3D%22${user.id}%22)&perPage=1`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        if (!wr.ok) continue
+        const wd = (await wr.json()) as { items: Array<{ usdt_balance?: number }> }
+        if (wd.items.length === 0) continue
+
+        const pbBal = Number(wd.items[0].usdt_balance || 0)
+        if (Math.abs(pbBal - onChainValue) < 0.01) continue
+
+        console.log(`[DepositScanner] ${user.id}: PB=${pbBal} on-chain=${onChainValue}, diff=${onChainValue - pbBal}`)
+        await updateWalletBalanceDirectly(user.id, onChainValue)
+      } catch {
+        // Skip wallets with no USDT activity
+      }
+    }
 
     // Update stats
     totalScans++
