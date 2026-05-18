@@ -344,29 +344,23 @@ router.post('/transfer', async (req, res) => {
     const provider = new ethers.JsonRpcProvider(RPC_URL);
     const userWallet = new ethers.Wallet(privateKey, provider);
 
-    const userBNBBalance = await provider.getBalance(userWallet.address);
-    const minBNBForGas = ethers.parseEther('0.001');
-    const needsGasSponsorship = userBNBBalance < minBNBForGas;
-
-    if (needsGasSponsorship && relayerWallet) {
-      console.log(`[USDT Transfer] Gas sponsorship activated for user: ${user_id} (BNB: ${ethers.formatEther(userBNBBalance)})`);
-
-      const gasSponsorTx = await relayerWallet.sendTransaction({
-        to: userWallet.address,
-        value: ethers.parseEther('0.005'),
-      });
-
-      await gasSponsorTx.wait(2);
-      console.log(`[USDT Transfer] Gas sponsored: ${gasSponsorTx.hash}`);
-    } else if (needsGasSponsorship && relayerWallet === null) {
+    if (!relayerWallet) {
       return res.status(500).json({
         success: false,
         error: {
-          message: 'Insufficient BNB for gas fees and gas sponsorship not configured',
-          code: 'INSUFFICIENT_GAS_FUNDS'
+          message: 'Gas sponsorship not configured — RELAYER_PRIVATE_KEY missing or invalid',
+          code: 'SPONSOR_NOT_CONFIGURED'
         }
       });
     }
+
+    const userBNBBalance = await provider.getBalance(userWallet.address);
+    const gasSponsorTx = await relayerWallet.sendTransaction({
+      to: userWallet.address,
+      value: ethers.parseEther('0.005'),
+    });
+    await gasSponsorTx.wait(2);
+    console.log(`[USDT Transfer] Gas sponsored: ${gasSponsorTx.hash} (user BNB was ${ethers.formatEther(userBNBBalance)})`);
 
     const usdtContract = new ethers.Contract(USDT_CONTRACT_ADDRESS, USDT_ABI, userWallet);
 
@@ -449,9 +443,7 @@ router.post('/transfer', async (req, res) => {
 
     console.log(`[USDT Transfer] Confirmed: ${receipt.transactionHash} in block ${receipt.blockNumber}`);
 
-    if (needsGasSponsorship && relayerWallet) {
-      logGasSponsorship('USDT Transfer', user_id, receipt);
-    }
+    logGasSponsorship('USDT Transfer', user_id, receipt);
 
     res.json({
       success: true,
@@ -460,7 +452,7 @@ router.post('/transfer', async (req, res) => {
         status: 'completed',
         txHash: receipt.transactionHash,
         block: receipt.blockNumber,
-        gas_sponsored: needsGasSponsorship && !!relayerWallet
+        gas_sponsored: true
       }
     });
   } catch (error: any) {
