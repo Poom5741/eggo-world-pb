@@ -18,6 +18,7 @@ const PB_ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD || ''
 const CRON_SCHEDULE = process.env.DEPOSIT_SCAN_CRON || '*/5 * * * *' // every 5 min
 
 const USDT_ABI = [
+  'function balanceOf(address) external view returns (uint256)',
   'function decimals() external view returns (uint8)',
   'event Transfer(address indexed from, address indexed to, uint256 value)',
 ]
@@ -618,8 +619,8 @@ async function scanAllDeposits(): Promise<void> {
 
         console.log(`[DepositScanner] ${user.id}: PB=${pbBal} on-chain=${onChainValue}, diff=${onChainValue - pbBal}`)
         await updateWalletBalanceDirectly(user.id, onChainValue)
-      } catch {
-        // Skip wallets with no USDT activity
+      } catch (err: any) {
+        console.error(`[DepositScanner] Reconcile failed for ${user.id}: ${err.message}`)
       }
     }
 
