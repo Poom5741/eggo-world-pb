@@ -27,7 +27,6 @@ import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoo
 contract Deploy is Script {
     function run() external {
         // Load environment variables
-        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address coinStorReserve = vm.envAddress("COINSTOR_RESERVE_ADDRESS");
         bool deployMockUSDT = vm.envBool("DEPLOY_MOCK_USDT");
         
@@ -44,13 +43,25 @@ contract Deploy is Script {
             vrfCoordinator = address(new VRFCoordinatorV2_5Mock(1e18, 1e9, 1e18));
         }
         
-        console.log("Starting deployment...");
-        console.log("Network Chain ID:", block.chainid);
-        console.log("Deployer:", vm.addr(deployerPrivateKey));
+        // Determine signing mode: Ledger or private key
+        address deployer;
+        string memory deployerLabel = "Deployer (unknown)";
+        if (block.chainid == 56) {
+            // Mainnet: always use Ledger
+            deployer = vm.envAddress("DEPLOYER_ADDRESS");
+            console.log("Mainnet deployment - using Ledger");
+            console.log("Deployer:", deployer);
+            vm.startBroadcast();
+        } else {
+            // Testnet/local: use private key from env
+            uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
+            deployer = vm.addr(deployerPrivateKey);
+            console.log("Deployer:", deployer);
+            vm.startBroadcast(deployerPrivateKey);
+        }
+        
         console.log("CoinStor Reserve:", coinStorReserve);
         console.log("VRF Coordinator:", vrfCoordinator);
-        
-        vm.startBroadcast(deployerPrivateKey);
         
         // Deploy or use existing USDT
         address usdtAddress;
@@ -120,6 +131,13 @@ contract Deploy is Script {
         
         commissionDistribution.setMarketplaceContract(address(marketplace));
         console.log("[OK] Marketplace contract set on CommissionDistribution");
+        
+        // Set base URIs for on-chain metadata
+        string memory baseURI = "https://pub-fa62900ead6a48fb899263bdf24e6d43.r2.dev/metadata/";
+        eggNFT.setBaseURI(baseURI);
+        console.log("[OK] Base URI set on EggNFT");
+        animalNFT.setBaseURI(baseURI);
+        console.log("[OK] Base URI set on AnimalNFT");
         
         vm.stopBroadcast();
         

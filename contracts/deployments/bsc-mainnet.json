@@ -1,0 +1,24 @@
+{
+  "network": "bsc-mainnet",
+  "chainId": 56,
+  "deployedAt": "2026-05-18T00:00:00Z",
+  "deployer": "0xf6943fB29C3487010a81A1A4dc548071778DA1F5",
+  "contracts": {
+    "usdt": "0x55d398326f99059fF775485246999027B3197955",
+    "commissionDistribution": "0x3AF16a769bAf5ec6b5750872Bcff247827721a21",
+    "animalNFT": "0xcaF70AEa7aCcb2691a62F933D732484e757cB7A9",
+    "eggNFT": "0xe53D3e3aE4769812290C5d884F72f33ef4C8AbFc",
+    "foodNFT": "0x00Dc05AEd0F2BC1aAEc60Fb1aeEa40fa9F87Da72",
+    "marketplace": "0x84159CE7c9fbc611bd8150bDD70ee22B3a417758"
+  },
+  "config": {
+    "coinStorReserve": "0xf6943fB29C3487010a81A1A4dc548071778DA1F5",
+    "treasury": "0xf6943fB29C3487010a81A1A4dc548071778DA1F5",
+    "relayer": "0x34F567b419E11dc4d74c42dd923e631b90FA696A",
+    "baseURI": "https://pub-fa62900ead6a48fb899263bdf24e6d43.r2.dev/metadata/",
+    "eggMintPrice": "25 USDT",
+    "foodMintPrice": "0.50 USDT",
+    "vrfCoordinator": "0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9",
+    "vrfMainnetKeyHash": "0x130dba50ad435d4ecc214aad0d5820474137bd68e7e77724144f27c3c377d3d4"
+  }
+}

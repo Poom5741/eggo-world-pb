@@ -47,7 +47,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable, Pausable {
         address payable _commissionDistribution,
         address _usdtToken,
         address _eggNFTContract
-    ) ERC1155("https://eggoworld.io/api/food/{id}.json") Ownable(msg.sender) {
+    ) ERC1155("https://pub-fa62900ead6a48fb899263bdf24e6d43.r2.dev/metadata/food/{id}.json") Ownable(msg.sender) {
         require(_commissionDistribution != address(0), "CommissionDistribution address cannot be zero");
         require(_usdtToken != address(0), "USDT token address cannot be zero");
         require(_eggNFTContract != address(0), "EggNFT contract address cannot be zero");
@@ -262,5 +262,13 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable, Pausable {
     
     function unpause() external onlyOwner {
         _unpause();
+    }
+    
+    // ========== Base URI (Metadata) ==========
+    
+    /// @notice Update the base URI for food token metadata
+    /// @param newURI The new URI template (use {id} as placeholder for token ID)
+    function setURI(string calldata newURI) external onlyOwner {
+        _setURI(newURI);
     }
 }

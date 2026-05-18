@@ -832,4 +832,20 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         s_keyHash = keyHash;
         emit VRFConfigUpdated(subscriptionId, keyHash);
     }
+    
+    // ========== Base URI (Metadata) ==========
+    
+    /// @notice Base URI for computing tokenURI
+    string private _baseTokenURI;
+    
+    /// @notice Returns the base URI for token metadata
+    function _baseURI() internal view override returns (string memory) {
+        return _baseTokenURI;
+    }
+    
+    /// @notice Sets the base URI for all tokens
+    /// @param baseURI The new base URI (should end with /)
+    function setBaseURI(string calldata baseURI) external onlyOwner {
+        _baseTokenURI = baseURI;
+    }
 }

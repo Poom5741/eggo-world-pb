@@ -1,19 +1,19 @@
 {
   "56": {
     "usdt": "0x55d398326f99059fF775485246999027B3197955",
-    "commission": "TBD_DEPLOY_COMMISSION_DISTRIBUTION",
-    "animalNft": "TBD_DEPLOY_ANIMAL_NFT",
-    "eggNft": "TBD_DEPLOY_EGG_NFT",
-    "foodNft": "TBD_DEPLOY_FOOD_NFT",
-    "marketplace": "TBD_DEPLOY_MARKETPLACE"
+    "commission": "0x3AF16a769bAf5ec6b5750872Bcff247827721a21",
+    "animalNft": "0xcaF70AEa7aCcb2691a62F933D732484e757cB7A9",
+    "eggNft": "0xe53D3e3aE4769812290C5d884F72f33ef4C8AbFc",
+    "foodNft": "0x00Dc05AEd0F2BC1aAEc60Fb1aeEa40fa9F87Da72",
+    "marketplace": "0x84159CE7c9fbc611bd8150bDD70ee22B3a417758"
   },
   "97": {
-    "usdt": "TBD_DEPLOY_BSC_TESTNET_USDT",
-    "commission": "TBD_DEPLOY_COMMISSION_DISTRIBUTION",
-    "animalNft": "TBD_DEPLOY_ANIMAL_NFT",
-    "eggNft": "TBD_DEPLOY_EGG_NFT",
-    "foodNft": "TBD_DEPLOY_FOOD_NFT",
-    "marketplace": "TBD_DEPLOY_MARKETPLACE"
+    "usdt": "0x150bf0042F8dEA96B350c30B80ff9D6F76CeC963",
+    "commission": "0x6Ebe55c4104CC8acF0DC6acd7C4d42BDcBe23753",
+    "animalNft": "0x6461267189700f66eBBC158cD4C5A5C8BdE29CEB",
+    "eggNft": "0x75CC3c5314216F0755Cc5b4b6005A3e265Ff8c8E",
+    "foodNft": "0x85c9fE4D459e65D2c75aa1D17b7F8a892Fd5b901",
+    "marketplace": "0xF58cfC8302ecD41e551D3a62A20dEDa65bFD404F"
   },
   "7117": {
     "usdt": "0x6Ce3cCcBC5146ED8b88F1FbC12D4682Be3E4Cf8e",
