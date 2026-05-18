@@ -90,6 +90,10 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
                     errorCode = 'INSUFFICIENT_FUNDS_FOR_GAS';
                 } else if (walletErrorCode === 'INSUFFICIENT_FUNDS') {
                     errorCode = 'INSUFFICIENT_BALANCE';
+                } else if (walletErrorCode === 'CONTRACT_CONFIG_ERROR') {
+                    errorCode = 'CONTRACT_CONFIG_ERROR';
+                } else if (walletErrorCode === 'CONTRACT_CALL_FAILED') {
+                    errorCode = 'CONTRACT_CALL_FAILED';
                 }
             }
             
