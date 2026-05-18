@@ -153,7 +153,7 @@ export default function MonitoringPage() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token
+          'Authorization': `Bearer ${pb.authStore.token}`
         }
       })
       
@@ -195,7 +195,7 @@ export default function MonitoringPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token
+          'Authorization': `Bearer ${pb.authStore.token}`
         },
         body: JSON.stringify({ amount: amountNum })
       })
@@ -258,7 +258,7 @@ export default function MonitoringPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token
+          'Authorization': `Bearer ${pb.authStore.token}`
         },
         body: JSON.stringify({ recipients: validRecipients.map(recipient => ({ 
           wallet: recipient.wallet.trim(), 

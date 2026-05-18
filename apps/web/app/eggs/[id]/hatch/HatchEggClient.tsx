@@ -126,7 +126,7 @@ export default function HatchEggClient({ params }: HatchEggClientProps) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': token
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
             egg_token_id: egg.token_id,

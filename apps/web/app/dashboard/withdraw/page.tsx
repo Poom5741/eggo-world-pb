@@ -80,7 +80,7 @@ export default function WithdrawPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": pb.authStore.token
+          "Authorization": `Bearer ${pb.authStore.token}`
         },
         body: JSON.stringify({ user_address: walletAddress })
       })
@@ -113,7 +113,7 @@ export default function WithdrawPage() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": pb.authStore.token
+          "Authorization": `Bearer ${pb.authStore.token}`
         },
       });
       
@@ -149,7 +149,7 @@ export default function WithdrawPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": pb.authStore.token
+          "Authorization": `Bearer ${pb.authStore.token}`
         },
         body: JSON.stringify({
           user_address: user.wallet,

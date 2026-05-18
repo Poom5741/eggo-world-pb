@@ -60,7 +60,7 @@ export default function DepositPage() {
         `${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/deposits/records?filter=(user="${userId}")&sort=-created&per-page=50`,
         {
           headers: {
-            "Authorization": pb.authStore.token
+            "Authorization": `Bearer ${pb.authStore.token}`
           }
         }
       )
@@ -142,7 +142,7 @@ export default function DepositPage() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": pb.authStore.token
+            "Authorization": `Bearer ${pb.authStore.token}`
           },
           body: JSON.stringify({ user_address: user.wallet })
         })
@@ -170,7 +170,7 @@ export default function DepositPage() {
 
           const balRes = await fetch(
             `${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/user_wallets/records?filter=(user_id%3D%22${user.id}%22)&perPage=1`,
-            { headers: { "Authorization": pb.authStore.token } }
+            { headers: { "Authorization": `Bearer ${pb.authStore.token}` } }
           )
           if (balRes.ok) {
             const balData = await balRes.json()
@@ -214,7 +214,7 @@ export default function DepositPage() {
       try {
         const balanceRes = await fetch(
           `${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/collections/user_wallets/records?filter=(user_id%3D%22${user?.id}%22)&perPage=1`,
-          { headers: { "Authorization": pb.authStore.token } }
+          { headers: { "Authorization": `Bearer ${pb.authStore.token}` } }
         )
         if (balanceRes.ok) {
           const balanceData = await balanceRes.json()
@@ -231,7 +231,7 @@ export default function DepositPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": pb.authStore.token
+          "Authorization": `Bearer ${pb.authStore.token}`
         },
         body: JSON.stringify({ user_address: walletAddress })
       })

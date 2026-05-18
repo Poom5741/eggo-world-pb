@@ -243,7 +243,7 @@ export default function MintPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': pb.authStore.token,
+          'Authorization': `Bearer ${pb.authStore.token}`,
         },
         body: JSON.stringify({
           referrer_id: referrerId || undefined,
@@ -344,7 +344,7 @@ export default function MintPage() {
 
         try {
           const response = await fetch(`${pb.baseURL}/api/v2/tx-status/${hash}`, {
-            headers: { 'Authorization': pb.authStore.token },
+            headers: { 'Authorization': `Bearer ${pb.authStore.token}` },
           })
           const result = await response.json()
 

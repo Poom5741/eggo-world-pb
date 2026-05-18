@@ -57,7 +57,7 @@ function GameConfigContent() {
     try {
       setLoading(true)
       const res = await fetch(`${process.env.NEXT_PUBLIC_POCKETBASE_URL}/api/v2/game-config`, {
-        headers: { Authorization: pb.authStore.token },
+        headers: { Authorization: `Bearer ${pb.authStore.token}` },
       })
       const data = await res.json()
       if (data.success) {
@@ -81,7 +81,7 @@ function GameConfigContent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: pb.authStore.token,
+          Authorization: `Bearer ${pb.authStore.token}`,
         },
         body: JSON.stringify(body),
       })
