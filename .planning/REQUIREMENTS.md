@@ -1,75 +1,67 @@
 ---
-milestone: v0.8.0
-milestone_name: Production Launch
-created: 2026-05-10
+milestone: v0.9.0
+milestone_name: Google OAuth Migration
+created: 2026-05-19
 status: active
-total_requirements: 5
+total_requirements: 4
 ---
 
-# Milestone v0.8.0 Requirements
+# Milestone v0.9.0 Requirements
 
-**Defined:** 2026-05-10
+**Defined:** 2026-05-19
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
+**Branch:** `dev`
 
-Deploy smart contracts to 0xl3 testnet, verify end-to-end flows (marketplace buy/sell, deposit/withdraw), then deploy to BSC mainnet with all production configs updated.
+Replace LINE OAuth with Google OAuth across the entire stack. PocketBase has built-in Google OAuth2 — no custom token exchange code needed. Frontend calls `authWithOAuth2({ provider: 'google' })` and PocketBase handles the rest.
 
 ---
 
-## Contract Deployment (DEPLOY)
+## Authentication (AUTH)
 
-- [ ] **DEPLOY-01**: All smart contracts deployed and verified on 0xl3 testnet
-  - **Phase:** Phase 58
-  - Details: Fresh deployment of CommissionDistribution, EggNFT, FoodNFT, AnimalNFT, Marketplace contracts to 0xl3 testnet (Chain ID: 7117). Use `DEPLOY_MOCK_USDT=true` for testnet. Verify all contracts on 0xl3 explorer.
+- [ ] **AUTH-01**: User can sign in with Google OAuth using PocketBase's built-in Google provider
+  - **Phase:** Phase 63
+  - Details: Replace `provider: 'oidc'` → `provider: 'google'` in `apps/web/lib/auth/line-oauth.ts` (rename to `google-oauth.ts`). Configure Google OAuth2 provider in PocketBase Admin UI with Client ID + Secret.
 
-- [ ] **DEPLOY-02**: All smart contracts deployed and verified on BSC mainnet
-  - **Phase:** Phase 61
-  - Details: Deploy same contracts to BSC mainnet (Chain ID: 56). Use real USDT address (0x55d398326f99059fF775485246999027B3197955). Verify on BscScan. Deployer wallet funded with ~5+ BNB for gas.
+- [ ] **AUTH-02**: First-time Google signup triggers automatic wallet creation
+  - **Phase:** Phase 63
+  - Details: Verify `onRecordCreate` hook (`01-create-wallet.pb.js`) fires for Google OAuth users identical to LINE flow. Wallet fields (`wallet`, `daccPublickey`, `pin`) populated automatically.
 
-## Flow Verification (VERIFY)
+- [ ] **AUTH-03**: Referral tracking works through Google OAuth flow
+  - **Phase:** Phase 63
+  - Details: State param passes referrer through Google OAuth popup → callback → referral chain applied for new users via `/api/referrals/apply`.
 
-- [ ] **VERIFY-01**: Marketplace buy/sell flow verified end-to-end on testnet
-  - **Phase:** Phase 59
-  - Details: Full user journey on testnet: user mints egg → lists for sale → buyer purchases → ownership transfers → seller receives USDT. Commission distribution verified (G1 20%, G2-G4 10%, CoinStor 4%).
-
-- [ ] **VERIFY-02**: Withdraw flow verified on testnet with real USDT transfer
-  - **Phase:** Phase 60
-  - Details: User initiates USDT withdrawal → fee preview shows correct amount → real blockchain transaction executed → tx_hash stored → balance updated. Test with 1-10 USDT.
-
-## Production Configuration (CONFIG)
-
-- [ ] **CONFIG-01**: All production configs updated for BSC mainnet
-  - **Phase:** Phase 62
-  - Details: Update `contract-addresses.json` with mainnet addresses, update RPC URLs in wallet-api `.env`, update PocketBase hook configs, update frontend env vars, verify nginx CORS/rate-limiting.
+- [ ] **AUTH-04**: All LINE-specific files removed from codebase
+  - **Phase:** Phase 63
+  - Details: Delete `apps/web/app/auth/line/`, `apps/backend/pb_public/line-*.html`, `apps/backend/pb_public/line-callback-fixed.js`, `apps/backend/pb_hooks/05-auth-token.pb.js` (deprecated). Replace LINE branding in login/signup/join pages with Google branding.
 
 ---
 
 ## Traceability
 
-| REQ-ID    | Phase    | Status  |
-| --------- | -------- | ------- |
-| DEPLOY-01 | Phase 58 | Pending |
-| DEPLOY-02 | Phase 61 | Pending |
-| VERIFY-01 | Phase 59 | Pending |
-| VERIFY-02 | Phase 60 | Pending |
-| CONFIG-01 | Phase 62 | Pending |
+| REQ-ID | Phase    | Status  |
+| ------ | -------- | ------- |
+| AUTH-01 | Phase 63 | Pending |
+| AUTH-02 | Phase 63 | Pending |
+| AUTH-03 | Phase 63 | Pending |
+| AUTH-04 | Phase 63 | Pending |
 
 **Coverage:**
 
-- v0.8.0 requirements: 5 total
-- Mapped to phases: 5
+- v0.9.0 requirements: 4 total
+- Mapped to phases: 4
 - Unmapped: 0
 
 ---
 
 ## Out of Scope
 
-| Feature                 | Reason                                                    |
-| ----------------------- | --------------------------------------------------------- |
-| New UI Features         | Scope is deployment + verification only, not new features |
-| Legacy UAT/Verification | Pre-existing legacy gaps from prior milestones            |
-| Contract Upgrades/Proxy | Use standard deployment for MVP, proxy pattern deferred   |
-| Multi-chain Deployment  | BSC mainnet only for now                                  |
+| Feature | Reason |
+|---------|--------|
+| User data migration between LINE and Google accounts | New auth method — users with LINE accounts must re-auth with Google; wallet data persists since it's keyed by PocketBase user record, not auth provider |
+| Multi-provider linking (same user with both LINE + Google) | Too complex for initial migration; can add later if needed |
+| LINE login preserved alongside Google | Goal is replacement, not coexistence |
+| v0.8.0 remaining phases (59-62) | Deferred to future milestone |
 
 ---
 
-_Requirements defined: 2026-05-10_
+_Requirements defined: 2026-05-19_
