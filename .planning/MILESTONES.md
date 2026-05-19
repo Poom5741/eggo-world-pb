@@ -1,5 +1,14 @@
 # Milestones
 
+## v0.9.0 Google OAuth Migration
+
+- **Status:** 🚧 IN PROGRESS
+- **Date:** 2026-05-19
+- **Branch:** `dev`
+- **Phases:** 1 (Phase 63)
+- **Goal:** Replace LINE OAuth with Google OAuth via PocketBase built-in Google OAuth2 provider
+- **Scope:** Frontend auth pages (`line-oauth.ts` → `google-oauth.ts`), backend env vars (`LINE_CHANNEL_*` → `GOOGLE_CLIENT_ID/SECRET`), delete LINE-specific files, PocketBase admin provider config
+
 ## v0.7.0 Polished Deposit & Withdraw Flow
 
 - **Status:** ✅ SHIPPED
