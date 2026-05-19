@@ -345,9 +345,14 @@ router.post("/mint-egg", async (req, res) => {
     }
 
     // 6. Determine the referrer address from referral chain
-    const referrerAddr = referralChain && referralChain.length > 0 && referralChain[0]
+    const platAddr = process.env.PLATFORM_ADDRESS || ethers.ZeroAddress;
+    const rawReferrer = referralChain && referralChain.length > 0 && referralChain[0]
       ? referralChain[0]
-      : ethers.ZeroAddress;
+      : null;
+    // Reject explicit ZeroAddress — treat same as missing (fallback to platform)
+    const referrerAddr = rawReferrer && rawReferrer !== ethers.ZeroAddress
+      ? rawReferrer
+      : platAddr;
 
     // 7. Approve USDT spending (contract uses safeTransferFrom)
     if (!USDT_ADDRESS) {

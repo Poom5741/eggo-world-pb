@@ -189,6 +189,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     }
 
     function mintEgg(address referrer) external nonReentrant whenNotPaused returns (uint256) {
+        require(referrer != address(0), "Zero referrer not allowed");
         require(referrer != msg.sender, "Self-referral");
         address[4] memory referralChain;
         referralChain[0] = referrer;
@@ -204,6 +205,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
     }
     
     function _mintEggWithChain(address buyer, address[4] memory referralChain) private returns (uint256) {
+        require(referralChain[0] != address(0), "Zero referrer not allowed");
         usdtToken.safeTransferFrom(buyer, commissionDistribution, mintPrice);
         
         CommissionDistribution(commissionDistribution).distributeCommission(referralChain, mintPrice);
@@ -479,6 +481,7 @@ contract EggNFT is ERC721, ReentrancyGuard, Pausable, VRFConsumerBaseV2Plus {
         uint256 parent2TokenId,
         address referrer
     ) external nonReentrant whenNotPaused returns (uint256 requestId) {
+        require(referrer != address(0), "Zero referrer not allowed");
         require(referrer != msg.sender, "Self-referral");
         require(parent1TokenId != parent2TokenId, "Cannot breed same animal");
         require(AnimalNFT(animalNFTContract).ownerOf(parent1TokenId) == msg.sender, "Not owner of parent1");

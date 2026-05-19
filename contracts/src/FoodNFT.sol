@@ -67,6 +67,7 @@ contract FoodNFT is ERC1155, ReentrancyGuard, Ownable, Pausable {
         returns (uint256[] memory food_ids)
     {
         require(quantity > 0, "Quantity must be greater than 0");
+        require(referrer != address(0), "Zero referrer not allowed");
         require(referrer != msg.sender, "Self-referral");
         
         uint256 totalCost = MINT_PRICE * quantity;

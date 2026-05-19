@@ -246,6 +246,7 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
         const pin = user.get('pin');
         console.log('[Mint] pin:', pin ? 'PRESENT' : 'MISSING');
 
+        let PLATFORM_ADDRESS = $os.getenv('PLATFORM_ADDRESS') || '0x0000000000000000000000000000000000000000';
         let referralChain = [null, null, null, null];
         
         // Build referral chain from users.referral_chain field
@@ -277,6 +278,9 @@ routerAdd("POST", "/api/v2/mint-egg", (e) => {
                     }
                 }
             }
+        } else {
+            // Default to platform treasury so commissions aren't locked in the contract
+            referralChain[0] = PLATFORM_ADDRESS;
         }
 
         const eggNftAddress = $os.getenv('EGG_NFT_CONTRACT_ADDRESS') || '0xaEF5bd8f90edB4532E39017746Fe6904d96A90E3';

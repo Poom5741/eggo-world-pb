@@ -28,6 +28,7 @@ services:
       - FOOD_NFT_ADDRESS=${FOOD_NFT_ADDRESS}
       - ANIMAL_NFT_ADDRESS=${ANIMAL_NFT_ADDRESS}
       - MARKETPLACE_ADDRESS=${MARKETPLACE_ADDRESS}
+      - PLATFORM_ADDRESS=${PLATFORM_ADDRESS:-0x77DD22ebE2986e8C0d1cDb4c853D43d9576F2bB5}
     volumes:
       - ./apps/backend/pb_data:/pb/pb_data
       - ./apps/backend/pb_hooks:/pb/pb_hooks
@@ -69,6 +70,7 @@ services:
       - CHAIN_ID=${BSC_CHAIN_ID}
       - RELAYER_PRIVATE_KEY=${RELAYER_PRIVATE_KEY}
       - POCKETBASE_URL=http://eggo-pb:8090
+      - PLATFORM_ADDRESS=${PLATFORM_ADDRESS:-0x77DD22ebE2986e8C0d1cDb4c853D43d9576F2bB5}
     networks:
       - eggo-network
     restart: unless-stopped

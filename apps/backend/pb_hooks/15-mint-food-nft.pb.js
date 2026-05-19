@@ -98,6 +98,11 @@ routerAdd("POST", "/api/v2/mint-food", (e) => {
             }
         }
         
+        // Default to platform treasury if no referrer, so commissions aren't locked
+        if (referralChain.length === 0) {
+            referralChain.push($os.getenv('PLATFORM_ADDRESS') || '0x0000000000000000000000000000000000000000');
+        }
+        
         // Fill remaining slots with zeros
         while (referralChain.length < 4) {
             referralChain.push("0x0000000000000000000000000000000000000000");
