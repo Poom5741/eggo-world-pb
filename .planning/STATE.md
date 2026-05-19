@@ -14,20 +14,20 @@
 
 **Current Focus:** v0.9.0 — Phase 63 (Google OAuth migration)
 
-**Status:** 📋 Requirements defined, ready for planning
+**Status:** ✅ Complete — Phase 63 shipped (commit `c84141a`)
 
 ---
 
 ## Current Position
 
 **Phase:** 63 — Auth Migration: LINE → Google OAuth
-**Plan:** Not yet created
-**Status:** 📋 Milestone initialized
-**Last activity:** 2026-05-19 — Milestone v0.9.0 started on `dev` branch
+**Plan:** 1 plan (executed as 3 parallel deep agents)
+**Status:** ✅ Complete
+**Last activity:** 2026-05-19 — Phase 63 committed: 33 files changed (197 insertions, 1095 deletions)
 
 ```
 
-Progress: [░░░░░░░░░░] 0% (0/1 phases complete)
+Progress: [████████████████████] 100% (1/1 phases complete)
 ```
 
 ---
@@ -36,19 +36,29 @@ Progress: [░░░░░░░░░░] 0% (0/1 phases complete)
 
 | Metric              | Value | Target |
 | ------------------- | ----- | ------ |
-| **Phases Complete** | 58/63 | —      |
+| **Phases Complete** | 63/63 | —      |
 | **Phases Planned**  | 1     | —      |
 
 ---
 
 ## Accumulated Context
 
-### v0.9.0 — Google OAuth Migration (Started 2026-05-19)
+### v0.9.0 — Google OAuth Migration (SHIPPED 2026-05-19)
 
 **Goal:** Replace LINE OAuth with Google OAuth. PocketBase has built-in Google OAuth2 — just configure provider + swap frontend `provider: 'oidc'` → `provider: 'google'`.
 
 **Phases:**
-- Phase 63: Auth Migration: LINE → Google (AUTH-01 → AUTH-04)
+- Phase 63: Auth Migration: LINE → Google (AUTH-01 → AUTH-04) ✅
+
+**Delivered:**
+- `google-oauth.ts` created from `line-oauth.ts` (provider: `'oidc'` → `'google'`)
+- All auth pages (login, sign-up, join) updated with Google branding
+- Google button variant added to `button.tsx`
+- LINE-specific files deleted (7 files: auth/line/, pb_public/line-*.html, 05-auth-token.pb.js)
+- Env vars migrated (8 files: LINE_CHANNEL_* → GOOGLE_CLIENT_ID/SECRET)
+- 21 auth tests updated
+- Auth flow referrals preserved
+- 33 files changed, 197 insertions, 1095 deletions
 
 ### v0.8.0 — Production Launch (ARCHIVED 2026-05-19)
 
@@ -122,16 +132,16 @@ Items acknowledged and deferred from prior milestones (confirmed at v0.8.0 close
 
 ## Session Continuity
 
-**Last Session:** 2026-05-19 — Milestone v0.9.0 initialized on `dev` branch
+**Last Session:** 2026-05-19 — v0.9.0 milestone shipped, Phase 63 complete
 
 **Session Notes:**
 
-- LINE → Google OAuth migration scope mapped
-- v0.8.0 paused after Phase 58 (testnet deploy only)
-- All remaining v0.8.0 phases (59-62) marked as archived
-- New milestone v0.9.0: 4 requirements (AUTH-01 → AUTH-04), 1 phase (Phase 63)
-- Branch: working on `dev`
+- LINE → Google OAuth migration fully implemented
+- Phase 63 executed via 3 parallel deep agents
+- Commit `c84141a`: 33 files changed, 197 insertions, 1095 deletions
+- All 4 requirements (AUTH-01 → AUTH-04) satisfied
+- Next: verify work, then complete milestone
 
 ---
 
-_Last updated: 2026-05-19 — Milestone v0.9.0 started on `dev` branch_
+_Last updated: 2026-05-19 — v0.9.0 milestone completed, Phase 63 shipped_

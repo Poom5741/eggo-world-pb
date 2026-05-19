@@ -10,7 +10,7 @@
 - ✅ **v0.6.0 Quick Production Release** — Phases 54-56 (shipped 2026-05-08)
 - ✅ **v0.7.0 Polished Deposit & Withdraw Flow** — Phase 57 (shipped 2026-05-10)
 - ⏸️ **v0.8.0 Production Launch** — Phase 58 only (paused 2026-05-19, remaining phases deferred)
-- 🚧 **v0.9.0 Google OAuth Migration** — Phase 63 (in progress)
+- ✅ **v0.9.0 Google OAuth Migration** — Phase 63 (shipped 2026-05-19)
 
 ---
 
@@ -42,11 +42,11 @@
 - [x] **Phase 61: Mainnet Contract Deployment** ✅ (archived - deferred)
 - [x] **Phase 62: Production Config Migration** ✅ (archived - deferred)
 
-### v0.9.0 Google OAuth Migration (In Progress)
+### ✅ v0.9.0 Google OAuth Migration (Completed)
 
 **Milestone Goal:** Replace LINE OAuth with Google OAuth across the entire stack. Work on `dev` branch.
 
-- [ ] **Phase 63: Auth Migration — LINE → Google** — Swap LINE for Google OAuth provider, update all login/signup/join pages, replace env vars, clean up LINE-specific files
+- [x] **Phase 63: Auth Migration — LINE → Google** — LINE → Google OAuth: google-oauth.ts created, auth pages updated, env vars migrated, LINE files deleted ✅ 2026-05-19
 
 ---
 
@@ -112,8 +112,6 @@
 | 60    | v0.8.0    | 1/1            | ✅ Archived    | -          |
 | 61    | v0.8.0    | 0/—            | ✅ Archived    | -          |
 | 62    | v0.8.0    | 0/—            | ✅ Archived    | -          |
-| 63    | v0.9.0    | 0/—            | 📋 Planned     | -          |
+| 63    | v0.9.0    | 1/1            | ✅ Complete    | 2026-05-19 |
 
----
-
-_Last updated: 2026-05-19 — v0.8.0 paused after Phase 58, v0.9.0 Google OAuth milestone started_
+_Last updated: 2026-05-19 — v0.9.0 completed, Phase 63 shipped_

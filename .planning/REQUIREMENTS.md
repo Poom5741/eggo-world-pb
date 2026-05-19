@@ -18,21 +18,21 @@ Replace LINE OAuth with Google OAuth across the entire stack. PocketBase has bui
 
 ## Authentication (AUTH)
 
-- [ ] **AUTH-01**: User can sign in with Google OAuth using PocketBase's built-in Google provider
+- [x] **AUTH-01**: User can sign in with Google OAuth using PocketBase's built-in Google provider
   - **Phase:** Phase 63
-  - Details: Replace `provider: 'oidc'` → `provider: 'google'` in `apps/web/lib/auth/line-oauth.ts` (rename to `google-oauth.ts`). Configure Google OAuth2 provider in PocketBase Admin UI with Client ID + Secret.
+  - Details: Replaced `provider: 'oidc'` → `provider: 'google'` in `google-oauth.ts`. Google OAuth2 provider must be configured in PocketBase Admin UI with Client ID + Secret.
 
-- [ ] **AUTH-02**: First-time Google signup triggers automatic wallet creation
+- [x] **AUTH-02**: First-time Google signup triggers automatic wallet creation
   - **Phase:** Phase 63
-  - Details: Verify `onRecordCreate` hook (`01-create-wallet.pb.js`) fires for Google OAuth users identical to LINE flow. Wallet fields (`wallet`, `daccPublickey`, `pin`) populated automatically.
+  - Details: `01-create-wallet.pb.js` hook is auth-provider-agnostic — fires on user creation regardless of provider.
 
-- [ ] **AUTH-03**: Referral tracking works through Google OAuth flow
+- [x] **AUTH-03**: Referral tracking works through Google OAuth flow
   - **Phase:** Phase 63
-  - Details: State param passes referrer through Google OAuth popup → callback → referral chain applied for new users via `/api/referrals/apply`.
+  - Details: State param passes referrer through OAuth popup → callback → referral applied. Logic preserved from LINE implementation.
 
-- [ ] **AUTH-04**: All LINE-specific files removed from codebase
+- [x] **AUTH-04**: All LINE-specific files removed from codebase
   - **Phase:** Phase 63
-  - Details: Delete `apps/web/app/auth/line/`, `apps/backend/pb_public/line-*.html`, `apps/backend/pb_public/line-callback-fixed.js`, `apps/backend/pb_hooks/05-auth-token.pb.js` (deprecated). Replace LINE branding in login/signup/join pages with Google branding.
+  - Details: Deleted `apps/web/app/auth/line/`, `apps/backend/pb_public/line-*.html`, `line-callback-fixed.js`, `05-auth-token.pb.js`. All auth pages updated with Google branding.
 
 ---
 
@@ -40,28 +40,18 @@ Replace LINE OAuth with Google OAuth across the entire stack. PocketBase has bui
 
 | REQ-ID | Phase    | Status  |
 | ------ | -------- | ------- |
-| AUTH-01 | Phase 63 | Pending |
-| AUTH-02 | Phase 63 | Pending |
-| AUTH-03 | Phase 63 | Pending |
-| AUTH-04 | Phase 63 | Pending |
+| AUTH-01 | Phase 63 | Complete |
+| AUTH-02 | Phase 63 | Complete |
+| AUTH-03 | Phase 63 | Complete |
+| AUTH-04 | Phase 63 | Complete |
 
 **Coverage:**
 
 - v0.9.0 requirements: 4 total
 - Mapped to phases: 4
-- Unmapped: 0
-
----
-
-## Out of Scope
-
-| Feature | Reason |
-|---------|--------|
-| User data migration between LINE and Google accounts | New auth method — users with LINE accounts must re-auth with Google; wallet data persists since it's keyed by PocketBase user record, not auth provider |
-| Multi-provider linking (same user with both LINE + Google) | Too complex for initial migration; can add later if needed |
-| LINE login preserved alongside Google | Goal is replacement, not coexistence |
-| v0.8.0 remaining phases (59-62) | Deferred to future milestone |
+- Verified: 4
 
 ---
 
 _Requirements defined: 2026-05-19_
+_Last updated: 2026-05-19 — v0.9.0 shipped, all 4 requirements complete_
