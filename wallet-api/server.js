@@ -1702,7 +1702,7 @@ app.post("/api/wallet/upgrade-egg-rarity", async (req, res) => {
     console.log(`[Upgrade Rarity] User: ${userId}, Egg: ${eggTokenId}, Food Items: ${foodIds.length}`)
 
     // Get contract address from config
-    const eggNftAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.EggNFT
+    const eggNftAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.eggNft
     if (!eggNftAddress) {
       return res.status(500).json({
         success: false,
@@ -2395,7 +2395,7 @@ function getEggNFTContract() {
     const provider = new ethers.JsonRpcProvider(RPC_URL);
     const wallet = new ethers.Wallet(ADMIN_PRIVATE_KEY, provider);
     
-    const contractAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.eggNFT || 
+    const contractAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.eggNft || 
                            process.env.EGG_NFT_ADDRESS;
     
     if (!contractAddress) {
@@ -3047,7 +3047,7 @@ app.get("/api/v1/wallet/game-config", async (req, res) => {
 // Get CoinStor balance from smart contract
 app.get('/api/v2/admin/coinstor/balance', async (req, res) => {
     try {
-        const cdContractAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.commissionDistribution;
+        const cdContractAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.commission;
         if (!cdContractAddress) {
             throw new Error('CommissionDistribution contract not configured');
         }

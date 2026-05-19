@@ -34,6 +34,4 @@ runs = 256
 
 
 
-[fs_permissions]
-access = "read-write"
-path = "./contract-addresses.json"
+fs_permissions = [{ access = "read-write", path = "./contract-addresses.json" }]
