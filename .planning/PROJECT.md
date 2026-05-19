@@ -11,21 +11,22 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Current Milestone: v0.8.0 — Production Launch
+## Current Milestone: v0.9.0 — Google OAuth Migration
 
-**Goal:** Deploy smart contracts to 0xl3 testnet, verify end-to-end flows (marketplace buy/sell, deposit/withdraw), then deploy to BSC mainnet with all production configs updated.
+**Goal:** Replace LINE OAuth with Google OAuth as the authentication provider, while preserving ALL existing functionality (wallet auto-creation, referral chains, dashboard access, data persistence).
 
 **Target Features:**
 
-| Feature                      | Priority | Description                                                           |
-| ---------------------------- | -------- | --------------------------------------------------------------------- |
-| Testnet Contract Deployment  | P0       | Fresh deploy all contracts to 0xl3 testnet, verify on BscScan         |
-| Marketplace E2E Verification | P0       | Full buy/sell flow on testnet: mint → list → buy → ownership transfer |
-| Withdraw Flow Validation     | P0       | Real USDT withdrawal on testnet with fee preview, tx tracking         |
-| Mainnet Contract Deployment  | P0       | Deploy all contracts to BSC mainnet, verify on BscScan                |
-| Production Config Update     | P1       | Update RPC URLs, contract addresses, env files for mainnet            |
+| Feature | Priority | Description |
+|---------|----------|-------------|
+| Google OAuth provider config | P0 | Set up Google as OAuth2 provider in PocketBase (built-in provider) |
+| Frontend auth swap | P0 | Replace `provider: 'oidc'` → `provider: 'google'`, update all login UIs |
+| LINE file cleanup | P1 | Delete LINE-specific pages, static files, deprecated hooks |
+| Env var migration | P1 | Replace `LINE_CHANNEL_*` → `GOOGLE_CLIENT_ID/SECRET` in all .env files |
 
-**Previous Milestone:** v0.7.0 Polished Deposit & Withdraw Flow (shipped 2026-05-10)
+**Scope note:** PocketBase natively supports Google OAuth2 — no custom token exchange code needed. Frontend calls `authWithOAuth2({ provider: 'google' })` and PocketBase handles the rest.
+
+**Previous Milestone:** v0.8.0 Production Launch (paused — Phase 58 complete, remaining deferred)
 
 ---
 
@@ -155,11 +156,12 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 **v0.7.0 Final Score:** 1/1 scoped requirements (100%)
 
-### Active (Next Milestone — TBD)
+### Active (v0.9.0 — Google OAuth Migration)
 
-- [ ] **WALLET-02**: User can deposit USDT via displayed QR code / wallet address
-- [ ] **WALLET-03**: User can withdraw USDT with fee preview and blockchain execution
-- [ ] **WALLET-04**: User can view unified transaction history (deposits + withdrawals)
+- [ ] **AUTH-01**: User can sign in with Google OAuth using PocketBase's built-in Google provider
+- [ ] **AUTH-02**: First-time Google signup triggers automatic wallet creation (same flow as LINE)
+- [ ] **AUTH-03**: Referral tracking works through Google OAuth flow
+- [ ] **AUTH-04**: All LINE-specific files removed from codebase
 
 ### Previous Milestones (v0.0.6 — ARCHIVED)
 
@@ -173,35 +175,38 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 ### Out of Scope
 
-- Email/password authentication — LINE OAuth only
+- Email/password authentication — Google OAuth only
+- Multi-provider linking (LINE + Google for same user) — future milestone
+- LINE OAuth preserved alongside Google — goal is replacement, not coexistence
 - Mobile app — Web-first approach
-- Multi-language support — Thai initially
-- Dark mode toggle — Single theme for v0.0.6
 
 ---
 
 ## Key Decisions
 
-| Decision                        | Phase | Rationale                                                                   | Outcome                        |
-| ------------------------------- | ----- | --------------------------------------------------------------------------- | ------------------------------ |
-| Material Symbols via Google CDN | 8     | 40KB, edge-cached, simpler than self-hosting                                | ✅ Good                        |
-| TDD workflow for all frontend   | 8     | Enforce test coverage, clean commits                                        | ✅ 268 tests passing           |
-| Exponential backoff polling     | 9     | Balance freshness vs API load                                               | ✅ 30s→5min pattern reused     |
-| Claymorphism design system      | 7     | Jules design requirement                                                    | ✅ Distinctive visual identity |
-| initialLoadComplete pattern     | 57    | Distinguish initial fetch from background polling (prevents skeleton flash) | ✅ Good                        |
-| Hydration-safe auth checks      | 8     | Prevent SSR mismatches                                                      | ✅ `useIsHydrated()` pattern   |
+| Decision | Phase | Rationale | Outcome |
+|----------|-------|-----------|---------|
+| Material Symbols via Google CDN | 8 | 40KB, edge-cached, simpler than self-hosting | ✅ Good |
+| TDD workflow for all frontend | 8 | Enforce test coverage, clean commits | ✅ 268 tests passing |
+| Exponential backoff polling | 9 | Balance freshness vs API load | ✅ 30s→5min pattern reused |
+| Claymorphism design system | 7 | Jules design requirement | ✅ Distinctive visual identity |
+| initialLoadComplete pattern | 57 | Distinguish initial fetch from background polling (prevents skeleton flash) | ✅ Good |
+| Hydration-safe auth checks | 8 | Prevent SSR mismatches | ✅ `useIsHydrated()` pattern |
+| Google OAuth over LINE OAuth | v0.9.0 | LINE OAuth has lower global adoption; Google OAuth more accessible for broader user base | 🔄 Implementing on dev branch |
 
 ---
 
 ## Context
 
-**Current state after v0.0.6 archival:**
+**Current state at v0.9.0 start:**
 
-- Frontend: Complete claymorphism migration with mobile responsive polish
-- Backend: PocketBase with LINE OAuth, auto-wallet hooks, real contract calls
-- Marketplace: Full buy/sell functionality operational
-- Integration: All E2E flows verified (Auth→Dashboard→Eggs→Marketplace→Feed)
-- Mobile: WCAG 2.2 AA compliant, 5 breakpoints tested, touch targets 44x44px
+- **Frontend:** Complete claymorphism with mobile responsive polish, LINE OAuth login flow across all auth pages
+- **Backend:** PocketBase with LINE OAuth (OIDC provider), auto-wallet hooks, real contract calls
+- **Marketplace:** Full buy/sell functionality operational on testnet (Phase 58)
+- **Integration:** E2E flows verified through v0.7.0 (Auth→Dashboard→Eggs→Marketplace→Feed)
+- **Deployment:** Contracts on 0xl3 testnet (Phase 58). Mainnet deployment deferred.
+- **Tests:** 268+ tests passing, 70%+ coverage
+- **Branch:** Moving development to `dev` branch
 
 **Known Issues (v0.0.7 Remaining):**
 
@@ -227,36 +232,20 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 ---
 
-## Current State (v0.7.0 — SHIPPED)
+## Current State (v0.9.0 — IN PROGRESS)
 
-**Started:** 2026-05-09
-**Shipped:** 2026-05-10
-**Phase:** 57 — Wallet Balance Polish (WALLET-01)
-**Status:** ✅ Milestone archived
+**Started:** 2026-05-19
+**Branch:** `dev`
+**Phase:** 63 — Auth Migration: LINE → Google OAuth (to be planned)
+**Status:** Milestone initialized, requirements defined
 
-WALLET-01 delivered: skeleton card for initial loading, smooth fade-in animation, inline error state with retry, number formatting with toLocaleString. Remaining requirements (WALLET-02/03/04) deferred to next milestone.
+**Known Issues (carried forward):**
 
----
-
-## Evolution
-
-This document evolves at phase transitions and milestone boundaries.
-
-**After each phase transition** (via `/gsd-transition`):
-
-1. Requirements invalidated? → Move to Out of Scope with reason
-2. Requirements validated? → Move to Validated with phase reference
-3. New requirements emerged? → Add to Active
-4. Decisions to log? → Add to Key Decisions
-5. "What This Is" still accurate? → Update if drifted
-
-**After each milestone** (via `/gsd-complete-milestone`):
-
-1. Full review of all sections
-2. Core Value check — still the right priority?
-3. Audit Out of Scope — reasons still valid?
-4. Update Context with current state
+1. **USDT deposit tracking** — Event polling service not implemented (SEC-05 to SEC-08)
+2. **Test setup** — vi.mock failures (pre-existing, QUAL-01)
+3. **Play feature** — Daily check-in reward system not fully implemented (FEAT-05 to FEAT-09)
+4. **v0.8.0 deferred** — Phases 59-62 (marketplace E2E, withdraw, mainnet deploy, prod config) deferred
 
 ---
 
-_Last updated: 2026-05-10 — v0.7.0 milestone shipped_
+_Last updated: 2026-05-19 — v0.9.0 Google OAuth Migration milestone started, dev branch_
