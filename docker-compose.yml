@@ -10,9 +10,8 @@ services:
       - 8090:8090
     environment:
       - WALLET_SRV_URL=http://eggo-wallet-api:3001
-      - LINE_CHANNEL_ID=${LINE_CHANNEL_ID:-}
-      - LINE_CHANNEL_SECRET=${LINE_CHANNEL_SECRET:-}
-      - LINE_CALLBACK_URL=${LINE_CALLBACK_URL:-http://localhost:8090/api/oauth2-redirect}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
       - APP_URL=${APP_URL:-http://localhost:8090}
       - NODE_ENV=${NODE_ENV:-development}
       - WALLET_MASTER_KEY=${WALLET_MASTER_KEY:-development-key-change-in-production}

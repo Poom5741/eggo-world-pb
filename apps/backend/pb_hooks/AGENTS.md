@@ -5,7 +5,7 @@
 
 ## OVERVIEW
 
-20 JavaScript event handlers for PocketBase. Numbered sequentially for execution order. Handles LINE OAuth, wallet creation, NFT minting, and more.
+Event handlers for PocketBase. Numbered sequentially for execution order. Handles Google OAuth, wallet creation, NFT minting, and more.
 
 ## STRUCTURE
 
@@ -16,8 +16,6 @@ pb_hooks/
 ├── 02-legacy-api-compat.pb.js # Legacy API compatibility layer
 ├── 03-wallet-api-endpoint.pb.js # Wallet API endpoint
 ├── 04-debug-request.pb.js     # Request debugging
-├── 05-auth-token.pb.js        # LINE OAuth token exchange
-├── 06-referral-chain.pb.js    # Referral chain tracking
 ├── 07-register-user.pb.js     # User registration
 ├── 08-wallet-balance.pb.js    # Wallet balance queries
 ├── 09-withdraw-usdt.pb.js     # USDT withdrawal
@@ -40,7 +38,7 @@ pb_hooks/
 |------|----------|-------|
 | Add new hook | `pb_hooks/NN-{feature}.pb.js` | Choose NN for sequence |
 | Modify wallet creation | `01-create-wallet.pb.js` | onRecordCreate for users |
-| Modify OAuth | `05-auth-token.pb.js` | LINE token exchange |
+
 | Add debug logging | `99-debug.pb.js` | Debug utilities |
 | Configure globals | `00-config.pb.js` | Constants, API URLs |
 | NFT operations | `13-mint-egg-nft.pb.js`, `15-mint-food-nft.pb.js` | NFT minting hooks |

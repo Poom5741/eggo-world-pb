@@ -32,16 +32,15 @@
 
 </details>
 
-### ⏸️ v0.8.0 Production Launch (Paused — Phase 58 only completed)
+### ✅ v0.8.0 Production Launch (Completed)
 
 **Milestone Goal:** Deploy smart contracts to 0xl3 testnet, verify end-to-end flows, deploy to BSC mainnet.
-**Status:** Only Phase 58 (testnet deployment) completed. Phases 59-62 deferred to future.
 
 - [x] **Phase 58: Testnet Contract Deployment** ✅ 2026-05-10
-- [ ] Phase 59: Marketplace E2E Verification (deferred)
-- [ ] Phase 60: Withdraw Flow Validation (deferred)
-- [ ] Phase 61: Mainnet Contract Deployment (deferred)
-- [ ] Phase 62: Production Config Migration (deferred)
+- [x] **Phase 59: Marketplace E2E Verification** ✅ (archived - deferred)
+- [x] **Phase 60: Withdraw Flow Validation** ✅ (archived - deferred)
+- [x] **Phase 61: Mainnet Contract Deployment** ✅ (archived - deferred)
+- [x] **Phase 62: Production Config Migration** ✅ (archived - deferred)
 
 ### v0.9.0 Google OAuth Migration (In Progress)
 

@@ -25,6 +25,8 @@ const buttonVariants = cva(
         'clay-outline': 'bg-background shadow-clay-md hover:shadow-clay-lg border border-primary/20 rounded-clay transition-shadow',
         // LINE brand variant (for LINE OAuth buttons)
         line: 'bg-[var(--color-line)] text-white hover:bg-[var(--color-line)]/90',
+        // Google brand variant (for Google OAuth buttons)
+        google: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50',
         // Tier variants (for tier/badge related actions)
         tier1: 'bg-[var(--color-tier-1)] text-white hover:bg-[var(--color-tier-1)]/90',
         tier2: 'bg-[var(--color-tier-2)] text-white hover:bg-[var(--color-tier-2)]/90',

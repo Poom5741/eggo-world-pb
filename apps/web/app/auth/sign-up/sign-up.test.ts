@@ -2,8 +2,8 @@ import { describe, it, expect } from 'bun:test'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-describe('Sign-up Page - LINE OAuth Only', () => {
-  const filePath = join(process.cwd(), 'app/auth/sign-up/page.tsx')
+describe('Sign-up Page - Google OAuth Only', () => {
+  const filePath = join(process.cwd(), 'apps/web/app/auth/sign-up/page.tsx')
   const content = readFileSync(filePath, 'utf-8')
 
   it('does NOT contain email state', () => {
@@ -40,20 +40,20 @@ describe('Sign-up Page - LINE OAuth Only', () => {
     expect(content).not.toContain('/auth/sign-up-success')
   })
 
-  it('contains LINE sign-up button that calls initiateLineLogin', () => {
-    expect(content).toContain('SIGN UP WITH LINE')
-    expect(content).toContain('initiateLineLogin')
-    expect(content).not.toContain("router.push('/auth/line')")
+  it('contains Google sign-up button that calls initiateGoogleLogin', () => {
+    expect(content).toContain('SIGN UP WITH GOOGLE')
+    expect(content).toContain('initiateGoogleLogin')
+    expect(content).not.toContain("router.push('/auth/google')")
   })
 
   it('sets default redirect to /dashboard for sign-up flow', () => {
-    expect(content).toContain("sessionStorage.setItem('redirectTo', '/dashboard')")
     expect(content).toContain("redirectTo: redirectTo || '/dashboard'")
+    expect(content).toContain('referrer || undefined')
   })
 
   it('has correct title', () => {
     expect(content).toContain('CREATE ACCOUNT')
-    expect(content).toContain('JOIN EGGOWORLD WITH LINE')
+    expect(content).toContain('JOIN EGGOWORLD WITH GOOGLE')
   })
 
   it('imports only isAuthenticated from pocketbase', () => {

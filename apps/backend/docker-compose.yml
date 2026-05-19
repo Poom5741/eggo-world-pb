@@ -14,9 +14,8 @@ services:
             - --migrationsDir=/pb_migrations
         environment:
             ENCRYPTION: 4nWpfKByg2u3tkbbHAZ34div
-            LINE_CHANNEL_ID: 2009441873
-            LINE_CHANNEL_SECRET: 4ede94afa7d59b71ffda15a136ffddea
-            LINE_CALLBACK_URL: https://pb.eggoworld.io/api/oauth2-redirect
+            GOOGLE_CLIENT_ID: 2009441873
+            GOOGLE_CLIENT_SECRET: 4ede94afa7d59b71ffda15a136ffddea
             APP_URL: https://pb.eggoworld.io
             NODE_ENV: production
             WALLET_MASTER_KEY: production_key_change_this_32_characters

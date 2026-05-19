@@ -2,8 +2,8 @@ import { describe, it, expect } from 'bun:test'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-describe('Login Page - LINE OAuth Only', () => {
-  const filePath = join(process.cwd(), 'app/auth/login/page.tsx')
+describe('Login Page - Google OAuth Only', () => {
+  const filePath = join(process.cwd(), 'apps/web/app/auth/login/page.tsx')
   const content = readFileSync(filePath, 'utf-8')
 
   it('does NOT contain email state', () => {
@@ -36,10 +36,10 @@ describe('Login Page - LINE OAuth Only', () => {
     expect(content).not.toContain('SIGN UP')
   })
 
-  it('calls initiateLineLogin directly (no /auth/line navigation)', () => {
-    expect(content).toContain('initiateLineLogin')
-    expect(content).toContain('@/lib/auth/line-oauth')
-    expect(content).not.toContain('href="/auth/line"')
+  it('calls initiateGoogleLogin directly (no /auth/google navigation)', () => {
+    expect(content).toContain('initiateGoogleLogin')
+    expect(content).toContain('@/lib/auth/google-oauth')
+    expect(content).not.toContain('href="/auth/google"')
   })
 
   it('uses useSearchParams for redirectTo', () => {
@@ -50,7 +50,7 @@ describe('Login Page - LINE OAuth Only', () => {
 
   it('has correct title', () => {
     expect(content).toContain('LOGIN')
-    expect(content).toContain('LOGIN WITH LINE')
+    expect(content).toContain('SIGN IN WITH GOOGLE')
   })
 
   it('imports only isAuthenticated from pocketbase', () => {

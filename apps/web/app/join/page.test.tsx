@@ -8,15 +8,15 @@ describe('Join Page', () => {
     expect(container.textContent).toContain('Welcome Back!')
   })
 
-  it('displays LINE OAuth button with SVG icon', () => {
+  it('displays Google OAuth button with SVG icon', () => {
     const { container } = render(<Join />)
-    expect(container.innerHTML).toContain('Login with LINE')
+    expect(container.innerHTML).toContain('Login with Google')
     expect(container.innerHTML).toContain('svg')
   })
 
-  it('has LINE login button (not text input)', () => {
+  it('has Google login button (not text input)', () => {
     const { container } = render(<Join />)
-    expect(container.textContent).toContain('Login with LINE')
+    expect(container.textContent).toContain('Login with Google')
   })
 
   it('shows Hatchery Pact link', () => {

@@ -39,7 +39,7 @@ function CallbackContent() {
 
           // Call PocketBase's native OAuth2 authentication endpoint
           const authData = await pb.collection('users').authWithOAuth2({
-            provider: provider || 'oidc',
+            provider: provider || 'google',
             code: code,
             redirectURL: redirectUrl,
             createData: {

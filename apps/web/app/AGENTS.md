@@ -134,7 +134,7 @@ bun test app/
 
 **Entry points:** `/` (landing), `/auth/login`, `/auth/sign-up`
 
-**OAuth flow:** LINE → `/auth/line` → LINE redirect → `/auth/callback`
+**OAuth flow:** Google → `/auth/callback` → Google redirect → `/auth/callback`
 
 **Static export:** All pages pre-rendered, no SSR
 

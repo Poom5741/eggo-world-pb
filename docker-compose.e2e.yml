@@ -56,10 +56,9 @@ services:
       - ANIMAL_NFT_CONTRACT_ADDRESS=${ANIMAL_NFT_ADDRESS:-0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9}
       - FOOD_NFT_CONTRACT_ADDRESS=${FOOD_NFT_ADDRESS:-0x851356ae760d987E095750cCeb3bC6014560891C}
 
-      # LINE OAuth disabled for E2E (kept blank)
-      - LINE_CHANNEL_ID=
-      - LINE_CHANNEL_SECRET=
-      - LINE_CALLBACK_URL=http://localhost:8091/api/oauth2-redirect
+      # Google OAuth disabled for E2E (kept blank)
+      - GOOGLE_CLIENT_ID=
+      - GOOGLE_CLIENT_SECRET=
     volumes:
       - ./apps/backend/pb_data.e2e:/pb_data
       - ./apps/backend/pb_hooks.e2e:/pb/pb_hooks:ro  # Use e2e hooks for isolated testing

@@ -1,10 +1,10 @@
-// lib/auth/line-oauth.ts
-// Handles LINE OAuth login using PocketBase SDK's authWithOAuth2 method
+// lib/auth/google-oauth.ts
+// Handles Google OAuth login using PocketBase SDK's authWithOAuth2 method
 // This uses the SDK's popup-based flow which handles everything automatically
 
 import { createClient } from '@/lib/pocketbase/client'
 
-export interface LineLoginOptions {
+export interface GoogleLoginOptions {
   referrer?: string
   redirectTo?: string
 }
@@ -12,10 +12,10 @@ export interface LineLoginOptions {
 // Prevent concurrent OAuth requests
 let isAuthenticating = false
 
-export async function initiateLineLogin(options: LineLoginOptions = {}): Promise<void> {
+export async function initiateGoogleLogin(options: GoogleLoginOptions = {}): Promise<void> {
   // Prevent double-clicks
   if (isAuthenticating) {
-    console.warn('LINE OAuth already in progress, ignoring duplicate click')
+    console.warn('Google OAuth already in progress, ignoring duplicate click')
     return
   }
   
@@ -38,18 +38,18 @@ export async function initiateLineLogin(options: LineLoginOptions = {}): Promise
     }
 
     // PocketBase SDK handles the entire OAuth2 flow:
-    // 1. Opens popup with LINE auth page
-    // 2. User authenticates with LINE
-    // 3. LINE redirects to PocketBase's /api/oauth2-redirect
+    // 1. Opens popup with Google auth page
+    // 2. User authenticates with Google
+    // 3. Google redirects to PocketBase's /api/oauth2-redirect
     // 4. PocketBase exchanges code for tokens
     // 5. PocketBase creates/updates user
     // 6. SDK receives auth data and closes popup
     // 7. Returns authData with token and user record
     const authData = await pb.collection('users').authWithOAuth2({
-      provider: 'oidc',
+      provider: 'google',
     })
 
-    // console.error('✓ LINE OAuth successful!')
+    // console.error('✓ Google OAuth successful!')
     // console.error('User ID:', authData.record?.id)
     // console.error('Is new user:', authData.meta?.isNewUser)
     // console.error('Username:', authData.meta?.username)
@@ -97,7 +97,7 @@ export async function initiateLineLogin(options: LineLoginOptions = {}): Promise
     window.location.href = targetPath
     
   } catch (error) {
-    console.error('LINE OAuth failed:', error)
+    console.error('Google OAuth failed:', error)
     
     // Check if user closed the popup (not a real error)
     if (error instanceof Error && error.message.includes('popup')) {
