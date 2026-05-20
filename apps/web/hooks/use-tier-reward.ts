@@ -52,17 +52,20 @@ export function useTierReward(): UseTierRewardReturn {
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState(false)
     
-    const pb = createClient()
+    const _pb = createClient()
     
     const fetchStatus = useCallback(async () => {
         setIsLoading(true)
         setError(null)
         
         try {
-            const token = pb.authStore.token
+            // Always use the latest client instance to get current auth state
+            const currentPb = createClient()
+            const token = currentPb.authStore.token
             
             if (!token) {
-                throw new Error("Not authenticated")
+                setIsLoading(false)
+                return
             }
             
             const response = await fetch(`${pbUrl}/api/v2/check-tier-reward`, {
@@ -74,6 +77,15 @@ export function useTierReward(): UseTierRewardReturn {
 
             if (!response.ok) {
                 const text = await response.text()
+                // If auth fails, clear local storage and redirect to login
+                if (response.status === 401) {
+                    localStorage.removeItem('pocketbase_auth')
+                    document.cookie = 'pb_auth=; path=/; max-age=0'
+                    if (typeof window !== 'undefined') {
+                        window.location.href = '/auth/login?redirectTo=/dashboard'
+                    }
+                    return
+                }
                 throw new Error(text || `HTTP ${response.status}`)
             }
 
@@ -90,7 +102,7 @@ export function useTierReward(): UseTierRewardReturn {
         } finally {
             setIsLoading(false)
         }
-    }, [pb])
+    }, [])
 
     const claim = useCallback(async (tier: string): Promise<ClaimResult> => {
         setIsClaiming(true)
@@ -98,10 +110,13 @@ export function useTierReward(): UseTierRewardReturn {
         setSuccess(false)
 
         try {
-            const token = pb.authStore.token
+            // Always use the latest client instance to get current auth state
+            const currentPb = createClient()
+            const token = currentPb.authStore.token
 
             if (!token) {
-                throw new Error("Not authenticated")
+                setIsClaiming(false)
+                return { success: false, error: "Not authenticated" }
             }
 
             const response = await fetch(`${pbUrl}/api/v2/check-tier-reward`, {
@@ -115,6 +130,15 @@ export function useTierReward(): UseTierRewardReturn {
             
             if (!response.ok) {
                 const text = await response.text()
+                // If auth fails, clear local storage and redirect to login
+                if (response.status === 401) {
+                    localStorage.removeItem('pocketbase_auth')
+                    document.cookie = 'pb_auth=; path=/; max-age=0'
+                    if (typeof window !== 'undefined') {
+                        window.location.href = '/auth/login?redirectTo=/dashboard'
+                    }
+                    return { success: false, error: "Authentication expired. Please log in again." }
+                }
                 throw new Error(text || `HTTP ${response.status}`)
             }
             
@@ -146,7 +170,7 @@ export function useTierReward(): UseTierRewardReturn {
         } finally {
             setIsClaiming(false)
         }
-    }, [pb, fetchStatus])
+    }, [fetchStatus])
     
     const clearError = useCallback(() => {
         setError(null)

@@ -7,8 +7,7 @@ import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
 import { isNotFound } from '@/lib/pocketbase/error-handling'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+// Input and Label available for future form expansion
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Egg, Loader2, CheckCircle2, AlertCircle, ExternalLink, X, Sparkles } from 'lucide-react'
 import Link from 'next/link'
@@ -177,7 +176,7 @@ function MintPageContent() {
   const [balance, setBalance] = useState<number>(0)
   const [referrerId, setReferrerId] = useState('')
   const [confirmationProgress, setConfirmationProgress] = useState<ConfirmationProgress>('idle')
-  const [_tokenId, setTokenId] = useState<number | null>(null)
+  const [_tokenId, _setTokenId] = useState<number | null>(null)
   const [user, setUser] = useState<any>(null)
   const [authReady, setAuthReady] = useState(false)
   const [referrerName, setReferrerName] = useState<string | null>(null)
@@ -202,6 +201,7 @@ function MintPageContent() {
     tokenId: 0,
     raritySeed: '',
     txHash: '',
+    foodCount: 3,
     hasReferral: false,
   })
 
@@ -306,6 +306,7 @@ function MintPageContent() {
           tokenId: mintedTokenId,
           raritySeed: mintedRaritySeed,
           txHash: hash,
+          foodCount: mintedFoodCount,
           hasReferral: !!referrerId,
         })
 

@@ -3,18 +3,23 @@
 import { useState } from 'react'
 import { Copy, Check } from 'lucide-react'
 
-function getReferralLink(referralCode: string): string {
+function getReferralLink(referralCode: string, userId: string): string {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://eggoworld.io'
-  return `${baseUrl}/mint?ref=${referralCode}`
+  if (referralCode) {
+    return `${baseUrl}/mint?ref=${referralCode}`
+  }
+  // Fallback: use userId-based link if referral_code not generated yet
+  return `${baseUrl}/auth/sign-up?referrer=${userId}`
 }
 
 interface ReferralLinkCardProps {
   referralCode: string
+  userId?: string
 }
 
-export function ReferralLinkCard({ referralCode }: ReferralLinkCardProps) {
+export function ReferralLinkCard({ referralCode, userId }: ReferralLinkCardProps) {
   const [copied, setCopied] = useState(false)
-  const link = getReferralLink(referralCode)
+  const link = getReferralLink(referralCode, userId || '')
 
   const handleCopy = async () => {
     try {
