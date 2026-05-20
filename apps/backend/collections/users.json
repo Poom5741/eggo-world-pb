@@ -373,6 +373,20 @@
         "presentable": false,
         "system": false,
         "type": "autodate"
+      },
+      {
+        "autogeneratePattern": "",
+        "hidden": false,
+        "id": "text_referral_code",
+        "max": 8,
+        "min": 6,
+        "name": "referral_code",
+        "pattern": "^[A-Z2-9]{6,8}$",
+        "presentable": false,
+        "primaryKey": false,
+        "required": true,
+        "system": false,
+        "type": "text"
       }
     ],
     "indexes": [
@@ -382,7 +396,8 @@
       "CREATE UNIQUE INDEX `idx_wallet` ON `users` (`wallet`) WHERE `wallet` != ''",
       "CREATE UNIQUE INDEX `idx_daccPublickey` ON `users` (`daccPublickey`) WHERE `daccPublickey` != ''",
       "CREATE INDEX `idx_users_referrer_id` ON `users` (`referrer_id`)",
-      "CREATE INDEX `idx_users_highest_tier` ON `users` (`highest_tier_reached`)"
+      "CREATE INDEX `idx_users_highest_tier` ON `users` (`highest_tier_reached`)",
+      "CREATE UNIQUE INDEX `idx_users_referral_code` ON `users` (`referral_code`)"
     ],
     "system": false,
     "authRule": "",

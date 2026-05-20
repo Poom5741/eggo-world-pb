@@ -27,6 +27,15 @@ onRecordCreate((e) => {
     e.record.set("pin", pin);
     console.log("Pin generated for DACC compatibility");
 
+    // ===== STEP 1b: Generate referral code (6-char, no ambiguous chars) =====
+    var refCharset = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    var referralCode = "";
+    for (var r = 0; r < 6; r++) {
+        referralCode += refCharset.charAt(Math.floor(Math.random() * refCharset.length));
+    }
+    e.record.set("referral_code", referralCode);
+    console.log("Referral code generated:", referralCode);
+
     // ===== STEP 2: Create DACC wallet =====
     try {
         var evmApiUrl = walletApiUrl + "/api/wallet/create";
