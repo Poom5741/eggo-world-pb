@@ -821,6 +821,76 @@ $app.logger().error("Operation failed", err)
 
 ---
 
+### OAuth 400 "Failed to create record" Debugging (May 2026)
+
+**Error:** `ClientResponseError 400: Failed to create record.` on Google OAuth signup
+
+**Root Cause Analysis:**
+
+1. **externalId required field** - users.json schema has `externalId` as `required: true`
+2. **OAuth mappedFields config** - Google OAuth maps `id` → `externalId` in users.json line 399
+3. **Hook timing issue** - `onRecordCreate` hook runs AFTER PocketBase tries to validate required fields
+4. **Wrong API endpoint** - Hook was calling `/api/wallet/create-evm` which doesn't exist in container
+
+**Key Finding - Container has different code than local:**
+
+- Local `wallet-api/server.js` (old JS) has `/api/wallet/create-evm` route
+- Container `wallet-api` (TypeScript src/) only has `/api/wallet/create` with DACC wallet
+- Container's `/api/wallet/create` expects `{passwordSecretkey, publicEncryption}`, NOT `{userId}`
+
+**Fix Applied:**
+
+```javascript
+// WRONG (old):
+var evmApiUrl = walletApiUrl + "/api/wallet/create-evm"
+var evmRequestBody = { userId: e.record.id }
+
+// CORRECT (new):
+var evmApiUrl = walletApiUrl + "/api/wallet/create"
+var evmRequestBody = {
+  passwordSecretkey: pin, // 20-char random generated earlier
+  publicEncryption: false,
+}
+```
+
+**Key Learnings:**
+
+1. **Container code != local code** - Always check what's actually running in container
+2. **Check PocketBase logs** - `docker compose logs pocketbase` shows hook errors
+3. **Verify API endpoint exists** - Test with curl before deploying
+4. **externalId is required** - OAuth should set it via mappedFields, but hook was failing first
+
+**Files Modified:**
+
+- `apps/backend/pb_hooks/01-create-wallet.pb.js` - Fixed endpoint and request format
+
+---
+
+### Deposit Polling Gotcha (May 2026)
+
+**Issue:** USDT deposits not appearing on frontend deposit page.
+
+**Root Cause:**
+
+1. **Wrong contract address**: `eth_getLogs` queried `CommissionDistribution` instead of `USDT` contract
+2. **Wrong decimals**: USDT amount divided by `10^6` instead of `10^18`
+3. **Dead polling code**: PocketBase JSVM lacks `setInterval`/`cronAdd` - original polling was never running
+
+**Fix:**
+
+- Change `eth_getLogs` contract address to `CONFIG.blockchain.contracts.USDT`
+- Change decimal divisor to `Math.pow(10, 18)`
+- Remove dead `setInterval`-based polling code (~218 lines)
+
+**Key Learnings:**
+
+1. **ALWAYS verify `eth_getLogs` is querying the correct contract** — wrong contract = zero events = silent failure
+2. **ALWAYS verify token decimals** for the specific chain (BSC USDT = 18, not 6)
+3. **PocketBase JSVM constraints** — no timers, no cron, no background jobs
+4. **Hooks are volume-mounted** — `docker compose restart` is sufficient to pick up changes
+
+---
+
 ## DEBUGGING SESSION LEARNINGS (April 2026)
 
 ### Mint Flow Debugging Session
@@ -983,6 +1053,7 @@ ssh root@host "docker ps | grep pocketbase"
 3. **Background polling broken**: PocketBase 0.23.4 JSVM lacks `setInterval`/`cronAdd`. The original polling code was dead on arrival.
 
 **Fix:**
+
 - Change `eth_getLogs` contract address to `CONFIG.blockchain.contracts.USDT`
 - Change decimal divisor to `Math.pow(10, 18)`
 - Remove dead `setInterval`-based polling code (~218 lines)
@@ -990,6 +1061,7 @@ ssh root@host "docker ps | grep pocketbase"
 - Restart PocketBase container: `docker compose restart pocketbase`
 
 **Key Learnings:**
+
 1. **ALWAYS verify `eth_getLogs` is querying the correct contract** — wrong contract = zero events = silent failure
 2. **ALWAYS verify token decimals** for the specific chain (BSC USDT = 18, not 6)
 3. **PocketBase JSVM constraints** — no timers, no cron, no background jobs. Polling must be triggered externally
@@ -997,6 +1069,7 @@ ssh root@host "docker ps | grep pocketbase"
 5. **Deposits only detected while user is on `/dashboard/deposit`** page (frontend polls every 30s). No background detection exists.
 
 **Files:**
+
 - `apps/backend/pb_hooks/13-track-deposit.pb.js` — deposit polling hook
 - `apps/web/app/dashboard/deposit/page.tsx` — frontend deposit page
 - `docker-compose.yml` — blockchain env vars
@@ -1265,6 +1338,95 @@ curl -X POST http://localhost:3001/api/wallet/create \
 - [ ] `e.next()` exists in hook at line 89
 - [ ] Wallet API returns `version: 4` (AES-256-GCM)
 - [ ] WALLET_SRV_URL uses environment variable
+
+---
+
+## TDG - TEST-DRIVEN GENERATION (STRICT RULES)
+
+This project uses TDG (Test-Driven Generation) for all implementation work. These rules are **MANDATORY**.
+
+### Core Principle
+
+- Write tests BEFORE implementation (Red-Green-Refactor cycle)
+- NEVER write implementation code before writing failing tests
+- Every feature/fix MUST have tests
+
+### TDG Cycle Phases
+
+**1. RED Phase** - Write failing tests
+
+- Commit message: `red: test spec for <description> (#issue)`
+- Example: `red: test spec for user authentication (#42)`
+- Tests MUST fail before implementation
+
+**2. GREEN Phase** - Implement to pass tests
+
+- Commit message: `green: <description> (#issue)`
+- Example: `green: implement user authentication (#42)`
+- Only write code to make tests pass
+
+**3. REFACTOR Phase** - Optimize without changing behavior
+
+- Commit message: `refactor: <description> (#issue)`
+- Example: `refactor: extract auth service to separate module (#42)`
+- Example: `refactor: chore: rename variables for clarity (#42)`
+
+### Commit Rules (STRICT)
+
+- Use ONLY `red:`, `green:`, or `refactor:` prefixes for commits
+- NEVER use `feat:`, `fix:`, `docs:` etc. for TDG work
+- Include issue number at end of EVERY commit message: `(#issue)`
+- Use `git add <file1> <file2>` - NEVER `git add .`
+- Commit only files you just edited
+
+### Issue Number Requirements
+
+1. Check user message for issue number (e.g., #42)
+2. Check current branch name (e.g., feature/42-add-sort)
+3. If no issue: Ask user to create one OR help create via `gh issue create`
+4. Include issue in ALL commits for traceability
+
+### TDG Workflow
+
+```
+1. Identify issue number (check user message, branch name, or ask user)
+2. Run test coverage to establish baseline
+3. Draft code specification in chat
+4. Write test specification (RED phase)
+5. Run SINGLE test - expect failing test
+6. Commit with "red: test spec for ... (#issue)"
+7. Implement code (GREEN phase)
+8. Run SINGLE test - expect passing test
+9. Commit with "green: ... (#issue)"
+10. Refactor and optimize (REFACTOR phase)
+11. Commit with "refactor: ... (#issue)"
+```
+
+### When NOT to use TDG
+
+- Trivial typos, formatting, small fixes
+- Documentation-only changes
+- Exploratory spikes/research
+- For these: use standard commit messages (feat, fix, chore, etc.)
+
+### Atomic Commit for non-TDG
+
+For non-TDD work, use atomic commits:
+
+**DO:**
+
+- One logical change per commit
+- Include related tests
+- Run tests before commit
+- Clear, descriptive messages
+- Include issue numbers
+
+**DON'T:**
+
+- Mix features/fixes/refactors
+- Use `git add .`
+- Commit broken code
+- Vague messages like "fix stuff"
 
 ---
 

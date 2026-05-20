@@ -13,6 +13,7 @@ import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { isAutoCancelError, isNotFound } from '@/lib/pocketbase/error-handling'
 import { ArrowDownLeft, ArrowUpRight } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { ReferralLinkCard } from '@/components/dashboard/referral-link-card'
 import { TierSection } from '@/components/dashboard/tier-section'
 import dynamic from 'next/dynamic'
 
@@ -310,6 +311,13 @@ export default function DashboardPage() {
           </div>
         </div>
       </Card>
+
+      {/* Referral Link Share Card */}
+      {profile?.referral_code && (
+        <div className="mb-8">
+          <ReferralLinkCard referralCode={profile.referral_code} />
+        </div>
+      )}
 
       {/* Split Section: Quick Actions + Buddy Chain */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-8">

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useMemo, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useIsHydrated } from '@/hooks/use-is-hydrated'
 import LayoutWithoutNav from '@/components/LayoutWithoutNav'
 import { createClient, getUser, restoreAuth } from '@/lib/pocketbase/client'
@@ -16,7 +16,6 @@ import Link from 'next/link'
 const MINT_PRICE = 25
 const BSCSCAN_BASE_URL = 'https://bscscan.com/tx'
 
-// MintedEggModal Component
 function MintedEggModal({
   isOpen,
   eggId,
@@ -46,15 +45,12 @@ function MintedEggModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onDismiss}
       />
-      
-      {/* Modal */}
+
       <div className="relative clay-card bg-[var(--surface-container-high)] rounded-[2rem] p-8 max-w-md w-full shadow-clay-lg animate-in fade-in zoom-in-95 duration-300">
-        {/* Close button */}
         <button
           onClick={onDismiss}
           className="absolute top-4 right-4 p-2 rounded-full hover:bg-[var(--surface-container)] transition-colors"
@@ -62,7 +58,6 @@ function MintedEggModal({
           <X className="w-5 h-5 text-[var(--on-surface-variant)]" />
         </button>
 
-        {/* Header */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-[var(--primary-container)] rounded-full mb-4 shadow-clay-md">
             <Sparkles className="w-10 h-10 text-[var(--on-primary-container)]" />
@@ -71,65 +66,54 @@ function MintedEggModal({
             Egg Minted Successfully!
           </h2>
           <p className="text-[var(--on-surface-variant)] mt-1">
-            Your new egg NFT is on its way
+            Your egg is ready to hatch!
           </p>
         </div>
 
-        {/* Egg Details */}
-        <div className="space-y-4 mb-6">
-          <div className="clay-card-inner bg-[var(--surface-container-low)] rounded-2xl p-4 space-y-3">
-            {/* Egg ID */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[var(--on-surface-variant)]">Egg ID</span>
-              <span className="font-mono text-[var(--on-surface)]">{safeEggId.slice(0, 8)}...</span>
-            </div>
-            
-            {/* Token ID */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[var(--on-surface-variant)]">Token ID</span>
-              <span className="font-mono text-[var(--on-surface)]">#{tokenId}</span>
-            </div>
-            
-            {/* Rarity */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[var(--on-surface-variant)]">Rarity Seed</span>
-              <span className="font-mono text-[var(--on-surface)]">{safeRaritySeed.slice(0, 8)}...</span>
-            </div>
-            
-            {/* Food NFT */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[var(--on-surface-variant)]">Food NFTs</span>
-              <span className="text-[var(--tertiary)] font-bold">+{foodCount}</span>
-            </div>
-            
-            {/* Transaction */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[var(--on-surface-variant)]">Transaction</span>
-              <a
-                href={bscScanUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-[var(--primary)] hover:underline"
-                title={safeTxHash}
-              >
-                {truncatedTxHash}
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-
-            {/* Referral badge */}
-            {hasReferral && (
-              <div className="mt-2 pt-2 border-t border-[var(--outline-variant)]">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[var(--tertiary)]" />
-                  <span className="text-sm text-[var(--tertiary)]">Referred mint - bonus earned!</span>
-                </div>
-              </div>
-            )}
+        <div className="space-y-3 mb-6">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[var(--on-surface-variant)]">Egg ID</span>
+            <span className="font-mono text-sm">{safeEggId.slice(0, 8)}...</span>
           </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[var(--on-surface-variant)]">Token ID</span>
+            <span className="font-bold text-[var(--primary)]">#{tokenId}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[var(--on-surface-variant)]">Rarity</span>
+            <span className="text-sm font-medium text-[var(--tertiary)] capitalize">
+              {safeRaritySeed || 'common'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[var(--on-surface-variant)]">Food NFTs</span>
+            <span className="text-[var(--tertiary)] font-bold">+{foodCount}</span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[var(--on-surface-variant)]">Transaction</span>
+            <a
+              href={bscScanUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-[var(--primary)] hover:underline"
+              title={safeTxHash}
+            >
+              {truncatedTxHash}
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+
+          {hasReferral && (
+            <div className="mt-2 pt-2 border-t border-[var(--outline-variant)]">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[var(--tertiary)]" />
+                <span className="text-sm text-[var(--tertiary)]">Referred mint - bonus earned!</span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Actions */}
         <div className="space-y-3">
           <Link
             href={`/eggs?highlight=${safeEggId}`}
@@ -163,12 +147,30 @@ interface UserWallet {
   wallet_address: string
 }
 
-export default function MintPage() {
+function ReferralBanner({ referrerName }: { referrerName: string }) {
+  return (
+    <div className="clay-card bg-green-50 border border-green-200 rounded-[1.5rem] p-4 flex items-center gap-3 shadow-clay-md">
+      <span className="text-2xl">🎁</span>
+      <p className="text-green-800 font-medium">
+        Minting with referral from <strong>{referrerName}</strong>
+      </p>
+    </div>
+  )
+}
+
+function MintPageContent() {
   const router = useRouter()
   const isHydrated = useIsHydrated()
   const pb = createClient()
+  const searchParams = useSearchParams()
 
-  // State
+  const refCode = searchParams.get('ref')
+
+  const isValidRefFormat = useMemo(() => {
+    if (!refCode) return false
+    return /^[A-Z2-9]{6,8}$/i.test(refCode)
+  }, [refCode])
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [txHash, setTxHash] = useState<string | null>(null)
@@ -178,8 +180,22 @@ export default function MintPage() {
   const [_tokenId, setTokenId] = useState<number | null>(null)
   const [user, setUser] = useState<any>(null)
   const [authReady, setAuthReady] = useState(false)
+  const [referrerName, setReferrerName] = useState<string | null>(null)
 
-  // MintedEggModal state
+  useEffect(() => {
+    if (!isValidRefFormat || !pb?.authStore?.token) return
+
+    pb.collection('users')
+      .getFirstListItem(`referral_code="${refCode?.toUpperCase()}"`)
+      .then((referrer: any) => {
+        setReferrerId(referrer.id)
+        setReferrerName(referrer.name || referrer.email?.split('@')[0] || 'a friend')
+      })
+      .catch((err) => {
+        console.warn('[Mint] Referrer lookup failed:', err)
+      })
+  }, [isValidRefFormat, refCode, pb?.authStore?.token])
+
   const [showMintedModal, setShowMintedModal] = useState(false)
   const [mintedEggData, setMintedEggData] = useState({
     eggId: '',
@@ -189,7 +205,6 @@ export default function MintPage() {
     hasReferral: false,
   })
 
-  // Auth check - restore auth after hydration (matching eggs/animals pattern)
   useEffect(() => {
     if (!isHydrated) return
     restoreAuth(pb).then((success) => {
@@ -199,7 +214,6 @@ export default function MintPage() {
     })
   }, [isHydrated, router])
 
-  // Fetch user's USDT balance
   useEffect(() => {
     if (!isHydrated || !authReady || !user?.id) return
 
@@ -213,7 +227,6 @@ export default function MintPage() {
         } else {
           console.error('[Mint] Failed to fetch balance:', err)
         }
-        // Balance defaults to 0, which will disable mint button
       }
     }
 
@@ -232,12 +245,10 @@ export default function MintPage() {
     setConfirmationProgress('preparing')
 
     try {
-      // Validate referrer format if provided (allow display names: unicode, spaces, hyphens, underscores)
       if (referrerId && !referrerId.match(/^.{1,50}$/)) {
         throw new Error('Referrer name is too long (max 50 characters)')
       }
 
-      // Call PocketBase mint-egg hook (PB internally calls wallet-api)
       const pb = createClient()
       const response = await fetch(`${pb.baseURL}/api/v2/mint-egg`, {
         method: 'POST',
@@ -253,100 +264,77 @@ export default function MintPage() {
       const result = await response.json()
 
       if (!response.ok) {
-        // Robust error message extraction
         let errorMessage = 'Mint transaction failed'
-        
+
         if (result.error && typeof result.error === 'object') {
-          // Backend returned { error: { message: "...", code: "..." } }
           const msg = result.error.message
           errorMessage = typeof msg === 'string' ? msg : JSON.stringify(result.error)
         } else if (typeof result.error === 'string') {
-          // Backend returned { error: "..." }
           errorMessage = result.error
         } else if (result.message) {
-          // Fallback to result.message
-          errorMessage = typeof result.message === 'string' 
-            ? result.message 
+          errorMessage = typeof result.message === 'string'
+            ? result.message
             : JSON.stringify(result.message)
         } else if (result.data?.error) {
-          // Error might be in data.error
           errorMessage = typeof result.data.error === 'string'
             ? result.data.error
             : JSON.stringify(result.data.error)
         }
-        
-        // Ensure errorMessage is a string
+
         if (typeof errorMessage !== 'string') {
           errorMessage = String(errorMessage)
         }
-        
+
         throw new Error(errorMessage)
       }
 
-      // Transaction submitted successfully — PocketBase returns snake_case fields
       const hash = result.data?.tx_hash || result.data?.txHash
       setTxHash(hash)
       setConfirmationProgress('waiting')
 
-      // Poll for confirmation status
       const confirmed = await pollForConfirmation(hash)
 
       if (confirmed) {
         setConfirmationProgress('confirmed')
-        // Extract egg data from response
         const mintedEggId = String(result.data?.egg_id || result.data?.eggId || '')
         const mintedTokenId = result.data?.token_id || result.data?.tokenId || 0
         const mintedRaritySeed = String(result.data?.rarity_seed || result.data?.raritySeed || '')
-        const mintedTxHash = String(hash || '')
-        const mintedHasReferral = !!(result.data?.referral_applied || referrerId)
+        const mintedFoodCount = result.data?.food_count || result.data?.foodCount || 3
 
-        if (mintedEggId) {
-          setTokenId(mintedTokenId)
-        }
-
-        // Set modal data and show modal instead of auto-redirect
         setMintedEggData({
           eggId: mintedEggId,
           tokenId: mintedTokenId,
           raritySeed: mintedRaritySeed,
-          txHash: mintedTxHash,
-          hasReferral: mintedHasReferral,
+          txHash: hash,
+          hasReferral: !!referrerId,
         })
+
         setShowMintedModal(true)
 
-        // Auto-dismiss modal and redirect after 3 seconds (only if not manually dismissed)
-        setTimeout(() => {
-          if (showMintedModal) {
-            router.push(`/eggs?highlight=${mintedEggId}`)
-          }
-        }, 3000)
+        setBalance((prev) => prev - MINT_PRICE)
       } else {
-        throw new Error('Transaction confirmation timed out')
+        setConfirmationProgress('error')
+        setError('Transaction was not confirmed on-chain. Please check BSCScan for status.')
       }
     } catch (err: any) {
-      console.error('[Mint] Error:', err)
-      setError(err.message || 'Failed to mint egg')
       setConfirmationProgress('error')
+      setError(err.message || 'Unknown error')
     } finally {
       setLoading(false)
     }
   }
 
-  // Poll PocketBase tx-status for confirmation
-  const pollForConfirmation = async (hash: string): Promise<boolean> => {
-    const maxAttempts = 60 // 60 * 5s = 5 minutes
-    let attempts = 0
-    const pb = createClient()
-
+  const pollForConfirmation = (txHash: string): Promise<boolean> => {
     return new Promise((resolve) => {
+      let attempts = 0
+      const maxAttempts = 24
+
       const poll = async () => {
         attempts++
 
         try {
-          const response = await fetch(`${pb.baseURL}/api/v2/tx-status/${hash}`, {
-            headers: { 'Authorization': `Bearer ${pb.authStore.token}` },
-          })
-          const result = await response.json()
+          const pb = createClient()
+          const result = await fetch(`${pb.baseURL}/api/v2/mint-status?tx_hash=${txHash}`).then(r => r.json())
 
           if (result.confirmed || result.status === 'confirmed') {
             resolve(true)
@@ -371,7 +359,6 @@ export default function MintPage() {
     })
   }
 
-  // Show loading state while checking hydration
   if (!isHydrated) {
     return (
       <LayoutWithoutNav>
@@ -382,7 +369,6 @@ export default function MintPage() {
     )
   }
 
-  // Don't render if not authenticated (useEffect will redirect)
   if (authReady && !user) {
     return null
   }
@@ -394,7 +380,6 @@ export default function MintPage() {
     <LayoutWithoutNav>
       <div className="min-h-screen bg-[var(--surface)] px-4 py-8 lg:px-8">
         <div className="max-w-2xl mx-auto space-y-6">
-          {/* Header */}
           <div className="text-center space-y-2">
             <div className="inline-flex items-center justify-center w-24 h-24 bg-[var(--primary-container)] rounded-[2rem] shadow-clay-md mb-4">
               <Egg className="w-12 h-12 text-[var(--on-primary-container)]" />
@@ -407,7 +392,6 @@ export default function MintPage() {
             </p>
           </div>
 
-          {/* Mint Price Card */}
           <div className="clay-card bg-[var(--surface-container)] rounded-[2rem] p-6 text-center shadow-clay-md">
             <p className="text-sm text-[var(--on-surface-variant)] mb-2">Mint Price</p>
             <p className="text-5xl font-bold text-[var(--primary)] font-headline">
@@ -415,42 +399,27 @@ export default function MintPage() {
             </p>
           </div>
 
-          {/* Balance Card */}
+          {referrerName && !loading && (
+            <ReferralBanner referrerName={referrerName} />
+          )}
+
           <div className="clay-card bg-[var(--surface-container)] rounded-[2rem] p-6 shadow-clay-md">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-[var(--on-surface-variant)] mb-1">Your Balance</p>
-                <p className={`text-2xl font-bold font-headline ${hasSufficientBalance ? 'text-[var(--tertiary)]' : 'text-[var(--error)]'}`}>
+                <p className="text-2xl font-bold text-[var(--on-surface)] font-headline">
                   {balance.toFixed(2)} USDT
                 </p>
               </div>
-              <div className={`px-4 py-2 rounded-xl text-sm font-bold ${hasSufficientBalance ? 'bg-[var(--tertiary-container)] text-[var(--on-tertiary-container)]' : 'bg-[var(--error-container)] text-[var(--on-error-container)]'}`}>
-                {hasSufficientBalance ? '✓ Sufficient' : '✗ Insufficient'}
-              </div>
+              <button
+                onClick={() => router.push('/dashboard/deposit')}
+                className="px-4 py-2 bg-[var(--primary-container)] text-[var(--on-primary-container)] rounded-full text-sm font-bold hover:scale-105 transition-transform"
+              >
+                + Deposit
+              </button>
             </div>
           </div>
 
-          {/* Referrer ID Input */}
-          <div className="clay-card bg-[var(--surface-container)] rounded-[2rem] p-6 space-y-4 shadow-clay-md">
-            <div className="space-y-2">
-              <Label htmlFor="referrer" className="text-[var(--on-surface-variant)] font-bold">
-                Referrer (Optional)
-              </Label>
-              <Input
-                id="referrer"
-                placeholder="Enter referrer name"
-                value={referrerId}
-                onChange={(e) => setReferrerId(e.target.value)}
-                className="clay-input rounded-2xl border-[var(--outline-variant)] bg-[var(--surface-bright)] text-[var(--on-surface)] placeholder:text-[var(--on-surface-variant)]/50"
-                disabled={loading}
-              />
-              <p className="text-xs text-[var(--on-surface-variant)] opacity-70">
-                Enter the name of the user who referred you (optional)
-              </p>
-            </div>
-          </div>
-
-          {/* Error Alert */}
           {error && (
             <Alert variant="destructive" className="rounded-2xl bg-[var(--error-container)] border-none shadow-clay-md">
               <AlertCircle className="h-5 w-5" />
@@ -460,7 +429,6 @@ export default function MintPage() {
             </Alert>
           )}
 
-          {/* Transaction Progress */}
           {confirmationProgress !== 'idle' && confirmationProgress !== 'error' && (
             <div className="clay-card bg-[var(--surface-container)] rounded-[2rem] p-6 space-y-4 shadow-clay-md">
               <div className="flex items-center gap-3">
@@ -492,7 +460,6 @@ export default function MintPage() {
             </div>
           )}
 
-          {/* Mint Button */}
           <Button
             onClick={handleMint}
             disabled={loading || !hasSufficientBalance || confirmationProgress === 'waiting'}
@@ -500,41 +467,51 @@ export default function MintPage() {
           >
             {loading ? (
               <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                {confirmationProgress === 'preparing' ? 'Preparing...' : 'Minting...'}
+                <Loader2 className="w-6 h-6 animate-spin mr-2" />
+                {confirmationProgress === 'preparing' && 'Preparing...'}
+                {confirmationProgress === 'waiting' && 'Waiting for confirmation...'}
+                {confirmationProgress === 'idle' && 'Minting...'}
               </>
             ) : !hasSufficientBalance ? (
               'Insufficient Balance'
             ) : (
               <>
-                <Egg className="w-5 h-5 mr-2" />
-                Mint Egg for {MINT_PRICE} USDT
+                <Egg className="w-6 h-6 mr-2" />
+                Mint Egg NFT
               </>
             )}
           </Button>
 
-          {/* Info */}
-          <div className="flex items-center gap-2 text-sm text-[var(--on-surface-variant)] opacity-70 justify-center">
-            <CheckCircle2 className="w-4 h-4 text-[var(--tertiary)]" />
-            <span>Egg NFT will be minted to your wallet automatically</span>
-          </div>
+          <p className="text-center text-sm text-[var(--on-surface-variant)] opacity-50">
+            Powered by BNB Chain • Secure smart contract
+          </p>
         </div>
       </div>
 
-      {/* Minted Egg Success Modal */}
       <MintedEggModal
         isOpen={showMintedModal}
         eggId={mintedEggData.eggId}
         tokenId={mintedEggData.tokenId}
         raritySeed={mintedEggData.raritySeed}
         txHash={mintedEggData.txHash}
-        foodCount={2}
+        foodCount={mintedEggData.foodCount}
         hasReferral={mintedEggData.hasReferral}
-        onDismiss={() => {
-          setShowMintedModal(false)
-          router.push(`/eggs?highlight=${mintedEggData.eggId}`)
-        }}
+        onDismiss={() => setShowMintedModal(false)}
       />
     </LayoutWithoutNav>
+  )
+}
+
+export default function MintPage() {
+  return (
+    <Suspense fallback={
+      <LayoutWithoutNav>
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--primary)]" />
+        </div>
+      </LayoutWithoutNav>
+    }>
+      <MintPageContent />
+    </Suspense>
   )
 }
