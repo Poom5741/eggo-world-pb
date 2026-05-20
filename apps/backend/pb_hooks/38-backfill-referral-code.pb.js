@@ -24,8 +24,12 @@ onRecordUpdate(function (e) {
 }, "users");
 
 // Admin endpoint to batch-backfill all existing users without referral codes
+// Auth-protected; requires authenticated user to call.
 routerAdd("POST", "/api/backfill-referral-codes", function (e) {
     try {
+        if (!e.auth) {
+            return e.json(401, { error: { message: "Auth required" } });
+        }
         // Find all users with empty or no referral_code
         var users = $app.findRecordsByFilter(
             "users",

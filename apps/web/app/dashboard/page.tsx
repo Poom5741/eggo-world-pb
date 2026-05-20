@@ -312,12 +312,10 @@ export default function DashboardPage() {
         </div>
       </Card>
 
-      {/* Referral Link Share Card - only show when referral_code is available */}
-      {profile?.referral_code && (
-        <div className="mb-8">
-          <ReferralLinkCard referralCode={profile.referral_code} />
-        </div>
-      )}
+      {/* Referral Link Share Card */}
+      <div className="mb-8">
+        <ReferralLinkCard referralCode={profile?.referral_code || ''} userId={user?.id} />
+      </div>
 
       {/* Split Section: Quick Actions + Buddy Chain */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-8">
