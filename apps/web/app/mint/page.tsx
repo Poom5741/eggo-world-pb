@@ -400,6 +400,44 @@ function MintPageContent() {
             </p>
           </div>
 
+          {/* Referral Code Detection Display */}
+          {refCode && (
+            <div className="clay-card bg-[var(--surface-container)] rounded-[2rem] p-6 shadow-clay-md">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[var(--tertiary-container)]">
+                  <Sparkles className="w-5 h-5 text-[var(--on-tertiary-container)]" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-[var(--on-surface-variant)]">Referral Code</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold font-mono text-[var(--primary)] tracking-wider">{refCode.toUpperCase()}</span>
+                    {referrerName ? (
+                      <span className="inline-flex items-center gap-1 text-xs text-[var(--tertiary)] bg-[var(--tertiary-container)] px-2 py-0.5 rounded-full">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Verified
+                      </span>
+                    ) : isValidRefFormat ? (
+                      <span className="inline-flex items-center gap-1 text-xs text-[var(--on-surface-variant)] opacity-60">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Verifying...
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-[var(--error)] bg-[var(--error-container)] px-2 py-0.5 rounded-full">
+                        <AlertCircle className="w-3 h-3" />
+                        Invalid
+                      </span>
+                    )}
+                  </div>
+                  {referrerName && (
+                    <p className="text-xs text-[var(--on-surface-variant)] opacity-70 mt-1">
+                      Referred by <span className="font-semibold">{referrerName}</span> — commission will be applied
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           {referrerName && !loading && (
             <ReferralBanner referrerName={referrerName} />
           )}
