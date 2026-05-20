@@ -27,15 +27,16 @@ onRecordCreate((e) => {
     e.record.set("pin", pin);
     console.log("Pin generated for DACC compatibility");
 
-    // ===== STEP 2: Create EVM wallet only =====
+    // ===== STEP 2: Create DACC wallet =====
     try {
-        var evmApiUrl = walletApiUrl + "/api/wallet/create-evm";
+        var evmApiUrl = walletApiUrl + "/api/wallet/create";
         
         var evmRequestBody = {
-            userId: e.record.id
+            passwordSecretkey: pin,
+            publicEncryption: false
         };
 
-        console.log("Calling EVM wallet-api for user:", e.record.id);
+        console.log("Calling wallet-api for user:", e.record.id);
 
         var evmResponse = $http.send({
             url: evmApiUrl,
@@ -45,7 +46,7 @@ onRecordCreate((e) => {
         });
 
         if (evmResponse.statusCode < 200 || evmResponse.statusCode >= 300) {
-            throw new Error("EVM wallet-api returned status " + evmResponse.statusCode);
+            throw new Error("wallet-api returned status " + evmResponse.statusCode);
         }
 
         var evmResponseData;
@@ -61,23 +62,22 @@ onRecordCreate((e) => {
             }
             evmResponseData = JSON.parse(evmResponseBodyStr);
         } else {
-            throw new Error("EVM wallet-api returned empty response");
+            throw new Error("wallet-api returned empty response");
         }
 
         if (!evmResponseData.success) {
-            throw new Error("EVM wallet creation failed: " + (evmResponseData.error && evmResponseData.error.message ? evmResponseData.error.message : "Unknown error"));
+            throw new Error("Wallet creation failed: " + (evmResponseData.error && evmResponseData.error.message ? evmResponseData.error.message : "Unknown error"));
         }
 
         var evmAddress = evmResponseData.data.address;
-        var encryptedPrivateKey = evmResponseData.data.encrypted_private_key;
+        var daccPublickey = evmResponseData.data.daccPublickey;
         
-        console.log("EVM wallet created, address:", evmAddress);
+        console.log("Wallet created, address:", evmAddress);
 
         // Set wallet fields on record BEFORE e.next() so they are committed with the record
-        // wallet = EVM address (used for USDT transactions)
-        // encrypted_private_key = EVM encrypted private key (JSON string)
         e.record.set("wallet", evmAddress);
-        e.record.set("encrypted_private_key", JSON.stringify(encryptedPrivateKey));
+        e.record.set("daccPublickey", daccPublickey);
+        e.record.set("encrypted_private_key", JSON.stringify(evmResponseData.data));
 
         console.log("Wallet fields set on record - wallet:", evmAddress);
 
