@@ -1,7 +1,7 @@
 # STATE.md — Project Memory
 
 **Project:** Egg × Food × Animal NFT Marketplace
-**Milestone:** v0.9.0 — Google OAuth Migration
+**Milestone:** v0.10.0 — Admin Treasury & Ownership
 **Network:** BNB SmartChain (BSC)
 **Token:** USDT (BEP-20)
 **Branch:** `dev`
@@ -12,18 +12,18 @@
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.9.0 — Phase 63 (Google OAuth migration)
+**Current Focus:** v0.10.0 — Defining requirements for Admin Treasury & Ownership
 
-**Status:** ✅ Complete — Phase 63 shipped (commit `c84141a`)
+**Status:** 🔄 Defining requirements
 
 ---
 
 ## Current Position
 
-**Phase:** 63 — Auth Migration: LINE → Google OAuth
-**Plan:** 1 plan (executed as 3 parallel deep agents)
-**Status:** ✅ Complete
-**Last activity:** 2026-05-19 — Phase 63 committed: 33 files changed (197 insertions, 1095 deletions)
+**Phase:** Not started (defining requirements)
+**Plan:** —
+**Status:** Defining requirements
+**Last activity:** 2026-05-24 — Milestone v0.10.0 started
 
 ```
 
@@ -37,25 +37,33 @@ Progress: [████████████████████] 100% (1
 | Metric              | Value | Target |
 | ------------------- | ----- | ------ |
 | **Phases Complete** | 63/63 | —      |
-| **Phases Planned**  | 1     | —      |
+| **Phases Planned**  | 0     | —      |
 
 ---
 
 ## Accumulated Context
+
+### v0.10.0 — Admin Treasury & Ownership (IN PROGRESS 2026-05-24)
+
+**Goal:** Give admin users the ability to accept contract ownership, monitor USDT pool balances, and withdraw treasury funds.
+
+**Phases:** (not yet planned)
 
 ### v0.9.0 — Google OAuth Migration (SHIPPED 2026-05-19)
 
 **Goal:** Replace LINE OAuth with Google OAuth. PocketBase has built-in Google OAuth2 — just configure provider + swap frontend `provider: 'oidc'` → `provider: 'google'`.
 
 **Phases:**
+
 - Phase 63: Auth Migration: LINE → Google (AUTH-01 → AUTH-04) ✅
 
 **Delivered:**
+
 - `google-oauth.ts` created from `line-oauth.ts` (provider: `'oidc'` → `'google'`)
 - All auth pages (login, sign-up, join) updated with Google branding
 - Google button variant added to `button.tsx`
-- LINE-specific files deleted (7 files: auth/line/, pb_public/line-*.html, 05-auth-token.pb.js)
-- Env vars migrated (8 files: LINE_CHANNEL_* → GOOGLE_CLIENT_ID/SECRET)
+- LINE-specific files deleted (7 files: auth/line/, pb_public/line-\*.html, 05-auth-token.pb.js)
+- Env vars migrated (8 files: LINE*CHANNEL*\* → GOOGLE_CLIENT_ID/SECRET)
 - 21 auth tests updated
 - Auth flow referrals preserved
 - 33 files changed, 197 insertions, 1095 deletions
@@ -118,30 +126,31 @@ Progress: [████████████████████] 100% (1
 
 Items acknowledged and deferred from prior milestones (confirmed at v0.8.0 close):
 
-| Category | Item | Status |
-|----------|------|--------|
-| verification | Phase 59-62 (v0.8.0 remaining phases) | Deferred to future milestone |
-| uat | Phase 10 UAT gaps (10 scenarios) | Legacy |
-| uat | Phase 15 UAT gaps (8 scenarios) | Legacy |
-| uat | Legacy phases 17,22,23,26,27,28,29,30 UAT | Legacy |
-| uat | Phase 56 UAT gaps | Legacy |
-| verification | Phase 03, 12, 19, 20, 49 verification gaps | Legacy |
-| quick_task | 260430-fix-e2e-journey-tests | Missing |
+| Category     | Item                                       | Status                       |
+| ------------ | ------------------------------------------ | ---------------------------- |
+| verification | Phase 59-62 (v0.8.0 remaining phases)      | Deferred to future milestone |
+| uat          | Phase 10 UAT gaps (10 scenarios)           | Legacy                       |
+| uat          | Phase 15 UAT gaps (8 scenarios)            | Legacy                       |
+| uat          | Legacy phases 17,22,23,26,27,28,29,30 UAT  | Legacy                       |
+| uat          | Phase 56 UAT gaps                          | Legacy                       |
+| verification | Phase 03, 12, 19, 20, 49 verification gaps | Legacy                       |
+| quick_task   | 260430-fix-e2e-journey-tests               | Missing                      |
 
 ---
 
 ## Session Continuity
 
-**Last Session:** 2026-05-19 — v0.9.0 milestone shipped, Phase 63 complete
+**Last Session:** 2026-05-24 — v0.10.0 milestone started, requirements gathering in progress
 
 **Session Notes:**
 
-- LINE → Google OAuth migration fully implemented
-- Phase 63 executed via 3 parallel deep agents
-- Commit `c84141a`: 33 files changed, 197 insertions, 1095 deletions
-- All 4 requirements (AUTH-01 → AUTH-04) satisfied
-- Next: verify work, then complete milestone
+- Admin Treasury & Ownership requirements gathered from codebase exploration
+- CommissionDistribution.sol identified as Ownable2Step — needs acceptOwnership()
+- 6 contracts total need ownership status display, only CommissionDistribution needs accept step
+- withdrawTreasury(amount) is onlyOwner — admin must accept ownership first
+- New page `/admin/treasury` decided (separate from existing monitoring page)
+- CoinStor withdrawal deferred (no contract function exists)
 
 ---
 
-_Last updated: 2026-05-19 — v0.9.0 milestone completed, Phase 63 shipped_
+_Last updated: 2026-05-24 — v0.10.0 Admin Treasury & Ownership milestone started_

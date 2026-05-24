@@ -11,22 +11,22 @@
 
 A gamified NFT marketplace on BSC where users buy, sell, and hatch digital animals. The ecosystem revolves around three core NFT types (Egg, Food, Animal) and uses USDT (BEP-20) as the native currency with a 4-level MLM referral commission structure.
 
-## Current Milestone: v0.9.0 — Google OAuth Migration
+## Current Milestone: v0.10.0 — Admin Treasury & Ownership
 
-**Goal:** Replace LINE OAuth with Google OAuth as the authentication provider, while preserving ALL existing functionality (wallet auto-creation, referral chains, dashboard access, data persistence).
+**Goal:** Give admin users the ability to accept contract ownership, monitor USDT pool balances across all contracts, and withdraw treasury funds.
 
 **Target Features:**
 
-| Feature | Priority | Description |
-|---------|----------|-------------|
-| Google OAuth provider config | P0 | Set up Google as OAuth2 provider in PocketBase (built-in provider) |
-| Frontend auth swap | P0 | Replace `provider: 'oidc'` → `provider: 'google'`, update all login UIs |
-| LINE file cleanup | P1 | Delete LINE-specific pages, static files, deprecated hooks |
-| Env var migration | P1 | Replace `LINE_CHANNEL_*` → `GOOGLE_CLIENT_ID/SECRET` in all .env files |
+| Feature                      | Priority | Description                                                                 |
+| ---------------------------- | -------- | --------------------------------------------------------------------------- |
+| Contract ownership dashboard | P0       | Display ownership status for all 6 contracts (owner, pending owner, status) |
+| Accept ownership             | P0       | Call `acceptOwnership()` on CommissionDistribution (Ownable2Step)           |
+| USDT pool balance dashboard  | P0       | Show CoinStor (4%) + Treasury (46%/6%) + Total pool balances                |
+| Withdraw treasury pool       | P0       | Admin withdraws USDT from treasury pool via `withdrawTreasury()`            |
 
-**Scope note:** PocketBase natively supports Google OAuth2 — no custom token exchange code needed. Frontend calls `authWithOAuth2({ provider: 'google' })` and PocketBase handles the rest.
+**Scope note:** Withdraw sends USDT to the immutable treasury address (contract design). CoinStor (4%) pool withdrawal deferred — no contract function exists yet.
 
-**Previous Milestone:** v0.8.0 Production Launch (paused — Phase 58 complete, remaining deferred)
+**Previous Milestone:** v0.9.0 Google OAuth Migration (✅ shipped 2026-05-19)
 
 ---
 
@@ -184,15 +184,15 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 ## Key Decisions
 
-| Decision | Phase | Rationale | Outcome |
-|----------|-------|-----------|---------|
-| Material Symbols via Google CDN | 8 | 40KB, edge-cached, simpler than self-hosting | ✅ Good |
-| TDD workflow for all frontend | 8 | Enforce test coverage, clean commits | ✅ 268 tests passing |
-| Exponential backoff polling | 9 | Balance freshness vs API load | ✅ 30s→5min pattern reused |
-| Claymorphism design system | 7 | Jules design requirement | ✅ Distinctive visual identity |
-| initialLoadComplete pattern | 57 | Distinguish initial fetch from background polling (prevents skeleton flash) | ✅ Good |
-| Hydration-safe auth checks | 8 | Prevent SSR mismatches | ✅ `useIsHydrated()` pattern |
-| Google OAuth over LINE OAuth | v0.9.0 | LINE OAuth has lower global adoption; Google OAuth more accessible for broader user base | 🔄 Implementing on dev branch |
+| Decision                        | Phase  | Rationale                                                                                | Outcome                        |
+| ------------------------------- | ------ | ---------------------------------------------------------------------------------------- | ------------------------------ |
+| Material Symbols via Google CDN | 8      | 40KB, edge-cached, simpler than self-hosting                                             | ✅ Good                        |
+| TDD workflow for all frontend   | 8      | Enforce test coverage, clean commits                                                     | ✅ 268 tests passing           |
+| Exponential backoff polling     | 9      | Balance freshness vs API load                                                            | ✅ 30s→5min pattern reused     |
+| Claymorphism design system      | 7      | Jules design requirement                                                                 | ✅ Distinctive visual identity |
+| initialLoadComplete pattern     | 57     | Distinguish initial fetch from background polling (prevents skeleton flash)              | ✅ Good                        |
+| Hydration-safe auth checks      | 8      | Prevent SSR mismatches                                                                   | ✅ `useIsHydrated()` pattern   |
+| Google OAuth over LINE OAuth    | v0.9.0 | LINE OAuth has lower global adoption; Google OAuth more accessible for broader user base | 🔄 Implementing on dev branch  |
 
 ---
 
@@ -232,12 +232,19 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 ---
 
-## Current State (v0.9.0 — IN PROGRESS)
+## Current State (v0.10.0 — DEFINING REQUIREMENTS)
 
-**Started:** 2026-05-19
+**Started:** 2026-05-24
 **Branch:** `dev`
-**Phase:** 63 — Auth Migration: LINE → Google OAuth (to be planned)
-**Status:** Milestone initialized, requirements defined
+**Status:** Milestone initialized, defining requirements
+
+**Context:**
+
+- CommissionDistribution.sol is Ownable2Step — deployer called `transferOwnership()` but `acceptOwnership()` hasn't been called yet
+- Treasury pool holds 46% of primary sale commissions + 6% of resale commissions
+- CoinStor pool holds 4% of all commissions
+- No existing admin page for ownership or treasury management
+- New page at `/admin/treasury` with `requireAdmin` auth
 
 **Known Issues (carried forward):**
 
@@ -248,4 +255,25 @@ A gamified NFT marketplace on BSC where users buy, sell, and hatch digital anima
 
 ---
 
-_Last updated: 2026-05-19 — v0.9.0 Google OAuth Migration milestone started, dev branch_
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd-transition`):
+
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd-complete-milestone`):
+
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
+---
+
+_Last updated: 2026-05-24 — v0.10.0 Admin Treasury & Ownership milestone started_
