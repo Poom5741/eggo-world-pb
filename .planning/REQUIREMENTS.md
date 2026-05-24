@@ -1,57 +1,135 @@
 ---
-milestone: v0.9.0
-milestone_name: Google OAuth Migration
-created: 2026-05-19
+milestone: v0.10.0
+milestone_name: Admin Treasury & Ownership
+created: 2026-05-24
 status: active
-total_requirements: 4
+total_requirements: 27
 ---
 
-# Milestone v0.9.0 Requirements
+# Milestone v0.10.0 Requirements
 
-**Defined:** 2026-05-19
-**Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
+**Defined:** 2026-05-24
+**Core Value:** Gamified NFT marketplace on BSC where users buy, sell, hatch, and trade NFTs
 **Branch:** `dev`
 
-Replace LINE OAuth with Google OAuth across the entire stack. PocketBase has built-in Google OAuth2 — no custom token exchange code needed. Frontend calls `authWithOAuth2({ provider: 'google' })` and PocketBase handles the rest.
+Give admin users the ability to accept contract ownership, monitor USDT pool balances across all contracts, and withdraw treasury funds via MetaMask wallet (viem). The admin connects MetaMask directly — transactions are signed in-browser and broadcast to BSC.
 
 ---
 
-## Authentication (AUTH)
+## Wallet Connection (WALL)
 
-- [x] **AUTH-01**: User can sign in with Google OAuth using PocketBase's built-in Google provider
-  - **Phase:** Phase 63
-  - Details: Replaced `provider: 'oidc'` → `provider: 'google'` in `google-oauth.ts`. Google OAuth2 provider must be configured in PocketBase Admin UI with Client ID + Secret.
+- [ ] **WALL-01**: Admin can connect MetaMask wallet to the `/admin/treasury` page using viem
+- [ ] **WALL-02**: Connected wallet address and network are displayed with chain validation (must be BSC mainnet or testnet)
+- [ ] **WALL-03**: Admin can disconnect and reconnect wallet
 
-- [x] **AUTH-02**: First-time Google signup triggers automatic wallet creation
-  - **Phase:** Phase 63
-  - Details: `01-create-wallet.pb.js` hook is auth-provider-agnostic — fires on user creation regardless of provider.
+## Contract Ownership (OWN)
 
-- [x] **AUTH-03**: Referral tracking works through Google OAuth flow
-  - **Phase:** Phase 63
-  - Details: State param passes referrer through OAuth popup → callback → referral applied. Logic preserved from LINE implementation.
+- [ ] **OWN-01**: Admin can view ownership status of all 6 deployed contracts (current owner, pending owner, ownership type)
+- [ ] **OWN-02**: CommissionDistribution (Ownable2Step) shows "Accept Ownership" button when connected wallet matches pendingOwner
+- [ ] **OWN-03**: Admin calls `acceptOwnership()` on CommissionDistribution directly via MetaMask (viem `writeContract`)
+- [ ] **OWN-04**: Admin receives tx confirmation (hash, status, updated owner verified on-chain)
 
-- [x] **AUTH-04**: All LINE-specific files removed from codebase
-  - **Phase:** Phase 63
-  - Details: Deleted `apps/web/app/auth/line/`, `apps/backend/pb_public/line-*.html`, `line-callback-fixed.js`, `05-auth-token.pb.js`. All auth pages updated with Google branding.
+## Pool Balance (POOL)
+
+- [ ] **POOL-01**: Admin can view CoinStor reserve (4%), Treasury (46%/6%), and total pool balance in a single dashboard
+- [ ] **POOL-02**: Admin can manually refresh pool balances
+- [ ] **POOL-03**: Balances are formatted to 2 decimal places with thousands separators
+
+## Treasury Withdrawal (WDRW)
+
+- [ ] **WDRW-01**: Admin can withdraw a specified USDT amount from treasury pool via MetaMask (viem `writeContract`)
+- [ ] **WDRW-02**: Withdrawal form shows treasury destination address and available balance before submit
+- [ ] **WDRW-03**: System displays tx confirmation (hash, amount, updated balances)
+- [ ] **WDRW-04**: Withdrawal button only enabled when admin wallet has accepted ownership
+- [ ] **WDRW-05**: System validates amount ≤ available treasury balance before allowing submit
+
+## Admin Page (PAGE)
+
+- [ ] **PAGE-01**: New `/admin/treasury` page accessible only to admin users (role === "admin")
+- [ ] **PAGE-02**: Page uses existing `AuthGuard` with `requireAdmin` pattern
+- [ ] **PAGE-03**: Admin nav updated to include Treasury link
+
+## Error Handling (ERR)
+
+- [ ] **ERR-01**: Reverted transactions show user-friendly error message with reason
+- [ ] **ERR-02**: RPC/network failures show retry option with clear error context
+- [ ] **ERR-03**: Contract read failures (ownership, balance) show inline error state with retry
+
+## Backend Hooks (BACK)
+
+- [ ] **BACK-01**: PocketBase hook `GET /api/v2/admin/pool/balance` returns combined pool balances (proxy to wallet-api)
+- [ ] **BACK-02**: wallet-api `GET /api/v2/admin/pool/balance` reads `commissionBalances` for coinStorReserve + treasury + total from CommissionDistribution contract
+- [ ] **BACK-03**: Config env vars include all 6 contract addresses for ownership queries
+
+## Deployment (DEPL)
+
+- [ ] **DEPL-01**: New wallet-api endpoints deployed to production container
+- [ ] **DEPL-02**: New PocketBase hook deployed, loaded, and verified (check `endpoint registered` in logs)
+- [ ] **DEPL-03**: Frontend deployed to Cloudflare Pages
+
+---
+
+## Out of Scope
+
+| Feature                              | Reason                                                                                             |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| CoinStor (4%) pool withdrawal        | No `withdrawCoinStor` function in CommissionDistribution.sol — requires contract update + redeploy |
+| Withdraw to custom address           | `withdrawTreasury` sends to immutable treasury address (contract design)                           |
+| Ownership transfer initiation        | Deployer already called `transferOwnership()` via TransferOwnership script                         |
+| Multi-sig or multi-wallet admin      | Solo developer project — single MetaMask wallet sufficient                                         |
+| Wallet connect on other admin pages  | Only `/admin/treasury` needs MetaMask for now                                                      |
+| EggNFT custom ownership modification | EggNFT has custom owner pattern — dashboard displays it, no modification needed                    |
+
+---
+
+## Previous Milestone (v0.9.0 — SHIPPED)
+
+- [x] AUTH-01: Google OAuth sign-in (Phase 63)
+- [x] AUTH-02: Auto-wallet creation on first Google signup (Phase 63)
+- [x] AUTH-03: Referral tracking through Google OAuth (Phase 63)
+- [x] AUTH-04: LINE-specific files removed (Phase 63)
 
 ---
 
 ## Traceability
 
-| REQ-ID | Phase    | Status  |
-| ------ | -------- | ------- |
-| AUTH-01 | Phase 63 | Complete |
-| AUTH-02 | Phase 63 | Complete |
-| AUTH-03 | Phase 63 | Complete |
-| AUTH-04 | Phase 63 | Complete |
+| Requirement | Phase | Status  |
+| ----------- | ----- | ------- |
+| WALL-01     | —     | Pending |
+| WALL-02     | —     | Pending |
+| WALL-03     | —     | Pending |
+| OWN-01      | —     | Pending |
+| OWN-02      | —     | Pending |
+| OWN-03      | —     | Pending |
+| OWN-04      | —     | Pending |
+| POOL-01     | —     | Pending |
+| POOL-02     | —     | Pending |
+| POOL-03     | —     | Pending |
+| WDRW-01     | —     | Pending |
+| WDRW-02     | —     | Pending |
+| WDRW-03     | —     | Pending |
+| WDRW-04     | —     | Pending |
+| WDRW-05     | —     | Pending |
+| PAGE-01     | —     | Pending |
+| PAGE-02     | —     | Pending |
+| PAGE-03     | —     | Pending |
+| ERR-01      | —     | Pending |
+| ERR-02      | —     | Pending |
+| ERR-03      | —     | Pending |
+| BACK-01     | —     | Pending |
+| BACK-02     | —     | Pending |
+| BACK-03     | —     | Pending |
+| DEPL-01     | —     | Pending |
+| DEPL-02     | —     | Pending |
+| DEPL-03     | —     | Pending |
 
 **Coverage:**
 
-- v0.9.0 requirements: 4 total
-- Mapped to phases: 4
-- Verified: 4
+- v0.10.0 requirements: 27 total
+- Mapped to phases: 0
+- Unmapped: 27 ⚠️
 
 ---
 
-_Requirements defined: 2026-05-19_
-_Last updated: 2026-05-19 — v0.9.0 shipped, all 4 requirements complete_
+_Requirements defined: 2026-05-24_
+_Last updated: 2026-05-24 after devil's advocate review + MetaMask/viem wallet connect addition_
