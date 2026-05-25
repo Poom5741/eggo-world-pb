@@ -16,7 +16,12 @@ export const NAV_ITEMS: NavItem[] = [
   { icon: 'storefront', label: 'Market', href: '/marketplace' },
   { icon: 'account_balance_wallet', label: 'Wallet', href: '/dashboard/withdraw' },
   { icon: 'person', label: 'Profile', href: '/settings' },
+]
+
+// Admin navigation items
+export const ADMIN_NAV_ITEMS: NavItem[] = [
   { icon: 'admin_panel_settings', label: 'Admin Mint', href: '/admin/mint' },
+  { icon: 'account_balance', label: 'Treasury', href: '/admin/treasury' },
 ]
 
 // SideNav - Desktop side navigation component
@@ -42,7 +47,7 @@ export default function SideNav() {
       {/* Middle Section: Navigation Links (scrollable) */}
       <nav className="flex-grow overflow-y-auto px-6 space-y-2">
         {NAV_ITEMS.map((item) => (
-          <AuthLink 
+          <AuthLink
             key={item.href}
             href={item.href}
             className="flex items-center space-x-4 px-4 py-3 min-h-[44px] text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300 hover:translate-x-2 active-side-nav"
@@ -51,6 +56,23 @@ export default function SideNav() {
             <span className="font-medium font-headline">{item.label}</span>
           </AuthLink>
         ))}
+
+        {/* Admin Section */}
+        <div className="pt-4 border-t border-[var(--on-surface)]/5">
+          <p className="px-4 pb-2 text-xs font-medium text-[var(--on-surface-variant)] opacity-50 uppercase">
+            Admin
+          </p>
+          {ADMIN_NAV_ITEMS.map((item) => (
+            <AuthLink
+              key={item.href}
+              href={item.href}
+              className="flex items-center space-x-4 px-4 py-3 min-h-[44px] text-[var(--on-surface-variant)] opacity-70 hover:bg-[var(--surface-container-high)] rounded-full transition-all duration-300 hover:translate-x-2 active-side-nav"
+            >
+              <span className="material-symbols-outlined">{item.icon}</span>
+              <span className="font-medium font-headline">{item.label}</span>
+            </AuthLink>
+          ))}
+        </div>
       </nav>
 
       {/* Bottom Section: Settings & Support (fixed) */}

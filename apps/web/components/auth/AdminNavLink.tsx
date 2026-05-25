@@ -13,11 +13,19 @@ export default function AdminNavLink() {
   if (!user?.admin) return null
 
   return (
-    <Link
-      href="/admin/mint"
-      className="text-[var(--on-surface-variant)] opacity-60 hover:scale-105 transition-transform active-nav-link"
-    >
-      Admin
-    </Link>
+    <div className="flex items-center gap-4">
+      <Link
+        href="/admin/mint"
+        className="text-[var(--on-surface-variant)] opacity-60 hover:scale-105 transition-transform active-nav-link"
+      >
+        Admin Mint
+      </Link>
+      <Link
+        href="/admin/treasury"
+        className="text-[var(--on-surface-variant)] opacity-60 hover:scale-105 transition-transform active-nav-link"
+      >
+        Treasury
+      </Link>
+    </div>
   )
 }
