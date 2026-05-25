@@ -7,6 +7,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import LayoutWrapper from '@/components/LayoutWrapper'
 import { useMetaMask } from '@/hooks/use-metamask'
 import { BSC_CHAINS } from '@/hooks/use-metamask'
+import { TreasuryGuard } from '@/components/auth/TreasuryGuard'
+import { ContractOwnershipGrid } from '@/components/admin/ContractOwnershipGrid'
 
 export default function AdminTreasuryPage() {
   const {
@@ -111,58 +113,45 @@ export default function AdminTreasuryPage() {
           </CardContent>
         </Card>
 
-        {/* Placeholder Sections */}
-        <div className="grid gap-6">
-          {/* Contract Ownership Section (Phase 66) */}
-          <Card className="border-dashed border-2 border-muted-foreground/25 opacity-60">
+        {/* Contract Ownership Section (Phase 66) */}
+        <TreasuryGuard>
+          <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-muted-foreground">Contract Ownership</CardTitle>
-                  <CardDescription>
-                    View and accept ownership for CommissionDistribution contract
-                  </CardDescription>
-                </div>
-                <Badge variant="outline">Phase 66</Badge>
-              </div>
+              <CardTitle>Contract Ownership</CardTitle>
+              <CardDescription>
+                View contract ownership and accept pending transfers
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground text-sm">
-                  Coming soon in Phase 66: Ownership Dashboard
-                </p>
-                <p className="text-muted-foreground text-xs mt-2">
-                  This section will display ownership status and provide Accept Ownership button
-                </p>
-              </div>
+              <ContractOwnershipGrid />
             </CardContent>
           </Card>
+        </TreasuryGuard>
 
-          {/* Pool Balances & Withdraw Section (Phase 67) */}
-          <Card className="border-dashed border-2 border-muted-foreground/25 opacity-60">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-muted-foreground">Pool Balances & Withdrawal</CardTitle>
-                  <CardDescription>
-                    Monitor USDT pool balances and withdraw treasury funds
-                  </CardDescription>
-                </div>
-                <Badge variant="outline">Phase 67</Badge>
+        {/* Pool Balances & Withdraw Section (Phase 67) */}
+        <Card className="mt-6 border-dashed border-2 border-muted-foreground/25 opacity-60">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-muted-foreground">Pool Balances & Withdrawal</CardTitle>
+                <CardDescription>
+                  Monitor USDT pool balances and withdraw treasury funds
+                </CardDescription>
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground text-sm">
-                  Coming soon in Phase 67: Pool Balance & Treasury Withdrawal
-                </p>
-                <p className="text-muted-foreground text-xs mt-2">
-                  This section will display pool balances and withdrawal interface
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <Badge variant="outline">Phase 67</Badge>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground text-sm">
+                Coming soon in Phase 67: Pool Balance & Treasury Withdrawal
+              </p>
+              <p className="text-muted-foreground text-xs mt-2">
+                This section will display pool balances and withdrawal interface
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </LayoutWrapper>
   )
