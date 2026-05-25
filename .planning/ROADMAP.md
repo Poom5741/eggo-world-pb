@@ -53,7 +53,7 @@
 
 - [ ] **Phase 64: Backend — Pool Balance Endpoint & Config** — wallet-api reads pool balances, PocketBase proxy hook, config env vars
 - [ ] **Phase 65: Admin Page Shell & MetaMask Wallet** — `/admin/treasury` page, AuthGuard, nav, MetaMask connect/disconnect
-- [ ] **Phase 66: Ownership Dashboard** — View 6 contract ownerships, acceptOwnership() via MetaMask
+- [x] **Phase 66: Ownership Dashboard** — View 6 contract ownerships, acceptOwnership() via MetaMask ✅
 - [ ] **Phase 67: Pool Balance & Treasury Withdrawal** — Balance dashboard, withdrawal form, error handling
 - [ ] **Phase 68: Production Deployment** — Deploy all three layers to production, verify end-to-end
 
@@ -145,19 +145,20 @@
 
 ---
 
-### Phase 66: Ownership Dashboard
+### Phase 66: Ownership Dashboard ✅
 
 **Goal**: Admin can view contract ownership status for all 6 contracts and accept ownership of CommissionDistribution via MetaMask
 **Depends on**: Phase 65 (page shell + wallet connect)
 **Requirements**: OWN-01, OWN-02, OWN-03, OWN-04
 **Success Criteria** (what must be TRUE):
 
-1. Ownership section displays all 6 contracts showing: name, address, current owner, pending owner, ownership type (Ownable/Ownable2Step)
-2. CommissionDistribution row shows an "Accept Ownership" button only when the connected MetaMask wallet matches `pendingOwner`
-3. Admin clicks button → MetaMask confirms → viem `writeContract` calls `acceptOwnership()` → tx hash displayed with confirmation status
-4. After confirmed, ownership status refreshes on-chain and shows the admin wallet as the new owner
-   **Plans**: 1 plan
-   **UI hint**: yes
+1. ✅ Ownership section displays all 6 contracts showing: name, address, current owner, pending owner, ownership type (Ownable/Ownable2Step)
+2. ✅ CommissionDistribution row shows an "Accept Ownership" button only when the connected MetaMask wallet matches `pendingOwner`
+3. ✅ Admin clicks button → MetaMask confirms → viem `writeContract` calls `acceptOwnership()` → tx hash displayed with confirmation status
+4. ✅ After confirmed, ownership status refreshes on-chain and shows the admin wallet as the new owner
+   **Plans**: 1 plan ✅
+   **Completed**: 2026-05-26
+   **Summary**: Ownership dashboard with 6 contract cards, useContractOwnership hook, ContractOwnershipGrid, TreasuryGuard integration, acceptOwnership() functional
 
 ---
 
