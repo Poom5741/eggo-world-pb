@@ -1,0 +1,17 @@
+{
+  "CommissionDistribution": {
+    "addresses": {
+      "56": "0x18b486086f4414500398276766697ad0fc1a43cf",
+      "97": "0x6Ebe55c4104CC8acF0DC6acd7C4d42BDcBe23753",
+      "7117": "0xF01e1A6BAB405f31B43851B198f5Ce51B98aBE44"
+    },
+    "abi": {
+      "owner": "function owner() view returns (address)",
+      "pendingOwner": "function pendingOwner() view returns (address)",
+      "acceptOwnership": "function acceptOwnership()",
+      "treasury": "function treasury() view returns (address)",
+      "coinStorReserve": "function coinStorReserve() view returns (address)",
+      "commissionBalances": "function commissionBalances(address) view returns (uint256)"
+    }
+  }
+}

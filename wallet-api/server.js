@@ -3159,6 +3159,99 @@ app.post('/api/v2/admin/coinstor/rewards-distribution', async (req, res) => {
     }
 });
 
+// Get pool balances (treasury and coinstor) from CommissionDistribution contract
+// Ownership verification required - caller must be contract.owner()
+app.get('/api/v1/admin/pool-balances', async (req, res) => {
+    try {
+        // Extract wallet address from query params
+        const wallet = req.query.wallet;
+        if (!wallet) {
+            return res.status(401).json({
+                success: false,
+                error: {
+                    message: 'Wallet address is required',
+                    code: 'AUTH_REQUIRED'
+                }
+            });
+        }
+
+        // Get CommissionDistribution contract address
+        const cdContractAddress = CONTRACT_ADDRESSES[CHAIN_ID]?.commission;
+        if (!cdContractAddress) {
+            return res.status(500).json({
+                success: false,
+                error: {
+                    message: 'CommissionDistribution contract not configured for this chain',
+                    code: 'CONFIG_ERROR'
+                }
+            });
+        }
+
+        // Minimal ABI for read-only operations
+        const cdAbi = [
+            "function owner() external view returns (address)",
+            "function treasury() external view returns (address)",
+            "function coinStorReserve() external view returns (address)",
+            "function commissionBalances(address) external view returns (uint256)"
+        ];
+
+        // Create read-only provider and contract instance
+        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        const cdContract = new ethers.Contract(cdContractAddress, cdAbi, provider);
+
+        // Verify ownership - caller must be contract owner
+        const ownerAddress = await cdContract.owner();
+        if (ownerAddress.toLowerCase() !== wallet.toLowerCase()) {
+            return res.status(403).json({
+                success: false,
+                error: {
+                    message: 'Not a contract owner',
+                    code: 'NOT_OWNER'
+                }
+            });
+        }
+
+        // Get treasury and coinstor addresses
+        const [treasuryAddress, coinStorAddress] = await Promise.all([
+            cdContract.treasury(),
+            cdContract.coinStorReserve()
+        ]);
+
+        // Get balances for both pools
+        const [treasuryWei, coinStorWei] = await Promise.all([
+            cdContract.commissionBalances(treasuryAddress),
+            cdContract.commissionBalances(coinStorAddress)
+        ]);
+
+        // Convert to human-readable USDT (18 decimals)
+        const treasuryUsdt = parseFloat(ethers.formatUnits(treasuryWei, 18)).toFixed(2);
+        const coinStorUsdt = parseFloat(ethers.formatUnits(coinStorWei, 18)).toFixed(2);
+
+        res.json({
+            success: true,
+            data: {
+                treasury: {
+                    wei: treasuryWei.toString(),
+                    usdt: treasuryUsdt
+                },
+                coinstor: {
+                    wei: coinStorWei.toString(),
+                    usdt: coinStorUsdt
+                }
+            }
+        });
+    } catch (error) {
+        console.error('[Pool Balances] Endpoint error:', error);
+        res.status(500).json({
+            success: false,
+            error: {
+                message: 'Failed to fetch pool balances',
+                code: 'BALANCE_FETCH_FAILED'
+            }
+        });
+    }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Wallet API running on port ${PORT}`);
     console.log(`Health: http://localhost:${PORT}/health`);
@@ -3176,4 +3269,5 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`Admin set-kyc-required: POST http://localhost:${PORT}/api/v1/wallet/admin/set-kyc-required`);
     console.log(`Burn NFT: POST http://localhost:${PORT}/api/v1/wallet/burn-nft`);
     console.log(`Game config: GET http://localhost:${PORT}/api/v1/wallet/game-config`);
+    console.log(`Pool balances: GET http://localhost:${PORT}/api/v1/admin/pool-balances?wallet=<owner_address>`);
 });
