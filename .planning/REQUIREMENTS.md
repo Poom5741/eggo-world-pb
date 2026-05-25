@@ -95,39 +95,39 @@ Give admin users the ability to accept contract ownership, monitor USDT pool bal
 
 | Requirement | Phase | Status  |
 | ----------- | ----- | ------- |
-| WALL-01     | —     | Pending |
-| WALL-02     | —     | Pending |
-| WALL-03     | —     | Pending |
-| OWN-01      | —     | Pending |
-| OWN-02      | —     | Pending |
-| OWN-03      | —     | Pending |
-| OWN-04      | —     | Pending |
-| POOL-01     | —     | Pending |
-| POOL-02     | —     | Pending |
-| POOL-03     | —     | Pending |
-| WDRW-01     | —     | Pending |
-| WDRW-02     | —     | Pending |
-| WDRW-03     | —     | Pending |
-| WDRW-04     | —     | Pending |
-| WDRW-05     | —     | Pending |
-| PAGE-01     | —     | Pending |
-| PAGE-02     | —     | Pending |
-| PAGE-03     | —     | Pending |
-| ERR-01      | —     | Pending |
-| ERR-02      | —     | Pending |
-| ERR-03      | —     | Pending |
-| BACK-01     | —     | Pending |
-| BACK-02     | —     | Pending |
-| BACK-03     | —     | Pending |
-| DEPL-01     | —     | Pending |
-| DEPL-02     | —     | Pending |
-| DEPL-03     | —     | Pending |
+| WALL-01     | 65    | Pending |
+| WALL-02     | 65    | Pending |
+| WALL-03     | 65    | Pending |
+| OWN-01      | 66    | Pending |
+| OWN-02      | 66    | Pending |
+| OWN-03      | 66    | Pending |
+| OWN-04      | 66    | Pending |
+| POOL-01     | 67    | Pending |
+| POOL-02     | 67    | Pending |
+| POOL-03     | 67    | Pending |
+| WDRW-01     | 67    | Pending |
+| WDRW-02     | 67    | Pending |
+| WDRW-03     | 67    | Pending |
+| WDRW-04     | 67    | Pending |
+| WDRW-05     | 67    | Pending |
+| PAGE-01     | 65    | Pending |
+| PAGE-02     | 65    | Pending |
+| PAGE-03     | 65    | Pending |
+| ERR-01      | 67    | Pending |
+| ERR-02      | 67    | Pending |
+| ERR-03      | 67    | Pending |
+| BACK-01     | 64    | Pending |
+| BACK-02     | 64    | Pending |
+| BACK-03     | 64    | Pending |
+| DEPL-01     | 68    | Pending |
+| DEPL-02     | 68    | Pending |
+| DEPL-03     | 68    | Pending |
 
 **Coverage:**
 
 - v0.10.0 requirements: 27 total
-- Mapped to phases: 0
-- Unmapped: 27 ⚠️
+- Mapped to phases: 27 ✅
+- Unmapped: 0 ✅
 
 ---
 

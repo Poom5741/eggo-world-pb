@@ -12,22 +12,21 @@
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.10.0 — Defining requirements for Admin Treasury & Ownership
+**Current Focus:** v0.10.0 — Admin Treasury & Ownership — Roadmap defined
 
-**Status:** 🔄 Defining requirements
+**Status:** 🗺️ Roadmap created
 
 ---
 
 ## Current Position
 
-**Phase:** Not started (defining requirements)
+**Phase:** 66 — Ownership Dashboard (discussed, ready to plan)
 **Plan:** —
-**Status:** Defining requirements
-**Last activity:** 2026-05-24 — Milestone v0.10.0 started
+**Status:** 💬 Discussed — 66-CONTEXT.md created (card grid, AcceptOwnership, contracts.json)
+**Last activity:** 2026-05-24 — Phases 64-65 planned, Phase 66 discussed
 
 ```
-
-Progress: [████████████████████] 100% (1/1 phases complete)
+Progress: [████████████████████] 100% (63/63 phases complete) — v0.10.0: 5 phases planned
 ```
 
 ---
@@ -36,8 +35,8 @@ Progress: [████████████████████] 100% (1
 
 | Metric              | Value | Target |
 | ------------------- | ----- | ------ |
-| **Phases Complete** | 63/63 | —      |
-| **Phases Planned**  | 0     | —      |
+| **Phases Complete** | 63/68 | —      |
+| **Phases Planned**  | 5     | 5      |
 
 ---
 
@@ -47,7 +46,15 @@ Progress: [████████████████████] 100% (1
 
 **Goal:** Give admin users the ability to accept contract ownership, monitor USDT pool balances, and withdraw treasury funds.
 
-**Phases:** (not yet planned)
+**Phases:**
+
+- Phase 64: Backend — Pool Balance Endpoint & Config (BACK-01, BACK-02, BACK-03)
+- Phase 65: Admin Page Shell & MetaMask Wallet (PAGE-01, PAGE-02, PAGE-03, WALL-01, WALL-02, WALL-03)
+- Phase 66: Ownership Dashboard (OWN-01, OWN-02, OWN-03, OWN-04)
+- Phase 67: Pool Balance & Treasury Withdrawal (POOL-01, POOL-02, POOL-03, WDRW-01, WDRW-02, WDRW-03, WDRW-04, WDRW-05, ERR-01, ERR-02, ERR-03)
+- Phase 68: Production Deployment (DEPL-01, DEPL-02, DEPL-03)
+
+**Architecture Decision:** Admin signs transactions via MetaMask (viem) directly from browser — NOT through wallet-api. Backend only used for read-only pool balance queries (wallet-api → CommissionDistribution `commissionBalances`). This differs from existing admin endpoints which use `ADMIN_PRIVATE_KEY`.
 
 ### v0.9.0 — Google OAuth Migration (SHIPPED 2026-05-19)
 
