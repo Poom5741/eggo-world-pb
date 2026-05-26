@@ -52,7 +52,6 @@ export default function DashboardPage() {
   // user?.wallet_address or user?.wallet (support both field names for migration)
   const { balance, loading: balanceLoading, refresh: refreshBalance, error: balanceError } = useWalletPoll(user?.wallet_address || user?.wallet || '')
 
-  // Effect: Wait for hydration then check auth state (simplified pattern matching eggs/animals)
   useEffect(() => {
     if (!isHydrated) return
 
@@ -93,37 +92,47 @@ export default function DashboardPage() {
     }
     
     try {
-      const [profileData, eggsData, commissionsData] = await Promise.all([
+      // Fetch critical data first — profile and eggs must never be blanked by a commission fetch failure
+      const [profileData, eggsData] = await Promise.all([
         pb.collection('users').getOne(currentUser.id),
         pb.collection('egg_nfts').getList(1, 1, { filter: `owner = "${currentUser.id}"` }),
-        pb.collection('commission_records').getList(1, 100, { filter: `user = "${currentUser.id}"` })
       ])
 
       setProfile(profileData)
-      
+
       const totalEggs = eggsData.totalItems
       const totalFood = eggsData.items.reduce((sum: number, egg: any) => sum + (egg.food_count || 0), 0)
-      const totalCommissions = commissionsData.items
+
+      // Commission data in isolated fetch — failure only zeros the commission section
+      let commissionItems: any[] = []
+      try {
+        commissionItems = await pb.collection('commission_records').getFullList({
+          filter: `user = "${currentUser.id}"`
+        })
+      } catch (commErr: any) {
+        if (!isAutoCancelError(commErr)) {
+          console.warn('Commission records unavailable:', commErr?.status, commErr?.message)
+        }
+      }
+
+      const totalCommissions = commissionItems
         .filter((c: any) => !c.claimed)
         .reduce((sum: number, c: any) => sum + parseFloat(c.amount || '0'), 0)
 
-      setStats({
-        totalEggs,
-        totalFood,
-        totalCommissions
-      })
+      setStats({ totalEggs, totalFood, totalCommissions })
 
-      // Calculate referral levels from commission records
-      // Group commissions by referrer level (G1-G4)
-      const levelCounts: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0 }
-      commissionsData.items.forEach((record: any) => {
-        const level = record.level // Assuming commission_records has a 'level' field (1-4)
-        if (level >= 1 && level <= 4) {
-          levelCounts[level]++
+      // Deduplicate buddy count by distinct egg mints (from_egg) per level
+      const eggSets: Record<number, Set<string>> = { 1: new Set(), 2: new Set(), 3: new Set(), 4: new Set() }
+      commissionItems.forEach((record: any) => {
+        const level = record.level
+        if (level >= 1 && level <= 4 && record.from_egg) {
+          eggSets[level].add(record.from_egg)
         }
       })
+      const levelCounts: Record<number, number> = {
+        1: eggSets[1].size, 2: eggSets[2].size, 3: eggSets[3].size, 4: eggSets[4].size
+      }
 
-      // Target: 50 buddies per level for percentage calculation
       const TARGET_BUDDIES = 50
       const levels = [1, 2, 3, 4].map((lvl) => ({
         level: lvl,
@@ -138,45 +147,22 @@ export default function DashboardPage() {
       if (isAutoCancelError(err)) {
         return
       }
-      // Handle 404 errors gracefully - show empty state
-      if (isNotFound(err)) {
-        // Set default empty state
+      // Handle 404 / 400 / 403 for the critical profile+eggs fetch
+      if (isNotFound(err) || err?.status === 400 || err?.status === 403) {
+        console.warn(`Dashboard fetch issue (${err?.status}):`, err?.message)
         setProfile(null)
         setStats({ totalEggs: 0, totalFood: 0, totalCommissions: 0 })
         setReferralLevels([1, 2, 3, 4].map(lvl => ({ level: lvl, count: 0, percentage: 0, commissionRate: lvl === 1 ? 0.20 : 0.10 })))
         return
       }
-      // Handle 400/403 errors gracefully - collection may not exist, missing fields, or has wrong API rules in production
-      if (err?.status === 400 || err?.status === 403) {
-        console.warn(`Dashboard collection access issue (${err?.status}):`, err?.message, '- treating as empty state')
-        // Set default empty state
-        setProfile(null)
-        setStats({ totalEggs: 0, totalFood: 0, totalCommissions: 0 })
-        setReferralLevels([1, 2, 3, 4].map(lvl => ({ level: lvl, count: 0, percentage: 0, commissionRate: lvl === 1 ? 0.20 : 0.10 })))
-        return
-      }
-      console.error('Dashboard fetch error:')
-      console.error('Full error:', err)
-      console.error('Error status:', err?.status)
-      console.error('Error message:', err?.message)
-      console.error('Error data:', err?.data)
-      console.error('Auth state:', { 
+      console.error('Dashboard fetch error:', err?.status, err?.message)
+      console.error('Auth state:', {
         token: pb.authStore.token ? `${pb.authStore.token.substring(0, 50)}...` : 'missing',
         isValid: pb.authStore.isValid,
         recordId: pb.authStore.record?.id
       })
     } finally {
       setLoading(false)
-    }
-  }
-
-  // Refresh function kept for future use (manual refresh button can be re-added)
-  const _handleRefresh = async () => {
-    if (user?.id) {
-      await Promise.all([
-        refreshBalance(),
-        fetchDashboardData(user)
-      ])
     }
   }
 
@@ -204,12 +190,8 @@ export default function DashboardPage() {
     )
   }
 
-  const _usdtTotalEarned = parseFloat(profile?.usdt_total_earned || '0')
-  const totalReferralEarnings = stats.totalCommissions
-
   return (
     <LayoutWithoutNav>
-      {/* Header per Jules design */}
       <header className="flex justify-between items-center mb-10 px-2 lg:px-0">
         <div>
           <h2 className="pixel-font text-3xl lg:text-4xl text-on-surface-variant">Dashboard</h2>
@@ -253,7 +235,6 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Top 3-Card Grid per Jules design */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {/* Card 1: Balance */}
         <BalanceCard 
@@ -299,10 +280,10 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-bold text-on-surface-variant/70 uppercase tracking-widest mb-1">
-              Referral Earnings
+              Pending Commissions
             </p>
             <h3 className="pixel-font text-3xl text-secondary">
-              {totalReferralEarnings.toFixed(2)} USDT
+              {stats.totalCommissions.toFixed(2)} USDT
             </h3>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
@@ -313,9 +294,11 @@ export default function DashboardPage() {
       </Card>
 
       {/* Referral Link Share Card */}
-      <div className="mb-8">
-        <ReferralLinkCard referralCode={profile?.referral_code || ''} userId={user?.id} />
-      </div>
+      {profile?.referral_code && (
+        <div className="mb-8">
+          <ReferralLinkCard referralCode={profile.referral_code} />
+        </div>
+      )}
 
       {/* Split Section: Quick Actions + Buddy Chain */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 mb-8">

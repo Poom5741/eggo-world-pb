@@ -53,38 +53,38 @@ function CommissionsContent({ user }: { user: any }) {
   const fetchData = async (userId: string) => {
     const pb = createClient()
     try {
-      const [profileData, commissionRecords] = await Promise.all([
+      const [profileData, commissionItems] = await Promise.all([
         pb.collection('users').getOne(userId),
-        pb.collection('commission_records').getList(1, 100, {
+        pb.collection('commission_records').getFullList({
           filter: `user = "${userId}"`,
           sort: '-created'
         })
       ])
 
       setProfile(profileData)
-      setCommissions(commissionRecords.items)
+      setCommissions(commissionItems)
 
-      const pending = commissionRecords.items
+      const pending = commissionItems
         .filter((c: any) => !c.claimed)
         .reduce((sum: number, c: any) => sum + parseFloat(c.amount || '0'), 0)
 
-      const claimed = commissionRecords.items
+      const claimed = commissionItems
         .filter((c: any) => c.claimed)
         .reduce((sum: number, c: any) => sum + parseFloat(c.amount || '0'), 0)
 
-      const g1 = commissionRecords.items
+      const g1 = commissionItems
         .filter((c: any) => c.level === 1)
         .reduce((sum: number, c: any) => sum + parseFloat(c.amount || '0'), 0)
 
-      const g2 = commissionRecords.items
+      const g2 = commissionItems
         .filter((c: any) => c.level === 2)
         .reduce((sum: number, c: any) => sum + parseFloat(c.amount || '0'), 0)
 
-      const g3 = commissionRecords.items
+      const g3 = commissionItems
         .filter((c: any) => c.level === 3)
         .reduce((sum: number, c: any) => sum + parseFloat(c.amount || '0'), 0)
 
-      const g4 = commissionRecords.items
+      const g4 = commissionItems
         .filter((c: any) => c.level === 4)
         .reduce((sum: number, c: any) => sum + parseFloat(c.amount || '0'), 0)
 
@@ -170,14 +170,6 @@ function CommissionsContent({ user }: { user: any }) {
       setClaimError(err.message || 'Claim failed')
     } finally {
       setClaiming(false)
-    }
-  }
-
-  const _handleRefresh = async () => {
-    if (user) {
-      setUpdating(true)
-      await fetchData(user.id)
-      setUpdating(false)
     }
   }
 
