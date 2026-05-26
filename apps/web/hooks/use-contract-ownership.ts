@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useMetaMask } from './use-metamask'
 import { readContract } from 'viem/actions'
 import type { Address } from 'viem'
@@ -44,7 +44,9 @@ export function useContractOwnership(
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const fetchOwnership = async () => {
+  // Memoized fetchOwnership so the useEffect dependency is stable and
+  // does not retrigger on every render cycle when walletClient changes.
+  const fetchOwnership = useCallback(async () => {
     // Reset state
     setLoading(true)
     setError(null)
@@ -126,12 +128,12 @@ export function useContractOwnership(
     } finally {
       setLoading(false)
     }
-  }
+  }, [contractName, contractAddress, isConnected, address, walletClient])
 
   // Fetch ownership on mount and when dependencies change
   useEffect(() => {
     fetchOwnership()
-  }, [contractName, contractAddress, isConnected, address, walletClient])
+  }, [fetchOwnership])
 
   // Calculate ownership status
   const ownershipStatus: 'owner' | 'pending' | 'not-owner' | 'unknown' = (() => {

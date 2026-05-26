@@ -62,7 +62,19 @@ export function usePoolBalances(): UsePoolBalancesReturn {
   const [balances, setBalances] = useState<FormattedBalances | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // mountedRef tracks component mount lifetime — must only be set false in the
+  // cleanup of the mount-time effect, not the data-fetch effect which runs on
+  // dependency changes. Setting it false inside the data-fetch cleanup would
+  // permanently disable all future state updates after the first re-run.
   const mountedRef = useRef(true)
+
+  // Cleanup on unmount only
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   // Determine target chain based on environment
   const targetChainId = typeof window !== 'undefined' &&
@@ -160,10 +172,8 @@ export function usePoolBalances(): UsePoolBalancesReturn {
       setBalances(null)
       setError(null)
     }
-
-    return () => {
-      mountedRef.current = false
-    }
+    // No cleanup that sets mountedRef — that is handled by the dedicated
+    // mount-lifetime effect above to avoid prematurely disabling state updates.
   }, [isConnected, address, chainId, targetChainId, fetchBalances])
 
   return {

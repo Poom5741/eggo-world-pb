@@ -103,7 +103,22 @@ function subscribeToMetaMaskEvents(
 }
 
 /**
- * Get current MetaMask snapshot synchronously
+ * Module-level cached snapshot objects.
+ *
+ * useSyncExternalStore compares snapshots via Object.is on every render.
+ * Returning a new object literal each call causes React to think state
+ * changed every render, triggering an infinite re-render loop (React
+ * minified error #185). Caching the singleton objects here ensures
+ * Object.is equality is stable between calls when the value is unchanged.
+ */
+const SNAPSHOT_NO_PROVIDER = { address: null as Address | null, chainId: null as number | null, hasProvider: false } as const
+const SNAPSHOT_HAS_PROVIDER = { address: null as Address | null, chainId: null as number | null, hasProvider: true } as const
+
+/**
+ * Get current MetaMask snapshot synchronously.
+ *
+ * Returns a stable object reference so useSyncExternalStore does not
+ * trigger spurious re-renders on successive calls with the same value.
  */
 function getMetaMaskSnapshot(): {
   address: Address | null
@@ -111,19 +126,15 @@ function getMetaMaskSnapshot(): {
   hasProvider: boolean
 } {
   if (typeof window === 'undefined') {
-    return { address: null, chainId: null, hasProvider: false }
+    return SNAPSHOT_NO_PROVIDER
   }
 
   const ethereum = window.ethereum
   if (!ethereum) {
-    return { address: null, chainId: null, hasProvider: false }
+    return SNAPSHOT_NO_PROVIDER
   }
 
-  return {
-    address: null as Address | null,
-    chainId: null as number | null,
-    hasProvider: true,
-  }
+  return SNAPSHOT_HAS_PROVIDER
 }
 
 /**
@@ -148,7 +159,9 @@ export function useMetaMask(): UseMetaMaskReturn {
   const [error, setError] = useState<string | null>(null)
   const mountedRef = useRef(true)
 
-  // Subscribe to MetaMask events using useSyncExternalStore
+  // Subscribe to MetaMask events using useSyncExternalStore.
+  // getMetaMaskSnapshot returns module-level singleton objects so
+  // Object.is comparisons are stable and no infinite loop occurs.
   const snapshot = useSyncExternalStore(
     (callback) => {
       if (typeof window === 'undefined' || !window.ethereum) {
