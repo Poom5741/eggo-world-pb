@@ -32,7 +32,7 @@ interface TreasuryGuardProps {
  */
 export function TreasuryGuard({ children, fallback }: TreasuryGuardProps) {
   const isHydrated = useIsHydrated()
-  const { address, isConnected, connect, disconnect, walletClient, chainId, switchChain } = useMetaMask()
+  const { address, isConnected, disconnect, walletClient, chainId } = useMetaMask()
 
   const [isVerifying, setIsVerifying] = useState(false)
   const [isOwner, setIsOwner] = useState(false)
@@ -79,113 +79,34 @@ export function TreasuryGuard({ children, fallback }: TreasuryGuardProps) {
     verifyOwnership()
   }, [isHydrated, isConnected, address, walletClient, contractConfig, contractAddress])
 
-  // Loading state (before hydration or during verification)
-  if (!isHydrated || isVerifying) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Verifying Access</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
+  // Before hydration — render nothing to avoid layout flash
+  if (!isHydrated) return null
 
-  // MetaMask not detected
+  // MetaMask not detected — page-level connection card already handles this
   if (typeof window !== 'undefined' && !window.ethereum) {
-    return (
-      fallback ?? (
-        <div className="min-h-screen bg-background flex items-center justify-center p-6">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>MetaMask Required</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert variant="destructive">
-                <AlertDescription>
-                  MetaMask not detected. Please install MetaMask browser extension to access this page.
-                </AlertDescription>
-              </Alert>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => window.open('https://metamask.io/download/', '_blank')}
-              >
-                Install MetaMask
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )
-    )
+    return fallback ?? null
   }
 
-  // Not connected
+  // Not connected — page-level connection card already handles connect flow
   if (!isConnected) {
-    return (
-      fallback ?? (
-        <div className="min-h-screen bg-background flex items-center justify-center p-6">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Connect MetaMask</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Connect your MetaMask wallet to access the Admin Treasury panel. You must be the contract owner to continue.
-              </p>
-              <Button
-                className="w-full"
-                onClick={connect}
-              >
-                Connect MetaMask
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )
-    )
+    return fallback ?? null
   }
 
-  // Wrong network
+  // Wrong network — page-level card already shows switch prompt
   if (chainId !== targetChainId) {
+    return fallback ?? null
+  }
+
+  // Verifying ownership
+  if (isVerifying) {
     return (
-      fallback ?? (
-        <div className="min-h-screen bg-background flex items-center justify-center p-6">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Wrong Network</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert variant="destructive">
-                <AlertDescription>
-                  You are connected to the wrong network. Please switch to{' '}
-                  {targetChainId === 56 ? 'BSC Mainnet' : '0xl3 Testnet'}.
-                </AlertDescription>
-              </Alert>
-              <div className="flex gap-2">
-                <Button
-                  className="flex-1"
-                  onClick={() => switchChain(targetChainId)}
-                >
-                  Switch Network
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={disconnect}
-                >
-                  Disconnect
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )
+      <Card className="mt-6">
+        <CardContent className="pt-6 space-y-3">
+          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-4 w-72" />
+          <Skeleton className="h-4 w-36" />
+        </CardContent>
+      </Card>
     )
   }
 
@@ -193,25 +114,19 @@ export function TreasuryGuard({ children, fallback }: TreasuryGuardProps) {
   if (!isOwner && verificationError) {
     return (
       fallback ?? (
-        <div className="min-h-screen bg-background flex items-center justify-center p-6">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Access Denied</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Alert variant="destructive">
-                <AlertDescription>{verificationError}</AlertDescription>
-              </Alert>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={disconnect}
-              >
-                Disconnect Wallet
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Access Denied</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert variant="destructive">
+              <AlertDescription>{verificationError}</AlertDescription>
+            </Alert>
+            <Button variant="outline" onClick={disconnect}>
+              Disconnect Wallet
+            </Button>
+          </CardContent>
+        </Card>
       )
     )
   }
