@@ -9,6 +9,7 @@ import { useMetaMask } from '@/hooks/use-metamask'
 import { BSC_CHAINS } from '@/hooks/use-metamask'
 import { TreasuryGuard } from '@/components/auth/TreasuryGuard'
 import { ContractOwnershipGrid } from '@/components/admin/ContractOwnershipGrid'
+import { TreasuryWithdrawalSection } from '@/components/admin/treasury/TreasuryWithdrawalSection'
 
 export default function AdminTreasuryPage() {
   const {
@@ -115,7 +116,7 @@ export default function AdminTreasuryPage() {
 
         {/* Contract Ownership Section (Phase 66) */}
         <TreasuryGuard>
-          <Card>
+          <Card id="ownership-section">
             <CardHeader>
               <CardTitle>Contract Ownership</CardTitle>
               <CardDescription>
@@ -129,29 +130,9 @@ export default function AdminTreasuryPage() {
         </TreasuryGuard>
 
         {/* Pool Balances & Withdraw Section (Phase 67) */}
-        <Card className="mt-6 border-dashed border-2 border-muted-foreground/25 opacity-60">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-muted-foreground">Pool Balances & Withdrawal</CardTitle>
-                <CardDescription>
-                  Monitor USDT pool balances and withdraw treasury funds
-                </CardDescription>
-              </div>
-              <Badge variant="outline">Phase 67</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8">
-              <p className="text-muted-foreground text-sm">
-                Coming soon in Phase 67: Pool Balance & Treasury Withdrawal
-              </p>
-              <p className="text-muted-foreground text-xs mt-2">
-                This section will display pool balances and withdrawal interface
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <TreasuryGuard>
+          <TreasuryWithdrawalSection />
+        </TreasuryGuard>
       </div>
     </LayoutWrapper>
   )
