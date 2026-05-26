@@ -1,3 +1,18 @@
+---
+gsd_state_version: 1.0
+milestone: v0.10.0
+milestone_name: Admin Treasury & Ownership
+status: executing
+last_updated: "2026-05-26T02:02:30.276Z"
+last_activity: 2026-05-26
+progress:
+  total_phases: 7
+  completed_phases: 4
+  total_plans: 6
+  completed_plans: 4
+  percent: 57
+---
+
 # STATE.md — Project Memory
 
 **Project:** Egg × Food × Animal NFT Marketplace
@@ -12,21 +27,21 @@
 
 **Core Value:** Gamified NFT marketplace on BSC where users buy eggs, feed with food NFTs, hatch animals, and trade on marketplace with 4-level MLM referral commissions
 
-**Current Focus:** v0.10.0 — Admin Treasury & Ownership — Phase 66 complete
+**Current Focus:** Phase 68 — Production Deployment (planned, ready to execute)
 
-**Status:** ✅ Phase 66 complete — Ownership Dashboard implemented
+**Status:** ✅ Phase 67 complete — Phase 68 plan ready for execution
 
 ---
 
 ## Current Position
 
-**Phase:** 66 — Ownership Dashboard (complete)
-**Plan:** 01
-**Status:** ✅ Complete — Ownership dashboard with 6 contracts, AcceptOwnership functional
-**Last activity:** 2026-05-26 — Phase 66 executed, ownership dashboard live
+**Phase:** 68 — Production Deployment (planned)
+**Plan:** 01 (1 of 1)
+**Status:** Ready to execute — operator-driven deployment + verification across wallet-api, PocketBase hook, and Cloudflare Pages
+**Last activity:** 2026-05-26 — Phase 68 PLAN.md created (DEPL-01, DEPL-02, DEPL-03)
 
 ```
-Progress: [████████████████████] 100% (64/68 phases complete) — v0.10.0: 1 phase remaining
+Progress: [████████████████████] 100% (65/68 phases complete) — v0.10.0: 1 phase remaining
 ```
 
 ---
@@ -35,8 +50,8 @@ Progress: [████████████████████] 100% (6
 
 | Metric              | Value | Target |
 | ------------------- | ----- | ------ |
-| **Phases Complete** | 64/68 | —      |
-| **Phases Planned**  | 4     | 5      |
+| **Phases Complete** | 65/68 | —      |
+| **Phases Planned**  | 3     | 5      |
 
 ---
 
@@ -50,8 +65,8 @@ Progress: [████████████████████] 100% (6
 
 - Phase 64: Backend — Pool Balance Endpoint & Config (BACK-01, BACK-02, BACK-03)
 - Phase 65: Admin Page Shell & MetaMask Wallet (PAGE-01, PAGE-02, PAGE-03, WALL-01, WALL-02, WALL-03)
-- Phase 66: Ownership Dashboard (OWN-01, OWN-02, OWN-03, OWN-04)
-- Phase 67: Pool Balance & Treasury Withdrawal (POOL-01, POOL-02, POOL-03, WDRW-01, WDRW-02, WDRW-03, WDRW-04, WDRW-05, ERR-01, ERR-02, ERR-03)
+- Phase 66: Ownership Dashboard (OWN-01, OWN-02, OWN-03, OWN-04) ✅
+- Phase 67: Pool Balance & Treasury Withdrawal (POOL-01, POOL-02, POOL-03, WDRW-01, WDRW-02, WDRW-03, WDRW-04, WDRW-05, ERR-01, ERR-02, ERR-03) ✅
 - Phase 68: Production Deployment (DEPL-01, DEPL-02, DEPL-03)
 
 **Architecture Decision:** Admin signs transactions via MetaMask (viem) directly from browser — NOT through wallet-api. Backend only used for read-only pool balance queries (wallet-api → CommissionDistribution `commissionBalances`). This differs from existing admin endpoints which use `ADMIN_PRIVATE_KEY`.
@@ -147,21 +162,22 @@ Items acknowledged and deferred from prior milestones (confirmed at v0.8.0 close
 
 ## Session Continuity
 
-**Last Session:** 2026-05-26 — Phase 66 Ownership Dashboard executed successfully
+**Last Session:** 2026-05-26 — Phase 67 Pool Balance & Treasury Withdrawal executed successfully
 
 **Session Notes:**
 
-- Phase 66 Ownership Dashboard completed with 5 tasks executed atomically
-- All 6 contracts (CommissionDistribution, EggNFT, FoodNFT, AnimalNFT, Marketplace, TierBadge) displayed in ownership grid
-- AcceptOwnership() functionality implemented for CommissionDistribution via MetaMask (viem writeContract)
-- useContractOwnership hook created for per-contract ownership queries with isolated error handling
-- ContractOwnershipCard component with click-to-copy addresses, ownership status badges, and transaction flow
-- ContractOwnershipGrid component with responsive layout (2 columns desktop, 1 column mobile)
-- TreasuryGuard integration for access control (only CommissionDistribution.owner can view dashboard)
-- contracts.json expanded to include all 6 contracts with addresses for 3 chains (56, 97, 7117)
+- Phase 67 Pool Balance & Treasury Withdrawal completed with 8 tasks executed atomically
+- Pool balance data layer (use-pool-balances hook) fetching from Phase 64 endpoint with auto-refresh
+- PoolBalanceCard component displaying Total, Treasury, and CoinStor balances with proper formatting ($1,234.56 USDT)
+- Treasury withdrawal logic (use-treasury-withdrawal hook) with viem transaction flow and gas estimation
+- WithdrawalForm component with real-time validation, large withdrawal warnings, and ownership-based enablement
+- TreasuryWithdrawalSection container component with responsive layout and ownership guidance
+- Page integration replacing placeholder section with full Phase 67 functionality
+- contracts.json updated with withdrawTreasury ABI function
+- Comprehensive error handling for transaction reverts, RPC failures, and contract read errors
 - Build passes successfully, all success criteria met, self-check PASSED
-- Ready for Phase 67: Pool Balance & Treasury Withdrawal
+- Ready for Phase 68: Production Deployment
 
 ---
 
-_Last updated: 2026-05-26 — Phase 66 Ownership Dashboard completed_
+_Last updated: 2026-05-26 — Phase 68 Production Deployment PLAN.md ready_
