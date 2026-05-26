@@ -49,6 +49,7 @@ jobs:
 
       - name: Output deployment URL
         run: |
+          echo "Deployed commit: ${{ github.sha }}"
           echo "Deployment URL: https://eggo-world-web.pages.dev"
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "Preview URL: https://${{ github.head_ref }}.eggo-world-web.pages.dev"
