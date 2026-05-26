@@ -9,7 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useContractOwnership } from '@/hooks/use-contract-ownership'
 import { useMetaMask } from '@/hooks/use-metamask'
 import { writeContract } from 'viem/actions'
-import contracts from '@/lib/contracts.json'
 import type { Address } from 'viem'
 
 interface ContractOwnershipCardProps {
@@ -70,13 +69,10 @@ export function ContractOwnershipCard({ contractName, contractAddress }: Contrac
     setTxError(null)
 
     try {
-      // Get CommissionDistribution ABI
-      const contractConfig = contracts.CommissionDistribution
-
       // Call acceptOwnership()
       setTxStatus('pending')
 
-      const hash = await writeContract(walletClient, {
+      const _hash = await writeContract(walletClient, {
         address: contractAddress,
         abi: [{
           name: 'acceptOwnership',
